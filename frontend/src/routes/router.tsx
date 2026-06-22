@@ -46,17 +46,14 @@ const ProjectDetailPage = LazyLoad(lazy(() => import('@/features/projects/Projec
 // Approvals
 const ApprovalInboxPage = LazyLoad(lazy(() => import('@/features/approvals/ApprovalInboxPage')));
 
-// KPI
-const KpiPage = LazyLoad(lazy(() => import('@/features/kpi/KpiPage')));
+// KPI → moved under Reports
 const KPIDashboardPage = LazyLoad(lazy(() => import('@/features/kpi/KPIDashboardPage')));
 const KPIProgressPage = LazyLoad(lazy(() => import('@/features/kpi/KPIProgressPage')));
 const KPITargetsPage = LazyLoad(lazy(() => import('@/features/kpi/KPITargetsPage')));
 
 // Reports
-const ReportsPage = LazyLoad(lazy(() => import('@/features/reports/ReportsPage')));
 const WinLossReportPage = LazyLoad(lazy(() => import('@/features/reports/WinLossReportPage')));
 const PipelineReportPage = LazyLoad(lazy(() => import('@/features/reports/PipelineReportPage')));
-const KPIReportPage = LazyLoad(lazy(() => import('@/features/reports/KPIReportPage')));
 const ReportsIndexPage = LazyLoad(lazy(() => import('@/features/reports/ReportsIndexPage')));
 
 // Master Data
@@ -137,18 +134,19 @@ export default function AppRouter() {
         {/* Approvals */}
         <Route path="approvals" element={<ApprovalInboxPage />} />
 
-        {/* KPI */}
-        <Route path="kpi" element={<KpiPage />} />
-        <Route path="kpi/dashboard" element={<KPIDashboardPage />} />
-        <Route path="kpi/progress" element={<KPIProgressPage />} />
-        <Route path="kpi/targets" element={<KPITargetsPage />} />
-
-        {/* Reports */}
-        <Route path="reports" element={<ReportsPage />} />
+        {/* Reports (includes KPI) */}
+        <Route path="reports" element={<ReportsIndexPage />} />
         <Route path="reports/win-loss" element={<WinLossReportPage />} />
         <Route path="reports/pipeline" element={<PipelineReportPage />} />
-        <Route path="reports/kpi" element={<KPIReportPage />} />
-        <Route path="reports/index" element={<ReportsIndexPage />} />
+        <Route path="reports/kpi" element={<KPIDashboardPage />} />
+        <Route path="reports/kpi/progress" element={<KPIProgressPage />} />
+        <Route path="reports/kpi/targets" element={<KPITargetsPage />} />
+
+        {/* Redirect old KPI routes to Reports */}
+        <Route path="kpi" element={<Navigate to="/reports/kpi" replace />} />
+        <Route path="kpi/dashboard" element={<Navigate to="/reports/kpi" replace />} />
+        <Route path="kpi/progress" element={<Navigate to="/reports/kpi/progress" replace />} />
+        <Route path="kpi/targets" element={<Navigate to="/reports/kpi/targets" replace />} />
 
         {/* Master Data */}
         <Route path="master-data" element={<MasterDataPage />} />

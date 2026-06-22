@@ -11,12 +11,12 @@ export const navItems: NavItem[] = [
   { label: 'Prospek', path: '/prospects', icon: 'travel_explore', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
   { label: 'Proyek', path: '/projects', icon: 'folder', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
   { label: 'Approval', path: '/approvals', icon: 'approval', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer'] },
-  { label: 'KPI', path: '/kpi', icon: 'monitoring', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head'] },
   { label: 'Laporan', path: '/reports', icon: 'report', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head'] },
   { label: 'Master Data', path: '/master-data', icon: 'database', roles: ['Super Admin', 'Admin'] },
   { label: 'Pengguna', path: '/users', icon: 'people', roles: ['Super Admin', 'Admin'] },
   { label: 'Notifikasi', path: '/notifications', icon: 'notifications', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
   { label: 'Audit Log', path: '/audit', icon: 'history', roles: ['Super Admin', 'Admin'] },
+  { label: 'Konfigurasi', path: '/config', icon: 'settings', roles: ['Super Admin', 'Admin'] },
 ];
 
 export const configNavItems: NavItem[] = [

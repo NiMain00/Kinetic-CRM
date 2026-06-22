@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { navItems, configNavItems, filterNavItems, type NavItem } from '@/routes/nav-items';
+import { navItems, filterNavItems, type NavItem } from '@/routes/nav-items';
 
 interface SidebarProps {
   activeTab: string;
@@ -25,7 +25,6 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole), [userRole]);
-  const allowedConfigItems = useMemo(() => filterNavItems(configNavItems, userRole), [userRole]);
 
   const handleNavigate = (path: string) => {
     setActiveTab(path);
@@ -102,20 +101,6 @@ export default function Sidebar({
         {/* Navigation list */}
         <nav className="flex-1 px-4 space-y-1 overflow-y-auto" aria-label="Sidebar navigation">
           {allowedNavItems.map(renderNavItem)}
-
-          {/* Section divider */}
-          {allowedConfigItems.length > 0 && (
-            <>
-              <div className="pt-4 pb-2">
-                {!collapsed || mobile ? (
-                  <p className="px-4 text-[10px] font-bold uppercase text-outline tracking-wider">Konfigurasi Sistem</p>
-                ) : (
-                  <hr className="border-border mx-2" />
-                )}
-              </div>
-              {allowedConfigItems.map(renderNavItem)}
-            </>
-          )}
         </nav>
 
         {/* Logout button */}

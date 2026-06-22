@@ -21,13 +21,13 @@ const reportCards = [
     stats: [{ label: 'Total Pipeline', value: 'Rp 4.28T' }, { label: 'Active Projects', value: '1,248' }],
   },
   {
-    title: 'KPI Report',
-    description: 'Key Performance Indicators utama, perbandingan target vs realisasi untuk monitoring performa.',
+    title: 'KPI',
+    description: 'Key Performance Indicators, dashboard monitoring, target setting, dan progress scoring.',
     icon: 'monitoring',
     path: '/reports/kpi',
     color: 'text-status-purple',
     bgColor: 'bg-status-purple/10',
-    stats: [{ label: 'KPI Metrics', value: '6' }, { label: 'On Track', value: '3' }],
+    stats: [{ label: 'Metrik', value: '6' }, { label: 'On Track', value: '3' }],
   },
 ];
 
@@ -45,8 +45,8 @@ export default function ReportsIndexPage() {
         </nav>
 
         <div>
-          <h1 className="text-xl font-extrabold text-on-surface">Reports & Analytics</h1>
-          <p className="text-sm text-secondary mt-1">Pilih jenis laporan untuk melihat analisis detail performa bisnis.</p>
+          <h1 className="text-xl font-extrabold text-on-surface">Laporan & Analisis</h1>
+          <p className="text-sm text-secondary mt-1">Tiga jenis laporan: Win/Loss, Pipeline, dan KPI — pilih untuk melihat detail.</p>
         </div>
 
         {/* Quick Summary Stats */}
