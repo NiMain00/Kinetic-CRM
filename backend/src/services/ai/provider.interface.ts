@@ -13,4 +13,5 @@ export interface GenerateOptions {
 export interface GenerateResult {
   text: string;
   status: 'success' | 'error';
+  tokens?: number;
 }

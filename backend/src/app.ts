@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { errorHandler } from './middleware/error.middleware';
 import healthRoutes from './api/v1/health.routes';
+import aiRoutes from './api/v1/ai.routes';
 
 const app = express();
 app.use(helmet());
@@ -12,6 +13,7 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 
 app.use('/api/v1/health', healthRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
 app.use(errorHandler);
 export default app;
