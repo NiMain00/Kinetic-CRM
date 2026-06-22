@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import type { AuditLogEntry } from '../../types/domain/users';
-
-interface AuditViewProps {
-  onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
-  onNavigatePage: (page: string) => void;
-}
 
 const ACTION_COLORS: Record<string, string> = {
   CREATE: 'bg-success/10 text-success',
@@ -31,7 +27,7 @@ const INITIAL_LOGS: AuditLogEntry[] = [
   { id: 'AUD-010', timestamp: '2026-06-19 08:00:00', actor: 'Eko Prasetyo', actorInitials: 'EP', action: 'LOGOUT', entityType: 'Session', entityId: 'SESS-9801', entityName: 'Eko Prasetyo', summary: 'Logout dari sistem', before: undefined, after: '{"session_duration":"4h 22m"}', ipAddress: '192.168.1.100', impact: 'Low' },
 ];
 
-export default function AuditView({ onShowNotification }: AuditViewProps) {
+export default function AuditPage() {
   const [logs] = useState<AuditLogEntry[]>(INITIAL_LOGS);
   const [searchQuery, setSearchQuery] = useState('');
   const [actionFilter, setActionFilter] = useState<string>('all');
@@ -66,7 +62,7 @@ export default function AuditView({ onShowNotification }: AuditViewProps) {
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Jejak audit sistem untuk seluruh aktivitas pengguna dan perubahan data.</p>
         </div>
-        <button onClick={() => onShowNotification('Ekspor audit log sedang diproses.', 'success')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
+        <button onClick={() => toast.success('Ekspor audit log sedang diproses.')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
           <span className="material-symbols-outlined text-[16px]">file_download</span> Export CSV
         </button>
       </div>
@@ -89,7 +85,7 @@ export default function AuditView({ onShowNotification }: AuditViewProps) {
                 <option value="Medium">Medium</option>
                 <option value="High">High</option>
               </select>
-              <button onClick={() => { setSearchQuery(''); setActionFilter('all'); setImpactFilter('all'); onShowNotification('Filter direset.', 'success'); }} className="px-3 py-2 border border-border rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Reset</button>
+              <button onClick={() => { setSearchQuery(''); setActionFilter('all'); setImpactFilter('all'); toast.success('Filter direset.'); }} className="px-3 py-2 border border-border rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Reset</button>
             </div>
           </div>
 

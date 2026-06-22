@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import type { KpiTarget } from '../../types/domain/users';
-
-interface KpiViewProps {
-  onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
-  onNavigatePage: (page: string) => void;
-}
 
 const INITIAL_KPIS: KpiTarget[] = [
   { id: 'KPI-001', name: 'Win Rate', category: 'win_rate', targetValue: 70, actualValue: 65.5, unit: '%', period: '2026 Q2', status: 'at_risk' },
@@ -32,7 +28,7 @@ const DEPARTMENT_SCORES = [
   { dept: 'Marketing', score: 74, projects: 6 },
 ];
 
-export default function KpiView({ onShowNotification }: KpiViewProps) {
+export default function KpiPage() {
   const [kpis] = useState<KpiTarget[]>(INITIAL_KPIS);
   const [periodFilter, setPeriodFilter] = useState('2026 Q2');
   const [activeTab, setActiveTab] = useState<'overview' | 'targets'>('overview');
@@ -74,7 +70,7 @@ export default function KpiView({ onShowNotification }: KpiViewProps) {
         </div>
         <div className="flex bg-slate-100 p-1 rounded-lg border border-border shrink-0 self-start sm:self-center">
           <button onClick={() => setActiveTab('overview')} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${activeTab === 'overview' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Overview</button>
-          <button onClick={() => { setActiveTab('targets'); onShowNotification('Mode pengaturan target diaktifkan.', 'success'); }} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${activeTab === 'targets' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Target Settings</button>
+          <button onClick={() => { setActiveTab('targets'); toast.success('Mode pengaturan target diaktifkan.'); }} className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all cursor-pointer ${activeTab === 'targets' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>Target Settings</button>
         </div>
       </div>
 
@@ -90,7 +86,7 @@ export default function KpiView({ onShowNotification }: KpiViewProps) {
                 <option>2025 FY</option>
               </select>
             </div>
-            <button onClick={() => onShowNotification('Laporan KPI sedang diekspor.', 'success')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
+            <button onClick={() => toast.success('Laporan KPI sedang diekspor.')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
               <span className="material-symbols-outlined text-[16px]">file_download</span> Export
             </button>
           </div>
@@ -203,7 +199,7 @@ export default function KpiView({ onShowNotification }: KpiViewProps) {
                 </table>
               </div>
               <div className="p-4 bg-slate-50 border-t border-border flex justify-end">
-                <button onClick={() => onShowNotification('Target KPI baru dapat ditambahkan di fase berikutnya.', 'success')} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer shadow-sm">Tambah Target Baru</button>
+                <button onClick={() => toast.success('Target KPI baru dapat ditambahkan di fase berikutnya.')} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer shadow-sm">Tambah Target Baru</button>
               </div>
             </div>
           )}

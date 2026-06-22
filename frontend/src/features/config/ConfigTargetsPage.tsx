@@ -1,1 +1,259 @@
-export default function ConfigTargetsPage() { return null; }
+import React, { useState } from 'react';
+import { Button, Badge, Card, Input, Select } from '@/components/ui';
+import toast from 'react-hot-toast';
+
+interface TargetConfig {
+  id: string;
+  name: string;
+  category: string;
+  targetValue: number;
+  actualValue: number;
+  unit: string;
+  period: string;
+  description: string;
+}
+
+const INITIAL_TARGETS: TargetConfig[] = [
+  { id: 'TGT-001', name: 'Win Rate', category: 'KPI', targetValue: 75, actualValue: 68.4, unit: '%', period: 'Q2 2026', description: 'Persentase prospek menjadi proyek' },
+  { id: 'TGT-002', name: 'Revenue Target', category: 'KPI', targetValue: 50000000000, actualValue: 42800000000, unit: 'Rp', period: 'Q2 2026', description: 'Target pendapatan triwulan' },
+  { id: 'TGT-003', name: 'Jumlah Proyek', category: 'KPI', targetValue: 25, actualValue: 18, unit: 'unit', period: 'Q2 2026', description: 'Jumlah proyek baru' },
+  { id: 'TGT-004', name: 'Avg Margin', category: 'KPI', targetValue: 18, actualValue: 15.5, unit: '%', period: 'Q2 2026', description: 'Rata-rata margin proyek' },
+  { id: 'TGT-005', name: 'SLA Compliance', category: 'KPI', targetValue: 95, actualValue: 92, unit: '%', period: 'Q2 2026', description: 'Kepatuhan terhadap SLA' },
+  { id: 'TGT-006', name: 'Approval Time', category: 'Approval', targetValue: 24, actualValue: 36, unit: 'jam', period: 'Q2 2026', description: 'Waktu penyelesaian approval' },
+  { id: 'TGT-007', name: 'Customer Satisfaction', category: 'KPI', targetValue: 4.5, actualValue: 4.2, unit: 'skor', period: 'Q2 2026', description: 'Skor kepuasan pelanggan' },
+];
+
+const PERIODS = ['Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026', 'Q1 2027'];
+
+export default function ConfigTargetsPage() {
+  const [targets, setTargets] = useState<TargetConfig[]>(INITIAL_TARGETS);
+  const [selectedPeriod, setSelectedPeriod] = useState('Q2 2026');
+  const [showForm, setShowForm] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<TargetConfig | null>(null);
+  const [formName, setFormName] = useState('');
+  const [formCategory, setFormCategory] = useState('KPI');
+  const [formTargetValue, setFormTargetValue] = useState('');
+  const [formUnit, setFormUnit] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+
+  const filtered = targets.filter(t => t.period === selectedPeriod);
+
+  const handleOpenCreate = () => {
+    setEditingTarget(null);
+    setFormName('');
+    setFormCategory('KPI');
+    setFormTargetValue('');
+    setFormUnit('');
+    setFormDescription('');
+    setShowForm(true);
+  };
+
+  const handleOpenEdit = (t: TargetConfig) => {
+    setEditingTarget(t);
+    setFormName(t.name);
+    setFormCategory(t.category);
+    setFormTargetValue(String(t.targetValue));
+    setFormUnit(t.unit);
+    setFormDescription(t.description);
+    setShowForm(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName || !formTargetValue) {
+      toast.error('Nama dan nilai target wajib diisi.');
+      return;
+    }
+    if (editingTarget) {
+      setTargets(targets.map(t => t.id === editingTarget.id ? { ...t, name: formName, category: formCategory, targetValue: Number(formTargetValue), unit: formUnit, description: formDescription } : t));
+      toast.success(`Target ${formName} berhasil diperbarui.`);
+    } else {
+      const newTarget: TargetConfig = {
+        id: `TGT-${String(targets.length + 1).padStart(3, '0')}`,
+        name: formName,
+        category: formCategory,
+        targetValue: Number(formTargetValue),
+        actualValue: 0,
+        unit: formUnit,
+        period: selectedPeriod,
+        description: formDescription,
+      };
+      setTargets([...targets, newTarget]);
+      toast.success(`Target ${formName} berhasil ditambahkan.`);
+    }
+    setShowForm(false);
+  };
+
+  const formatValue = (t: TargetConfig) => {
+    if (t.unit === 'Rp') return `Rp ${(t.targetValue / 1e9).toFixed(1)}B`;
+    if (t.unit === '%') return `${t.targetValue}%`;
+    if (t.unit === 'skor') return t.targetValue.toFixed(1);
+    return `${t.targetValue} ${t.unit}`;
+  };
+
+  const formatActual = (t: TargetConfig) => {
+    if (t.unit === 'Rp') return `Rp ${(t.actualValue / 1e9).toFixed(1)}B`;
+    if (t.unit === '%') return `${t.actualValue}%`;
+    if (t.unit === 'skor') return t.actualValue.toFixed(1);
+    return `${t.actualValue} ${t.unit}`;
+  };
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
+      <div className="bg-white border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+        <div>
+          <nav className="flex items-center gap-2 mb-1.5 text-xs text-secondary">
+            <span className="font-semibold uppercase tracking-wider">Configuration</span>
+            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span className="text-primary font-bold uppercase tracking-wider">Target</span>
+          </nav>
+          <h2 className="font-display-title text-base font-extrabold text-slate-900">Konfigurasi Target</h2>
+          <p className="text-[11px] text-slate-400 mt-0.5">Atur target KPI dan approval untuk setiap periode.</p>
+        </div>
+        <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>} onClick={handleOpenCreate}>
+          Tambah Target
+        </Button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div className="flex items-center gap-4">
+            <Select
+              label="Periode"
+              options={PERIODS.map(p => ({ value: p, label: p }))}
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Target</p>
+              <p className="text-xl font-extrabold text-slate-800 mt-1">{filtered.length}</p>
+            </div>
+            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Tercapai</p>
+              <p className="text-xl font-extrabold text-success mt-1">{filtered.filter(t => t.actualValue >= t.targetValue).length}</p>
+            </div>
+            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Belum Tercapai</p>
+              <p className="text-xl font-extrabold text-warning mt-1">{filtered.filter(t => t.actualValue < t.targetValue).length}</p>
+            </div>
+            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Avg Achievement</p>
+              <p className="text-xl font-extrabold text-primary mt-1">
+                {filtered.length > 0 ? Math.round(filtered.reduce((s, t) => s + (t.actualValue / t.targetValue) * 100, 0) / filtered.length) : 0}%
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                    <th className="px-6 py-3.5">Target</th>
+                    <th className="px-6 py-3.5">Kategori</th>
+                    <th className="px-6 py-3.5 text-right">Nilai Target</th>
+                    <th className="px-6 py-3.5 text-right">Realisasi</th>
+                    <th className="px-6 py-3.5 text-center">Capaian</th>
+                    <th className="px-6 py-3.5 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filtered.map((t) => {
+                    const pct = Math.round((t.actualValue / t.targetValue) * 100);
+                    return (
+                      <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-slate-800 text-xs">{t.name}</p>
+                          <p className="text-[10px] text-slate-400">{t.description}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${t.category === 'KPI' ? 'bg-primary/10 text-primary' : 'bg-status-purple/10 text-status-purple'}`}>{t.category}</span>
+                        </td>
+                        <td className="px-6 py-4 text-right font-mono font-bold text-slate-800">{formatValue(t)}</td>
+                        <td className="px-6 py-4 text-right font-mono font-bold text-slate-600">{t.actualValue > 0 ? formatActual(t) : '-'}</td>
+                        <td className="px-6 py-4 text-center">
+                          <div className="flex items-center gap-2 justify-center">
+                            <div className="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                              <div className={`h-full rounded-full ${pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
+                            </div>
+                            <span className={`text-[10px] font-bold ${pct >= 100 ? 'text-success' : pct >= 75 ? 'text-warning' : 'text-danger'}`}>{pct}%</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
+                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
+              <span>{filtered.length} target untuk {selectedPeriod}</span>
+              <span>Sandbox environment</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showForm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
+          <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-border bg-slate-50 flex items-center justify-between">
+              <div>
+                <h3 className="font-display-title text-sm font-extrabold text-slate-800">{editingTarget ? 'Edit Target' : 'Tambah Target Baru'}</h3>
+                <p className="text-[10px] text-slate-400 mt-1">Periode: {selectedPeriod}</p>
+              </div>
+              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-xs">
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700 block">Nama Target *</label>
+                <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Win Rate" required />
+              </div>
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700 block">Kategori</label>
+                <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                  <option value="KPI">KPI</option>
+                  <option value="Approval">Approval</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="font-semibold text-slate-700 block">Nilai Target *</label>
+                  <input type="number" value={formTargetValue} onChange={e => setFormTargetValue(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" step="any" required />
+                </div>
+                <div className="space-y-2">
+                  <label className="font-semibold text-slate-700 block">Satuan</label>
+                  <select value={formUnit} onChange={e => setFormUnit(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                    <option value="%">%</option>
+                    <option value="Rp">Rupiah</option>
+                    <option value="unit">Unit</option>
+                    <option value="jam">Jam</option>
+                    <option value="skor">Skor</option>
+                    <option value="hari">Hari</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700 block">Deskripsi</label>
+                <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi target" />
+              </div>
+            </form>
+            <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Cancel</button>
+              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingTarget ? 'Simpan Perubahan' : 'Buat Target'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

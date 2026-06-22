@@ -1,1 +1,160 @@
-export default function HargaTab() { return null; }
+import { useState } from 'react';
+import type { Project } from '@/types/domain';
+import { INITIAL_PROJECTS, COMPETITORS } from '@/services/mock-data';
+import { formatCurrency } from '@/utils/formatters';
+import toast from 'react-hot-toast';
+import { Card, Button, Input, Table } from '@/components/ui';
+import type { Column } from '@/components/ui';
+
+interface TabProps {
+  project?: Project;
+  onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
+}
+
+interface CompetitorRow {
+  id: string;
+  name: string;
+  estPrice: number;
+  advantages: string[];
+  notes: string;
+}
+
+export default function HargaTab({ project: propProject }: TabProps) {
+  const project = propProject || INITIAL_PROJECTS[0];
+  const [hargaPenawaran, setHargaPenawaran] = useState(project.pricing?.value || 1250000000);
+  const [marginPercentage, setMarginPercentage] = useState(project.pricing?.margin || 12.5);
+  const [pricingNotes, setPricingNotes] = useState(project.pricing?.note || '');
+  const [competitors, setCompetitors] = useState<CompetitorRow[]>(COMPETITORS);
+  const [newCompName, setNewCompName] = useState('');
+  const [newCompPrice, setNewCompPrice] = useState('');
+  const [newCompAdv, setNewCompAdv] = useState('');
+  const [newCompNote, setNewCompNote] = useState('');
+
+  const handleSavePricing = () => {
+    toast.success('Draf harga penawaran berhasil diperbarui!');
+  };
+
+  const handleAddCompetitor = () => {
+    if (!newCompName) { toast.error('Nama kompetitor harus diisi.'); return; }
+    const newItem: CompetitorRow = {
+      id: String(competitors.length + 1),
+      name: newCompName,
+      estPrice: Number(newCompPrice) || 0,
+      advantages: newCompAdv ? newCompAdv.split(',').map(s => s.trim()) : ['BIM Integration'],
+      notes: newCompNote || '-'
+    };
+    setCompetitors(prev => [...prev, newItem]);
+    setNewCompName(''); setNewCompPrice(''); setNewCompAdv(''); setNewCompNote('');
+    toast.success(`Kompetitor ${newItem.name} berhasil ditambahkan`);
+  };
+
+  const grossMargin = (hargaPenawaran * marginPercentage) / 100;
+  const cogs = hargaPenawaran - grossMargin;
+
+  const competitorColumns: Column<CompetitorRow>[] = [
+    { key: 'name', header: 'Nama Kompetitor', render: (row) => <span className="font-semibold">{row.name}</span> },
+    { key: 'estPrice', header: 'Estimasi Harga', align: 'right', render: (row) => <span className="font-mono">{formatCurrency(row.estPrice)}</span> },
+    { key: 'advantages', header: 'Kelebihan', render: (row) => (
+      <span className="bg-status-indigo/10 text-status-indigo px-2.5 py-0.5 rounded text-xs font-semibold">{row.advantages.join(', ')}</span>
+    )},
+    { key: 'notes', header: 'Keterangan', render: (row) => <span className="text-secondary text-xs">{row.notes}</span> },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 bg-white border border-border rounded-xl shadow-sm p-6 space-y-6">
+          <h3 className="font-heading-section text-heading-section">Rincian Nilai Penawaran</h3>
+          <div className="grid grid-cols-2 gap-6 text-sm">
+            <div className="space-y-2 col-span-2 sm:col-span-1">
+              <label className="font-semibold text-on-surface-variant block">Harga Penawaran (Rp)*</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary font-semibold font-mono">Rp</span>
+                <input
+                  value={hargaPenawaran}
+                  onChange={e => setHargaPenawaran(Number(e.target.value))}
+                  className="w-full border border-border rounded-lg pl-10 pr-4 py-3 font-mono"
+                  type="number"
+                />
+              </div>
+            </div>
+            <div className="space-y-2 col-span-2 sm:col-span-1">
+              <label className="font-semibold text-on-surface-variant block">Margin (%)*</label>
+              <div className="relative">
+                <input
+                  value={marginPercentage}
+                  onChange={e => setMarginPercentage(Number(e.target.value))}
+                  className="w-full border border-border rounded-lg px-4 py-3 font-mono"
+                  type="number"
+                  step="0.1"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary font-mono">%</span>
+              </div>
+            </div>
+            <div className="space-y-2 col-span-2">
+              <label className="font-semibold text-on-surface-variant block">Catatan Harga</label>
+              <textarea
+                value={pricingNotes}
+                onChange={e => setPricingNotes(e.target.value)}
+                rows={3}
+                className="w-full border border-border rounded-lg p-3 outline-none focus:ring-1 focus:ring-primary resize-none"
+              />
+            </div>
+          </div>
+          <div className="border-t border-border pt-4 flex justify-end">
+            <Button onClick={handleSavePricing} leftIcon={<span className="material-symbols-outlined text-sm">save</span>}>
+              Simpan Perubahan
+            </Button>
+          </div>
+        </div>
+
+        <div className="lg:col-span-4 bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
+          <div className="bg-primary-container p-6 text-on-primary-container">
+            <h4 className="font-semibold uppercase tracking-widest text-xs opacity-80 mb-2">Ringkasan Finansial</h4>
+            <div className="text-3xl font-display-title font-bold text-white">{formatCurrency(hargaPenawaran)}</div>
+            <p className="text-xs mt-1 italic text-white/80">*Belum termasuk pajak PPN</p>
+          </div>
+          <div className="p-6 space-y-3 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-secondary font-semibold">Gross Margin ({marginPercentage}%)</span>
+              <span className="text-on-surface font-semibold text-success">{formatCurrency(grossMargin)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-secondary font-semibold">Estimasi COGS</span>
+              <span className="text-on-surface font-semibold">{formatCurrency(cogs)}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-border p-6 rounded-xl shadow-sm">
+        <h3 className="font-heading-section text-heading-section mb-4">Perbandingan Harga Kompetitor</h3>
+        <Table
+          columns={competitorColumns}
+          data={competitors}
+          keyExtractor={(row) => (row as CompetitorRow).id}
+          emptyState={<p className="text-sm text-secondary">Belum ada data kompetitor</p>}
+        />
+        <div className="mt-4 pt-4 border-t border-border grid grid-cols-12 gap-3 items-end">
+          <div className="col-span-12 sm:col-span-3">
+            <Input label="Nama Kompetitor" value={newCompName} onChange={e => setNewCompName(e.target.value)} placeholder="Nama kompetitor..." />
+          </div>
+          <div className="col-span-12 sm:col-span-3">
+            <Input label="Estimasi Harga" value={newCompPrice} onChange={e => setNewCompPrice(e.target.value)} placeholder="Contoh: 142500000000" type="number" />
+          </div>
+          <div className="col-span-12 sm:col-span-3">
+            <Input label="Kelebihan" value={newCompAdv} onChange={e => setNewCompAdv(e.target.value)} placeholder="Pisahkan dengan koma" />
+          </div>
+          <div className="col-span-12 sm:col-span-2">
+            <Input label="Catatan" value={newCompNote} onChange={e => setNewCompNote(e.target.value)} placeholder="Catatan..." />
+          </div>
+          <div className="col-span-12 sm:col-span-1">
+            <Button onClick={handleAddCompetitor} size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>}>
+              Tambah
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,10 +1,18 @@
 import { create } from 'zustand';
 
+export interface AuthUser {
+  name?: string;
+  fullName?: string;
+  roleName?: string;
+  email?: string;
+  avatarUrl?: string;
+}
+
 interface AuthState {
-  user: unknown | null;
+  user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (token: string, user: unknown) => void;
+  login: (token: string, user: AuthUser) => void;
   logout: () => void;
 }
 

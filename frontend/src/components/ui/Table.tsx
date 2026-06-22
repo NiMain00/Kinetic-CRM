@@ -18,7 +18,8 @@ interface TableProps<T> {
   isLoading?: boolean;
 }
 
-export default function Table<T extends Record<string, unknown>>({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default function Table<T = any>({
   columns,
   data,
   keyExtractor,
@@ -90,7 +91,7 @@ export default function Table<T extends Record<string, unknown>>({
             >
               {columns.map((col) => (
                 <td key={col.key} className={`px-6 py-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}>
-                  {col.render ? col.render(row) : String(row[col.key] ?? '')}
+                  {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                 </td>
               ))}
             </tr>

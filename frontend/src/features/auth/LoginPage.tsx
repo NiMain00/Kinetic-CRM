@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '@/stores/authStore';
 
-interface LoginViewProps {
-  onLoginSuccess: (userData: { fullName: string; email: string; roleName: string; avatarUrl?: string }) => void;
-  onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
-}
-
-export default function LoginView({ onLoginSuccess, onShowNotification }: LoginViewProps) {
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,12 +15,28 @@ export default function LoginView({ onLoginSuccess, onShowNotification }: LoginV
   // Ready-to-use dummy account presets
   const DUMMY_ACCOUNTS = [
     {
+      label: 'Eko Prasetyo (Super Admin)',
+      username: 'eko.admin',
+      password: 'admin123',
+      fullName: 'Eko Prasetyo',
+      roleName: 'Super Admin',
+      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-1'
+    },
+    {
       label: 'Alexander Pierce (Branch Manager)',
       username: 'a.pierce@kinetic-corp.com',
       password: 'password123',
       fullName: 'Alexander Pierce',
       roleName: 'Branch Manager',
       avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWDEhx9DDyQcza1Ly6ob2GvUr0RcKFg_ZWPWDX3R89h599PQ2OzX6K21-q2Bb6wr08y-sjWBdJ0UmyRJEjaEB7mRRTEILqTd1oApCKVAcFeJesIsCQ52_trToPbTyXHoo1Ed8D8c6Z0inMzS44qG749ofXtaBpSw-btx_MFUMYLzJsAg_aaXXLqufa_N2Jw2s6ca5NfTPTnJJf0CH5RFHVv38b591w568UukqO4CLBCdt0GAI6TWz8IG_d8Fg4dMoJ1zEMVwF3E3rs'
+    },
+    {
+      label: 'Doni Wahyudi (Admin)',
+      username: 'doni.admin',
+      password: 'admin456',
+      fullName: 'Doni Wahyudi',
+      roleName: 'Admin',
+      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-2'
     },
     {
       label: 'Sarah Jenkins (Project Officer)',
@@ -31,26 +47,26 @@ export default function LoginView({ onLoginSuccess, onShowNotification }: LoginV
       avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/female-prof-1'
     },
     {
-      label: 'Guest Viewer (Access Minimal)',
+      label: 'Guest Viewer (Akses Minimal)',
       username: 'viewer_guest',
       password: 'guestPasswordOnly',
       fullName: 'Rian Hidayat',
-      roleName: 'Commercial Analyst',
-      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-2'
+      roleName: 'Staff',
+      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-3'
     }
   ];
 
   const handleSelectPreset = (preset: typeof DUMMY_ACCOUNTS[0]) => {
     setUsername(preset.username);
     setPassword(preset.password);
-    onShowNotification(`Kredensial untuk ${preset.fullName} berhasil dimuat.`, 'success');
+    toast.success(`Kredensial untuk ${preset.fullName} berhasil dimuat.`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username.trim() || !password.trim()) {
-      onShowNotification('Harap masukkan username/surel dan password.', 'warning');
+      toast.error('Harap masukkan username/surel dan password.');
       return;
     }
 
@@ -69,26 +85,24 @@ export default function LoginView({ onLoginSuccess, onShowNotification }: LoginV
 
       // Allow login with any credentials but default to Alexander Pierce if custom
       if (matchedUser) {
-        onLoginSuccess({
+        login('mock-token', {
           fullName: matchedUser.fullName,
+          name: matchedUser.fullName,
           email: matchedUser.username,
           roleName: matchedUser.roleName,
           avatarUrl: matchedUser.avatarUrl,
         });
-        onShowNotification(`Selamat datang kembali, ${matchedUser.fullName}! Berhasil masuk sebagai ${matchedUser.roleName}.`, 'success');
+        navigate('/dashboard');
+        toast.success(`Selamat datang kembali, ${matchedUser.fullName}! Berhasil masuk sebagai ${matchedUser.roleName}.`);
       } else {
-        // Dynamic fallback logic so they can test custom accounts too
         if (password.length >= 6) {
           const autoName = username.split('@')[0];
           const capitalized = autoName.charAt(0).toUpperCase() + autoName.slice(1);
-          onLoginSuccess({
-            fullName: capitalized,
-            email: username,
-            roleName: 'Custom Enterprise User',
-          });
-          onShowNotification(`Login Berhasil (Akun Kustom)! Selamat datang, ${capitalized}.`, 'success');
+          login('mock-token', { fullName: capitalized, name: capitalized, email: username, roleName: 'Custom Enterprise User' });
+          navigate('/dashboard');
+          toast.success(`Login Berhasil (Akun Kustom)! Selamat datang, ${capitalized}.`);
         } else {
-          onShowNotification('Login gagal. Password harus minimal 6 karakter untuk akun kustom atau pilih akun dummy yang tersedia.', 'error');
+          toast.error('Login gagal. Password harus minimal 6 karakter untuk akun kustom atau pilih akun dummy yang tersedia.');
         }
       }
     }, 1000);
@@ -191,7 +205,7 @@ export default function LoginView({ onLoginSuccess, onShowNotification }: LoginV
                   <button
                     type="button"
                     onClick={() => {
-                      onShowNotification('Fitur reset password hanya tersedia via admin regional cabang.', 'warning');
+                      toast.error('Fitur reset password hanya tersedia via admin regional cabang.');
                     }}
                     className="text-[11.5px] font-semibold text-primary hover:underline cursor-pointer"
                   >

@@ -7,11 +7,11 @@ import { StatusBadge } from '@/components/shared';
 import { Button, Input, Card } from '@/components/ui';
 
 const statusTabs = [
-  { id: 'all', label: 'All Projects' },
+  { id: 'all', label: 'Semua Proyek' },
   { id: 'RKS', label: 'RKS' },
   { id: 'LPHS/SIOS', label: 'LPHS/SIOS' },
   { id: 'Input Harga', label: 'Input Harga' },
-  { id: 'Executing', label: 'Executing' },
+  { id: 'Executing', label: 'Eksekusi' },
   { id: 'Target Delivery', label: 'Target Delivery' },
 ];
 
@@ -51,8 +51,8 @@ export default function ProjectListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display-title text-display-title text-on-surface">Projects</h2>
-          <p className="text-secondary font-body-main mt-1">Manage and monitor all active projects</p>
+          <h2 className="font-display-title text-display-title text-on-surface">Proyek</h2>
+          <p className="text-secondary font-body-main mt-1">Kelola dan pantau semua proyek aktif</p>
         </div>
         <Button
           variant="primary"
@@ -60,7 +60,7 @@ export default function ProjectListPage() {
           leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
           onClick={() => navigate('/projects/new')}
         >
-          New Project
+          Proyek Baru
         </Button>
       </div>
 
@@ -84,7 +84,7 @@ export default function ProjectListPage() {
       {/* Search */}
       <div className="max-w-sm">
         <Input
-          placeholder="Search by name, client, code..."
+          placeholder="Cari berdasarkan nama, klien, kode..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           leftIcon={<span className="material-symbols-outlined">search</span>}
@@ -94,11 +94,11 @@ export default function ProjectListPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card padding="sm">
-          <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Projects</p>
+          <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Proyek</p>
           <p className="text-2xl font-bold text-on-surface mt-1">{projects.length}</p>
         </Card>
         <Card padding="sm">
-          <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Value</p>
+          <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Nilai</p>
           <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrency(projects.reduce((s, p) => s + p.estimatedValue, 0))}</p>
         </Card>
         <Card padding="sm">
@@ -117,19 +117,19 @@ export default function ProjectListPage() {
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="bg-surface-container-low border-b border-border">
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Code</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Project Name</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Client</th>
+                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Kode</th>
+                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Nama Proyek</th>
+                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Klien</th>
                 <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Value</th>
+                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Nilai</th>
                 <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Progress</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Tanggal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-outline text-sm">No projects found</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-outline text-sm">Tidak ada proyek ditemukan</td>
                 </tr>
               ) : (
                 filtered.map((project) => (

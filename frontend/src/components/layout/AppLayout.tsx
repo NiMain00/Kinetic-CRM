@@ -7,79 +7,69 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 
-const routeToTabId: Record<string, string> = {
-  '/dashboard': 'dashboard',
-  '/prospects': 'prospects',
-  '/projects': 'projects',
-  '/approvals': 'approvals',
-  '/kpi': 'kpi',
-  '/reports': 'reports',
-  '/master-data': 'master_data',
-  '/users': 'users',
-  '/audit': 'audit',
-  '/notifications': 'notifications',
-  '/config': 'config_org',
-  '/config/org': 'config_org',
-  '/config/status': 'config_status',
-  '/config/notifications': 'config_notifications',
-  '/config/sla': 'config_sla',
-};
-
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { unreadCount } = useNotificationStore();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const pathPrefix = '/' + location.pathname.split('/')[1];
-  const activeTab = routeToTabId[location.pathname] || routeToTabId[pathPrefix] || 'dashboard';
+  const userRole = (user as { roleName?: string })?.roleName || 'Staff';
+  const userName = (user as { name?: string })?.name || (user as { fullName?: string })?.fullName || 'Alexander Pierce';
 
-  const handleNavigate = (tabId: string) => {
-    const pathMap: Record<string, string> = {
-      dashboard: '/dashboard',
-      prospects: '/prospects',
-      projects: '/projects',
-      approvals: '/approvals',
-      kpi: '/kpi',
-      reports: '/reports',
-      master_data: '/master-data',
-      users: '/users',
-      audit: '/audit',
-      notifications: '/notifications',
-      config_org: '/config/org',
-      config_status: '/config/status',
-      config_notifications: '/config/notifications',
-      config_sla: '/config/sla',
-    };
-    navigate(pathMap[tabId] || '/dashboard');
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setMobileSidebarOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-surface">
-      {/* Sidebar - visible on desktop, slide-in on mobile */}
+      {/* Mobile sidebar overlay */}
+      {mobileSidebarOpen && (
+        <Sidebar
+          activeTab={location.pathname}
+          setActiveTab={handleNavigate}
+          collapsed={false}
+          setCollapsed={() => {}}
+          pendingApprovalsCount={3}
+          onLogout={handleLogout}
+          userRole={userRole}
+          mobile
+          onClose={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Desktop sidebar */}
       <div className={`hidden md:flex ${sidebarOpen ? 'w-72' : 'w-20'} transition-all duration-300 shrink-0`}>
         <Sidebar
-          activeTab={activeTab}
+          activeTab={location.pathname}
           setActiveTab={handleNavigate}
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
           pendingApprovalsCount={3}
-          onLogout={() => { logout(); navigate('/login'); }}
+          onLogout={handleLogout}
+          userRole={userRole}
         />
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
         <Topbar
-          userName={(user as { name?: string })?.name || 'Alexander Pierce'}
-          roleName="User"
+          userName={userName}
+          roleName={userRole}
           notificationCount={unreadCount}
           onNotificationsClick={() => navigate('/notifications')}
           onProfileClick={() => navigate('/profile')}
+          onMenuClick={() => setMobileSidebarOpen(true)}
         />
         <Breadcrumb />
         <main className="flex-1 overflow-y-auto bg-surface-container-low">
-          <div className="p-6 lg:p-8">
+          <div className="p-4 lg:p-8">
             <Outlet />
           </div>
         </main>
