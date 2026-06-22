@@ -126,8 +126,8 @@ export default function UserDetailPage() {
             <span className="material-symbols-outlined text-primary text-[20px]">history</span>
             Aktivitas Terbaru
           </h3>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs" aria-label="Aktivitas pengguna">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-left text-xs table-auto" aria-label="Aktivitas pengguna">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">
                   <th className="px-4 py-3 font-semibold">Waktu</th>
@@ -142,7 +142,7 @@ export default function UserDetailPage() {
                   <tr key={log.id} className="hover:bg-surface-container-low transition-colors">
                     <td className="px-4 py-3 font-mono text-outline">{log.timestamp}</td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${actionBadge[log.action] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{log.action}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${actionBadge[log.action] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{log.action}</span>
                     </td>
                     <td className="px-4 py-3">
                       <span className="font-semibold text-on-surface">{log.entityName}</span>

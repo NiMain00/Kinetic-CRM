@@ -96,8 +96,8 @@ export default function MasterCategoryPage() {
           </Card>
 
           <Card padding="none">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left" role="table" aria-label="Daftar Kategori Proyek">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Kategori Proyek">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama</th>
@@ -123,7 +123,7 @@ export default function MasterCategoryPage() {
                         <td className="px-6 py-4 text-slate-500 max-w-[200px] truncate">{c.description}</td>
                         <td className="px-6 py-4 text-center"><Badge variant={c.requires_lphs ? 'success' : 'default'}>{c.requires_lphs ? 'Ya' : 'Tidak'}</Badge></td>
                         <td className="px-6 py-4 text-center"><Badge variant={c.requires_rks ? 'success' : 'default'}>{c.requires_rks ? 'Ya' : 'Tidak'}</Badge></td>
-                        <td className="px-6 py-4"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase">{c.default_workflow_type}</span></td>
+                        <td className="px-6 py-4"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold uppercase badge-compact">{c.default_workflow_type}</span></td>
                         <td className="px-6 py-4 text-center"><span className="inline-block w-5 h-5 rounded-full border border-slate-200" style={{ backgroundColor: c.color_hex }} title={c.color_hex} /></td>
                         <td className="px-6 py-4 text-center text-slate-500">{c.sort_order}</td>
                         <td className="px-6 py-4 text-center">
@@ -132,7 +132,7 @@ export default function MasterCategoryPage() {
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined text-[18px]">edit</span></button>
+                          <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
                         </td>
                       </tr>
                     ))

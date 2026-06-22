@@ -148,8 +148,8 @@ export default function ConfigTargetsPage() {
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Target</th>
@@ -170,7 +170,7 @@ export default function ConfigTargetsPage() {
                           <p className="text-[10px] text-slate-400">{t.description}</p>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${t.category === 'KPI' ? 'bg-primary/10 text-primary' : 'bg-status-purple/10 text-status-purple'}`}>{t.category}</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${t.category === 'KPI' ? 'bg-primary/10 text-primary' : 'bg-status-purple/10 text-status-purple'}`}>{t.category}</span>
                         </td>
                         <td className="px-6 py-4 text-right font-mono font-bold text-slate-800">{formatValue(t)}</td>
                         <td className="px-6 py-4 text-right font-mono font-bold text-slate-600">{t.actualValue > 0 ? formatActual(t) : '-'}</td>
@@ -183,8 +183,8 @@ export default function ConfigTargetsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
-                            <span className="material-symbols-outlined text-[18px]">edit</span>
+                          <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
+                            <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                           </button>
                         </td>
                       </tr>

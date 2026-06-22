@@ -75,8 +75,8 @@ export default function ProspectListPage() {
 
         {/* Table */}
         <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm" aria-label="Daftar Prospek">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-left border-collapse text-sm table-auto" aria-label="Daftar Prospek">
               <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Nama Prospek</th>
@@ -104,11 +104,11 @@ export default function ProspectListPage() {
                       </td>
                       <td className="px-6 py-4 text-secondary">{row.client}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBadge(row.status)}`}>{row.status}</span>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider badge-compact ${statusBadge(row.status)}`}>{row.status}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">{row.author.charAt(0)}</div>
+                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary avatar-compact">{row.author.charAt(0)}</div>
                           <span className="text-on-surface text-xs">{row.author}</span>
                         </div>
                       </td>

@@ -163,8 +163,8 @@ export default function KpiPage() {
                 <h4 className="text-xs font-bold text-slate-800">KPI Target Configuration</h4>
                 <p className="text-[10px] text-slate-400 mt-0.5">Atur target KPI untuk setiap kategori dan periode.</p>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
+              <div className="overflow-x-auto table-mobile-compact">
+                <table className="w-full text-xs text-left table-auto">
                   <thead>
                     <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                       <th className="px-6 py-3.5">KPI Name</th>
@@ -191,7 +191,7 @@ export default function KpiPage() {
                             <span className="text-[10px] font-bold text-slate-500 w-8 text-right">{getProgress(kpi)}%</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${statusConfig[kpi.status].color}`}>{statusConfig[kpi.status].label}</span></td>
+                        <td className="px-6 py-4 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${statusConfig[kpi.status].color}`}>{statusConfig[kpi.status].label}</span></td>
                         <td className="px-6 py-4 text-slate-400 font-mono text-[10px]">{kpi.period}</td>
                       </tr>
                     ))}

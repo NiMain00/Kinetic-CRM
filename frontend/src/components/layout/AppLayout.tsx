@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
@@ -14,6 +14,10 @@ export default function AppLayout() {
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { unreadCount } = useNotificationStore();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   const userRole = (user as { roleName?: string })?.roleName || 'Staff';
   const userName = (user as { name?: string })?.name || (user as { fullName?: string })?.fullName || 'Alexander Pierce';
@@ -69,7 +73,7 @@ export default function AppLayout() {
         />
         <Breadcrumb />
         <main className="flex-1 overflow-y-auto bg-surface-container-low">
-          <div className="p-4 lg:p-8">
+          <div className="p-4 sm:p-6 lg:p-8">
             <Outlet />
           </div>
         </main>

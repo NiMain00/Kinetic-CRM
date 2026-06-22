@@ -148,8 +148,8 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Pengguna</th>
@@ -169,14 +169,14 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                       <tr key={u.id} className="hover:bg-slate-50/65 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">{u.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs avatar-compact">{u.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
                             <div>
                               <p className="font-bold text-slate-800 text-xs">{u.fullName}</p>
                               <p className="text-[10px] text-slate-400">{u.email} • @{u.username}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${roleBadgeClass(u.role)}`}>{u.role}</span></td>
+                        <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${roleBadgeClass(u.role)}`}>{u.role}</span></td>
                         <td className="px-6 py-4 text-slate-600">{u.branch}</td>
                         <td className="px-6 py-4 text-slate-600">{u.department}</td>
                         <td className="px-6 py-4 text-center">
@@ -187,8 +187,8 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                         <td className="px-6 py-4 text-slate-400 text-[10px] font-mono">{u.lastLogin || '-'}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
-                            <button onClick={() => handleOpenEdit(u)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined text-[18px]">edit</span></button>
-                            <button onClick={() => handleDelete(u.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                            <button onClick={() => handleOpenEdit(u)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
+                            <button onClick={() => handleDelete(u.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer btn-compact" title="Hapus"><span className="material-symbols-outlined text-[18px] icon-compact">delete</span></button>
                           </div>
                         </td>
                       </tr>

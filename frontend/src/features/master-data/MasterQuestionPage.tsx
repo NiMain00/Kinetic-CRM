@@ -102,8 +102,8 @@ export default function MasterQuestionPage() {
           </Card>
 
           <Card padding="none">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left" role="table" aria-label="Daftar Pertanyaan">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Pertanyaan">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Pertanyaan</th>
@@ -132,7 +132,7 @@ export default function MasterQuestionPage() {
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => openEdit(q)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined text-[18px]">edit</span></button>
+                          <button onClick={() => openEdit(q)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
                         </td>
                       </tr>
                     ))

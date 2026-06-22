@@ -316,8 +316,8 @@ export default function KPIProgressPage() {
               <h4 className="font-bold text-slate-800 text-xs">Department Breakdown</h4>
               <p className="text-[10px] text-slate-400 mt-0.5">Rincian progress KPI per departemen</p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left" aria-label="Tabel breakdown departemen">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto" aria-label="Tabel breakdown departemen">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Department</th>

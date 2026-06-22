@@ -99,8 +99,8 @@ export default function AuditLogPage() {
       </Card>
 
       <Card padding="none">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto table-mobile-compact">
+          <table className="w-full text-left text-sm table-auto">
             <thead>
               <tr className="bg-surface-container-low border-b border-border">
                 <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Waktu</th>
@@ -123,7 +123,7 @@ export default function AuditLogPage() {
                     <td className="px-6 py-4 text-xs text-outline font-mono">{log.timestamp}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">{log.actorInitials}</span>
+                        <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold avatar-compact">{log.actorInitials}</span>
                         <span className="font-medium text-on-surface text-xs">{log.actor}</span>
                       </div>
                     </td>
@@ -133,7 +133,7 @@ export default function AuditLogPage() {
                       <p className="text-[10px] text-outline">{log.entityType}</p>
                     </td>
                     <td className="px-6 py-4 text-xs text-secondary max-w-[250px] truncate">{log.summary}</td>
-                    <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${impactColor(log.impact)}`}>{log.impact}</span></td>
+                    <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${impactColor(log.impact)}`}>{log.impact}</span></td>
                     <td className="px-6 py-4 text-[10px] text-outline font-mono">{log.ipAddress || '-'}</td>
                   </tr>
                 ))

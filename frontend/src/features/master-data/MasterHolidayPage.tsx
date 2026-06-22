@@ -109,8 +109,8 @@ export default function MasterHolidayPage() {
           </Card>
 
           <Card padding="none">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left" role="table" aria-label="Daftar Hari Libur">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Hari Libur">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Libur</th>
@@ -132,8 +132,8 @@ export default function MasterHolidayPage() {
                         <td className="px-6 py-4 font-mono text-slate-500">{h.year}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
-                            <button onClick={() => openEdit(h)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined text-[18px]">edit</span></button>
-                            <button onClick={() => handleDelete(h.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined text-[18px]">delete</span></button>
+                            <button onClick={() => openEdit(h)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                            <button onClick={() => handleDelete(h.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                           </div>
                         </td>
                       </tr>

@@ -657,7 +657,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Nama</th>
@@ -725,7 +725,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -768,7 +768,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -819,7 +819,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -868,7 +868,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Urutan</th>
@@ -923,7 +923,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -986,7 +986,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
               <div className="lg:col-span-7 bg-white rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
                 <div className="overflow-x-auto text-left">
-                  <table className="w-full text-xs">
+                  <table className="w-full text-xs table-auto table-mobile-compact">
                     <thead>
                       <tr className="bg-slate-50 border-b border-border">
                         <th className="p-3 w-8 text-center">#</th>
@@ -1086,7 +1086,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden text-left">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -1135,7 +1135,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -1190,7 +1190,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Tanggal</th>
@@ -1235,7 +1235,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
@@ -1282,7 +1282,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-4 w-12 text-center">No</th>
@@ -1345,7 +1345,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden animate-fade-in">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-4">Nama Lengkap</th>
@@ -1395,7 +1395,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-              <table className="w-full text-xs">
+              <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border font-bold">
                     <th className="p-4">Timestamp Log</th>

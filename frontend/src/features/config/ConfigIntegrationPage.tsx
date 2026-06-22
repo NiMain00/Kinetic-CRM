@@ -86,8 +86,8 @@ export default function ConfigIntegrationPage() {
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Konektor</th>
@@ -104,7 +104,7 @@ export default function ConfigIntegrationPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                            <span className="material-symbols-outlined text-lg">{TYPE_ICONS[c.type] || 'api'}</span>
+                            <span className="material-symbols-outlined text-lg icon-compact">{TYPE_ICONS[c.type] || 'api'}</span>
                           </div>
                           <div>
                             <p className="font-bold text-slate-800 text-xs">{c.name}</p>
@@ -113,19 +113,19 @@ export default function ConfigIntegrationPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold">{c.type}</span>
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold badge-compact">{c.type}</span>
                       </td>
                       <td className="px-6 py-4">
                         <Badge variant={STATUS_BADGE[c.status]} size="sm">{c.status === 'connected' ? 'Terhubung' : c.status === 'disconnected' ? 'Terputus' : 'Error'}</Badge>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <button onClick={() => handleToggle(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${c.active ? 'bg-success' : 'bg-slate-300'}`}>
+                        <button onClick={() => handleToggle(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${c.active ? 'bg-success' : 'bg-slate-300'}`}>
                           <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${c.active ? 'translate-x-2' : '-translate-x-2'}`}></span>
                         </button>
                       </td>
                       <td className="px-6 py-4 text-slate-400 text-[10px] font-mono">{c.lastTested || '-'}</td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleTestConnection(c.id)} className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-[10px] font-bold hover:bg-primary/20 transition-colors cursor-pointer">
+                        <button onClick={() => handleTestConnection(c.id)} className="px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-[10px] font-bold hover:bg-primary/20 transition-colors cursor-pointer btn-compact">
                           Test Koneksi
                         </button>
                       </td>

@@ -77,8 +77,8 @@ export default function UserListPage() {
 
         {/* Table */}
         <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm" aria-label="Daftar Pengguna">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-left text-sm table-auto" aria-label="Daftar Pengguna">
               <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Nama</th>

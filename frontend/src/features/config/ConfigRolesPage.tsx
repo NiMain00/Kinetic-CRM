@@ -105,8 +105,8 @@ export default function ConfigRolesPage() {
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-4 py-3.5 sticky left-0 bg-slate-50 z-10">Role</th>
@@ -121,7 +121,7 @@ export default function ConfigRolesPage() {
                     <tr key={r.id} className="hover:bg-slate-50/65 transition-colors">
                       <td className="px-4 py-3 sticky left-0 bg-white z-10">
                         <div className="flex flex-col">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit badge-compact ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
                           <span className="text-[9px] text-slate-400 mt-0.5">{r.description}</span>
                         </div>
                       </td>
@@ -138,8 +138,8 @@ export default function ConfigRolesPage() {
                       ))}
                       <td className="px-4 py-3 text-right">
                         <div className="flex gap-1 justify-end">
-                          <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer">All</button>
-                          <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer">None</button>
+                          <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer btn-compact">All</button>
+                          <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer btn-compact">None</button>
                         </div>
                       </td>
                     </tr>

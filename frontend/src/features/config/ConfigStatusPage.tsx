@@ -110,8 +110,8 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             <h4 className="font-heading-section text-heading-section text-on-surface text-base">Daftar Status</h4>
           </div>
 
-          <div className="overflow-x-auto text-sm">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto text-sm table-mobile-compact">
+            <table className="w-full text-left border-collapse table-auto">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">
                   <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">No</th>
@@ -128,7 +128,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                     <td className="px-6 py-4 font-label-sm font-bold text-on-surface font-mono">{row.code}</td>
                     <td className="px-6 py-4">
                       <span
-                        className="px-3 py-1 rounded-full text-xs font-semibold border"
+                        className="px-3 py-1 rounded-full text-xs font-semibold border badge-compact"
                         style={{ backgroundColor: `${row.color}15`, color: row.color, borderColor: `${row.color}35` }}
                       >
                         {row.label}
@@ -144,9 +144,9 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                       <div className="flex items-center justify-end gap-2 text-xs">
                         <button
                           onClick={() => onShowNotification('Aksi modifikasi status ini ditangguhkan.', 'success')}
-                          className="p-1 text-primary hover:bg-slate-100 rounded-lg text-lg"
+                          className="p-1 text-primary hover:bg-slate-100 rounded-lg text-lg btn-compact"
                         >
-                          <span className="material-symbols-outlined">edit</span>
+                          <span className="material-symbols-outlined icon-compact">edit</span>
                         </button>
                       </div>
                     </td>

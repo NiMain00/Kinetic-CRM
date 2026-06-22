@@ -89,8 +89,8 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama SLA</th>
@@ -106,17 +106,17 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
                   {configs.map(c => (
                     <tr key={c.id} className="hover:bg-slate-50/65 transition-colors">
                       <td className="px-6 py-4 font-bold text-slate-800">{c.name}</td>
-                      <td className="px-6 py-4"><span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-semibold text-slate-600">{ENTITY_LABELS[c.entityType] || c.entityType}</span></td>
+                      <td className="px-6 py-4"><span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-semibold text-slate-600 badge-compact">{ENTITY_LABELS[c.entityType] || c.entityType}</span></td>
                       <td className="px-6 py-4 text-right font-mono font-bold text-warning">{c.warningThreshold} {c.unit === 'hours' ? 'h' : 'd'}</td>
                       <td className="px-6 py-4 text-right font-mono font-bold text-danger">{c.criticalThreshold} {c.unit === 'hours' ? 'h' : 'd'}</td>
-                      <td className="px-6 py-4"><span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold">{c.escalationRole}</span></td>
+                      <td className="px-6 py-4"><span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold badge-compact">{c.escalationRole}</span></td>
                       <td className="px-6 py-4 text-center">
-                        <button onClick={() => handleToggle(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${c.active ? 'bg-success' : 'bg-slate-300'}`}>
+                        <button onClick={() => handleToggle(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${c.active ? 'bg-success' : 'bg-slate-300'}`}>
                           <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${c.active ? 'translate-x-2' : '-translate-x-2'}`}></span>
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleOpenEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined text-[18px]">edit</span></button>
+                        <button onClick={() => handleOpenEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
                       </td>
                     </tr>
                   ))}

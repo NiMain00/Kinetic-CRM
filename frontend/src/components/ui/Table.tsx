@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 export interface Column<T> {
   key: string;
@@ -7,6 +8,7 @@ export interface Column<T> {
   className?: string;
   sortable?: boolean;
   align?: 'left' | 'center' | 'right';
+  hideOnMobile?: boolean;
 }
 
 interface TableProps<T> {
@@ -16,19 +18,35 @@ interface TableProps<T> {
   onRowClick?: (row: T) => void;
   emptyState?: React.ReactNode;
   isLoading?: boolean;
+  mobileCardRenderer?: (row: T) => React.ReactNode;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function Table<T = any>({
+export default function Table<T = Record<string, unknown>>({
   columns,
   data,
   keyExtractor,
   onRowClick,
   emptyState,
   isLoading,
+  mobileCardRenderer,
 }: TableProps<T>) {
+  const isMobile = useIsMobile();
+
   if (isLoading) {
-    return (
+    return isMobile ? (
+      <div className="space-y-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-surface-container-lowest border border-border rounded-xl p-4 space-y-3">
+            {columns.filter(c => !c.hideOnMobile).map((col) => (
+              <div key={col.key}>
+                <div className="h-3 w-20 bg-surface-container-high rounded skeleton mb-1.5"></div>
+                <div className="h-4 w-3/4 bg-surface-container-high rounded skeleton"></div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    ) : (
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
@@ -63,6 +81,22 @@ export default function Table<T = any>({
             <p className="text-sm">No data available</p>
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (isMobile && mobileCardRenderer) {
+    return (
+      <div className="space-y-3">
+        {data.map((row) => (
+          <div
+            key={keyExtractor(row)}
+            onClick={() => onRowClick?.(row)}
+            className={`bg-surface-container-lowest border border-border rounded-xl overflow-hidden ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+          >
+            {mobileCardRenderer(row)}
+          </div>
+        ))}
       </div>
     );
   }

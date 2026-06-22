@@ -10,6 +10,7 @@ interface DataTableProps<T> {
   isLoading?: boolean;
   onAdd?: () => void;
   addLabel?: string;
+  mobileCardRenderer?: (row: T) => React.ReactNode;
 }
 
 export default function DataTable<T extends Record<string, unknown>>({
@@ -21,6 +22,7 @@ export default function DataTable<T extends Record<string, unknown>>({
   isLoading,
   onAdd,
   addLabel = 'Add',
+  mobileCardRenderer,
 }: DataTableProps<T>) {
   return (
     <div className="space-y-4">
@@ -38,6 +40,7 @@ export default function DataTable<T extends Record<string, unknown>>({
         onRowClick={onRowClick}
         emptyState={emptyState}
         isLoading={isLoading}
+        mobileCardRenderer={mobileCardRenderer}
       />
     </div>
   );

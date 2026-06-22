@@ -859,8 +859,8 @@ export default function ProjectDetailView({
             <div className="space-y-6">
               <div className="bg-white border border-border p-6 rounded-xl shadow-sm">
                 <h3 className="font-heading-section text-heading-section mb-4">Competitor Breakdown &amp; Market Position</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
+                <div className="overflow-x-auto table-mobile-compact">
+                  <table className="w-full text-left text-sm border-collapse table-auto">
                     <thead className="bg-surface-container-low text-on-surface border-b border-border">
                       <tr>
                         <th className="px-6 py-3 font-semibold">Nama Kompetitor</th>
@@ -875,7 +875,7 @@ export default function ProjectDetailView({
                           <td className="px-6 py-4 font-semibold">{row.name}</td>
                           <td className="px-6 py-4 font-mono">{row.estPrice.toLocaleString('id-ID')}</td>
                           <td className="px-6 py-4">
-                            <span className="bg-status-indigo/10 text-status-indigo px-2.5 py-0.5 rounded text-xs font-semibold">
+                            <span className="bg-status-indigo/10 text-status-indigo px-2.5 py-0.5 rounded text-xs font-semibold badge-compact">
                               {row.advantages.join(', ')}
                             </span>
                           </td>

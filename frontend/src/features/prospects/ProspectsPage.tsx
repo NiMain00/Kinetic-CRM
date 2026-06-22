@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { Prospect } from '../../types/domain';
 import { INITIAL_PROSPECTS } from '../../services/mock-data';
 
@@ -8,6 +9,7 @@ interface ProspectsViewProps {
 }
 
 export default function ProspectsView({ onShowNotification, onNavigatePage }: ProspectsViewProps) {
+  const isMobile = useIsMobile();
   const [prospects, setProspects] = useState<Prospect[]>(INITIAL_PROSPECTS);
   const [activeFilter, setActiveFilter] = useState<'All' | 'Prospecting' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,12 +116,21 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     return matchesSearch && matchesTab;
   });
 
+  const statusColor = (status: string) => {
+    switch (status) {
+      case 'Prospecting': return 'bg-info/10 text-info';
+      case 'Waiting PM': return 'bg-warning/10 text-warning';
+      case 'Revision': return 'bg-status-orange/10 text-status-orange';
+      default: return 'bg-success/10 text-success';
+    }
+  };
+
   return (
-    <div className="p-8 space-y-8 flex-1 overflow-y-auto">
+    <div className={`${isMobile ? 'p-4' : 'p-8'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto`}>
       {formMode === 'list' ? (
         <>
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <h2 className="font-display-title text-display-title text-on-surface">Prospek</h2>
               <nav className="flex text-xs text-outline mt-1 font-label-sm">
@@ -132,7 +143,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </div>
             <button
               onClick={handleCreateNew}
-              className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold"
+              className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold touch-min-h"
             >
               <span className="material-symbols-outlined text-[20px]">add</span>
               Buat Prospek Baru
@@ -140,14 +151,14 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
 
           {/* Filter Bar */}
-          <div className="bg-surface-container-lowest p-5 rounded-xl border border-border shadow-sm space-y-4">
-            <div className="flex flex-wrap items-center gap-4 justify-between">
-              <div className="flex gap-2 p-1 bg-surface-container-low rounded-lg border border-border">
+          <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-border shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+              <div className="flex gap-2 p-1 bg-surface-container-low rounded-lg border border-border overflow-x-auto w-full sm:w-auto">
                 {['All', 'Prospecting', 'Waiting PM', 'Revision', 'Approved'].map(tab => (
                   <button
                     key={tab}
                     onClick={() => setActiveFilter(tab as any)}
-                    className={`px-4 py-1.5 rounded-md text-sm font-label-sm transition-colors ${
+                    className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
                       activeFilter === tab
                         ? 'bg-white text-primary shadow-sm border border-border font-bold'
                         : 'text-secondary hover:bg-surface-container-high'
@@ -158,15 +169,15 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 ))}
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="relative">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="relative w-full sm:w-auto">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">
                     search
                   </span>
                   <input
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary w-[260px] outline-none focus:ring-1"
+                    className="pl-10 pr-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-1"
                     placeholder="Cari prospek atau klien..."
                     type="text"
                   />
@@ -175,103 +186,153 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-sm">
-                <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border sticky top-0 z-10">
-                  <tr>
-                    <th className="px-6 py-4 font-semibold w-16">No</th>
-                    <th className="px-6 py-4 font-semibold">Nama Prospek</th>
-                    <th className="px-6 py-4 font-semibold">Customer</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">Dibuat Oleh</th>
-                    <th className="px-6 py-4 font-semibold">Tgl Dibuat</th>
-                    <th className="px-6 py-4 font-semibold text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filteredProspects.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-secondary">
-                        <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
-                        <p>Tidak ada prospek ditemukan</p>
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredProspects.map((row, index) => (
-                      <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 transition-colors group">
-                        <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{index + 1}</td>
-                        <td className="px-6 py-4">
-                          <div className="font-label-sm text-on-surface group-hover:text-primary transition-colors cursor-pointer font-medium">
-                            {row.name}
-                          </div>
+          {/* Table / Card Stack */}
+          <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+            {isMobile ? (
+              <div className="divide-y divide-border">
+                {filteredProspects.length === 0 ? (
+                  <div className="px-6 py-12 text-center text-secondary">
+                    <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
+                    <p>Tidak ada prospek ditemukan</p>
+                  </div>
+                ) : (
+                  filteredProspects.map((row, index) => (
+                    <div key={row.id} className="p-4 space-y-3 active:bg-surface-container-low transition-colors">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-label-sm text-on-surface font-medium text-sm">{row.name}</div>
                           {row.description && (
-                            <p className="text-xs text-secondary truncate max-w-md">{row.description}</p>
+                            <p className="text-xs text-secondary truncate">{row.description}</p>
                           )}
-                        </td>
-                        <td className="px-6 py-4 text-secondary">{row.client}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              row.status === 'Prospecting'
-                                ? 'bg-info/10 text-info'
-                                : row.status === 'Waiting PM'
-                                ? 'bg-warning/10 text-warning'
-                                : row.status === 'Revision'
-                                ? 'bg-status-orange/10 text-status-orange'
-                                : 'bg-success/10 text-success'
-                            }`}
+                        </div>
+                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColor(row.status)}`}>
+                          {row.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 text-secondary">
+                          <span className="material-symbols-outlined text-[14px]">business</span>
+                          <span>{row.client}</span>
+                        </div>
+                        <span className="text-secondary">{row.date}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">
+                            {row.author.charAt(0)}
+                          </div>
+                          <span className="text-on-surface text-xs">{row.author}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleEdit(row)}
+                            className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
+                            title="Edit Prospek"
+                            aria-label="Edit"
                           >
-                            {row.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">
-                              {row.author.charAt(0)}
-                            </div>
-                            <span className="text-on-surface text-xs">{row.author}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-secondary">{row.date}</td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <button
-                              onClick={() => handleEdit(row)}
-                              className="p-1.5 text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
-                              title="Edit Prospek"
-                            >
-                              <span className="material-symbols-outlined text-[20px]">edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(row.id)}
-                              className="p-1.5 text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
-                              title="Hapus Prospek"
-                            >
-                              <span className="material-symbols-outlined text-[20px]">delete</span>
-                            </button>
-                          </div>
+                            <span className="material-symbols-outlined text-[20px]">edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDelete(row.id)}
+                            className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
+                            title="Hapus Prospek"
+                            aria-label="Delete"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border sticky top-0 z-10">
+                    <tr>
+                      <th className="px-6 py-4 font-semibold w-16">No</th>
+                      <th className="px-6 py-4 font-semibold">Nama Prospek</th>
+                      <th className="px-6 py-4 font-semibold">Customer</th>
+                      <th className="px-6 py-4 font-semibold">Status</th>
+                      <th className="px-6 py-4 font-semibold">Dibuat Oleh</th>
+                      <th className="px-6 py-4 font-semibold">Tgl Dibuat</th>
+                      <th className="px-6 py-4 font-semibold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {filteredProspects.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-6 py-12 text-center text-secondary">
+                          <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
+                          <p>Tidak ada prospek ditemukan</p>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    ) : (
+                      filteredProspects.map((row, index) => (
+                        <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 transition-colors group">
+                          <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{index + 1}</td>
+                          <td className="px-6 py-4">
+                            <div className="font-label-sm text-on-surface group-hover:text-primary transition-colors cursor-pointer font-medium">
+                              {row.name}
+                            </div>
+                            {row.description && (
+                              <p className="text-xs text-secondary truncate max-w-md">{row.description}</p>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-secondary">{row.client}</td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColor(row.status)}`}>
+                              {row.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">
+                                {row.author.charAt(0)}
+                              </div>
+                              <span className="text-on-surface text-xs">{row.author}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-xs text-secondary">{row.date}</td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => handleEdit(row)}
+                                className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
+                                title="Edit Prospek"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDelete(row.id)}
+                                className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
+                                title="Hapus Prospek"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">delete</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {/* Pagination footer */}
-            <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-surface-container-low text-xs">
+            <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3">
               <span className="text-secondary font-caption-xs">
                 Showing <span className="font-bold text-on-surface">1 - {filteredProspects.length}</span> of{' '}
                 <span className="font-bold text-on-surface">{filteredProspects.length}</span> results
               </span>
               <div className="flex items-center gap-1">
-                <button className="p-1 rounded bg-white border border-border text-secondary cursor-not-allowed" disabled>
+                <button className="touch-min flex items-center justify-center p-1 rounded bg-white border border-border text-secondary cursor-not-allowed px-2" disabled>
                   Prev
                 </button>
-                <button className="p-1 px-2.5 rounded bg-primary text-white font-semibold">1</button>
-                <button className="p-1 rounded bg-white border border-border text-secondary cursor-not-allowed" disabled>
+                <button className="touch-min flex items-center justify-center p-1 px-2.5 rounded bg-primary text-white font-semibold">1</button>
+                <button className="touch-min flex items-center justify-center p-1 rounded bg-white border border-border text-secondary cursor-not-allowed px-2" disabled>
                   Next
                 </button>
               </div>
@@ -279,8 +340,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
         </>
       ) : (
-        /* Create/Edit Form View (Matches "Form Pengisian RKS") */
-        <div className="space-y-8">
+        /* Create/Edit Form View */
+        <div className="space-y-6 sm:space-y-8">
           <div>
             <h2 className="font-display-title text-display-title text-on-surface">
               {formMode === 'create' ? 'Buat Prospek Baru' : 'Edit Prospek'}
@@ -290,10 +351,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </p>
           </div>
 
-          <form onSubmit={handleSubmitReview} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <form onSubmit={handleSubmitReview} className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
             {/* Left side: Basic info */}
-            <div className="lg:col-span-6 space-y-6 bg-white border border-border rounded-xl p-6 shadow-sm">
-              <h3 className="font-heading-section text-heading-section text-primary border-b border-border pb-3 flex items-center gap-2">
+            <div className="lg:col-span-6 space-y-6 bg-white border border-border rounded-xl p-4 sm:p-6 shadow-sm">
+              <h3 className="font-heading-section text-heading-section text-primary border-b border-border pb-3 flex items-center gap-2 text-sm sm:text-base">
                 <span className="material-symbols-outlined">assignment</span>
                 Informasi Prospek Utama
               </h3>
@@ -305,7 +366,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     value={formName}
                     onChange={e => setFormName(e.target.value)}
                     required
-                    className="px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-full"
+                    className="px-4 py-2.5 sm:py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-full"
                     placeholder="Contoh: Modernization of Data Center - Jakarta"
                     type="text"
                   />
@@ -316,7 +377,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   <select
                     value={formClient}
                     onChange={e => setFormClient(e.target.value)}
-                    className="px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary"
+                    className="px-4 py-2.5 sm:py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option>PT. Telkom Indonesia Tbk.</option>
                     <option>PT. Telekom Nusantara</option>
@@ -331,7 +392,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   <input
                     value={formValue}
                     onChange={e => setFormValue(e.target.value)}
-                    className="px-4 py-2 border border-border rounded-lg font-mono w-full outline-none focus:ring-2 focus:ring-primary"
+                    className="px-4 py-2.5 sm:py-2 border border-border rounded-lg font-mono w-full outline-none focus:ring-2 focus:ring-primary"
                     placeholder="Contoh: 1500000000"
                     type="number"
                   />
@@ -342,7 +403,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   <input
                     value={formDate}
                     onChange={e => setFormDate(e.target.value)}
-                    className="px-4 py-2 border border-border rounded-lg w-full outline-none focus:ring-2 focus:ring-primary"
+                    className="px-4 py-2.5 sm:py-2 border border-border rounded-lg w-full outline-none focus:ring-2 focus:ring-primary"
                     type="date"
                   />
                 </div>
@@ -353,7 +414,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     value={formDesc}
                     onChange={e => setFormDesc(e.target.value)}
                     rows={4}
-                    className="px-4 py-2 border border-border rounded-lg w-full outline-none focus:ring-2 focus:ring-primary resize-none"
+                    className="px-4 py-2.5 sm:py-2 border border-border rounded-lg w-full outline-none focus:ring-2 focus:ring-primary resize-none"
                     placeholder="Keterangan singkat mengenai kebutuhan proyek..."
                   />
                 </div>
@@ -361,19 +422,19 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </div>
 
             {/* Right side: Questions checklist */}
-            <div className="lg:col-span-6 space-y-6 bg-white border border-border rounded-xl p-6 shadow-sm">
-              <h3 className="font-heading-section text-heading-section text-status-teal border-b border-border pb-3 flex items-center gap-2">
+            <div className="lg:col-span-6 space-y-6 bg-white border border-border rounded-xl p-4 sm:p-6 shadow-sm">
+              <h3 className="font-heading-section text-heading-section text-status-teal border-b border-border pb-3 flex items-center gap-2 text-sm sm:text-base">
                 <span className="material-symbols-outlined">quiz</span>
                 Evaluasi &amp; Ketentuan Teknis
               </h3>
 
               <div className="space-y-6">
-                <div className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-2">
+                <div className="p-3 sm:p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-2">
                   <p className="font-label-sm text-on-surface font-semibold text-sm">
                     1. Apakah sudah ada kepastian spesifikasi UPS di lokasi Cabang?
                   </p>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm touch-min-h">
                       <input
                         type="radio"
                         name="upsCapacity"
@@ -384,7 +445,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       />
                       UPS 2x3KVA Standar
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm touch-min-h">
                       <input
                         type="radio"
                         name="upsCapacity"
@@ -398,12 +459,12 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   </div>
                 </div>
 
-                <div className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-2">
+                <div className="p-3 sm:p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-2">
                   <p className="font-label-sm text-on-surface font-semibold text-sm">
                     2. Apakah sudah ada jalur FO (Fiber Optic) aktif dari ISP di gedung tersebut?
                   </p>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm touch-min-h">
                       <input
                         type="radio"
                         name="isFiberOpticReady"
@@ -414,7 +475,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       />
                       Ya, Terjadwal / Siap
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer text-sm">
+                    <label className="flex items-center gap-2 cursor-pointer text-sm touch-min-h">
                       <input
                         type="radio"
                         name="isFiberOpticReady"
@@ -436,7 +497,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     value={answers.groundingCableOption}
                     onChange={e => setAnswers({...answers, groundingCableOption: e.target.value})}
                     placeholder="Contoh: Wajib menggunakan grounding tersendiri"
-                    className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                    className="w-full px-4 py-2.5 sm:py-2 border border-border rounded-lg text-sm bg-background focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                     type="text"
                   />
                 </div>
@@ -444,26 +505,26 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </div>
 
             {/* Bottom Form Actions */}
-            <div className="col-span-12 flex justify-between items-center bg-surface-container-low border border-border p-4 rounded-xl mt-4">
+            <div className="col-span-12 flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-surface-container-low border border-border p-4 rounded-xl mt-4 gap-3">
               <button
                 type="button"
                 onClick={() => setFormMode('list')}
-                className="px-6 py-2.5 bg-white border border-border text-on-surface font-label-sm rounded-lg hover:bg-surface-container-low transition-all"
+                className="px-6 py-2.5 bg-white border border-border text-on-surface font-label-sm rounded-lg hover:bg-surface-container-low transition-all touch-min-h"
               >
                 Kembali ke Daftar
               </button>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   type="button"
                   onClick={handleSaveDraft}
-                  className="px-6 py-2.5 bg-white border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all font-semibold"
+                  className="px-6 py-2.5 bg-white border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all font-semibold touch-min-h"
                 >
                   Simpan Draft
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:bg-primary-container transition-all flex items-center gap-2 font-semibold"
+                  className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:bg-primary-container transition-all flex items-center justify-center gap-2 font-semibold touch-min-h"
                 >
                   Kirim ke Review
                   <span className="material-symbols-outlined text-[18px]">send</span>

@@ -152,8 +152,8 @@ export default function WinLossReportPage() {
               <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-white outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek atau client..." aria-label="Cari" />
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm" aria-label="Win/Loss Records">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-left text-sm table-auto" aria-label="Win/Loss Records">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">
                   <th className="px-6 py-3.5 font-semibold">Nama Proyek</th>
@@ -177,7 +177,7 @@ export default function WinLossReportPage() {
                       <td className="px-6 py-4 text-secondary">{r.client}</td>
                       <td className="px-6 py-4 font-mono font-bold text-on-surface">{r.value}</td>
                       <td className="px-6 py-4 text-center">
-                        <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold ${r.result === 'WIN' ? 'bg-success/10 text-success' : 'bg-red-50 text-red-600'}`}>{r.result}</span>
+                        <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold badge-compact ${r.result === 'WIN' ? 'bg-success/10 text-success' : 'bg-red-50 text-red-600'}`}>{r.result}</span>
                       </td>
                       <td className="px-6 py-4 text-secondary">{r.competitor}</td>
                       <td className="px-6 py-4 text-outline">{r.date}</td>

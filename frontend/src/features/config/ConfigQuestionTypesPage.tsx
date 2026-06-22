@@ -106,8 +106,8 @@ export default function ConfigQuestionTypesPage() {
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Tipe</th>
@@ -121,19 +121,19 @@ export default function ConfigQuestionTypesPage() {
                     <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-primary text-lg">help_outline</span>
+                          <span className="material-symbols-outlined text-primary text-lg icon-compact">help_outline</span>
                           <span className="font-bold text-slate-800">{t.name}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-slate-500">{t.description}</td>
                       <td className="px-6 py-4 text-center">
-                        <button onClick={() => handleToggleStatus(t.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${t.status === 'active' ? 'bg-success' : 'bg-slate-300'}`}>
+                        <button onClick={() => handleToggleStatus(t.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${t.status === 'active' ? 'bg-success' : 'bg-slate-300'}`}>
                           <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${t.status === 'active' ? 'translate-x-2' : '-translate-x-2'}`}></span>
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit">
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                        <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
+                          <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                         </button>
                       </td>
                     </tr>

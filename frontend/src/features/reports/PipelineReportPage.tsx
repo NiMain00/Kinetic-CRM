@@ -152,8 +152,8 @@ export default function PipelineReportPage() {
               </div>
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm" aria-label="Pipeline Records">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-left text-sm table-auto" aria-label="Pipeline Records">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">
                   <th className="px-6 py-3.5 font-semibold">Nama Proyek</th>
@@ -175,7 +175,7 @@ export default function PipelineReportPage() {
                       </td>
                       <td className="px-6 py-4 text-secondary">{r.branch}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
+                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold badge-compact ${
                           r.stage === 'RKS / Prospek' ? 'bg-primary/10 text-primary' :
                           r.stage === 'LPHS' ? 'bg-status-teal/10 text-status-teal' :
                           r.stage === 'Negosiasi Harga' ? 'bg-warning/10 text-warning' :

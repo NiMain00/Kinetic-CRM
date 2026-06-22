@@ -90,8 +90,8 @@ export default function AuditPage() {
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+            <div className="overflow-x-auto table-mobile-compact">
+              <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Timestamp</th>
@@ -110,10 +110,10 @@ export default function AuditPage() {
                     filteredLogs.map(l => (
                       <tr key={l.id} className="hover:bg-slate-50/65 transition-colors">
                         <td className="px-6 py-4 text-[10px] font-mono text-slate-500">{l.timestamp}</td>
-                        <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${ACTION_COLORS[l.action] || ''}`}>{l.action}</span></td>
+                        <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${ACTION_COLORS[l.action] || ''}`}>{l.action}</span></td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600">{l.actorInitials}</div>
+                            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600 avatar-compact">{l.actorInitials}</div>
                             <span className="font-semibold text-slate-700">{l.actor}</span>
                           </div>
                         </td>
@@ -123,12 +123,12 @@ export default function AuditPage() {
                         </td>
                         <td className="px-6 py-4 text-slate-600 max-w-xs truncate">{l.summary}</td>
                         <td className="px-6 py-4 text-center">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${
                             l.impact === 'High' ? 'bg-danger/10 text-danger' : l.impact === 'Medium' ? 'bg-warning/10 text-warning' : 'bg-slate-100 text-slate-500'
                           }`}>{l.impact}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => handleOpenDetail(l)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Lihat Detail"><span className="material-symbols-outlined text-[18px]">visibility</span></button>
+                          <button onClick={() => handleOpenDetail(l)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Lihat Detail"><span className="material-symbols-outlined text-[18px] icon-compact">visibility</span></button>
                         </td>
                       </tr>
                     ))

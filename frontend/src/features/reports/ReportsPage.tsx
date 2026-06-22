@@ -503,8 +503,8 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               </div>
 
               {/* Table rendering list */}
-              <div className="overflow-x-auto text-left">
-                <table className="w-full text-xs">
+              <div className="overflow-x-auto table-mobile-compact">
+                <table className="w-full text-xs table-auto">
                   <thead>
                     <tr className="bg-slate-50 border-b border-border">
                       <th className="p-4">Project Name</th>
@@ -532,7 +532,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                           <td className="p-4 text-slate-655">{r.client}</td>
                           <td className="p-4 font-mono font-bold text-slate-700">{r.value}</td>
                           <td className="p-4 text-center">
-                            <span className={`px-3 py-0.5 rounded-full text-[9px] font-bold border ${
+                            <span className={`px-3 py-0.5 rounded-full text-[9px] font-bold border badge-compact ${
                               r.result === 'WIN'
                                 ? 'bg-success/10 text-success border-success/20'
                                 : 'bg-red-50 text-red-600 border-red-200'
@@ -545,9 +545,9 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                           <td className="p-4 text-right">
                             <button
                               type="button"
-                              className="p-1 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-primary transition-colors cursor-pointer"
+                              className="p-1 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact"
                             >
-                              <span className="material-symbols-outlined text-[18px]">more_vert</span>
+                              <span className="material-symbols-outlined text-[18px] icon-compact">more_vert</span>
                             </button>
                           </td>
                         </tr>
@@ -964,8 +964,8 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               </div>
 
               {/* Table wrapper */}
-              <div className="overflow-x-auto text-left">
-                <table className="w-full text-xs">
+              <div className="overflow-x-auto table-mobile-compact">
+                <table className="w-full text-xs table-auto">
                   <thead>
                     <tr className="bg-slate-50 border-b border-border">
                       <th className="p-4">Project Name</th>
@@ -987,7 +987,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                           </td>
                           <td className="p-4 text-slate-600 font-semibold">{p.branch}</td>
                           <td className="p-4">
-                            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[10px] uppercase">
+                            <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[10px] uppercase badge-compact">
                               {p.stage}
                             </span>
                           </td>
@@ -997,7 +997,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                             <button
                               type="button"
                               onClick={() => onShowNotification(`Membuka rincian pipeline proyek ${p.id}`, 'success')}
-                              className="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer text-base"
+                              className="material-symbols-outlined text-slate-400 hover:text-primary transition-colors cursor-pointer text-base btn-compact icon-compact"
                             >
                               open_in_new
                             </button>

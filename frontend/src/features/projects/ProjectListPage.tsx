@@ -113,8 +113,8 @@ export default function ProjectListPage() {
 
       {/* Project table */}
       <Card padding="none">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto table-mobile-compact">
+          <table className="w-full text-left text-sm table-auto">
             <thead>
               <tr className="bg-surface-container-low border-b border-border">
                 <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Kode</th>

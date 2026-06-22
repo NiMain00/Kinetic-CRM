@@ -330,8 +330,8 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           </div>
 
           {/* Records Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
+          <div className="overflow-x-auto table-mobile-compact">
+            <table className="w-full text-xs text-left table-auto">
               <thead>
                 <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                   <th className="px-6 py-3.5">Event Name</th>
@@ -359,7 +359,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                         {t.recipients.map((rec, i) => (
                           <span
                             key={i}
-                            className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest ${
+                            className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest badge-compact ${
                               rec === 'ADMIN'
                                 ? 'bg-danger/10 text-danger'
                                 : rec === 'ALL'
@@ -374,7 +374,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                     </td>
                     <td className="px-6 py-4 text-slate-600 font-semibold whitespace-nowrap">
                       <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px] text-primary">
+                        <span className="material-symbols-outlined text-[16px] text-primary icon-compact">
                           {t.channel.includes('Email') ? 'alternate_email' : 'notifications'}
                         </span>
                         {t.channel}
@@ -384,7 +384,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                       <button
                         type="button"
                         onClick={() => handleToggleStatus(t.id)}
-                        className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${
+                        className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${
                           t.status ? 'bg-success' : 'bg-slate-350'
                         }`}
                       >
@@ -398,10 +398,10 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleOpenEditDrawer(t)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer inline-flex items-center justify-center"
+                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
                         title="Edit Template"
                       >
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                        <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                       </button>
                     </td>
                   </tr>
