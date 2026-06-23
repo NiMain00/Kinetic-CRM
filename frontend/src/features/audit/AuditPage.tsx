@@ -63,7 +63,7 @@ export default function AuditPage() {
           <p className="text-[11px] text-slate-400 mt-0.5">Jejak audit sistem untuk seluruh aktivitas pengguna dan perubahan data.</p>
         </div>
         <button onClick={() => toast.success('Ekspor audit log sedang diproses.')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
-          <span className="material-symbols-outlined text-[16px]">file_download</span> Export CSV
+          <span className="material-symbols-outlined text-[16px]">file_download</span> Ekspor CSV
         </button>
       </div>
 
@@ -137,7 +137,7 @@ export default function AuditPage() {
               </table>
             </div>
             <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
-              <span>Showing {filteredLogs.length} of {logs.length} events</span>
+              <span>Menampilkan {filteredLogs.length} dari {logs.length} event</span>
               <span>Real-time audit stream (static demo)</span>
             </div>
           </div>

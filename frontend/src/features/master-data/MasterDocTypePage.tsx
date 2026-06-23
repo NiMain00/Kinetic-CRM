@@ -127,7 +127,7 @@ export default function MasterDocTypePage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
-                            <button onClick={() => openEdit(d)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                            <button onClick={() => openEdit(d)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Sunting"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
                             <button onClick={() => handleDelete(d.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                           </div>
                         </td>

@@ -324,16 +324,16 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             {/* Pagination footer */}
             <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3">
               <span className="text-secondary font-caption-xs">
-                Showing <span className="font-bold text-on-surface">1 - {filteredProspects.length}</span> of{' '}
-                <span className="font-bold text-on-surface">{filteredProspects.length}</span> results
+                Menampilkan <span className="font-bold text-on-surface">1 - {filteredProspects.length}</span> dari{' '}
+                <span className="font-bold text-on-surface">{filteredProspects.length}</span> hasil
               </span>
               <div className="flex items-center gap-1">
                 <button className="touch-min flex items-center justify-center p-1 rounded bg-white border border-border text-secondary cursor-not-allowed px-2" disabled>
-                  Prev
+                  Sebelumnya
                 </button>
                 <button className="touch-min flex items-center justify-center p-1 px-2.5 rounded bg-primary text-white font-semibold">1</button>
                 <button className="touch-min flex items-center justify-center p-1 rounded bg-white border border-border text-secondary cursor-not-allowed px-2" disabled>
-                  Next
+                  Selanjutnya
                 </button>
               </div>
             </div>

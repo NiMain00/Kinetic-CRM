@@ -187,7 +187,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                         <td className="px-6 py-4 text-slate-400 text-[10px] font-mono">{u.lastLogin || '-'}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
-                            <button onClick={() => handleOpenEdit(u)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
+                            <button onClick={() => handleOpenEdit(u)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Sunting"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
                             <button onClick={() => handleDelete(u.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer btn-compact" title="Hapus"><span className="material-symbols-outlined text-[18px] icon-compact">delete</span></button>
                           </div>
                         </td>
@@ -198,7 +198,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               </table>
             </div>
             <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
-              <span>Showing {filteredUsers.length} of {users.length} users</span>
+              <span>Menampilkan {filteredUsers.length} dari {users.length} pengguna</span>
               <span>Static sandbox environment</span>
             </div>
           </div>
@@ -263,7 +263,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               </div>
             </form>
             <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Cancel</button>
+              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Batal</button>
               <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingUser ? 'Simpan Perubahan' : 'Buat Pengguna'}</button>
             </div>
           </div>

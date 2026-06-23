@@ -419,7 +419,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           </div>
 
           <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
-            <span>Showing {filteredTemplates.length} of {templates.length} notification models</span>
+            <span>Menampilkan {filteredTemplates.length} dari {templates.length} model notifikasi</span>
             <span>Static environment sandbox</span>
           </div>
 

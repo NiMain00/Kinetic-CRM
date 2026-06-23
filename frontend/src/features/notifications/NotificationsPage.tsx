@@ -292,7 +292,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   }}
                   className="text-xs bg-white text-primary font-extrabold px-4.5 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                 >
-                  Review Immediate <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  Tinjau Segera <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                 </button>
               </div>
               <span className="material-symbols-outlined absolute -bottom-5 -right-5 text-7xl font-bold opacity-10 group-hover:scale-110 transition-transform duration-500">
@@ -374,7 +374,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                           }}
                           className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                         >
-                          View Context <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                          Lihat Konteks <span className="material-symbols-outlined text-[13px]">open_in_new</span>
                         </button>
 
                         <div className="w-[3px] h-[3px] bg-slate-400 rounded-full"></div>
@@ -387,7 +387,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                             }}
                             className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[13px]">check</span> Mark Read
+                            <span className="material-symbols-outlined text-[13px]">check</span> Tandai Dibaca
                           </button>
                         )}
                       </div>
@@ -397,7 +397,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                     <button
                       onClick={(e) => handleArchive(a.id, e)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-150 hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 hover:opacity-100 pr-[1px] md:opacity-100"
-                      title="Archive Notification"
+                      title="Arsipkan Notifikasi"
                     >
                       <span className="material-symbols-outlined text-[18px]">archive</span>
                     </button>
@@ -409,7 +409,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
             {/* Pagination footer */}
             <div className="pt-6 border-t border-border flex justify-between items-center text-[11px] text-slate-400">
-              <p>Showing {filteredAlerts.length} of {alerts.length} inbox entries</p>
+              <p>Menampilkan {filteredAlerts.length} dari {alerts.length} entri inbox</p>
               <div className="flex gap-1.5">
                 <button className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer font-bold">1</button>
                 <button onClick={() => onShowNotification('Paginasi alert center tidak dimuat.', 'warning')} className="px-2 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer">2</button>

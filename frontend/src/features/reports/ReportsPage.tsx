@@ -558,7 +558,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               
               {/* Pagination footer */}
               <div className="p-4 bg-slate-50 flex items-center justify-between border-t border-border text-[11px] text-slate-400">
-                <p>Showing 1-5 of 1,284 records</p>
+                <p>Menampilkan 1-5 dari 1.284 catatan</p>
                 <div className="flex gap-1.5">
                   <button type="button" className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer font-bold">1</button>
                   <button type="button" onClick={() => onShowNotification('Fungsi paginasi disimulasikan.', 'success')} className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer">2</button>
@@ -1009,7 +1009,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               </div>
 
               <div className="p-4 bg-slate-50 flex items-center justify-between border-t border-border text-[11px] text-slate-400">
-                <p>Showing 1-4 of 1,248 entries</p>
+                <p>Menampilkan 1-4 dari 1.248 entri</p>
                 <div className="flex gap-1.5">
                   <button type="button" className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer font-bold">1</button>
                   <button type="button" onClick={() => onShowNotification('Penyaringan drill-down pipeline dimuat.', 'success')} className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer">2</button>

@@ -4,24 +4,29 @@ import { ProtectedRoute, GuestRoute, RoleRoute } from './guards';
 import { AppLayout } from '@/components/layout';
 import { PageLoader } from '@/components/layout';
 import { withPageProps } from './page-adapter';
+import ErrorBoundary from '@/components/shared/ErrorBoundary';
 
 const LazyLoad = (Component: ComponentType<any>) => {
   const Wrapped = withPageProps(Component);
   return (props: Record<string, unknown>) => (
-    <Suspense fallback={<PageLoader />}>
-      <Wrapped {...props} />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoader />}>
+        <Wrapped {...props} />
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 
 const LazyLoadRole = (Component: ComponentType<any>, roles: string[]) => {
   const Wrapped = withPageProps(Component);
   return (props: Record<string, unknown>) => (
-    <Suspense fallback={<PageLoader />}>
-      <RoleRoute roles={roles}>
-        <Wrapped {...props} />
-      </RoleRoute>
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoader />}>
+        <RoleRoute roles={roles}>
+          <Wrapped {...props} />
+        </RoleRoute>
+      </Suspense>
+    </ErrorBoundary>
   );
 };
 

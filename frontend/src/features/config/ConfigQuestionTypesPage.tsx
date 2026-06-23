@@ -132,7 +132,7 @@ export default function ConfigQuestionTypesPage() {
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
+                        <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Sunting">
                           <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                         </button>
                       </td>

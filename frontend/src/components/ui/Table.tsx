@@ -78,7 +78,7 @@ export default function Table<T = Record<string, unknown>>({
         {emptyState || (
           <div className="space-y-2">
             <span className="material-symbols-outlined text-4xl text-outline">info</span>
-            <p className="text-sm">No data available</p>
+            <p className="text-sm">Tidak ada data</p>
           </div>
         )}
       </div>

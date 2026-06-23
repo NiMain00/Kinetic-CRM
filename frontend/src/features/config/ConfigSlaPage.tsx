@@ -116,7 +116,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleOpenEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
+                        <button onClick={() => handleOpenEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Sunting"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
                       </td>
                     </tr>
                   ))}
@@ -189,7 +189,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
               </div>
             </form>
             <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Cancel</button>
+              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Batal</button>
               <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingConfig ? 'Simpan Perubahan' : 'Buat SLA'}</button>
             </div>
           </div>

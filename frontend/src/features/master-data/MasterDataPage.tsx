@@ -1386,7 +1386,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </div>
               <div className="flex gap-2">
                 <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3.5 py-1.5 bg-white border border-border hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">download</span> Export CSV
+                  <span className="material-symbols-outlined text-[16px]">download</span> Ekspor CSV
                 </button>
                 <button onClick={() => { onShowNotification('Log audit terupdate secara synchronous.', 'success'); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
                   <span className="material-symbols-outlined text-[16px]">refresh</span> Refresh Records

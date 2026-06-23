@@ -1,5 +1,6 @@
 import React from 'react';
 import { Table, type Column, Button } from '@/components/ui';
+import PageSkeleton from '@/components/layout/PageSkeleton';
 
 interface DataTableProps<T> {
   columns: Column<T>[];
@@ -21,9 +22,13 @@ export default function DataTable<T extends Record<string, unknown>>({
   emptyState,
   isLoading,
   onAdd,
-  addLabel = 'Add',
+  addLabel = 'Tambah',
   mobileCardRenderer,
 }: DataTableProps<T>) {
+  if (isLoading) {
+    return <PageSkeleton />;
+  }
+
   return (
     <div className="space-y-4">
       {onAdd && (
