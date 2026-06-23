@@ -2,8 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 export interface AuthPayload {
-  userId: string; role: string; permissions: string[];
-  branchId?: string; departmentId?: string;
+  sub: string;
+  name: string;
+  username: string;
+  role: string;
+  roleId: string;
+  branchId?: string | null;
+  departmentId?: string | null;
+  permissions: string[];
+  jti: string;
 }
 
 declare global { namespace Express { interface Request { user?: AuthPayload } } }

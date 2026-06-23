@@ -75,6 +75,8 @@ model Role {
   isSystemDefault Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  users User[]
 }
 
 model Permission {
@@ -99,32 +101,41 @@ model RolePermission {
 // ============================================================
 
 model User {
-  id               String   @id @default(uuid()) @db.Char(36)
-  name             String   @db.VarChar(150)
-  username         String   @unique @db.VarChar(50)
-  email            String   @unique @db.VarChar(150)
-  passwordHash     String   @db.VarChar(255)
-  roleId           String   @db.Char(36)
-  branchId         String?  @db.Char(36)
-  departmentId     String?  @db.Char(36)
-  isActive         Boolean  @default(true)
-  isLocked         Boolean  @default(false)
-  failedLoginCount Int      @default(0)
-  lastLoginAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  deletedAt        DateTime?
+  id                 String   @id @default(uuid()) @db.Char(36)
+  name               String   @db.VarChar(150)
+  username           String   @unique @db.VarChar(50)
+  email              String   @unique @db.VarChar(150)
+  passwordHash       String   @db.VarChar(255)
+  roleId             String   @db.Char(36)
+  branchId           String?  @db.Char(36)
+  departmentId       String?  @db.Char(36)
+  isActive           Boolean  @default(true)
+  isLocked           Boolean  @default(false)
+  lockedUntil        DateTime?
+  failedLoginCount   Int      @default(0)
+  lastLoginIp        String?  @db.VarChar(45)
+  lastLoginAt        DateTime?
+  mustChangePassword Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  deletedAt          DateTime?
+
+  Role     Role             @relation(fields: [roleId], references: [id])
+  sessions ActiveSession[]
 }
 
 model ActiveSession {
-  id         String    @id @default(uuid()) @db.Char(36)
-  userId     String    @db.Char(36)
-  tokenJti   String    @unique @db.VarChar(255)
-  ipAddress  String    @db.VarChar(45)
-  userAgent  String?   @db.Text
-  expiresAt  DateTime
-  revokedAt  DateTime?
-  createdAt  DateTime  @default(now())
+  id                String    @id @default(uuid()) @db.Char(36)
+  userId            String    @db.Char(36)
+  jti               String    @db.VarChar(255)
+  refreshTokenHash  String    @unique @db.VarChar(255)
+  ipAddress         String    @db.VarChar(45)
+  userAgent         String?   @db.Text
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  createdAt         DateTime  @default(now())
+
+  User User @relation(fields: [userId], references: [id])
 }
 
 model Position {

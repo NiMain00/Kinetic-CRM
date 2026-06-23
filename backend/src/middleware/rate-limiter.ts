@@ -10,7 +10,7 @@ const client = createClient({
 (async () => { try { await client.connect(); } catch { /* redis optional */ } })();
 
 export function aiRateLimiter(req: Request, res: Response, next: NextFunction) {
-  const userId = req.user?.userId || 'anonymous';
+  const userId = req.user?.sub || 'anonymous';
   const key = `rate:ai:${userId}`;
   client.incr(key).then(async (count) => {
     if (count === 1) await client.expire(key, 60);
