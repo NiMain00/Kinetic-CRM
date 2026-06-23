@@ -17,7 +17,7 @@ export const env = {
 
   AI_PROVIDER: process.env.AI_PROVIDER || 'gemini',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-  AI_MODEL: process.env.AI_MODEL || 'gemini-2.5-pro',
+  AI_MODEL: process.env.AI_MODEL || 'gemini-2.5-flash',
   AI_EMBEDDING_MODEL: process.env.AI_EMBEDDING_MODEL || 'text-embedding-004',
   AI_MAX_TOKENS: parseInt(process.env.AI_MAX_TOKENS || '2048', 10),
   AI_TEMPERATURE: parseFloat(process.env.AI_TEMPERATURE || '0.3'),

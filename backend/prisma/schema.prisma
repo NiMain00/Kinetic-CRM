@@ -1,6 +1,6 @@
 generator client {
-  provider        = "prisma-client-js"
-  binaryTargets   = ["native", "linux-musl"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
 }
 
 datasource db {
@@ -13,54 +13,78 @@ datasource db {
 // ============================================================
 
 model Company {
-  id                String   @id @default(uuid()) @db.Char(36)
-  name              String   @unique @db.VarChar(200)
-  legalEntityNumber String?  @db.VarChar(100)
-  logoDocumentId    String?  @db.Char(36)
-  address           String?  @db.Text
-  isActive          Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                String    @id @default(uuid()) @db.Char(36)
+  name              String    @unique @db.VarChar(200)
+  legalEntityNumber String?   @db.VarChar(100)
+  logoDocumentId    String?   @db.Char(36)
+  address           String?   @db.Text
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   deletedAt         DateTime?
+
+  divisions Division[]
 }
 
 model Division {
-  id          String   @id @default(uuid()) @db.Char(36)
-  companyId   String   @db.Char(36)
-  name        String   @db.VarChar(200)
-  code        String   @unique @db.VarChar(10)
-  headUserId  String?  @db.Char(36)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  id         String    @id @default(uuid()) @db.Char(36)
+  companyId  String    @db.Char(36)
+  name       String    @db.VarChar(200)
+  code       String    @unique @db.VarChar(10)
+  headUserId String?   @db.Char(36)
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  company     Company      @relation(fields: [companyId], references: [id])
+  head        User?        @relation("DivisionHead", fields: [headUserId], references: [id])
+  departments Department[]
+  branches    Branch[]
 }
 
 model Department {
-  id                  String   @id @default(uuid()) @db.Char(36)
-  divisionId          String?  @db.Char(36)
-  parentDepartmentId  String?  @db.Char(36)
-  name                String   @db.VarChar(200)
-  code                String   @unique @db.VarChar(10)
-  headUserId          String?  @db.Char(36)
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  deletedAt           DateTime?
+  id                 String    @id @default(uuid()) @db.Char(36)
+  divisionId         String?   @db.Char(36)
+  parentDepartmentId String?   @db.Char(36)
+  name               String    @db.VarChar(200)
+  code               String    @unique @db.VarChar(10)
+  headUserId         String?   @db.Char(36)
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  division                        Division?                        @relation(fields: [divisionId], references: [id])
+  parentDepartment                Department?                      @relation("DepartmentHierarchy", fields: [parentDepartmentId], references: [id])
+  childDepartments                Department[]                     @relation("DepartmentHierarchy")
+  head                            User?                            @relation("DepartmentHead", fields: [headUserId], references: [id])
+  users                           User[]
+  lphsDepartmentReviews           LphsDepartmentReview[]
+  lphsTargetedRevisionDepartments LphsTargetedRevisionDepartment[]
+  approvalsAssigned               Approval[]                       @relation("ApprovalDepartment")
+  documents                       Document[]
+  notificationRecipients          NotificationTemplateRecipient[]  @relation("DeptNotificationRecipient")
 }
 
 model Branch {
-  id          String   @id @default(uuid()) @db.Char(36)
-  divisionId  String   @db.Char(36)
-  name        String   @db.VarChar(200)
-  code        String   @unique @db.VarChar(20)
-  city        String   @db.VarChar(100)
-  address     String?  @db.Text
-  picUserId   String?  @db.Char(36)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  deletedAt   DateTime?
+  id         String    @id @default(uuid()) @db.Char(36)
+  divisionId String    @db.Char(36)
+  name       String    @db.VarChar(200)
+  code       String    @unique @db.VarChar(20)
+  city       String    @db.VarChar(100)
+  address    String?   @db.Text
+  picUserId  String?   @db.Char(36)
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  division  Division   @relation(fields: [divisionId], references: [id])
+  pic       User?      @relation("BranchPIC", fields: [picUserId], references: [id])
+  users     User[]
+  prospects Prospect[]
+  projects  Project[]
 }
 
 // ============================================================
@@ -76,7 +100,12 @@ model Role {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  users User[]
+  users                  User[]
+  rolePermissions        RolePermission[]
+  approvalStages         ApprovalWorkflowStage[]
+  approvalsAssigned      Approval[]                      @relation("ApprovalRole")
+  slaEscalationRole      SlaReminderConfiguration[]      @relation("EscalationRole")
+  notificationRecipients NotificationTemplateRecipient[] @relation("RoleNotificationRecipient")
 }
 
 model Permission {
@@ -85,6 +114,8 @@ model Permission {
   resource String @db.VarChar(100)
   action   String @db.VarChar(50)
   label    String @db.VarChar(200)
+
+  rolePermissions RolePermission[]
 }
 
 model RolePermission {
@@ -92,6 +123,9 @@ model RolePermission {
   roleId       String   @db.Char(36)
   permissionId String   @db.Char(36)
   createdAt    DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
 
   @@unique([roleId, permissionId])
 }
@@ -101,60 +135,101 @@ model RolePermission {
 // ============================================================
 
 model User {
-  id                 String   @id @default(uuid()) @db.Char(36)
-  name               String   @db.VarChar(150)
-  username           String   @unique @db.VarChar(50)
-  email              String   @unique @db.VarChar(150)
-  passwordHash       String   @db.VarChar(255)
-  roleId             String   @db.Char(36)
-  branchId           String?  @db.Char(36)
-  departmentId       String?  @db.Char(36)
-  isActive           Boolean  @default(true)
-  isLocked           Boolean  @default(false)
+  id                 String    @id @default(uuid()) @db.Char(36)
+  name               String    @db.VarChar(150)
+  username           String    @unique @db.VarChar(50)
+  email              String    @unique @db.VarChar(150)
+  passwordHash       String    @db.VarChar(255)
+  roleId             String    @db.Char(36)
+  branchId           String?   @db.Char(36)
+  departmentId       String?   @db.Char(36)
+  isActive           Boolean   @default(true)
+  isLocked           Boolean   @default(false)
   lockedUntil        DateTime?
-  failedLoginCount   Int      @default(0)
-  lastLoginIp        String?  @db.VarChar(45)
+  failedLoginCount   Int       @default(0)
+  lastLoginIp        String?   @db.VarChar(45)
   lastLoginAt        DateTime?
-  mustChangePassword Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  mustChangePassword Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
   deletedAt          DateTime?
 
-  Role     Role             @relation(fields: [roleId], references: [id])
-  sessions ActiveSession[]
+  Role                          Role                       @relation(fields: [roleId], references: [id])
+  sessions                      ActiveSession[]
+  branch                        Branch?                    @relation(fields: [branchId], references: [id])
+  department                    Department?                @relation(fields: [departmentId], references: [id])
+  divisionHead                  Division[]                 @relation("DivisionHead")
+  departmentHead                Department[]               @relation("DepartmentHead")
+  branchPIC                     Branch[]                   @relation("BranchPIC")
+  userPositions                 UserPosition[]
+  prospectsCreated              Prospect[]                 @relation("ProspectCreator")
+  prospectReviewQs              ProspectReviewQuestion[]
+  prospectReviewNotes           ProspectReviewNote[]
+  projectsCreated               Project[]                  @relation("ProjectCreator")
+  projectsCancelled             Project[]                  @relation("ProjectCanceller")
+  rksReviewQuestions            RksReviewQuestion[]
+  rksReviewNotes                RksReviewNote[]
+  lphsPmApprovals               LphsSios[]                 @relation("LphsPmApprover")
+  lphsFinalApprovals            LphsSios[]                 @relation("LphsFinalApprover")
+  lphsDepartmentReviews         LphsDepartmentReview[]
+  lphsTargetedRevisions         LphsTargetedRevision[]
+  priceSubmissions              PriceSubmission[]
+  tenderResultsDecided          TenderResult[]             @relation("TenderDecider")
+  approvalsAssigned             Approval[]                 @relation("ApprovalAssignee")
+  approvalsDecided              Approval[]                 @relation("ApprovalDecider")
+  approvalReassignmentsPrevious ApprovalReassignment[]     @relation("PrevAssignee")
+  approvalReassignmentsNew      ApprovalReassignment[]     @relation("NewAssignee")
+  approvalReassignmentsBy       ApprovalReassignment[]     @relation("Reassigner")
+  backupPrimaryDelegations      BackupApproverDelegation[] @relation("BackupPrimary")
+  backupBackupDelegations       BackupApproverDelegation[] @relation("BackupBackup")
+  backupCreatedDelegations      BackupApproverDelegation[] @relation("BackupCreator")
+  documentsUploaded             Document[]
+  kpiWeightsCreated             KpiWeight[]
+  targetsCreated                Target[]
+  notifications                 Notification[]
+  auditLogs                     AuditLog[]
+  integrationConfigUpdated      IntegrationConfiguration[]
+  aiRequestLogs                 AiRequestLog[]
+  projectEvents                 ProjectTimelineEvent[]     @relation("ProjectEventActor")
 }
 
 model ActiveSession {
-  id                String    @id @default(uuid()) @db.Char(36)
-  userId            String    @db.Char(36)
-  jti               String    @db.VarChar(255)
-  refreshTokenHash  String    @unique @db.VarChar(255)
-  ipAddress         String    @db.VarChar(45)
-  userAgent         String?   @db.Text
-  expiresAt         DateTime
-  revokedAt         DateTime?
-  createdAt         DateTime  @default(now())
+  id               String    @id @default(uuid()) @db.Char(36)
+  userId           String    @db.Char(36)
+  jti              String    @db.VarChar(255)
+  refreshTokenHash String    @unique @db.VarChar(255)
+  ipAddress        String    @db.VarChar(45)
+  userAgent        String?   @db.Text
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
 
   User User @relation(fields: [userId], references: [id])
 }
 
 model Position {
-  id             String   @id @default(uuid()) @db.Char(36)
-  name           String   @unique @db.VarChar(150)
-  approvalLevel  Int
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String   @id @default(uuid()) @db.Char(36)
+  name          String   @unique @db.VarChar(150)
+  approvalLevel Int
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userPositions     UserPosition[]
+  backupDelegations BackupApproverDelegation[]
 }
 
 model UserPosition {
-  id         String   @id @default(uuid()) @db.Char(36)
-  userId     String   @db.Char(36)
-  positionId String   @db.Char(36)
-  isBackup   Boolean  @default(false)
+  id         String    @id @default(uuid()) @db.Char(36)
+  userId     String    @db.Char(36)
+  positionId String    @db.Char(36)
+  isBackup   Boolean   @default(false)
   validFrom  DateTime? @db.Date
   validUntil DateTime? @db.Date
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
+
+  user     User     @relation(fields: [userId], references: [id])
+  position Position @relation(fields: [positionId], references: [id])
 }
 
 // ============================================================
@@ -162,18 +237,21 @@ model UserPosition {
 // ============================================================
 
 model Customer {
-  id         String   @id @default(uuid()) @db.Char(36)
-  name       String   @unique @db.VarChar(200)
-  code       String   @unique @db.VarChar(10)
-  type       String   @db.VarChar(20)
-  picContact String?  @db.VarChar(150)
-  email      String?  @db.VarChar(150)
-  phone      String?  @db.VarChar(30)
-  address    String?  @db.Text
-  isActive   Boolean  @default(true)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String    @id @default(uuid()) @db.Char(36)
+  name       String    @unique @db.VarChar(200)
+  code       String    @unique @db.VarChar(10)
+  type       String    @db.VarChar(20)
+  picContact String?   @db.VarChar(150)
+  email      String?   @db.VarChar(150)
+  phone      String?   @db.VarChar(30)
+  address    String?   @db.Text
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   deletedAt  DateTime?
+
+  prospects Prospect[]
+  projects  Project[]
 }
 
 model ProjectCategory {
@@ -183,6 +261,9 @@ model ProjectCategory {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  prospects Prospect[]
+  projects  Project[]
 }
 
 model ProjectStatusDefinition {
@@ -195,6 +276,8 @@ model ProjectStatusDefinition {
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  projects Project[]
 }
 
 model ApprovalLevelDefinition {
@@ -205,23 +288,28 @@ model ApprovalLevelDefinition {
 }
 
 model DocumentTypeDefinition {
-  id              String  @id @default(uuid()) @db.Char(36)
-  code            String  @unique @db.VarChar(50)
-  label           String  @db.VarChar(100)
-  appliesToStage  String? @db.VarChar(100)
-  isActive        Boolean @default(true)
+  id             String  @id @default(uuid()) @db.Char(36)
+  code           String  @unique @db.VarChar(50)
+  label          String  @db.VarChar(100)
+  appliesToStage String? @db.VarChar(100)
+  isActive       Boolean @default(true)
+
+  documents      Document[]
+  uploadPolicies UploadPolicyConfiguration[]
 }
 
 model Competitor {
-  id            String   @id @default(uuid()) @db.Char(36)
-  name          String   @unique @db.VarChar(200)
-  shortCode     String?  @db.VarChar(20)
-  businessField String?  @db.VarChar(150)
-  description   String?  @db.Text
-  status        String   @default("active") @db.VarChar(20)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            String    @id @default(uuid()) @db.Char(36)
+  name          String    @unique @db.VarChar(200)
+  shortCode     String?   @db.VarChar(20)
+  businessField String?   @db.VarChar(150)
+  description   String?   @db.Text
+  status        String    @default("active") @db.VarChar(20)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   deletedAt     DateTime?
+
+  projectCompetitors ProjectCompetitor[]
 }
 
 model QuestionType {
@@ -231,27 +319,36 @@ model QuestionType {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  options   QuestionTypeOption[]
+  questions Question[]
 }
 
 model QuestionTypeOption {
-  id              String @id @default(uuid()) @db.Char(36)
-  questionTypeId  String @db.Char(36)
-  optionLabel     String @db.VarChar(200)
-  displayOrder    Int    @default(0)
+  id             String @id @default(uuid()) @db.Char(36)
+  questionTypeId String @db.Char(36)
+  optionLabel    String @db.VarChar(200)
+  displayOrder   Int    @default(0)
+
+  questionType QuestionType @relation(fields: [questionTypeId], references: [id])
 }
 
 model Question {
-  id             String   @id @default(uuid()) @db.Char(36)
-  text           String   @db.Text
-  questionTypeId String   @db.Char(36)
-  context        String   @db.VarChar(20)
-  categoryLabel  String?  @db.VarChar(150)
-  isRequired     Boolean  @default(false)
-  displayOrder   Int      @default(0)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id             String    @id @default(uuid()) @db.Char(36)
+  text           String    @db.Text
+  questionTypeId String    @db.Char(36)
+  context        String    @db.VarChar(20)
+  categoryLabel  String?   @db.VarChar(150)
+  isRequired     Boolean   @default(false)
+  displayOrder   Int       @default(0)
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
   deletedAt      DateTime?
+
+  questionType    QuestionType     @relation(fields: [questionTypeId], references: [id])
+  options         QuestionOption[]
+  prospectAnswers ProspectAnswer[]
 }
 
 model QuestionOption {
@@ -259,6 +356,10 @@ model QuestionOption {
   questionId   String @db.Char(36)
   optionLabel  String @db.VarChar(200)
   displayOrder Int    @default(0)
+
+  question              Question               @relation(fields: [questionId], references: [id])
+  prospectAnswerOptions ProspectAnswerOption[]
+  prospectAnswers       ProspectAnswer[]       @relation("AnswerOption")
 }
 
 model PeriodDefinition {
@@ -269,15 +370,17 @@ model PeriodDefinition {
   isClosed  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  targets Target[]
 }
 
 model Holiday {
-  id                String   @id @default(uuid()) @db.Char(36)
-  date              DateTime @unique @db.Date
-  description       String   @db.VarChar(200)
-  isRecurringAnnually Boolean @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                  String   @id @default(uuid()) @db.Char(36)
+  date                DateTime @unique @db.Date
+  description         String   @db.VarChar(200)
+  isRecurringAnnually Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model LossReason {
@@ -287,6 +390,8 @@ model LossReason {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tenderResults TenderResult[]
 }
 
 // ============================================================
@@ -294,51 +399,71 @@ model LossReason {
 // ============================================================
 
 model Prospect {
-  id                    String    @id @default(uuid()) @db.Char(36)
-  name                  String    @db.VarChar(200)
-  customerId            String    @db.Char(36)
-  branchId              String    @db.Char(36)
-  categoryId            String    @db.Char(36)
-  description           String?   @db.Text
-  estimatedValue        Decimal?  @db.Decimal(18, 2)
-  estimatedDate         DateTime? @db.Date
-  status                String    @default("prospecting") @db.VarChar(30)
-  convertedToProjectId  String?   @unique @db.Char(36)
-  createdBy             String    @db.Char(36)
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  deletedAt             DateTime?
+  id                   String    @id @default(uuid()) @db.Char(36)
+  name                 String    @db.VarChar(200)
+  customerId           String    @db.Char(36)
+  branchId             String    @db.Char(36)
+  categoryId           String    @db.Char(36)
+  description          String?   @db.Text
+  estimatedValue       Decimal?  @db.Decimal(18, 2)
+  estimatedDate        DateTime? @db.Date
+  status               String    @default("prospecting") @db.VarChar(30)
+  convertedToProjectId String?   @unique @db.Char(36)
+  createdBy            String    @db.Char(36)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  deletedAt            DateTime?
+
+  customer         Customer                 @relation(fields: [customerId], references: [id])
+  branch           Branch                   @relation(fields: [branchId], references: [id])
+  category         ProjectCategory          @relation(fields: [categoryId], references: [id])
+  creator          User                     @relation("ProspectCreator", fields: [createdBy], references: [id])
+  convertedProject Project?                 @relation("ProspectConversion", fields: [convertedToProjectId], references: [id])
+  answers          ProspectAnswer[]
+  reviewQuestions  ProspectReviewQuestion[]
+  reviewNotes      ProspectReviewNote[]
 }
 
 model ProspectAnswer {
-  id              String   @id @default(uuid()) @db.Char(36)
-  prospectId      String   @db.Char(36)
-  questionId      String   @db.Char(36)
-  answerText      String?  @db.Text
-  answerOptionId  String?  @db.Char(36)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(uuid()) @db.Char(36)
+  prospectId     String   @db.Char(36)
+  questionId     String   @db.Char(36)
+  answerText     String?  @db.Text
+  answerOptionId String?  @db.Char(36)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  prospect        Prospect               @relation(fields: [prospectId], references: [id])
+  question        Question               @relation(fields: [questionId], references: [id])
+  answerOption    QuestionOption?        @relation("AnswerOption", fields: [answerOptionId], references: [id])
+  selectedOptions ProspectAnswerOption[]
 
   @@unique([prospectId, questionId])
 }
 
 model ProspectAnswerOption {
-  id                 String @id @default(uuid()) @db.Char(36)
-  prospectAnswerId   String @db.Char(36)
-  questionOptionId   String @db.Char(36)
+  id               String @id @default(uuid()) @db.Char(36)
+  prospectAnswerId String @db.Char(36)
+  questionOptionId String @db.Char(36)
+
+  prospectAnswer ProspectAnswer @relation(fields: [prospectAnswerId], references: [id])
+  questionOption QuestionOption @relation(fields: [questionOptionId], references: [id])
 
   @@unique([prospectAnswerId, questionOptionId])
 }
 
 model ProspectReviewQuestion {
-  id            String    @id @default(uuid()) @db.Char(36)
-  prospectId    String    @db.Char(36)
-  reviewRound   Int
-  questionText  String    @db.Text
-  answerText    String?   @db.Text
-  createdBy     String    @db.Char(36)
-  answeredAt    DateTime?
-  createdAt     DateTime  @default(now())
+  id           String    @id @default(uuid()) @db.Char(36)
+  prospectId   String    @db.Char(36)
+  reviewRound  Int
+  questionText String    @db.Text
+  answerText   String?   @db.Text
+  createdBy    String    @db.Char(36)
+  answeredAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  prospect Prospect @relation(fields: [prospectId], references: [id])
+  creator  User     @relation(fields: [createdBy], references: [id])
 }
 
 model ProspectReviewNote {
@@ -348,6 +473,9 @@ model ProspectReviewNote {
   noteText    String   @db.Text
   createdBy   String   @db.Char(36)
   createdAt   DateTime @default(now())
+
+  prospect Prospect @relation(fields: [prospectId], references: [id])
+  creator  User     @relation(fields: [createdBy], references: [id])
 }
 
 // ============================================================
@@ -355,24 +483,39 @@ model ProspectReviewNote {
 // ============================================================
 
 model Project {
-  id                  String    @id @default(uuid()) @db.Char(36)
-  prospectId          String?   @unique @db.Char(36)
-  name                String    @db.VarChar(200)
-  projectType         String    @db.VarChar(20)
-  customerId          String    @db.Char(36)
-  branchId            String    @db.Char(36)
-  categoryId          String    @db.Char(36)
-  statusId            String    @db.Char(36)
-  deadlineTender      DateTime? @db.Date
-  tenderNumber        String?   @db.VarChar(100)
-  tenderName          String?   @db.VarChar(200)
-  cancelledAt         DateTime?
-  cancellationReason  String?   @db.Text
-  cancelledBy         String?   @db.Char(36)
-  createdBy           String    @db.Char(36)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  deletedAt           DateTime?
+  id                 String    @id @default(uuid()) @db.Char(36)
+  prospectId         String?   @unique @db.Char(36)
+  name               String    @db.VarChar(200)
+  projectType        String    @db.VarChar(20)
+  customerId         String    @db.Char(36)
+  branchId           String    @db.Char(36)
+  categoryId         String    @db.Char(36)
+  statusId           String    @db.Char(36)
+  deadlineTender     DateTime? @db.Date
+  tenderNumber       String?   @db.VarChar(100)
+  tenderName         String?   @db.VarChar(200)
+  cancelledAt        DateTime?
+  cancellationReason String?   @db.Text
+  cancelledBy        String?   @db.Char(36)
+  createdBy          String    @db.Char(36)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  prospect           Prospect?               @relation("ProspectConversion")
+  customer           Customer                @relation(fields: [customerId], references: [id])
+  branch             Branch                  @relation(fields: [branchId], references: [id])
+  category           ProjectCategory         @relation(fields: [categoryId], references: [id])
+  status             ProjectStatusDefinition @relation(fields: [statusId], references: [id])
+  canceller          User?                   @relation("ProjectCanceller", fields: [cancelledBy], references: [id])
+  creator            User                    @relation("ProjectCreator", fields: [createdBy], references: [id])
+  timelineEvents     ProjectTimelineEvent[]
+  rks                Rks?
+  lphsSios           LphsSios?
+  priceSubmission    PriceSubmission?
+  projectCompetitors ProjectCompetitor[]
+  tenderResult       TenderResult?
+  deliveryTarget     DeliveryTarget?
 
   @@unique([customerId, tenderNumber])
 }
@@ -385,6 +528,9 @@ model ProjectTimelineEvent {
   description String   @db.Text
   metadata    Json?
   occurredAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+  actor   User?   @relation("ProjectEventActor", fields: [actorId], references: [id])
 }
 
 // ============================================================
@@ -401,6 +547,10 @@ model Rks {
   approvedAt     DateTime?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  project         Project             @relation(fields: [projectId], references: [id])
+  reviewQuestions RksReviewQuestion[]
+  reviewNotes     RksReviewNote[]
 }
 
 model RksReviewQuestion {
@@ -412,6 +562,9 @@ model RksReviewQuestion {
   createdBy    String    @db.Char(36)
   answeredAt   DateTime?
   createdAt    DateTime  @default(now())
+
+  rks     Rks  @relation(fields: [rksId], references: [id])
+  creator User @relation(fields: [createdBy], references: [id])
 }
 
 model RksReviewNote {
@@ -421,6 +574,9 @@ model RksReviewNote {
   noteText    String   @db.Text
   createdBy   String   @db.Char(36)
   createdAt   DateTime @default(now())
+
+  rks     Rks  @relation(fields: [rksId], references: [id])
+  creator User @relation(fields: [createdBy], references: [id])
 }
 
 // ============================================================
@@ -428,49 +584,66 @@ model RksReviewNote {
 // ============================================================
 
 model LphsSios {
-  id                   String    @id @default(uuid()) @db.Char(36)
-  projectId            String    @unique @db.Char(36)
-  status               String    @default("draft") @db.VarChar(30)
-  linkLphsExternal     String?   @db.Text
-  pmApprovalStatus     String    @default("pending") @db.VarChar(30)
-  pmApprovedAt         DateTime?
-  pmApprovedBy         String?   @db.Char(36)
-  finalApprovalStatus  String    @default("pending") @db.VarChar(30)
-  finalApprovedAt      DateTime?
-  finalApprovedBy      String?   @db.Char(36)
-  revisionNumber       Int       @default(1)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                  String    @id @default(uuid()) @db.Char(36)
+  projectId           String    @unique @db.Char(36)
+  status              String    @default("draft") @db.VarChar(30)
+  linkLphsExternal    String?   @db.Text
+  pmApprovalStatus    String    @default("pending") @db.VarChar(30)
+  pmApprovedAt        DateTime?
+  pmApprovedBy        String?   @db.Char(36)
+  finalApprovalStatus String    @default("pending") @db.VarChar(30)
+  finalApprovedAt     DateTime?
+  finalApprovedBy     String?   @db.Char(36)
+  revisionNumber      Int       @default(1)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  project           Project                @relation(fields: [projectId], references: [id])
+  pmApprover        User?                  @relation("LphsPmApprover", fields: [pmApprovedBy], references: [id])
+  finalApprover     User?                  @relation("LphsFinalApprover", fields: [finalApprovedBy], references: [id])
+  departmentReviews LphsDepartmentReview[]
+  targetedRevisions LphsTargetedRevision[]
 }
 
 model LphsDepartmentReview {
-  id              String    @id @default(uuid()) @db.Char(36)
-  lphsSiosId      String    @db.Char(36)
-  departmentId    String    @db.Char(36)
-  approvalStatus  String    @default("reviewing") @db.VarChar(30)
-  comment         String?   @db.Text
-  reviewedBy      String?   @db.Char(36)
-  reviewedAt      DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id @default(uuid()) @db.Char(36)
+  lphsSiosId     String    @db.Char(36)
+  departmentId   String    @db.Char(36)
+  approvalStatus String    @default("reviewing") @db.VarChar(30)
+  comment        String?   @db.Text
+  reviewedBy     String?   @db.Char(36)
+  reviewedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  lphsSios   LphsSios   @relation(fields: [lphsSiosId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+  reviewer   User?      @relation(fields: [reviewedBy], references: [id])
 
   @@unique([lphsSiosId, departmentId])
 }
 
 model LphsTargetedRevision {
-  id              String   @id @default(uuid()) @db.Char(36)
-  lphsSiosId      String   @db.Char(36)
-  revisionNumber  Int
-  initiatedBy     String   @db.Char(36)
-  initiatedRole   String   @db.VarChar(20)
-  note            String?  @db.Text
-  createdAt       DateTime @default(now())
+  id             String   @id @default(uuid()) @db.Char(36)
+  lphsSiosId     String   @db.Char(36)
+  revisionNumber Int
+  initiatedBy    String   @db.Char(36)
+  initiatedRole  String   @db.VarChar(20)
+  note           String?  @db.Text
+  createdAt      DateTime @default(now())
+
+  lphsSios    LphsSios                         @relation(fields: [lphsSiosId], references: [id])
+  initiator   User                             @relation(fields: [initiatedBy], references: [id])
+  departments LphsTargetedRevisionDepartment[]
 }
 
 model LphsTargetedRevisionDepartment {
-  id                        String @id @default(uuid()) @db.Char(36)
-  lphsTargetedRevisionId    String @db.Char(36)
-  departmentId              String @db.Char(36)
+  id                     String @id @default(uuid()) @db.Char(36)
+  lphsTargetedRevisionId String @db.Char(36)
+  departmentId           String @db.Char(36)
+
+  revision   LphsTargetedRevision @relation(fields: [lphsTargetedRevisionId], references: [id])
+  department Department           @relation(fields: [departmentId], references: [id])
 
   @@unique([lphsTargetedRevisionId, departmentId])
 }
@@ -480,26 +653,32 @@ model LphsTargetedRevisionDepartment {
 // ============================================================
 
 model PriceSubmission {
-  id               String    @id @default(uuid()) @db.Char(36)
-  projectId        String    @unique @db.Char(36)
-  ourPrice         Decimal   @db.Decimal(18, 2)
-  marginPercentage Decimal?  @db.Decimal(5, 2)
-  note             String?   @db.Text
-  referenceLink    String?   @db.Text
-  submittedAt      DateTime  @default(now())
-  submittedBy      String    @db.Char(36)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id               String   @id @default(uuid()) @db.Char(36)
+  projectId        String   @unique @db.Char(36)
+  ourPrice         Decimal  @db.Decimal(18, 2)
+  marginPercentage Decimal? @db.Decimal(5, 2)
+  note             String?  @db.Text
+  referenceLink    String?  @db.Text
+  submittedAt      DateTime @default(now())
+  submittedBy      String   @db.Char(36)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id])
+  submitter User    @relation(fields: [submittedBy], references: [id])
 }
 
 model ProjectCompetitor {
-  id               String   @id @default(uuid()) @db.Char(36)
-  projectId        String   @db.Char(36)
-  competitorId     String   @db.Char(36)
-  competitorPrice  Decimal? @db.Decimal(18, 2)
-  advantageNote    String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(uuid()) @db.Char(36)
+  projectId       String   @db.Char(36)
+  competitorId    String   @db.Char(36)
+  competitorPrice Decimal? @db.Decimal(18, 2)
+  advantageNote   String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project    Project    @relation(fields: [projectId], references: [id])
+  competitor Competitor @relation(fields: [competitorId], references: [id])
 
   @@unique([projectId, competitorId])
 }
@@ -509,16 +688,20 @@ model ProjectCompetitor {
 // ============================================================
 
 model TenderResult {
-  id             String    @id @default(uuid()) @db.Char(36)
-  projectId      String    @unique @db.Char(36)
-  result         String    @db.VarChar(10)
-  finalPrice     Decimal?  @db.Decimal(18, 2)
-  lossReasonId   String?   @db.Char(36)
-  lossReasonNote String?   @db.Text
-  decidedAt      DateTime  @default(now())
-  decidedBy      String    @db.Char(36)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id             String   @id @default(uuid()) @db.Char(36)
+  projectId      String   @unique @db.Char(36)
+  result         String   @db.VarChar(10)
+  finalPrice     Decimal? @db.Decimal(18, 2)
+  lossReasonId   String?  @db.Char(36)
+  lossReasonNote String?  @db.Text
+  decidedAt      DateTime @default(now())
+  decidedBy      String   @db.Char(36)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project    Project     @relation(fields: [projectId], references: [id])
+  lossReason LossReason? @relation(fields: [lossReasonId], references: [id])
+  decider    User        @relation("TenderDecider", fields: [decidedBy], references: [id])
 }
 
 model DeliveryTarget {
@@ -532,6 +715,8 @@ model DeliveryTarget {
   completedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
 }
 
 // ============================================================
@@ -539,53 +724,74 @@ model DeliveryTarget {
 // ============================================================
 
 model ApprovalWorkflowStage {
-  id              String   @id @default(uuid()) @db.Char(36)
-  stageCode       String   @unique @db.VarChar(100)
-  label           String   @db.VarChar(150)
-  approverRoleId  String   @db.Char(36)
-  displayOrder    Int
-  isParallel      Boolean  @default(false)
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(uuid()) @db.Char(36)
+  stageCode      String   @unique @db.VarChar(100)
+  label          String   @db.VarChar(150)
+  approverRoleId String   @db.Char(36)
+  displayOrder   Int
+  isParallel     Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  approverRole Role              @relation(fields: [approverRoleId], references: [id])
+  approvals    Approval[]
+  slaConfig    SlaConfiguration?
 }
 
 model Approval {
-  id                      String   @id @default(uuid()) @db.Char(36)
-  resourceType            String   @db.VarChar(30)
-  resourceId              String   @db.Char(36)
-  stageId                 String   @db.Char(36)
-  assignedToUserId        String?  @db.Char(36)
-  assignedToRoleId        String?  @db.Char(36)
-  assignedToDepartmentId  String?  @db.Char(36)
-  status                  String   @default("pending") @db.VarChar(20)
-  decisionComment         String?  @db.Text
-  decidedBy               String?  @db.Char(36)
-  decidedAt               DateTime?
-  slaDeadline             DateTime?
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id                     String    @id @default(uuid()) @db.Char(36)
+  resourceType           String    @db.VarChar(30)
+  resourceId             String    @db.Char(36)
+  stageId                String    @db.Char(36)
+  assignedToUserId       String?   @db.Char(36)
+  assignedToRoleId       String?   @db.Char(36)
+  assignedToDepartmentId String?   @db.Char(36)
+  status                 String    @default("pending") @db.VarChar(20)
+  decisionComment        String?   @db.Text
+  decidedBy              String?   @db.Char(36)
+  decidedAt              DateTime?
+  slaDeadline            DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  stage         ApprovalWorkflowStage  @relation(fields: [stageId], references: [id])
+  assignedUser  User?                  @relation("ApprovalAssignee", fields: [assignedToUserId], references: [id])
+  assignedRole  Role?                  @relation("ApprovalRole", fields: [assignedToRoleId], references: [id])
+  assignedDept  Department?            @relation("ApprovalDepartment", fields: [assignedToDepartmentId], references: [id])
+  decider       User?                  @relation("ApprovalDecider", fields: [decidedBy], references: [id])
+  reassignments ApprovalReassignment[]
 }
 
 model ApprovalReassignment {
-  id                          String   @id @default(uuid()) @db.Char(36)
-  approvalId                  String   @db.Char(36)
-  previousAssigneeUserId      String?  @db.Char(36)
-  newAssigneeUserId           String   @db.Char(36)
-  reason                      String   @db.Text
-  reassignedBy                String   @db.Char(36)
-  reassignedAt                DateTime @default(now())
+  id                     String   @id @default(uuid()) @db.Char(36)
+  approvalId             String   @db.Char(36)
+  previousAssigneeUserId String?  @db.Char(36)
+  newAssigneeUserId      String   @db.Char(36)
+  reason                 String   @db.Text
+  reassignedBy           String   @db.Char(36)
+  reassignedAt           DateTime @default(now())
+
+  approval         Approval @relation(fields: [approvalId], references: [id])
+  previousAssignee User?    @relation("PrevAssignee", fields: [previousAssigneeUserId], references: [id])
+  newAssignee      User     @relation("NewAssignee", fields: [newAssigneeUserId], references: [id])
+  reassigner       User     @relation("Reassigner", fields: [reassignedBy], references: [id])
 }
 
 model BackupApproverDelegation {
-  id             String   @id @default(uuid()) @db.Char(36)
-  positionId     String   @db.Char(36)
-  primaryUserId  String   @db.Char(36)
-  backupUserId   String   @db.Char(36)
-  validFrom      DateTime @db.Date
-  validUntil     DateTime @db.Date
-  createdBy      String   @db.Char(36)
-  createdAt      DateTime @default(now())
+  id            String   @id @default(uuid()) @db.Char(36)
+  positionId    String   @db.Char(36)
+  primaryUserId String   @db.Char(36)
+  backupUserId  String   @db.Char(36)
+  validFrom     DateTime @db.Date
+  validUntil    DateTime @db.Date
+  createdBy     String   @db.Char(36)
+  createdAt     DateTime @default(now())
+
+  position Position @relation(fields: [positionId], references: [id])
+  primary  User     @relation("BackupPrimary", fields: [primaryUserId], references: [id])
+  backup   User     @relation("BackupBackup", fields: [backupUserId], references: [id])
+  creator  User     @relation("BackupCreator", fields: [createdBy], references: [id])
 }
 
 // ============================================================
@@ -593,20 +799,24 @@ model BackupApproverDelegation {
 // ============================================================
 
 model Document {
-  id               String    @id @default(uuid()) @db.Char(36)
-  documentTypeId   String    @db.Char(36)
-  resourceType     String    @db.VarChar(30)
-  resourceId       String    @db.Char(36)
-  departmentId     String?   @db.Char(36)
-  fileName         String    @db.VarChar(255)
-  fileSizeBytes    BigInt
-  mimeType         String    @db.VarChar(150)
-  storagePath      String    @db.Text
-  versionNumber    Int       @default(1)
-  isLatestVersion  Boolean   @default(true)
-  uploadedBy       String    @db.Char(36)
-  uploadedAt       DateTime  @default(now())
-  deletedAt        DateTime?
+  id              String    @id @default(uuid()) @db.Char(36)
+  documentTypeId  String    @db.Char(36)
+  resourceType    String    @db.VarChar(30)
+  resourceId      String    @db.Char(36)
+  departmentId    String?   @db.Char(36)
+  fileName        String    @db.VarChar(255)
+  fileSizeBytes   BigInt
+  mimeType        String    @db.VarChar(150)
+  storagePath     String    @db.Text
+  versionNumber   Int       @default(1)
+  isLatestVersion Boolean   @default(true)
+  uploadedBy      String    @db.Char(36)
+  uploadedAt      DateTime  @default(now())
+  deletedAt       DateTime?
+
+  documentType DocumentTypeDefinition @relation(fields: [documentTypeId], references: [id])
+  department   Department?            @relation(fields: [departmentId], references: [id])
+  uploader     User                   @relation(fields: [uploadedBy], references: [id])
 }
 
 // ============================================================
@@ -622,39 +832,52 @@ model KpiDefinition {
   isActive           Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  weights KpiWeight[]
+  targets Target[]
 }
 
 model KpiWeight {
-  id                String   @id @default(uuid()) @db.Char(36)
-  kpiDefinitionId   String   @db.Char(36)
-  weightPercentage  Decimal  @db.Decimal(5, 2)
-  effectiveFrom     DateTime @db.Date
-  effectiveUntil    DateTime? @db.Date
-  createdBy         String   @db.Char(36)
-  createdAt         DateTime @default(now())
+  id               String    @id @default(uuid()) @db.Char(36)
+  kpiDefinitionId  String    @db.Char(36)
+  weightPercentage Decimal   @db.Decimal(5, 2)
+  effectiveFrom    DateTime  @db.Date
+  effectiveUntil   DateTime? @db.Date
+  createdBy        String    @db.Char(36)
+  createdAt        DateTime  @default(now())
+
+  definition KpiDefinition @relation(fields: [kpiDefinitionId], references: [id])
+  creator    User          @relation(fields: [createdBy], references: [id])
 }
 
 model Target {
-  id                String   @id @default(uuid()) @db.Char(36)
-  kpiDefinitionId   String   @db.Char(36)
-  scopeType         String   @db.VarChar(20)
-  scopeId           String   @db.Char(36)
-  periodId          String   @db.Char(36)
-  targetValue       Decimal  @db.Decimal(18, 2)
-  versionNumber     Int      @default(1)
-  isCurrentVersion  Boolean  @default(true)
-  createdBy         String   @db.Char(36)
-  createdAt         DateTime @default(now())
+  id               String   @id @default(uuid()) @db.Char(36)
+  kpiDefinitionId  String   @db.Char(36)
+  scopeType        String   @db.VarChar(20)
+  scopeId          String   @db.Char(36)
+  periodId         String   @db.Char(36)
+  targetValue      Decimal  @db.Decimal(18, 2)
+  versionNumber    Int      @default(1)
+  isCurrentVersion Boolean  @default(true)
+  createdBy        String   @db.Char(36)
+  createdAt        DateTime @default(now())
+
+  definition KpiDefinition            @relation(fields: [kpiDefinitionId], references: [id])
+  period     PeriodDefinition         @relation(fields: [periodId], references: [id])
+  creator    User                     @relation(fields: [createdBy], references: [id])
+  snapshots  TargetProgressSnapshot[]
 }
 
 model TargetProgressSnapshot {
-  id                  String   @id @default(uuid()) @db.Char(36)
-  targetId            String   @db.Char(36)
-  snapshotDate        DateTime @db.Date
-  actualValue         Decimal  @db.Decimal(18, 2)
-  percentageAchieved  Decimal  @db.Decimal(6, 2)
-  trafficLightStatus  String   @db.VarChar(10)
-  createdAt           DateTime @default(now())
+  id                 String   @id @default(uuid()) @db.Char(36)
+  targetId           String   @db.Char(36)
+  snapshotDate       DateTime @db.Date
+  actualValue        Decimal  @db.Decimal(18, 2)
+  percentageAchieved Decimal  @db.Decimal(6, 2)
+  trafficLightStatus String   @db.VarChar(10)
+  createdAt          DateTime @default(now())
+
+  target Target @relation(fields: [targetId], references: [id])
 
   @@unique([targetId, snapshotDate])
 }
@@ -664,32 +887,42 @@ model TargetProgressSnapshot {
 // ============================================================
 
 model NotificationTemplate {
-  id            String   @id @default(uuid()) @db.Char(36)
-  eventCode     String   @unique @db.VarChar(100)
-  templateText  String   @db.Text
-  channel       String   @default("in_app") @db.VarChar(20)
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid()) @db.Char(36)
+  eventCode    String   @unique @db.VarChar(100)
+  templateText String   @db.Text
+  channel      String   @default("in_app") @db.VarChar(20)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  recipients    NotificationTemplateRecipient[]
+  notifications Notification[]
 }
 
 model NotificationTemplateRecipient {
-  id                          String @id @default(uuid()) @db.Char(36)
-  notificationTemplateId      String @db.Char(36)
-  recipientRoleId             String? @db.Char(36)
-  recipientDepartmentId       String? @db.Char(36)
+  id                     String  @id @default(uuid()) @db.Char(36)
+  notificationTemplateId String  @db.Char(36)
+  recipientRoleId        String? @db.Char(36)
+  recipientDepartmentId  String? @db.Char(36)
+
+  template   NotificationTemplate @relation(fields: [notificationTemplateId], references: [id])
+  role       Role?                @relation("RoleNotificationRecipient", fields: [recipientRoleId], references: [id])
+  department Department?          @relation("DeptNotificationRecipient", fields: [recipientDepartmentId], references: [id])
 }
 
 model Notification {
-  id                      String   @id @default(uuid()) @db.Char(36)
-  notificationTemplateId  String   @db.Char(36)
-  recipientUserId         String   @db.Char(36)
-  resourceType            String?  @db.VarChar(50)
-  resourceId              String?  @db.Char(36)
-  message                 String   @db.Text
-  isRead                  Boolean  @default(false)
-  readAt                  DateTime?
-  createdAt               DateTime @default(now())
+  id                     String    @id @default(uuid()) @db.Char(36)
+  notificationTemplateId String    @db.Char(36)
+  recipientUserId        String    @db.Char(36)
+  resourceType           String?   @db.VarChar(50)
+  resourceId             String?   @db.Char(36)
+  message                String    @db.Text
+  isRead                 Boolean   @default(false)
+  readAt                 DateTime?
+  createdAt              DateTime  @default(now())
+
+  template  NotificationTemplate @relation(fields: [notificationTemplateId], references: [id])
+  recipient User                 @relation(fields: [recipientUserId], references: [id])
 }
 
 // ============================================================
@@ -697,21 +930,23 @@ model Notification {
 // ============================================================
 
 model AuditLog {
-  id               String   @id @default(uuid()) @db.Char(36)
-  actorId          String?  @db.Char(36)
-  actorRoleSnapshot String  @db.VarChar(50)
-  action           String   @db.VarChar(150)
-  resourceType     String?  @db.VarChar(50)
-  resourceId       String?  @db.Char(36)
-  branchIdSnapshot String?  @db.Char(36)
-  ipAddress        String   @db.VarChar(45)
-  userAgent        String?  @db.Text
-  payloadBefore    Json?
-  payloadAfter     Json?
-  metadata         Json?
-  result           String   @db.VarChar(20)
-  errorCode        String?  @db.VarChar(100)
-  createdAt        DateTime @default(now())
+  id                String   @id @default(uuid()) @db.Char(36)
+  actorId           String?  @db.Char(36)
+  actorRoleSnapshot String   @db.VarChar(50)
+  action            String   @db.VarChar(150)
+  resourceType      String?  @db.VarChar(50)
+  resourceId        String?  @db.Char(36)
+  branchIdSnapshot  String?  @db.Char(36)
+  ipAddress         String   @db.VarChar(45)
+  userAgent         String?  @db.Text
+  payloadBefore     Json?
+  payloadAfter      Json?
+  metadata          Json?
+  result            String   @db.VarChar(20)
+  errorCode         String?  @db.VarChar(100)
+  createdAt         DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
 }
 
 // ============================================================
@@ -725,50 +960,65 @@ model SlaConfiguration {
   isEnforcementActive Boolean  @default(true)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
+  stage     ApprovalWorkflowStage      @relation(fields: [stageId], references: [id])
+  reminders SlaReminderConfiguration[]
 }
 
 model SlaReminderConfiguration {
-  id                   String @id @default(uuid()) @db.Char(36)
-  slaConfigurationId   String @db.Char(36)
-  reminderDaysBefore   Int
-  escalationRoleId     String? @db.Char(36)
+  id                 String  @id @default(uuid()) @db.Char(36)
+  slaConfigurationId String  @db.Char(36)
+  reminderDaysBefore Int
+  escalationRoleId   String? @db.Char(36)
+
+  slaConfig      SlaConfiguration @relation(fields: [slaConfigurationId], references: [id])
+  escalationRole Role?            @relation("EscalationRole", fields: [escalationRoleId], references: [id])
 }
 
 model UploadPolicyConfiguration {
-  id              String   @id @default(uuid()) @db.Char(36)
-  documentTypeId  String   @unique @db.Char(36)
-  maxSizeMb       Int
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(uuid()) @db.Char(36)
+  documentTypeId String   @unique @db.Char(36)
+  maxSizeMb      Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  documentType DocumentTypeDefinition @relation(fields: [documentTypeId], references: [id])
+  mimeTypes    UploadPolicyMimeType[]
 }
 
 model UploadPolicyMimeType {
-  id                            String @id @default(uuid()) @db.Char(36)
-  uploadPolicyConfigurationId   String @db.Char(36)
-  mimeType                      String @db.VarChar(150)
+  id                          String @id @default(uuid()) @db.Char(36)
+  uploadPolicyConfigurationId String @db.Char(36)
+  mimeType                    String @db.VarChar(150)
+
+  uploadPolicy UploadPolicyConfiguration @relation(fields: [uploadPolicyConfigurationId], references: [id])
 
   @@unique([uploadPolicyConfigurationId, mimeType])
 }
 
 model IntegrationConfiguration {
-  id              String   @id @default(uuid()) @db.Char(36)
-  key             String   @unique @db.VarChar(100)
-  valueEncrypted  String   @db.Text
-  isSecret        Boolean  @default(false)
-  updatedBy       String   @db.Char(36)
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(uuid()) @db.Char(36)
+  key            String   @unique @db.VarChar(100)
+  valueEncrypted String   @db.Text
+  isSecret       Boolean  @default(false)
+  updatedBy      String   @db.Char(36)
+  updatedAt      DateTime @updatedAt
+
+  updater User @relation(fields: [updatedBy], references: [id])
 }
 
 model AiRequestLog {
-  id            String   @id @default(uuid()) @db.Char(36)
-  requestedBy   String   @db.Char(36)
-  featureCode   String   @db.VarChar(50)
-  resourceType  String?  @db.VarChar(50)
-  resourceId    String?  @db.Char(36)
-  provider      String   @db.VarChar(50)
-  model         String   @db.VarChar(100)
-  status        String   @db.VarChar(20)
-  latencyMs     Int?
-  errorCode     String?  @db.VarChar(100)
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid()) @db.Char(36)
+  requestedBy  String   @db.Char(36)
+  featureCode  String   @db.VarChar(50)
+  resourceType String?  @db.VarChar(50)
+  resourceId   String?  @db.Char(36)
+  provider     String   @db.VarChar(50)
+  model        String   @db.VarChar(100)
+  status       String   @db.VarChar(20)
+  latencyMs    Int?
+  errorCode    String?  @db.VarChar(100)
+  createdAt    DateTime @default(now())
+
+  requester User @relation(fields: [requestedBy], references: [id])
 }
