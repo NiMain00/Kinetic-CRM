@@ -126,7 +126,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   };
 
   return (
-    <div className={`${isMobile ? 'p-4' : 'p-8'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto`}>
+    <div className={`${isMobile ? 'p-2' : 'p-1'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto`}>
       {formMode === 'list' ? (
         <>
           {/* Header */}

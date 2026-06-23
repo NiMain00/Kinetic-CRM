@@ -2,7 +2,7 @@
   "name": "kinetic-crm-backend",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -12,7 +12,7 @@
     "db:generate": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^5.x",
+    "@prisma/client": "^6.x",
     "express": "^4.21.2",
     "cors": "^2.8.5",
     "helmet": "^7.x",
@@ -24,7 +24,8 @@
     "uuid": "^9.x",
     "dotenv": "^16.x",
     "winston": "^3.x",
-    "@google/genai": "^2.4.0"
+    "@google/genai": "^2.4.0",
+    "redis": "^4.x"
   },
   "devDependencies": {
     "typescript": "~5.8.2",
@@ -34,7 +35,9 @@
     "@types/jsonwebtoken": "^9.x",
     "@types/bcryptjs": "^2.x",
     "tsx": "^4.x",
-    "prisma": "^5.x",
-    "nodemon": "^3.x"
+    "prisma": "^6.x",
+    "nodemon": "^3.x",
+    "@types/morgan": "^1.x",
+    "@types/uuid": "^9.x"
   }
 }

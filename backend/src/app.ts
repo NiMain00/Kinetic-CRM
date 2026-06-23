@@ -12,6 +12,7 @@ app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000', cred
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 
+app.use('/health', healthRoutes);
 app.use('/api/v1/health', healthRoutes);
 app.use('/api/v1/ai', aiRoutes);
 

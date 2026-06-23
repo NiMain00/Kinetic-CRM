@@ -129,7 +129,7 @@ export default function ApprovalInboxView({
   );
 
   return (
-    <div className={`${isMobile ? 'p-4' : 'p-8'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto relative`}>
+    <div className={`${isMobile ? 'p-2' : 'p-1'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto relative`}>
       {/* Title & Stats */}
       <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
         <div className="space-y-1">

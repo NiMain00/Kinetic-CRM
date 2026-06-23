@@ -1,8 +1,17 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "linux-musl"]
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+// Placeholder model for Prisma Client generation
+// Full schema defined in md Kinetic CRM/054_FULL_DATABASE_SCHEMA_DDL.md
+model SystemConfig {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
 }

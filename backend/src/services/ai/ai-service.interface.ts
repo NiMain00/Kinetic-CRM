@@ -1,8 +1,8 @@
 export interface AiService {
   summarize(content: string, context: 'rks' | 'lphs' | 'prospect' | 'general'): Promise<string>;
-  analyze(projectId: string): Promise<AnalysisResult>;
+  analyze(featureCode: string, data: string, userId?: string): Promise<AnalysisResult>;
   generateEmbedding(text: string): Promise<number[]>;
-  extractInsight(data: unknown, type: string): Promise<string>;
+  extractInsight(featureCode: string, data: string, userId?: string): Promise<string>;
   healthCheck(): Promise<boolean>;
 }
 
