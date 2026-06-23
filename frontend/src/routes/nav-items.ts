@@ -7,30 +7,30 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
-  { label: 'Prospek', path: '/prospects', icon: 'travel_explore', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
-  { label: 'Proyek', path: '/projects', icon: 'folder', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
-  { label: 'Approval', path: '/approvals', icon: 'approval', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer'] },
-  { label: 'Laporan', path: '/reports', icon: 'report', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head'] },
-  { label: 'Master Data', path: '/master-data', icon: 'database', roles: ['Super Admin', 'Admin'] },
-  { label: 'Pengguna', path: '/users', icon: 'people', roles: ['Super Admin', 'Admin'] },
-  { label: 'Notifikasi', path: '/notifications', icon: 'notifications', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
-  { label: 'Audit Log', path: '/audit', icon: 'history', roles: ['Super Admin', 'Admin'] },
-  { label: 'Konfigurasi', path: '/config', icon: 'settings', roles: ['Super Admin', 'Admin'] },
+  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['Administrator', 'Project Manager', 'Management', 'Reviewer Departemen', 'Staf Cabang'] },
+  { label: 'Prospek', path: '/prospects', icon: 'travel_explore', roles: ['Administrator', 'Project Manager', 'Management', 'Reviewer Departemen', 'Staf Cabang'] },
+  { label: 'Proyek', path: '/projects', icon: 'folder', roles: ['Administrator', 'Project Manager', 'Management', 'Reviewer Departemen', 'Staf Cabang'] },
+  { label: 'Approval', path: '/approvals', icon: 'approval', roles: ['Administrator', 'Project Manager', 'Management', 'Reviewer Departemen'] },
+  { label: 'Laporan', path: '/reports', icon: 'report', roles: ['Administrator', 'Project Manager', 'Management'] },
+  { label: 'Master Data', path: '/master-data', icon: 'database', roles: ['Administrator'] },
+  { label: 'Pengguna', path: '/users', icon: 'people', roles: ['Administrator'] },
+  { label: 'Notifikasi', path: '/notifications', icon: 'notifications', roles: ['Administrator', 'Project Manager', 'Management', 'Reviewer Departemen', 'Staf Cabang'] },
+  { label: 'Audit Log', path: '/audit', icon: 'history', roles: ['Administrator'] },
+  { label: 'Konfigurasi', path: '/config', icon: 'settings', roles: ['Administrator'] },
 ];
 
 export const configNavItems: NavItem[] = [
-  { label: 'Organisasi', path: '/config/org', icon: 'account_tree', roles: ['Super Admin', 'Admin'] },
-  { label: 'Status Proyek', path: '/config/status', icon: 'settings', roles: ['Super Admin', 'Admin'] },
-  { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', roles: ['Super Admin', 'Admin'] },
-  { label: 'SLA', path: '/config/sla', icon: 'alarm', roles: ['Super Admin', 'Admin'] },
-  { label: 'Role', path: '/config/roles', icon: 'badge', roles: ['Super Admin'] },
-  { label: 'Target', path: '/config/targets', icon: 'track_changes', roles: ['Super Admin', 'Admin'] },
-  { label: 'Workflow', path: '/config/workflow', icon: 'alt_route', roles: ['Super Admin', 'Admin'] },
-  { label: 'Integrasi', path: '/config/integration', icon: 'api', roles: ['Super Admin'] },
-  { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', roles: ['Super Admin', 'Admin'] },
-  { label: 'Periode', path: '/config/period', icon: 'calendar_month', roles: ['Super Admin', 'Admin'] },
-  { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', roles: ['Super Admin', 'Admin'] },
+  { label: 'Organisasi', path: '/config/org', icon: 'account_tree', roles: ['Administrator'] },
+  { label: 'Status Proyek', path: '/config/status', icon: 'settings', roles: ['Administrator'] },
+  { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', roles: ['Administrator'] },
+  { label: 'SLA', path: '/config/sla', icon: 'alarm', roles: ['Administrator'] },
+  { label: 'Role', path: '/config/roles', icon: 'badge', roles: ['Administrator'] },
+  { label: 'Target', path: '/config/targets', icon: 'track_changes', roles: ['Administrator'] },
+  { label: 'Workflow', path: '/config/workflow', icon: 'alt_route', roles: ['Administrator'] },
+  { label: 'Integrasi', path: '/config/integration', icon: 'api', roles: ['Administrator'] },
+  { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', roles: ['Administrator'] },
+  { label: 'Periode', path: '/config/period', icon: 'calendar_month', roles: ['Administrator'] },
+  { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', roles: ['Administrator'] },
 ];
 
 export function filterNavItems(items: NavItem[], role: string): NavItem[] {

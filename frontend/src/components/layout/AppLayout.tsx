@@ -20,7 +20,7 @@ export default function AppLayout() {
   }, [location.pathname]);
 
   const userRole = (user as { roleName?: string })?.roleName || 'Staff';
-  const userName = (user as { name?: string })?.name || (user as { fullName?: string })?.fullName || 'Alexander Pierce';
+  const userName = (user as { name?: string })?.name || (user as { fullName?: string })?.fullName || 'User';
 
   const handleNavigate = (path: string) => {
     navigate(path);

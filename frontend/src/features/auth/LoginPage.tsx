@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     try {
       const response = await authService.login({ username: username.trim(), password });
-      const { accessToken, refreshToken, user: userData } = response.data;
+      const { accessToken, refreshToken, user: userData } = response.data.data;
 
       localStorage.setItem('auth_token', accessToken);
       if (refreshToken) {
