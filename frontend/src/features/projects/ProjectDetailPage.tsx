@@ -208,7 +208,56 @@ export default function ProjectDetailView({
         </div>
       </section>
 
-      {isOverview && (
+      {/* Conditional Stepper: Untuk Prospecting type, tampilkan stepper sederhana (Fase 4) */}
+      {isOverview && project.type === 'Prospecting' && (
+        <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto shrink-0 select-none">
+          <div className="min-w-[600px] flex items-center justify-between relative">
+            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
+
+            {['Prospek', 'LPHS/SIOS', 'Harga', 'Pemenang', 'Delivery'].map((step, index) => {
+              const stepNum = index + 1;
+              const isCompleted = stepNum < 2;
+              const isActive = stepNum === 2;
+
+              const stepToPathProspecting: Record<string, string> = {
+                'Prospek': 'overview',
+                'LPHS/SIOS': 'lphs',
+                'Harga': 'harga',
+                'Pemenang': 'pemenang',
+                'Delivery': 'target-delivery'
+              };
+
+              return (
+                <div 
+                  key={step} 
+                  onClick={() => navigate(`/project/${projectId}/${stepToPathProspecting[step]}`)}
+                  className="relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 cursor-pointer hover:scale-105 transition-transform"
+                >
+                {isCompleted ? (
+                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                    <span className="material-symbols-outlined text-[16px]">check</span>
+                  </div>
+                ) : isActive ? (
+                  <div className="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
+                    {stepNum}
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-border text-on-surface-variant flex items-center justify-center font-bold text-sm">
+                    {stepNum}
+                  </div>
+                )}
+                <span className={`font-label-sm text-xs ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
+                  {step}
+                </span>
+              </div>
+            );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Stepper untuk Tender type (existing 5-step) */}
+      {isOverview && project.type === 'Tender' && (
         <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto shrink-0 select-none">
           <div className="min-w-[800px] flex items-center justify-between relative">
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
@@ -261,8 +310,8 @@ export default function ProjectDetailView({
           <div className="flex items-center gap-8 min-w-max">
             {[
               'Overview',
-              'RKS',
-              'Review RKS',
+              project.type === 'Tender' ? 'RKS' : null,
+              project.type === 'Tender' ? 'Review RKS' : null,
               'LPHS/SIOS',
               'Harga',
               'Kompetitor',
@@ -270,10 +319,10 @@ export default function ProjectDetailView({
               'Target Delivery',
               'Timeline',
               'Dokumen',
-            ].map((tab) => (
+            ].filter(Boolean).map((tab) => (
               <button
                 key={tab}
-                onClick={() => navigate(`/project/${projectId}/${tabPathMap[tab] || 'overview'}`)}
+                onClick={() => navigate(`/project/${projectId}/${tabPathMap[tab!] || 'overview'}`)}
                 className={`py-4 font-label-sm text-sm transition-all relative ${
                   activeTab === tab
                     ? 'text-primary font-bold border-b-2 border-primary'

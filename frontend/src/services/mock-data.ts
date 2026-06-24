@@ -1,16 +1,26 @@
 // Mock data for Kinetic CRM demo
 
-import type { Prospect, Project, ApprovalItem, TimelineEvent } from '../types/domain';
+import type { Prospect, Project, ApprovalItem, TimelineEvent, Customer } from '../types/domain';
+
+export const INITIAL_CUSTOMERS: Customer[] = [
+  { id: 'C001', name: 'PT. Telkom Indonesia Tbk.', code: 'TELKOM', type: 'bumn', city: 'Bandung', npwp: '01.234.567.8-091.000', picName: 'Budi Santoso', picPosition: 'Procurement Manager', picPhone: '0812-3456-7890' },
+  { id: 'C002', name: 'PT. Telekom Nusantara', code: 'TELKON', type: 'bumn', city: 'Jakarta Selatan', npwp: '02.345.678.9-092.001', picName: 'Siti Aminah', picPosition: 'IT Director', picPhone: '0813-4567-8901' },
+  { id: 'C003', name: 'Energi Bangsa Corp', code: 'EBC', type: 'swasta', city: 'Jakarta Pusat', picName: 'Rizky Pratama', picPosition: 'CEO', picPhone: '0814-5678-9012' },
+  { id: 'C004', name: 'Secure City Group', code: 'SCG', type: 'swasta', city: 'Jakarta Timur', picName: 'Dian Permata', picPosition: 'Security Manager', picPhone: '0815-6789-0123' },
+  { id: 'C005', name: 'Bank Artha Graha', code: 'BAG', type: 'swasta', city: 'Jakarta Barat', npwp: '03.456.789.0-093.002', picName: 'Hendra Gunawan', picPosition: 'Finance Director', picPhone: '0816-7890-1234' },
+  { id: 'C006', name: 'Pemerintah Provinsi DKI Jakarta', code: 'PEMDKI', type: 'pemerintah', city: 'Jakarta Pusat', picName: 'Bambang Sutejo', picPosition: 'Kepala Dinas', picPhone: '021-1234567' },
+  { id: 'C007', name: 'Global Tech Solutions', code: 'GTS', type: 'asing', city: 'Jakarta Selatan', npwp: '04.567.890.1-094.003', picName: 'John Smith', picPosition: 'Regional Manager', picPhone: '0817-8901-2345' },
+];
 
 export const INITIAL_PROSPECTS: Prospect[] = [
-  { id: '1', name: 'Modernization of Data Center Jakarta', client: 'PT. Telekom Nusantara', status: 'Prospecting', author: 'Andi Wijaya', date: 'Oct 24, 2023', estimatedValue: 1250000000, description: 'Pengadaan infrastruktur server modular untuk perluasan kapasitas regional base DC Jakarta.' },
-  { id: '2', name: 'Supply of Industrial High-Voltage Cables', client: 'Energi Bangsa Corp', status: 'Approved', author: 'Siti Aminah', date: 'Oct 22, 2023', estimatedValue: 3400000000, description: 'Pengadaan kabel transmisi tegangan tinggi untuk gardu induk Sumatera Selatan.' },
-  { id: '3', name: 'Surveillance System Implementation Phase 2', client: 'Secure City Group', status: 'Waiting PM', author: 'Budi Santoso', date: 'Oct 21, 2023', estimatedValue: 850000000, description: 'Instalasi pemantauan cerdas dengan IP camera berbasis AI di area komersial.' },
-  { id: '4', name: 'Cloud Infrastructure Migration Strategy', client: 'Bank Artha Graha', status: 'Revision', author: 'Rina Kartika', date: 'Oct 19, 2023', estimatedValue: 1800000000, description: 'Consulting dan restrukturisasi database on-premise ke multi-cloud architecture.' },
-  { id: '5', name: 'Solar Panel Installation - North Branch', client: 'Lestari Eco Farms', status: 'Prospecting', author: 'Andi Wijaya', date: 'Oct 18, 2023', estimatedValue: 950000000 },
-  { id: '6', name: 'Enterprise Firewall Upgrade - Global', client: 'Defense Tech Solutions', status: 'Approved', author: 'Budi Santoso', date: 'Oct 15, 2023', estimatedValue: 600000000 },
-  { id: '7', name: 'Network Optimization Project v3.0', client: 'Global Logistics Inc.', status: 'Waiting PM', author: 'Rina Kartika', date: 'Oct 14, 2023', estimatedValue: 1100000000 },
-  { id: '8', name: 'Warehouse Automation Consultation', client: 'Express Delivery Hub', status: 'Prospecting', author: 'Siti Aminah', date: 'Oct 12, 2023', estimatedValue: 500000000 },
+  { id: '1', name: 'Modernization of Data Center Jakarta', client: 'PT. Telekom Nusantara', customerId: 'C002', customerType: 'existing', status: 'Potensial', prospectType: 'potensial', potensiUnit: 3, author: 'Andi Wijaya', date: 'Oct 24, 2023', estimatedValue: 1250000000, description: 'Pengadaan infrastruktur server modular untuk perluasan kapasitas regional base DC Jakarta.', branch: 'Jakarta Pusat' },
+  { id: '2', name: 'Supply of Industrial High-Voltage Cables', client: 'Energi Bangsa Corp', customerId: 'C003', customerType: 'existing', status: 'Approved', potensiUnit: 5, author: 'Siti Aminah', date: 'Oct 22, 2023', estimatedValue: 3400000000, description: 'Pengadaan kabel transmisi tegangan tinggi untuk gardu induk Sumatera Selatan.', branch: 'Surabaya' },
+  { id: '3', name: 'Surveillance System Implementation Phase 2', client: 'Secure City Group', customerId: 'C004', customerType: 'existing', status: 'Waiting PM', potensiUnit: 2, author: 'Budi Santoso', date: 'Oct 21, 2023', estimatedValue: 850000000, description: 'Instalasi pemantauan cerdas dengan IP camera berbasis AI di area komersial.', branch: 'Jakarta Selatan' },
+  { id: '4', name: 'Cloud Infrastructure Migration Strategy', client: 'Bank Artha Graha', customerId: 'C005', customerType: 'existing', status: 'Revision', potensiUnit: 1, author: 'Rina Kartika', date: 'Oct 19, 2023', estimatedValue: 1800000000, description: 'Consulting dan restrukturisasi database on-premise ke multi-cloud architecture.', branch: 'Jakarta Barat' },
+  { id: '5', name: 'Solar Panel Installation - North Branch', client: 'Lestari Eco Farms', customerType: 'new', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Andi Wijaya', date: 'Oct 18, 2023', estimatedValue: 950000000, branch: 'Bandung', customerData: { id: 'new-1', name: 'Lestari Eco Farms', code: 'LEF', type: 'swasta', city: 'Bandung', picName: 'Dewi Lestari', picPosition: 'Owner', picPhone: '0821-1234-5678', isNew: true, needsVerification: true } },
+  { id: '6', name: 'Enterprise Firewall Upgrade - Global', client: 'Defense Tech Solutions', status: 'Approved', potensiUnit: 4, author: 'Budi Santoso', date: 'Oct 15, 2023', estimatedValue: 600000000, branch: 'Jakarta Pusat' },
+  { id: '7', name: 'Network Optimization Project v3.0', client: 'Global Logistics Inc.', status: 'Waiting PM', potensiUnit: 2, author: 'Rina Kartika', date: 'Oct 14, 2023', estimatedValue: 1100000000, branch: 'Makassar' },
+  { id: '8', name: 'Warehouse Automation Consultation', client: 'Express Delivery Hub', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Siti Aminah', date: 'Oct 12, 2023', estimatedValue: 500000000, branch: 'Surabaya' },
 ];
 
 export const INITIAL_PROJECTS: Project[] = [

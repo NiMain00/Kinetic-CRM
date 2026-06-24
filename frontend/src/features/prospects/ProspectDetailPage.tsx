@@ -8,12 +8,16 @@ const defaultAnswers: Record<string, string> = {
   upsCapacity: 'UPS 2x3KVA',
   isFiberOpticReady: 'Ya, Terjadwal',
   groundingCableOption: 'Wajib menggunakan grounding tersendiri',
+  jenisPengadaan: 'Ya',
+  detailKebutuhanUnit: 'Membutuhkan 10 unit UPS 3KVA',
 };
 
 const questionnaireLabels: Record<string, string> = {
   upsCapacity: 'Spesifikasi UPS di lokasi Cabang',
   isFiberOpticReady: 'Jalur FO (Fiber Optic) aktif dari ISP',
   groundingCableOption: 'Kebutuhan Proteksi Kelistrikan Ruang Server',
+  jenisPengadaan: 'Apakah jenis pengadaan customer beli putus?',
+  detailKebutuhanUnit: 'Detail kebutuhan pengadaan unit',
 };
 
 export default function ProspectDetailPage() {
@@ -39,14 +43,27 @@ export default function ProspectDetailPage() {
     );
   }
 
+  const isNonPotensial = prospect.status === 'Non Potensial' || prospect.prospectType === 'non_potensial';
+  const isPotensial = prospect.status === 'Potensial' || prospect.prospectType === 'potensial';
+  const needsVerification = prospect.customerData?.needsVerification;
+
   const statusBadge = (status: string) => {
+    if (needsVerification) {
+      return 'bg-amber-100 text-amber-700';
+    }
     const map: Record<string, string> = {
-      Prospecting: 'bg-info/10 text-info',
+      'Non Potensial': 'bg-slate-200 text-slate-600',
+      Potensial: 'bg-emerald-100 text-emerald-700',
       'Waiting PM': 'bg-warning/10 text-warning',
       Revision: 'bg-status-orange/10 text-status-orange',
       Approved: 'bg-success/10 text-success',
     };
     return map[status] || 'bg-secondary-container/50 text-on-secondary-container';
+  };
+
+  const statusLabel = () => {
+    if (needsVerification) return 'Perlu Verifikasi';
+    return prospect.status;
   };
 
   const actionIcon = (type: string) => {
@@ -88,6 +105,10 @@ export default function ProspectDetailPage() {
     navigate('/prospects');
   };
 
+  const handleBuatProyek = () => {
+    toast.success('Fitur konversi prospek ke proyek akan segera tersedia.');
+  };
+
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
@@ -107,11 +128,17 @@ export default function ProspectDetailPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl font-extrabold text-on-surface">{prospect.name}</h1>
                 <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBadge(prospect.status)}`}>
-                  {prospect.status}
+                  {statusLabel()}
                 </span>
+                {/* Badge "Perlu Verifikasi" untuk new customer (Fase 3 item 3) */}
+                {needsVerification && (
+                  <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-300">
+                    Perlu Verifikasi
+                  </span>
+                )}
               </div>
               <p className="text-sm text-secondary">{prospect.client}</p>
-              <div className="flex items-center gap-4 text-xs text-outline mt-2">
+              <div className="flex items-center gap-4 text-xs text-outline mt-2 flex-wrap">
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">person</span>
                   {prospect.author}
@@ -126,13 +153,26 @@ export default function ProspectDetailPage() {
                     Rp {prospect.estimatedValue.toLocaleString('id-ID')}
                   </span>
                 )}
+                {prospect.branch && (
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[16px]">business</span>
+                    {prospect.branch}
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button onClick={() => navigate(`/prospects/${prospect.id}/edit`)} className="px-4 py-2 border border-border rounded-lg text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-all flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px]">edit</span>
                 Edit
               </button>
+              {/* Kondisional tombol (Fase 3 item 2) */}
+              {isPotensial && (
+                <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px]">add_business</span>
+                  Buat Proyek
+                </button>
+              )}
               <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                 Setujui
@@ -151,6 +191,80 @@ export default function ProspectDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Detail */}
           <div className="lg:col-span-7 space-y-6">
+            {/* Overview Section (Fase 3 item 1) */}
+            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+              <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">overview</span>
+                Overview Prospek
+              </h3>
+              <div className="grid grid-cols-2 gap-y-3 text-sm">
+                <div>
+                  <p className="text-xs text-secondary">Potensi Penambahan Unit</p>
+                  <p className="font-semibold text-on-surface">{prospect.potensiUnit} unit</p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary">Tipe Prospek</p>
+                  <p className="font-semibold text-on-surface">
+                    {isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : prospect.status}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary">Customer</p>
+                  <p className="font-semibold text-on-surface">{prospect.client}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary">Cabang</p>
+                  <p className="font-semibold text-on-surface">{prospect.branch || '-'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer Info Card (Fase 3 item 4) */}
+            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+              <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">business</span>
+                Informasi Customer
+              </h3>
+              <div className="grid grid-cols-2 gap-y-3 text-sm">
+                <div className="col-span-2">
+                  <p className="text-xs text-secondary">Nama Customer</p>
+                  <p className="font-semibold text-on-surface">{prospect.client}</p>
+                </div>
+                {prospect.customerData && (
+                  <>
+                    <div>
+                      <p className="text-xs text-secondary">Kode</p>
+                      <p className="font-semibold text-on-surface">{prospect.customerData.code}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-secondary">Tipe</p>
+                      <p className="font-semibold text-on-surface capitalize">{prospect.customerData.type}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-secondary">Kota</p>
+                      <p className="font-semibold text-on-surface">{prospect.customerData.city}</p>
+                    </div>
+                    {prospect.customerData.npwp && (
+                      <div>
+                        <p className="text-xs text-secondary">NPWP</p>
+                        <p className="font-semibold text-on-surface">{prospect.customerData.npwp}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+                <div className="col-span-2 border-t border-border pt-3 mt-1">
+                  <p className="text-xs text-secondary mb-1">PIC Customer</p>
+                  <div className="bg-surface-container-low p-3 rounded-lg space-y-1">
+                    <p className="font-medium text-on-surface">
+                      {prospect.customerData?.picName || '-'}
+                    </p>
+                    <p className="text-xs text-secondary">{prospect.customerData?.picPosition || '-'}</p>
+                    <p className="text-xs text-secondary">{prospect.customerData?.picPhone || '-'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Description */}
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
@@ -166,7 +280,7 @@ export default function ProspectDetailPage() {
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">quiz</span>
-                Jawaban Kuesioner Teknis
+                Jawaban Pertanyaan Standar
               </h3>
               <div className="space-y-4">
                 {(prospect.answers || defaultAnswers) && Object.entries(prospect.answers || defaultAnswers).map(([key, value]) => (
