@@ -716,6 +716,167 @@ async function main() {
   }
   console.log(`  Seeded ${prospectCount} dummy prospects`);
 
+  // 27. Seed Dummy Projects
+  const projectData = [
+    { name: 'Modernisasi Data Center - Telkom', customerCode: 'TELKOM', categoryName: 'Data Center', branchCode: 'JKT-PUSAT', username: 'bambang.pm', projectType: 'proyek', statusCode: 'submit_rks', tenderNumber: 'TENDER-001', tenderName: 'Pengadaan Server DC Telkom 2025' },
+    { name: 'Jaringan FO Bandung Timur', customerCode: 'TELKOM', categoryName: 'Network & Connectivity', branchCode: 'BDG', username: 'bambang.pm', projectType: 'proyek', statusCode: 'lphs_sios', tenderNumber: 'TENDER-002', tenderName: 'Fiber Optic Bandung Timur' },
+    { name: 'Sistem Keamanan BRI Pusat', customerCode: 'BRI', categoryName: 'Security System', branchCode: 'HO', username: 'bambang.pm', projectType: 'proyek', statusCode: 'submit_harga', tenderNumber: 'TENDER-003', tenderName: 'CCTV & Access Control BRI' },
+    { name: 'Upgrade Jaringan BRI Regional Jatim', customerCode: 'BRI', categoryName: 'IT Infrastructure', branchCode: 'SBY', username: 'bambang.pm', projectType: 'proyek', statusCode: 'pengumuman_pemenang', tenderNumber: 'TENDER-004', tenderName: 'Upgrade Jaringan BRI Jatim' },
+    { name: 'Smart Office Pertamina', customerCode: 'PERTAMINA', categoryName: 'IoT & Smart Systems', branchCode: 'JKT-SELATAN', username: 'siti.am', projectType: 'non_proyek', statusCode: 'review_department', tenderNumber: null, tenderName: null },
+    { name: 'DC Backup Power Astra', customerCode: 'ASTRA', categoryName: 'Data Center', branchCode: 'HO', username: 'eko.p', projectType: 'proyek', statusCode: 'created', tenderNumber: 'TENDER-005', tenderName: 'DC Backup Power Astra 2025' },
+    { name: 'Jaringan Komunikasi Bandara AP II', customerCode: 'AP2', categoryName: 'Telecommunication', branchCode: 'MDN', username: 'dewi.s', projectType: 'proyek', statusCode: 'target_delivery', tenderNumber: 'TENDER-006', tenderName: 'FO 5 Bandara AP II' },
+    { name: 'Konsultasi IT Infrastructure EBC', customerCode: 'EBC', categoryName: 'IT Infrastructure', branchCode: 'JKT-SELATAN', username: 'siti.am', projectType: 'non_proyek', statusCode: 'selesai', tenderNumber: null, tenderName: null },
+  ];
+
+  const projectMap: Record<string, string> = {};
+  let projectCount = 0;
+  for (const pd of projectData) {
+    const customerId = customerMap[pd.customerCode];
+    const categoryId = categoryMap[pd.categoryName];
+    const branchId = branchMap[pd.branchCode];
+    const userId = userMap[pd.username];
+    const statusId = statusMap[pd.statusCode];
+    if (!customerId || !categoryId || !branchId || !userId || !statusId) {
+      console.log(`    Skipping project "${pd.name}": missing reference`);
+      continue;
+    }
+    const existing = await prisma.project.findFirst({ where: { name: pd.name } });
+    if (existing) { projectMap[pd.name] = existing.id; continue; }
+    const pid = uuidv4();
+    await prisma.project.create({
+      data: {
+        id: pid, name: pd.name, projectType: pd.projectType,
+        customerId, branchId, categoryId, statusId,
+        tenderNumber: pd.tenderNumber, tenderName: pd.tenderName,
+        createdBy: userId, deadlineTender: new Date('2025-09-30'),
+      },
+    });
+    projectMap[pd.name] = pid;
+    projectCount++;
+
+    await prisma.projectTimelineEvent.create({
+      data: {
+        id: uuidv4(), projectId: pid,
+        eventType: 'project_created', actorId: userId,
+        description: `Proyek "${pd.name}" dibuat.`,
+        occurredAt: new Date('2025-06-01'),
+      },
+    });
+  }
+  console.log(`  Seeded ${projectCount} dummy projects`);
+
+  // 28. Seed Dummy Price Submissions for projects
+  const priceData = [
+    { projectName: 'Sistem Keamanan BRI Pusat', ourPrice: 1500000000, marginPercentage: 18.5, username: 'bambang.pm' },
+    { projectName: 'Upgrade Jaringan BRI Regional Jatim', ourPrice: 3200000000, marginPercentage: 22.0, username: 'bambang.pm' },
+    { projectName: 'Jaringan Komunikasi Bandara AP II', ourPrice: 7800000000, marginPercentage: 15.0, username: 'dewi.s' },
+  ];
+  for (const pr of priceData) {
+    const projectId = projectMap[pr.projectName];
+    const userId = userMap[pr.username];
+    if (!projectId || !userId) continue;
+    const existing = await prisma.priceSubmission.findFirst({ where: { projectId } });
+    if (!existing) {
+      await prisma.priceSubmission.create({
+        data: {
+          id: uuidv4(), projectId, ourPrice: pr.ourPrice,
+          marginPercentage: pr.marginPercentage,
+          submittedBy: userId,
+        },
+      });
+    }
+  }
+  console.log(`  Seeded ${priceData.length} dummy price submissions`);
+
+  // 29. Seed Dummy Tender Results
+  const tenderResultData = [
+    { projectName: 'Upgrade Jaringan BRI Regional Jatim', result: 'menang', finalPrice: 3100000000, username: 'bambang.pm' },
+    { projectName: 'Konsultasi IT Infrastructure EBC', result: 'kalah', finalPrice: null, username: 'siti.am' },
+  ];
+  for (const tr of tenderResultData) {
+    const projectId = projectMap[tr.projectName];
+    const userId = userMap[tr.username];
+    if (!projectId || !userId) continue;
+    const existing = await prisma.tenderResult.findFirst({ where: { projectId } });
+    if (!existing) {
+      await prisma.tenderResult.create({
+        data: {
+          id: uuidv4(), projectId, result: tr.result,
+          finalPrice: tr.finalPrice, decidedBy: userId,
+        },
+      });
+    }
+  }
+  console.log(`  Seeded ${tenderResultData.length} dummy tender results`);
+
+  // 30. Seed Dummy Approvals
+  const stages2 = await prisma.approvalWorkflowStage.findMany();
+  const stageMap2: Record<string, string> = {};
+  for (const s of stages2) { stageMap2[s.stageCode] = s.id; }
+
+  const approvalData = [
+    { projectName: 'Modernisasi Data Center - Telkom', stageCode: 'rks_approval', username: 'bambang.pm', assigneeUsername: 'eko.p', status: 'pending' },
+    { projectName: 'Jaringan FO Bandung Timur', stageCode: 'lphs_pm_approval', username: 'bambang.pm', assigneeUsername: 'eko.p', status: 'approved' },
+    { projectName: 'Jaringan FO Bandung Timur', stageCode: 'lphs_dept_review', username: 'bambang.pm', assigneeUsername: 'asulistyo', status: 'pending' },
+    { projectName: 'Sistem Keamanan BRI Pusat', stageCode: 'rks_approval', username: 'bambang.pm', assigneeUsername: 'doni.admin', status: 'pending' },
+    { projectName: 'Smart Office Pertamina', stageCode: 'rks_approval', username: 'siti.am', assigneeUsername: 'bambang.pm', status: 'pending' },
+    { projectName: 'DC Backup Power Astra', stageCode: 'rks_approval', username: 'eko.p', assigneeUsername: 'bambang.pm', status: 'rejected' },
+    { projectName: 'Jaringan Komunikasi Bandara AP II', stageCode: 'lphs_final_approval', username: 'dewi.s', assigneeUsername: 'eko.p', status: 'pending' },
+  ];
+  let approvalCount = 0;
+  for (const ad of approvalData) {
+    const projectId = projectMap[ad.projectName];
+    const stageId = stageMap2[ad.stageCode];
+    const assigneeId = userMap[ad.assigneeUsername];
+    if (!projectId || !stageId || !assigneeId) continue;
+    const existing = await prisma.approval.findFirst({
+      where: { resourceId: projectId, stageId, assignedToUserId: assigneeId },
+    });
+    if (!existing) {
+      const decidedBy = ad.status !== 'pending' ? userMap[ad.assigneeUsername] : null;
+      const decidedAt = ad.status !== 'pending' ? new Date('2025-06-15') : null;
+      await prisma.approval.create({
+        data: {
+          id: uuidv4(), resourceType: 'project', resourceId: projectId,
+          stageId, assignedToUserId: assigneeId, status: ad.status,
+          decidedBy, decidedAt,
+        },
+      });
+      approvalCount++;
+    }
+  }
+  console.log(`  Seeded ${approvalCount} dummy approvals`);
+
+  // 31. Seed Dummy Notifications
+  const notifData = [
+    { username: 'bambang.pm', message: 'RKS "Modernisasi Data Center - Telkom" menunggu approval Anda.', resourceType: 'project', resourceProjectName: 'Modernisasi Data Center - Telkom' },
+    { username: 'eko.p', message: 'Approval RKS untuk "Modernisasi Data Center - Telkom" sudah ditugaskan ke Anda.', resourceType: 'project', resourceProjectName: 'Modernisasi Data Center - Telkom' },
+    { username: 'bambang.pm', message: 'LPHS "Jaringan FO Bandung Timur" telah disetujui.', resourceType: 'project', resourceProjectName: 'Jaringan FO Bandung Timur' },
+    { username: 'eko.p', message: 'Proyek "DC Backup Power Astra" membutuhkan review Anda.', resourceType: 'project', resourceProjectName: 'DC Backup Power Astra' },
+  ];
+  let notifCount = 0;
+  const templateIds = await prisma.notificationTemplate.findMany({ take: 1, select: { id: true } });
+  const templateId = templateIds[0]?.id || '';
+  for (const nd of notifData) {
+    const userId = userMap[nd.username];
+    const projectId = projectMap[nd.resourceProjectName];
+    if (!userId || !templateId) continue;
+    const existing = await prisma.notification.findFirst({
+      where: { recipientUserId: userId, message: nd.message },
+    });
+    if (!existing) {
+      await prisma.notification.create({
+        data: {
+          id: uuidv4(), notificationTemplateId: templateId,
+          recipientUserId: userId, message: nd.message,
+          resourceType: nd.resourceType, resourceId: projectId || null,
+        },
+      });
+      notifCount++;
+    }
+  }
+  console.log(`  Seeded ${notifCount} dummy notifications`);
+
   console.log('Seeding complete!');
 }
 

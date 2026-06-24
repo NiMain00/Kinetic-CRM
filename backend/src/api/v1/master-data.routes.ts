@@ -43,4 +43,16 @@ router.get('/project-categories',
     } catch (err) { next(err); }
   });
 
+router.get('/project-statuses',
+  authMiddleware,
+  async (_req: Request, res: Response, next: NextFunction) => {
+    try {
+      const statuses = await prisma.projectStatusDefinition.findMany({
+        select: { id: true, code: true, label: true, color: true, displayOrder: true },
+        orderBy: { displayOrder: 'asc' },
+      });
+      res.json(success(statuses));
+    } catch (err) { next(err); }
+  });
+
 export default router;

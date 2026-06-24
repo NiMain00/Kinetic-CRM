@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Project } from '../../types/domain';
-import { INITIAL_PROJECTS, INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
+import { useProject } from '../../hooks/queries/useProjects';
+import { INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
 
 interface ProjectDetailViewProps {
   key?: string;
@@ -18,7 +19,12 @@ export default function ProjectDetailView({
   const { projectId, tab: urlTab } = useParams<{ projectId: string; tab: string }>();
   const navigate = useNavigate();
 
-  const project = propProject || INITIAL_PROJECTS.find((p) => p.id === projectId);
+  const { data: apiRes, isLoading } = useProject(projectId || '');
+  const project = propProject || (apiRes as any)?.data?.data || null;
+
+  if (!propProject && isLoading) {
+    return <div className="py-20 text-center text-secondary">Memuat proyek...</div>;
+  }
 
   if (!project) {
     return (
