@@ -20,22 +20,20 @@ export default function ProjectDetailView({
   const navigate = useNavigate();
 
   const { data: apiRes, isLoading } = useProject(projectId || '');
-  const project = propProject || (apiRes as any)?.data?.data || null;
-
-  if (!propProject && isLoading) {
-    return <div className="py-20 text-center text-secondary">Memuat proyek...</div>;
-  }
-
-  if (!project) {
-    return (
-      <div className="py-20 text-center space-y-4">
-        <span className="material-symbols-outlined text-5xl text-outline">search_off</span>
-        <h3 className="font-heading-section text-base text-on-surface">Project not found</h3>
-        <p className="text-sm text-outline">The project you are looking for does not exist or has been removed.</p>
-        <button onClick={() => onNavigatePage('projects')} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold">Back to Projects</button>
-      </div>
-    );
-  }
+  const rawProject = propProject || (apiRes as any)?.data?.data || null;
+  const project = rawProject ? {
+    ...rawProject,
+    client: rawProject.customer?.name || '-',
+    estimatedValue: Number(rawProject.priceSubmission?.ourPrice || rawProject.pricing?.ourPrice || 0),
+    location: rawProject.tenderName || rawProject.branch?.name || '-',
+    author: rawProject.creator?.name || '-',
+    progress: rawProject.status?.code === 'selesai' ? 100 : rawProject.status?.code === 'cancelled' ? 0 : 50,
+    code: rawProject.tenderNumber || rawProject.id?.slice(0, 8).toUpperCase() || '-',
+    status: rawProject.status?.label || '-',
+    displayName: rawProject.name || rawProject.tenderName || rawProject.id?.slice(0, 8) || '-',
+  } : null;
+  const showLoading = !propProject && isLoading;
+  const showNotFound = !project && !showLoading;
 
   const tabPathMap: Record<string, string> = {
     'Overview': 'overview',
@@ -75,10 +73,10 @@ export default function ProjectDetailView({
 
   // RKS data states
   const [nomorTender, setNomorTender] = useState('TND/2025/HQ/0042');
-  const [namaTender, setNamaTender] = useState(project.name);
-  const [deadlineTender, setDeadlineTender] = useState(project.deadlineTender || '2026-06-25');
+  const [namaTender, setNamaTender] = useState(project?.name || '');
+  const [deadlineTender, setDeadlineTender] = useState(project?.deadlineTender || '2026-06-25');
   const [aanwijzing, setAanwijzing] = useState('Tidak / Belum Ada');
-  const [workLocation, setWorkLocation] = useState(project.location || 'Site Office Area A, Jakarta Selatan');
+  const [workLocation, setWorkLocation] = useState('Site Office Area A, Jakarta Selatan');
   const [mainScope, setMainScope] = useState('Pembangunan infrastruktur data center terintegrasi meliputi instalasi kelistrikan, rack server, unit pendingin, dan fire suppression system.');
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; size: string; time: string }>>([
@@ -86,9 +84,9 @@ export default function ProjectDetailView({
   ]);
 
   // Pricing inputs
-  const [hargaPenawaran, setHargaPenawaran] = useState(project.pricing?.value || 1250000000);
-  const [marginPercentage, setMarginPercentage] = useState(project.pricing?.margin || 12.5);
-  const [pricingNotes, setPricingNotes] = useState(project.pricing?.note || '');
+  const [hargaPenawaran, setHargaPenawaran] = useState(1250000000);
+  const [marginPercentage, setMarginPercentage] = useState(12.5);
+  const [pricingNotes, setPricingNotes] = useState('');
 
   // Pemenang outcome toggles
   const [outcome, setOutcome] = useState<'menang' | 'kalah' | null>(null);
@@ -149,7 +147,22 @@ export default function ProjectDetailView({
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-background">
+    <>
+      {showLoading && (
+        <div className="flex-1 flex items-center justify-center bg-background">
+          <p className="text-secondary">Memuat proyek...</p>
+        </div>
+      )}
+      {showNotFound && (
+        <div className="flex-1 flex items-center justify-center bg-background py-20 text-center space-y-4">
+          <span className="material-symbols-outlined text-5xl text-outline">search_off</span>
+          <h3 className="font-heading-section text-base text-on-surface">Project not found</h3>
+          <p className="text-sm text-outline">The project you are looking for does not exist or has been removed.</p>
+          <button onClick={() => onNavigatePage('projects')} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold">Back to Projects</button>
+        </div>
+      )}
+      {project && (
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
       <section className="bg-white border-b border-border px-8 py-3.5 shadow-sm z-30">
         {/* Dynamic Breadcrumbs */}
@@ -168,7 +181,7 @@ export default function ProjectDetailView({
             onClick={() => navigate(`/project/${projectId}/overview`)}
             className="hover:text-primary transition-colors font-semibold text-slate-600"
           >
-            {project.code}
+            {project.name}
           </button>
           {!isOverview && (
             <>
@@ -190,7 +203,7 @@ export default function ProjectDetailView({
             </button>
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="font-display-title text-xl font-bold tracking-tight">{project.code}</h2>
+                <h2 className="font-display-title text-xl font-bold tracking-tight">{project.name}</h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-status-indigo/10 text-status-indigo font-semibold text-xs border border-status-indigo/20">
                   {project.status}
                 </span>
@@ -1791,5 +1804,7 @@ export default function ProjectDetailView({
         </div>
       </div>
     </div>
+      )}
+    </>
   );
 }

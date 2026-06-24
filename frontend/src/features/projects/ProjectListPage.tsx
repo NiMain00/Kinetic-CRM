@@ -104,7 +104,7 @@ export default function ProjectListPage() {
         </Card>
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Nilai</p>
-          <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrency(projects.reduce((s: number, p: any) => s + (Number(p.pricing?.value) || 0), 0))}</p>
+          <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrency(projects.reduce((s: number, p: any) => s + (Number(p.pricing?.ourPrice) || 0), 0))}</p>
         </Card>
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Active</p>
@@ -112,7 +112,7 @@ export default function ProjectListPage() {
         </Card>
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Won</p>
-          <p className="text-2xl font-bold text-status-purple mt-1">{projects.filter((p: any) => p.winnerDetails?.outcome === 'menang').length}</p>
+          <p className="text-2xl font-bold text-status-purple mt-1">{projects.filter((p: any) => p.winnerDetails?.result === 'menang').length}</p>
         </Card>
       </div>
 
@@ -143,7 +143,7 @@ export default function ProjectListPage() {
                     <td className="px-6 py-4 font-medium text-on-surface max-w-[250px] truncate">{project.name}</td>
                     <td className="px-6 py-4 text-secondary">{project.customer?.name || '-'}</td>
                     <td className="px-6 py-4"><StatusBadge status={project.status?.label || project.status?.code || '-'} /></td>
-                    <td className="px-6 py-4 text-on-surface font-medium">{formatCurrency(Number(project.pricing?.value) || 0)}</td>
+                    <td className="px-6 py-4 text-on-surface font-medium">{formatCurrency(Number(project.pricing?.ourPrice) || 0)}</td>
                     <td className="px-6 py-4 text-outline text-xs">{project.tenderName || project.projectType || '-'}</td>
                     <td className="px-6 py-4 text-outline text-xs">{project.createdAt ? new Date(project.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                   </tr>

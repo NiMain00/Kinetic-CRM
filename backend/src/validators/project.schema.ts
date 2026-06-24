@@ -22,6 +22,8 @@ export const createProjectSchema = z.object({
   deadlineTender: z.string().optional().nullable(),
   tenderNumber: z.string().optional().nullable(),
   tenderName: z.string().optional().nullable(),
+  estimatedValue: z.number().positive().optional(),
+  marginPercentage: z.number().optional(),
 });
 
 export const updateProjectSchema = z.object({

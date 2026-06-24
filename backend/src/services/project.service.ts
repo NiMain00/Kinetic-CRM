@@ -111,6 +111,8 @@ export class ProjectService {
     deadlineTender?: string | null;
     tenderNumber?: string | null;
     tenderName?: string | null;
+    estimatedValue?: number;
+    marginPercentage?: number;
     createdBy: string;
   }) {
     const project = await prisma.project.create({
@@ -135,6 +137,17 @@ export class ProjectService {
         creator: { select: { id: true, name: true } },
       },
     });
+
+    if (data.estimatedValue) {
+      await prisma.priceSubmission.create({
+        data: {
+          projectId: project.id,
+          ourPrice: data.estimatedValue,
+          marginPercentage: data.marginPercentage || null,
+          submittedBy: data.createdBy,
+        },
+      });
+    }
 
     await prisma.projectTimelineEvent.create({
       data: {

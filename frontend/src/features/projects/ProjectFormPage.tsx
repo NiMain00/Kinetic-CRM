@@ -20,6 +20,7 @@ export default function ProjectFormPage() {
   const [statusId, setStatusId] = useState('');
   const [projectType, setProjectType] = useState('Tender');
   const [deadlineTender, setDeadlineTender] = useState('');
+  const [estimatedValue, setEstimatedValue] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -65,6 +66,8 @@ export default function ProjectFormPage() {
         categoryId,
         statusId,
         deadlineTender: deadlineTender || null,
+        estimatedValue: estimatedValue ? Number(estimatedValue) : undefined,
+        marginPercentage: undefined,
       });
       toast.success('Proyek berhasil dibuat.');
       navigate('/projects');
@@ -196,6 +199,18 @@ export default function ProjectFormPage() {
                 aria-label="Batas Akhir Tender"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm text-on-surface-variant">Nilai Estimasi (Rp)</label>
+            <input
+              value={estimatedValue}
+              onChange={(e) => setEstimatedValue(e.target.value)}
+              className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+              placeholder="Contoh: 5000000000"
+              type="number"
+              aria-label="Nilai Estimasi"
+            />
           </div>
 
           <div className="flex justify-between items-center pt-4 border-t border-border">

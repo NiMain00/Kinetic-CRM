@@ -718,14 +718,14 @@ async function main() {
 
   // 27. Seed Dummy Projects
   const projectData = [
-    { name: 'Modernisasi Data Center - Telkom', customerCode: 'TELKOM', categoryName: 'Data Center', branchCode: 'JKT-PUSAT', username: 'bambang.pm', projectType: 'proyek', statusCode: 'submit_rks', tenderNumber: 'TENDER-001', tenderName: 'Pengadaan Server DC Telkom 2025' },
-    { name: 'Jaringan FO Bandung Timur', customerCode: 'TELKOM', categoryName: 'Network & Connectivity', branchCode: 'BDG', username: 'bambang.pm', projectType: 'proyek', statusCode: 'lphs_sios', tenderNumber: 'TENDER-002', tenderName: 'Fiber Optic Bandung Timur' },
-    { name: 'Sistem Keamanan BRI Pusat', customerCode: 'BRI', categoryName: 'Security System', branchCode: 'HO', username: 'bambang.pm', projectType: 'proyek', statusCode: 'submit_harga', tenderNumber: 'TENDER-003', tenderName: 'CCTV & Access Control BRI' },
-    { name: 'Upgrade Jaringan BRI Regional Jatim', customerCode: 'BRI', categoryName: 'IT Infrastructure', branchCode: 'SBY', username: 'bambang.pm', projectType: 'proyek', statusCode: 'pengumuman_pemenang', tenderNumber: 'TENDER-004', tenderName: 'Upgrade Jaringan BRI Jatim' },
-    { name: 'Smart Office Pertamina', customerCode: 'PERTAMINA', categoryName: 'IoT & Smart Systems', branchCode: 'JKT-SELATAN', username: 'siti.am', projectType: 'non_proyek', statusCode: 'review_department', tenderNumber: null, tenderName: null },
-    { name: 'DC Backup Power Astra', customerCode: 'ASTRA', categoryName: 'Data Center', branchCode: 'HO', username: 'eko.p', projectType: 'proyek', statusCode: 'created', tenderNumber: 'TENDER-005', tenderName: 'DC Backup Power Astra 2025' },
-    { name: 'Jaringan Komunikasi Bandara AP II', customerCode: 'AP2', categoryName: 'Telecommunication', branchCode: 'MDN', username: 'dewi.s', projectType: 'proyek', statusCode: 'target_delivery', tenderNumber: 'TENDER-006', tenderName: 'FO 5 Bandara AP II' },
-    { name: 'Konsultasi IT Infrastructure EBC', customerCode: 'EBC', categoryName: 'IT Infrastructure', branchCode: 'JKT-SELATAN', username: 'siti.am', projectType: 'non_proyek', statusCode: 'selesai', tenderNumber: null, tenderName: null },
+    { name: 'Modernisasi Data Center - Telkom', customerCode: 'TELKOM', categoryName: 'Data Center', branchCode: 'JKT-PUSAT', username: 'bambang.pm', projectType: 'Tender', statusCode: 'submit_rks', tenderNumber: 'TENDER-001', tenderName: 'Pengadaan Server DC Telkom 2025' },
+    { name: 'Jaringan FO Bandung Timur', customerCode: 'TELKOM', categoryName: 'Network & Connectivity', branchCode: 'BDG', username: 'bambang.pm', projectType: 'Tender', statusCode: 'lphs_sios', tenderNumber: 'TENDER-002', tenderName: 'Fiber Optic Bandung Timur' },
+    { name: 'Sistem Keamanan BRI Pusat', customerCode: 'BRI', categoryName: 'Security System', branchCode: 'HO', username: 'bambang.pm', projectType: 'Tender', statusCode: 'submit_harga', tenderNumber: 'TENDER-003', tenderName: 'CCTV & Access Control BRI' },
+    { name: 'Upgrade Jaringan BRI Regional Jatim', customerCode: 'BRI', categoryName: 'IT Infrastructure', branchCode: 'SBY', username: 'bambang.pm', projectType: 'Tender', statusCode: 'pengumuman_pemenang', tenderNumber: 'TENDER-004', tenderName: 'Upgrade Jaringan BRI Jatim' },
+    { name: 'Smart Office Pertamina', customerCode: 'PERTAMINA', categoryName: 'IoT & Smart Systems', branchCode: 'JKT-SELATAN', username: 'siti.am', projectType: 'Prospecting', statusCode: 'review_department', tenderNumber: null, tenderName: null },
+    { name: 'DC Backup Power Astra', customerCode: 'ASTRA', categoryName: 'Data Center', branchCode: 'HO', username: 'eko.p', projectType: 'Tender', statusCode: 'created', tenderNumber: 'TENDER-005', tenderName: 'DC Backup Power Astra 2025' },
+    { name: 'Jaringan Komunikasi Bandara AP II', customerCode: 'AP2', categoryName: 'Telecommunication', branchCode: 'MDN', username: 'dewi.s', projectType: 'Tender', statusCode: 'target_delivery', tenderNumber: 'TENDER-006', tenderName: 'FO 5 Bandara AP II' },
+    { name: 'Konsultasi IT Infrastructure EBC', customerCode: 'EBC', categoryName: 'IT Infrastructure', branchCode: 'JKT-SELATAN', username: 'siti.am', projectType: 'Prospecting', statusCode: 'selesai', tenderNumber: null, tenderName: null },
   ];
 
   const projectMap: Record<string, string> = {};
