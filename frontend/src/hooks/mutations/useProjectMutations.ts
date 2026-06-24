@@ -67,8 +67,16 @@ export function useProjectMutations() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
   });
 
+  const remove = useMutation({
+    mutationFn: (id: string) => projectService.delete(id),
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: ['projects', id] });
+      setTimeout(() => queryClient.invalidateQueries({ queryKey: ['projects'] }), 200);
+    },
+  });
+
   return {
-    create, update,
+    create, update, remove,
     rksCreate, rksSubmit, rksApprove, rksReject,
     lphsCreate, lphsSubmit, lphsDepartmentApprove, lphsDepartmentReject, lphsPmApprove,
   };

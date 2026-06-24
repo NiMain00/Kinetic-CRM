@@ -88,7 +88,7 @@ export default function ApprovalInboxPage() {
           </div>
           <div className="min-w-0">
             <p className="font-label-sm text-label-sm text-on-surface font-semibold truncate">{row.name || `Approval #${row.id?.slice(0, 8)}`}</p>
-            <p className="font-caption-xs text-caption-xs text-outline">{row.resourceType || '-'}</p>
+            <p className="font-caption-xs text-caption-xs text-outline">{row.stage || row.resourceType || '-'}</p>
           </div>
         </div>
         <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${slaBadgeClass(row.slaStatus || 'Normal')}`}>
@@ -96,21 +96,28 @@ export default function ApprovalInboxPage() {
         </span>
       </div>
       <div className="flex items-center justify-between text-xs">
-        <span className="text-secondary">{row.assignee?.name || '-'}</span>
-        <span className="font-mono-data text-on-surface">{row.createdAt ? new Date(row.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}</span>
+        <span className="text-secondary">Diminta: {row.requestor?.name || '-'}</span>
+        <span className="text-secondary">Ditugaskan ke: {row.assignee?.name || '-'}</span>
+      </div>
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-outline">Menunggu: {row.waitingSince || '-'}</span>
+        <span className="text-outline">{row.createdAt ? new Date(row.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}</span>
       </div>
       <button onClick={() => handleOpenReview(row)} className="w-full py-2.5 bg-primary text-white rounded-lg font-label-sm text-sm font-semibold touch-min-h">Review</button>
     </div>
   );
 
-  const renderTable = (rows: any[], nameLabel: string) => (
+  const renderTable = (rows: any[]) => (
     <table className="w-full text-left border-collapse text-sm">
       <thead>
         <tr className="bg-surface-container-low border-b border-border">
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">{nameLabel}</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Proyek / Prospek</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Tahap</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Diminta Oleh</th>
           <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Assignee</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Menunggu</th>
           <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Status</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs">Action</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs">Aksi</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-border">
@@ -125,7 +132,10 @@ export default function ApprovalInboxPage() {
                 </div>
               </div>
             </td>
+            <td className="px-6 py-4 text-secondary">{row.stage || '-'}</td>
+            <td className="px-6 py-4 text-secondary">{row.requestor?.name || '-'}</td>
             <td className="px-6 py-4 text-secondary">{row.assignee?.name || '-'}</td>
+            <td className="px-6 py-4 text-secondary">{row.waitingSince || '-'}</td>
             <td className="px-6 py-4">
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${slaBadgeClass(row.slaStatus || 'Normal')}`}>{row.slaStatus || row.status || 'Normal'}</span>
             </td>
@@ -170,7 +180,7 @@ export default function ApprovalInboxPage() {
                 {approvals.map(renderApprovalCard)}
               </div>
             ) : (
-              <div className="overflow-x-auto">{renderTable(approvals, 'Name')}</div>
+              <div className="overflow-x-auto">{renderTable(approvals)}</div>
             )}
           </div>
         </div>

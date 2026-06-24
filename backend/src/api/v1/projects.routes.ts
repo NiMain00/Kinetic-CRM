@@ -64,7 +64,6 @@ router.put('/:id',
 
 router.delete('/:id',
   authMiddleware,
-  requirePermission('projects.delete'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await projectService.delete(req.params.id);

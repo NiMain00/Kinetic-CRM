@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { INITIAL_PROSPECTS } from '@/services/mock-data';
-import type { Prospect } from '@/types/domain';
+import { useProspects } from '@/hooks/queries/useProspects';
 
 const PAGE_SIZE = 5;
 
 export default function ProspectListPage() {
   const navigate = useNavigate();
-  const [prospects] = useState<Prospect[]>(INITIAL_PROSPECTS);
+  const { data: apiRes, isLoading } = useProspects();
+  const prospects = (apiRes as any)?.data?.data || [];
   const [activeFilter, setActiveFilter] = useState<'All' | 'Prospecting' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const filtered = prospects.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.client.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchTab = activeFilter === 'All' || p.status === activeFilter;
+  const filtered = prospects.filter((p: any) => {
+    const name = p.name || '';
+    const client = p.customer?.name || p.client || '';
+    const status = p.status || '';
+    const statusLabel = typeof status === 'string' ? status : status?.label || status;
+    const matchSearch = name.toLowerCase().includes(searchQuery.toLowerCase()) || client.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchTab = activeFilter === 'All' || statusLabel === activeFilter;
     return matchSearch && matchTab;
   });
 
@@ -88,7 +92,14 @@ export default function ProspectListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {paginated.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-secondary">
+                      <span className="material-symbols-outlined text-4xl text-outline mb-2 animate-spin">sync</span>
+                      <p>Memuat prospek...</p>
+                    </td>
+                  </tr>
+                ) : paginated.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-secondary">
                       <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
@@ -96,28 +107,37 @@ export default function ProspectListPage() {
                     </td>
                   </tr>
                 ) : (
-                  paginated.map((row) => (
+                  paginated.map((row: any) => {
+                    const name = row.name || '';
+                    const client = row.customer?.name || row.client || '-';
+                    const status = row.status || '';
+                    const statusLabel = typeof status === 'string' ? status : status?.label || status;
+                    const author = row.creator?.name || row.author || '-';
+                    const date = row.createdAt ? new Date(row.createdAt).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' }) : row.date || '-';
+                    const estimatedValue = Number(row.estimatedValue || 0);
+                    return (
                     <tr key={row.id} onClick={() => navigate(`/prospects/${row.id}`)} className="border-b border-border hover:bg-blue-50/30 transition-colors group cursor-pointer">
                       <td className="px-6 py-4">
-                        <div className="font-semibold text-on-surface group-hover:text-primary transition-colors">{row.name}</div>
+                        <div className="font-semibold text-on-surface group-hover:text-primary transition-colors">{name}</div>
                         {row.description && <p className="text-xs text-secondary truncate max-w-md">{row.description}</p>}
                       </td>
-                      <td className="px-6 py-4 text-secondary">{row.client}</td>
+                      <td className="px-6 py-4 text-secondary">{client}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider badge-compact ${statusBadge(row.status)}`}>{row.status}</span>
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider badge-compact ${statusBadge(statusLabel)}`}>{statusLabel}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary avatar-compact">{row.author.charAt(0)}</div>
-                          <span className="text-on-surface text-xs">{row.author}</span>
+                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary avatar-compact">{author.charAt(0)}</div>
+                          <span className="text-on-surface text-xs">{author}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-xs text-secondary">{row.date}</td>
+                      <td className="px-6 py-4 text-xs text-secondary">{date}</td>
                       <td className="px-6 py-4 text-right font-mono text-sm font-bold text-on-surface">
-                        {row.estimatedValue ? `Rp ${row.estimatedValue.toLocaleString('id-ID')}` : '-'}
+                        {estimatedValue ? `Rp ${estimatedValue.toLocaleString('id-ID')}` : '-'}
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -401,6 +401,7 @@ model LossReason {
 model Prospect {
   id                   String    @id @default(uuid()) @db.Char(36)
   name                 String    @db.VarChar(200)
+  projectType          String    @default("Prospecting") @db.VarChar(20)
   customerId           String?   @db.Char(36)
   branchId             String?   @db.Char(36)
   categoryId           String?   @db.Char(36)

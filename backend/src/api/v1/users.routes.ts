@@ -76,4 +76,35 @@ router.delete('/:id',
     } catch (err) { next(err); }
   });
 
+router.post('/:id/reset-password',
+  authMiddleware,
+  requirePermission('admin.users.update'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const newPassword = req.body?.newPassword || 'kinetic123';
+      await userService.resetPassword(req.params.id, newPassword);
+      res.json(success({ message: 'Password berhasil direset.' }));
+    } catch (err) { next(err); }
+  });
+
+router.post('/:id/lock',
+  authMiddleware,
+  requirePermission('admin.users.update'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await userService.setLock(req.params.id, true);
+      res.json(success({ message: 'Akun pengguna dikunci.' }));
+    } catch (err) { next(err); }
+  });
+
+router.post('/:id/unlock',
+  authMiddleware,
+  requirePermission('admin.users.update'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await userService.setLock(req.params.id, false);
+      res.json(success({ message: 'Akun pengguna dibuka.' }));
+    } catch (err) { next(err); }
+  });
+
 export default router;

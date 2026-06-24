@@ -43,6 +43,15 @@ router.patch('/:id/read',
     } catch (err) { next(err); }
   });
 
+router.post('/:id/mark-read',
+  authMiddleware,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const result = await notificationService.markRead(req.params.id, req.user!.sub);
+      res.json(success(result));
+    } catch (err) { next(err); }
+  });
+
 router.post('/mark-all-read',
   authMiddleware,
   async (req: Request, res: Response, next: NextFunction) => {

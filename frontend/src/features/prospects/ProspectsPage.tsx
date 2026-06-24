@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { prospectService } from '../../services/prospects';
 import { masterDataService } from '../../services/master-data';
@@ -8,6 +9,7 @@ interface Option { id: string; name: string; code?: string; }
 interface ProspectAPI {
   id: string;
   name: string;
+  projectType?: string;
   customer: { id: string; name: string; code: string } | null;
   branch: { id: string; name: string; code: string } | null;
   category: { id: string; name: string } | null;
@@ -26,6 +28,7 @@ interface ProspectsViewProps {
 }
 
 export default function ProspectsView({ onShowNotification, onNavigatePage }: ProspectsViewProps) {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [prospects, setProspects] = useState<ProspectAPI[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +41,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const [branches, setBranches] = useState<Option[]>([]);
 
   const [formName, setFormName] = useState('');
+  const [formProjectType, setFormProjectType] = useState<'Tender' | 'Prospecting'>('Prospecting');
   const [formCustomerId, setFormCustomerId] = useState('');
   const [formCategoryId, setFormCategoryId] = useState('');
   const [formBranchId, setFormBranchId] = useState('');
@@ -79,6 +83,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
 
   const resetForm = () => {
     setFormName('');
+    setFormProjectType('Prospecting');
     setFormCustomerId('');
     setFormCategoryId('');
     setFormBranchId('');
@@ -96,6 +101,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const handleEdit = (p: ProspectAPI) => {
     setSelectedProspect(p);
     setFormName(p.name);
+    setFormProjectType((p.projectType || 'Prospecting') as 'Tender' | 'Prospecting');
     setFormCustomerId(p.customer?.id || '');
     setFormCategoryId(p.category?.id || '');
     setFormBranchId(p.branch?.id || '');
@@ -110,7 +116,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     if (!formName) { onShowNotification('Nama Prospek harus diisi!', 'error'); return; }
     try {
       const data: Record<string, unknown> = {
-        name: formName, description: formDesc,
+        name: formName, projectType: formProjectType, description: formDesc,
         estimatedValue: Number(formValue) || null, estimatedDate: formDate || null,
       };
       if (formCustomerId) data.customerId = formCustomerId;
@@ -139,7 +145,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     }
     try {
       const data = {
-        name: formName, customerId: formCustomerId, categoryId: formCategoryId, branchId: formBranchId,
+        name: formName, projectType: formProjectType, customerId: formCustomerId, categoryId: formCategoryId, branchId: formBranchId,
         description: formDesc, estimatedValue: Number(formValue) || null, estimatedDate: formDate || null,
         status: 'Waiting PM',
       };
@@ -196,7 +202,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <span className="text-primary font-semibold">Daftar Prospek</span>
               </nav>
             </div>
-            <button onClick={handleCreateNew} className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold touch-min-h">
+            <button onClick={() => navigate('/prospects/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold touch-min-h">
               <span className="material-symbols-outlined text-[20px]">add</span>
               Buat Prospek Baru
             </button>
@@ -322,6 +328,13 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <div className="flex flex-col gap-1.5">
                   <label className="font-label-sm text-sm text-on-surface-variant font-semibold">Nama Prospek *</label>
                   <input value={formName} onChange={e => setFormName(e.target.value)} required className="px-4 py-2.5 sm:py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-full" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="font-label-sm text-sm text-on-surface-variant font-semibold">Tipe Prospek *</label>
+                  <select value={formProjectType} onChange={e => setFormProjectType(e.target.value as 'Tender' | 'Prospecting')} className="px-4 py-2.5 sm:py-2 border border-border rounded-lg w-full outline-none focus:ring-2 focus:ring-primary bg-white">
+                    <option value="Prospecting">Prospecting</option>
+                    <option value="Tender">Tender</option>
+                  </select>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="font-label-sm text-sm text-on-surface-variant font-semibold">Customer *</label>

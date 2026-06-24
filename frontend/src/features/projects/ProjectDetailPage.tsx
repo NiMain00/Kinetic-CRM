@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Project } from '../../types/domain';
 import { useProject } from '../../hooks/queries/useProjects';
-import { INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
+import { useProjectMutations } from '../../hooks/mutations/useProjectMutations';
+import { COMPETITORS } from '../../services/mock-data';
+import toast from 'react-hot-toast';
 
 interface ProjectDetailViewProps {
   key?: string;
@@ -32,8 +34,17 @@ export default function ProjectDetailView({
     status: rawProject.status?.label || '-',
     displayName: rawProject.name || rawProject.tenderName || rawProject.id?.slice(0, 8) || '-',
   } : null;
+  const { remove: deleteProject } = useProjectMutations();
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const showLoading = !propProject && isLoading;
   const showNotFound = !project && !showLoading;
+
+  React.useEffect(() => {
+    if (showNotFound) {
+      const timer = setTimeout(() => navigate('/projects'), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [showNotFound, navigate]);
 
   const tabPathMap: Record<string, string> = {
     'Overview': 'overview',
@@ -213,6 +224,39 @@ export default function ProjectDetailView({
           </div>
 
           <div className="flex items-center gap-2">
+            {deleteConfirm ? (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-danger font-semibold">Yakin?</span>
+                <button
+                  onClick={() => {
+                    deleteProject.mutate(projectId!, {
+                      onSuccess: () => {
+                        toast.success('Proyek berhasil dihapus.');
+                        navigate('/projects');
+                      },
+                      onError: () => toast.error('Gagal menghapus proyek.'),
+                    });
+                  }}
+                  className="px-3 py-1.5 bg-danger text-white font-bold text-xs rounded-lg hover:opacity-90 transition-all"
+                >
+                  Hapus
+                </button>
+                <button
+                  onClick={() => setDeleteConfirm(false)}
+                  className="px-3 py-1.5 border border-border text-secondary font-semibold text-xs rounded-lg hover:bg-surface-container-low transition-all"
+                >
+                  Batal
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setDeleteConfirm(true)}
+                className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all flex items-center gap-1"
+              >
+                <span className="material-symbols-outlined text-[16px]">delete</span>
+                Hapus
+              </button>
+            )}
             <button className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all">
               Revisi
             </button>

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `prospect` ADD COLUMN `projectType` VARCHAR(20) NOT NULL DEFAULT 'Prospecting';

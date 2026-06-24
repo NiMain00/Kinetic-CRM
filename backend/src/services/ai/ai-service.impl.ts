@@ -35,7 +35,7 @@ export class AiServiceImpl implements AiService {
     const result = await withRetry(() => this.provider.generateText(prompt));
     await trackCost(result.tokens || 0, env.AI_MODEL);
 
-    audit.log('ai_request', featureCode, 'N/A', { status: 'success', provider: env.AI_PROVIDER, userId });
+    audit.log('ai_request', 'ai', featureCode, { result: 'success', metadata: { provider: env.AI_PROVIDER }, actorId: userId });
 
     return result.text;
   }

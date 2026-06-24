@@ -35,6 +35,7 @@ export default function ProspectFormPage() {
   const [branches, setBranches] = useState<Option[]>([]);
 
   const [formName, setFormName] = useState('');
+  const [formProjectType, setFormProjectType] = useState<'Tender' | 'Prospecting'>('Prospecting');
   const [formCustomerId, setFormCustomerId] = useState('');
   const [formCategoryId, setFormCategoryId] = useState('');
   const [formBranchId, setFormBranchId] = useState('');
@@ -65,6 +66,7 @@ export default function ProspectFormPage() {
         .then((res) => {
           const p = res.data.data || res.data;
           setFormName(p.name || '');
+          setFormProjectType(p.projectType || 'Prospecting');
           setFormCustomerId(p.customer?.id || '');
           setFormCategoryId(p.category?.id || '');
           setFormBranchId(p.branch?.id || '');
@@ -86,7 +88,7 @@ export default function ProspectFormPage() {
     }
     try {
       const data: Record<string, unknown> = {
-        name: formName, description: formDesc,
+        name: formName, projectType: formProjectType, description: formDesc,
         estimatedValue: Number(formValue) || null, estimatedDate: formDate || null,
         status, answers,
       };
@@ -147,6 +149,14 @@ export default function ProspectFormPage() {
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Nama Prospek *</label>
               <input value={formName} onChange={(e) => setFormName(e.target.value)} required className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-sm text-on-surface-variant">Tipe Prospek *</label>
+              <select value={formProjectType} onChange={(e) => setFormProjectType(e.target.value as 'Tender' | 'Prospecting')} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                <option value="Prospecting">Prospecting</option>
+                <option value="Tender">Tender</option>
+              </select>
             </div>
 
             <div className="space-y-1.5">

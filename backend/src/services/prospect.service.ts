@@ -48,6 +48,7 @@ export class ProspectService {
       data: items.map((p) => ({
         id: p.id,
         name: p.name,
+        projectType: p.projectType,
         customer: p.customer,
         branch: p.branch,
         category: p.category,
@@ -87,6 +88,7 @@ export class ProspectService {
     return {
       id: prospect.id,
       name: prospect.name,
+      projectType: prospect.projectType,
       customer: prospect.customer,
       branch: prospect.branch,
       category: prospect.category,
@@ -103,14 +105,17 @@ export class ProspectService {
 
   async create(data: {
     name: string;
+    projectType?: string;
     customerId?: string | null;
     categoryId?: string | null;
     branchId?: string | null;
     description?: string | null;
     estimatedValue?: number | null;
     estimatedDate?: string | null;
+    status?: string;
     createdBy: string;
   }) {
+    const status = data.status || 'Prospecting';
     const prospect = await prisma.prospect.create({
       data: {
         name: data.name,
@@ -120,7 +125,7 @@ export class ProspectService {
         description: data.description || null,
         estimatedValue: data.estimatedValue || null,
         estimatedDate: data.estimatedDate ? new Date(data.estimatedDate) : null,
-        status: 'Prospecting',
+        status,
         createdBy: data.createdBy,
       },
       include: {
@@ -131,11 +136,30 @@ export class ProspectService {
       },
     });
 
+    if (status === 'Waiting PM' && data.customerId && data.branchId && data.categoryId) {
+      const statusDef = await prisma.projectStatusDefinition.findFirst({ where: { code: 'created' } });
+      if (statusDef) {
+        await prisma.project.create({
+          data: {
+            name: data.name,
+            projectType: data.projectType || 'Prospecting',
+            customerId: data.customerId,
+            branchId: data.branchId,
+            categoryId: data.categoryId,
+            statusId: statusDef.id,
+            prospectId: prospect.id,
+            createdBy: data.createdBy,
+          },
+        });
+      }
+    }
+
     return prospect;
   }
 
   async update(id: string, data: {
     name?: string;
+    projectType?: string;
     customerId?: string | null;
     categoryId?: string | null;
     branchId?: string | null;
@@ -168,6 +192,32 @@ export class ProspectService {
         creator: { select: { id: true, name: true } },
       },
     });
+
+    const targetStatus = data.status || prospect.status;
+    const customerId = data.customerId !== undefined ? data.customerId : prospect.customerId;
+    const branchId = data.branchId !== undefined ? data.branchId : prospect.branchId;
+    const categoryId = data.categoryId !== undefined ? data.categoryId : prospect.categoryId;
+
+    if (targetStatus === 'Waiting PM' && customerId && branchId && categoryId) {
+      const existingProject = await prisma.project.findFirst({ where: { prospectId: id } });
+      if (!existingProject) {
+        const statusDef = await prisma.projectStatusDefinition.findFirst({ where: { code: 'created' } });
+        if (statusDef) {
+          await prisma.project.create({
+            data: {
+              name: updated.name,
+              projectType: data.projectType || 'Prospecting',
+              customerId,
+              branchId,
+              categoryId,
+              statusId: statusDef.id,
+              prospectId: id,
+              createdBy: userId,
+            },
+          });
+        }
+      }
+    }
 
     return updated;
   }

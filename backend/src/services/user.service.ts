@@ -216,6 +216,35 @@ export class UserService {
     };
   }
 
+  async resetPassword(id: string, newPassword: string) {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user || user.deletedAt) {
+      throw new AppError(404, 'USER_NOT_FOUND', 'Pengguna tidak ditemukan.');
+    }
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await prisma.user.update({
+      where: { id },
+      data: { passwordHash, mustChangePassword: true },
+    });
+  }
+
+  async setLock(id: string, locked: boolean) {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user || user.deletedAt) {
+      throw new AppError(404, 'USER_NOT_FOUND', 'Pengguna tidak ditemukan.');
+    }
+    await prisma.user.update({
+      where: { id },
+      data: { isLocked: locked },
+    });
+    if (locked) {
+      await prisma.activeSession.updateMany({
+        where: { userId: id, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    }
+  }
+
   async deactivate(id: string) {
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {

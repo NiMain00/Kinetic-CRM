@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { ApprovalItem, TimelineEvent } from '@/types/domain';
-import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 
 interface ApprovalReviewDrawerProps {
   item: ApprovalItem;
@@ -41,7 +40,7 @@ const actionColor: Record<string, string> = {
 
 export default function ApprovalReviewDrawer({ item, onClose, onApprove, onReject }: ApprovalReviewDrawerProps) {
   const [comment, setComment] = useState('');
-  const [timelineEvents] = useState<TimelineEvent[]>(INITIAL_TIMELINE_EVENTS);
+  const [timelineEvents] = useState<TimelineEvent[]>([]);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Approval review drawer">

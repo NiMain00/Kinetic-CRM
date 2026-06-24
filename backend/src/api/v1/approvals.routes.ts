@@ -14,10 +14,11 @@ router.get('/',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { page, perPage } = getPagination(req.query as any);
+      const isAdmin = req.user?.role === 'admin';
       const result = await approvalService.list({
         status: req.query.status as string | undefined,
         resourceType: req.query.resourceType as string | undefined,
-        assignedToUserId: req.user?.sub,
+        assignedToUserId: isAdmin ? undefined : req.user?.sub,
         page,
         perPage,
       });
