@@ -1,28 +1,10 @@
 {
+  "extends": "./frontend/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2022",
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
-    "module": "ESNext",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "allowJs": true,
-    "jsx": "react-jsx",
     "paths": {
-      "@/*": [
-        "./frontend/src/*"
-      ]
-    },
-    "allowImportingTsExtensions": true,
-    "noEmit": true
+      "@/*": ["./frontend/src/*"]
+    }
   },
   "include": ["frontend/src"],
-  "exclude": ["node_modules", "dist", "backend", "src"]
+  "exclude": ["backend", "src"]
 }

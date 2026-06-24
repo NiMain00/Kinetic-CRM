@@ -2,13 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import type { ApprovalItem } from '../../types/domain';
-import { INITIAL_APPROVALS } from '../../services/mock-data';
+import { useDashboard, usePendingApprovals, useApproachingDeadline } from '@/hooks/queries/useDashboard';
+import PageSkeleton from '@/components/layout/PageSkeleton';
+import EmptyState from '@/components/shared/EmptyState';
+
+function formatCurrency(value: number): string {
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
+  return `Rp ${value.toLocaleString('id-ID')}`;
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [currentDateString, setCurrentDateString] = useState('');
+
+  const { data: summaryRes, isLoading: summaryLoading, isError: summaryError } = useDashboard();
+  const { data: pendingRes, isLoading: pendingLoading } = usePendingApprovals();
+  const { data: deadlineRes, isLoading: deadlineLoading } = useApproachingDeadline();
 
   useEffect(() => {
     const today = new Date();
@@ -17,7 +28,27 @@ export default function DashboardPage() {
     }));
   }, []);
 
-  const pendingApprovals = INITIAL_APPROVALS.slice(0, 5);
+  if (summaryLoading || pendingLoading || deadlineLoading) {
+    return <PageSkeleton />;
+  }
+
+  const summary = (summaryRes as any)?.data?.data;
+  const pendingApprovals = (pendingRes as any)?.data?.data ?? [];
+  const approachingDeadline = (deadlineRes as any)?.data?.data ?? [];
+
+  if (summaryError) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <EmptyState
+          icon="error"
+          title="Gagal Memuat Data"
+          description="Terjadi kesalahan saat memuat dashboard. Silakan coba lagi."
+          actionLabel="Muat Ulang"
+          onAction={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -57,12 +88,12 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined">account_balance_wallet</span>
             </span>
             <span className="text-success font-label-sm flex items-center gap-1 text-xs">
-              <span className="material-symbols-outlined text-[16px]">trending_up</span> +12%
+              <span className="material-symbols-outlined text-[16px]">trending_up</span> {summary?.totalProjects || 0}
             </span>
           </div>
           <div>
             <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Total Proyek Aktif</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">Rp 42.8B</h3>
+            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{formatCurrency(summary?.totalValue || 0)}</h3>
           </div>
         </Card>
 
@@ -75,7 +106,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Approval Pending</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">24 Items</h3>
+            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{summary?.pendingApprovals || 0} Items</h3>
           </div>
         </Card>
 
@@ -88,7 +119,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Mendekati Deadline</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">08 Proyek</h3>
+            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{String(summary?.approachingDeadline || 0).padStart(2, '0')} Proyek</h3>
           </div>
         </Card>
 
@@ -101,7 +132,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Win Rate</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">68.4%</h3>
+            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{summary?.winRate || 0}%</h3>
           </div>
         </Card>
       </div>
@@ -155,87 +186,66 @@ export default function DashboardPage() {
         </div>
 
         {/* Status Widget */}
-        {/* Status Widget */}
-<div className="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-4 sm:p-6 flex flex-col justify-between">
-  <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Proyek per Status</h4>
-  
-  {/* CONTAINER UTAMA DIBUAT MIN-H ATAU PAD AMAN */}
-  <div className="relative flex justify-center items-center py-6 sm:py-8">
-    <svg 
-      className={`${isMobile ? 'w-40 h-40' : 'w-48 h-48'} -rotate-90`} 
-      viewBox="0 0 160 160" // Menggunakan viewBox agar SVG auto-scale dengan aman
-      aria-label="Project status distribution"
-    >
-      {/* Background Circle (Ditunda) */}
-      <circle 
-        className="text-secondary-container" 
-        cx="80" 
-        cy="80" 
-        r="68" 
-        fill="transparent" 
-        stroke="currentColor" 
-        strokeWidth="14"
-      />
-      {/* Selesai Circle */}
-      <circle 
-        className="text-success" 
-        cx="80" 
-        cy="80" 
-        r="68" 
-        fill="transparent" 
-        stroke="currentColor" 
-        strokeDasharray="427.2" // Rumus keliling: 2 * pi * r (2 * 3.14 * 68)
-        strokeDashoffset="116" 
-        strokeWidth="14"
-        strokeLinecap="round" // Opsional: membuat ujung lingkaran sedikit smooth
-      />
-      {/* Dalam Progres Circle */}
-      <circle 
-        className="text-primary" 
-        cx="80" 
-        cy="80" 
-        r="68" 
-        fill="transparent" 
-        stroke="currentColor" 
-        strokeDasharray="427.2" 
-        strokeDashoffset="240" 
-        strokeWidth="14"
-        strokeLinecap="round"
-      />
-    </svg>
-    
-    {/* Text di Tengah Lingkaran */}
-    <div className="absolute text-center flex flex-col items-center justify-center">
-      <p className="font-display-title text-2xl sm:text-3xl font-bold text-on-surface leading-none">142</p>
-      <p className="text-secondary font-caption-xs uppercase tracking-wider text-[10px] sm:text-xs mt-1">Total</p>
-    </div>
-  </div>
+        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-4 sm:p-6 flex flex-col justify-between">
+          <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Proyek per Status</h4>
 
-  {/* Status Legends */}
-  <div className="space-y-2 mt-2">
-    <div className="flex justify-between items-center text-sm">
-      <div className="flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
-        <span className="text-secondary font-label-sm">Dalam Progres</span>
-      </div>
-      <span className="font-mono-data font-bold">72</span>
-    </div>
-    <div className="flex justify-between items-center text-sm">
-      <div className="flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-success"></span>
-        <span className="text-secondary font-label-sm">Selesai</span>
-      </div>
-      <span className="font-mono-data font-bold">45</span>
-    </div>
-    <div className="flex justify-between items-center text-sm">
-      <div className="flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
-        <span className="text-secondary font-label-sm">Ditunda</span>
-      </div>
-      <span className="font-mono-data font-bold">25</span>
-    </div>
-  </div>
-</div>
+          <div className="relative flex justify-center items-center py-6 sm:py-8">
+            <svg
+              className={`${isMobile ? 'w-40 h-40' : 'w-48 h-48'} -rotate-90`}
+              viewBox="0 0 160 160"
+              aria-label="Project status distribution"
+            >
+              <circle
+                className="text-secondary-container"
+                cx="80" cy="80" r="68"
+                fill="transparent" stroke="currentColor" strokeWidth="14"
+              />
+              <circle
+                className="text-success"
+                cx="80" cy="80" r="68"
+                fill="transparent" stroke="currentColor"
+                strokeDasharray="427.2" strokeDashoffset="116"
+                strokeWidth="14" strokeLinecap="round"
+              />
+              <circle
+                className="text-primary"
+                cx="80" cy="80" r="68"
+                fill="transparent" stroke="currentColor"
+                strokeDasharray="427.2" strokeDashoffset="240"
+                strokeWidth="14" strokeLinecap="round"
+              />
+            </svg>
+
+            <div className="absolute text-center flex flex-col items-center justify-center">
+              <p className="font-display-title text-2xl sm:text-3xl font-bold text-on-surface leading-none">{summary?.totalProjects || 0}</p>
+              <p className="text-secondary font-caption-xs uppercase tracking-wider text-[10px] sm:text-xs mt-1">Total</p>
+            </div>
+          </div>
+
+          <div className="space-y-2 mt-2">
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                <span className="text-secondary font-label-sm">Dalam Progres</span>
+              </div>
+              <span className="font-mono-data font-bold">{summary?.totalProjects || 0}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-success"></span>
+                <span className="text-secondary font-label-sm">Selesai</span>
+              </div>
+              <span className="font-mono-data font-bold">0</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+                <span className="text-secondary font-label-sm">Ditunda</span>
+              </div>
+              <span className="font-mono-data font-bold">0</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Tables Grid Layout */}
@@ -252,9 +262,13 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {isMobile ? (
+          {pendingApprovals.length === 0 ? (
+            <div className="p-6 text-center text-secondary text-sm">
+              Tidak ada approval pending.
+            </div>
+          ) : isMobile ? (
             <div className="p-3 space-y-3">
-              {pendingApprovals.map((item) => (
+              {pendingApprovals.slice(0, 5).map((item: any) => (
                 <div
                   key={item.id}
                   onClick={() => navigate('/approvals')}
@@ -262,23 +276,16 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0 mr-2">
-                      <p className="font-label-sm text-on-surface text-sm font-medium">{item.name}</p>
-                      <p className="text-xs text-secondary font-mono">{item.ref}</p>
+                      <p className="font-label-sm text-on-surface text-sm font-medium truncate">{item.name || `Approval #${item.id?.slice(0, 8)}`}</p>
+                      <p className="text-xs text-secondary font-mono">{item.resourceType || '-'}</p>
                     </div>
-                    <span className={`shrink-0 px-2 py-0.5 rounded font-mono-data text-xs ${
-                      item.slaStatus === 'Overdue'
-                        ? 'bg-error-container text-error'
-                        : 'bg-secondary-container text-on-secondary-container'
-                    }`}>
-                      {item.waitingSince}
+                    <span className="shrink-0 px-2 py-0.5 rounded font-mono-data text-xs bg-secondary-container text-on-secondary-container">
+                      {item.slaStatus || 'Normal'}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-secondary">{item.branch}</span>
-                    <span
-                      className="text-primary touch-min flex items-center justify-center"
-                      aria-label="Open review"
-                    >
+                    <span className="text-xs text-secondary">{item.assignee?.name || '-'}</span>
+                    <span className="text-primary touch-min flex items-center justify-center" aria-label="Open review">
                       <span className="material-symbols-outlined text-xl">fact_check</span>
                     </span>
                   </div>
@@ -291,26 +298,21 @@ export default function DashboardPage() {
                 <thead className="bg-surface-container-low text-secondary font-caption-xs uppercase border-b border-border">
                   <tr>
                     <th className="px-6 py-3 font-semibold text-xs">Prospek/Proyek</th>
-                    <th className="px-6 py-3 font-semibold text-xs">Cabang</th>
-                    <th className="px-6 py-3 font-semibold text-xs">Menunggu</th>
+                    <th className="px-6 py-3 font-semibold text-xs">Tipe</th>
+                    <th className="px-6 py-3 font-semibold text-xs">Status</th>
                     <th className="px-6 py-3 font-semibold text-right text-xs">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {pendingApprovals.map((item) => (
+                  {pendingApprovals.slice(0, 5).map((item: any) => (
                     <tr key={item.id} className="hover:bg-primary/5 transition-colors group">
                       <td className="px-6 py-4">
-                        <p className="font-label-sm text-on-surface text-sm font-medium">{item.name}</p>
-                        <p className="text-xs text-secondary font-mono">{item.ref}</p>
+                        <p className="font-label-sm text-on-surface text-sm font-medium truncate max-w-[200px]">{item.name || `Approval #${item.id?.slice(0, 8)}`}</p>
                       </td>
-                      <td className="px-6 py-4 text-secondary text-xs">{item.branch}</td>
+                      <td className="px-6 py-4 text-secondary text-xs">{item.resourceType || '-'}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded font-mono-data text-xs ${
-                          item.slaStatus === 'Overdue'
-                            ? 'bg-error-container text-error'
-                            : 'bg-secondary-container text-on-secondary-container'
-                        }`}>
-                          {item.waitingSince}
+                        <span className="px-2 py-0.5 rounded font-mono-data text-xs bg-secondary-container text-on-secondary-container">
+                          {item.status || 'pending'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -337,38 +339,38 @@ export default function DashboardPage() {
             <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Deadline Kritis</h4>
             <span className="material-symbols-outlined text-danger text-xl sm:text-2xl" aria-label="Warning">warning</span>
           </div>
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-surface-container-low border-l-4 border-danger">
-              <div className="flex-1 min-w-0">
-                <p className="font-label-sm text-on-surface text-xs sm:text-sm font-medium truncate">Infrastructure Maintenance</p>
-                <p className="text-secondary font-caption-xs text-xs">PT Telkom Indonesia</p>
-              </div>
-              <div className="text-right shrink-0">
-                <p className="text-danger font-bold text-label-sm text-xs sm:text-sm">2 Hari Lagi</p>
-                <p className="text-secondary font-caption-xs text-xs">25 Oct</p>
-              </div>
+          {approachingDeadline.length === 0 ? (
+            <div className="text-center text-secondary text-sm py-8">
+              Tidak ada proyek mendekati deadline.
             </div>
-            <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-surface-container-low border-l-4 border-status-orange">
-              <div className="flex-1 min-w-0">
-                <p className="font-label-sm text-on-surface text-xs sm:text-sm font-medium truncate">Smart City Cloud Integration</p>
-                <p className="text-secondary font-caption-xs text-xs">DKI Jakarta Smart System</p>
-              </div>
-              <div className="text-right shrink-0">
-                <p className="text-status-orange font-bold text-label-sm text-xs sm:text-sm">4 Hari Lagi</p>
-                <p className="text-secondary font-caption-xs text-xs">27 Oct</p>
-              </div>
+          ) : (
+            <div className="space-y-3 sm:space-y-4">
+              {approachingDeadline.slice(0, 5).map((item: any) => {
+                const daysLeft = item.deadlineTender
+                  ? Math.ceil((new Date(item.deadlineTender).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                  : 0;
+                const urgencyClass = daysLeft <= 2 ? 'border-danger' : daysLeft <= 4 ? 'border-status-orange' : 'border-warning';
+                const urgencyText = daysLeft <= 2 ? 'text-danger' : daysLeft <= 4 ? 'text-status-orange' : 'text-warning';
+
+                return (
+                  <div key={item.id} className={`flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-surface-container-low border-l-4 ${urgencyClass}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-label-sm text-on-surface text-xs sm:text-sm font-medium truncate">{item.name}</p>
+                      <p className="text-secondary font-caption-xs text-xs">{item.customer || item.branch || ''}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`font-bold text-label-sm text-xs sm:text-sm ${urgencyText}`}>
+                        {daysLeft <= 0 ? 'Hari Ini' : `${daysLeft} Hari Lagi`}
+                      </p>
+                      <p className="text-secondary font-caption-xs text-xs">
+                        {item.deadlineTender ? new Date(item.deadlineTender).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            <div className="flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-surface-container-low border-l-4 border-warning">
-              <div className="flex-1 min-w-0">
-                <p className="font-label-sm text-on-surface text-xs sm:text-sm font-medium truncate">Mobile App Deployment</p>
-                <p className="text-secondary font-caption-xs text-xs">Telkomsel Digital</p>
-              </div>
-              <div className="text-right shrink-0">
-                <p className="text-warning font-bold text-label-sm text-xs sm:text-sm">5 Hari Lagi</p>
-                <p className="text-secondary font-caption-xs text-xs">28 Oct</p>
-              </div>
-            </div>
-          </div>
+          )}
           <button className="w-full mt-4 sm:mt-6 py-2.5 sm:py-3 border border-border rounded-lg font-label-sm text-secondary hover:bg-surface-container-high transition-colors text-xs sm:text-sm font-semibold touch-min-h">
             Lihat Semua Jadwal Kritis
           </button>

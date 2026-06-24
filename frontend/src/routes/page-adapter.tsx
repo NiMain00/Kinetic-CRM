@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useAuthStore } from '@/stores/authStore';
 
 type ShowNotification = (message: string, type: 'success' | 'warning' | 'error') => void;
 
@@ -10,7 +9,6 @@ interface PageProps {
   onNavigatePage?: (page: string) => void;
   onSelectProject?: (id: string) => void;
   onOpenApproval?: (item: unknown) => void;
-  onLoginSuccess?: (userData?: unknown) => void;
   projects?: unknown[];
 }
 
@@ -19,7 +17,6 @@ export function withPageProps<T extends PageProps>(
 ): React.ComponentType<Omit<T, keyof PageProps>> {
   return function PageWithProps(props: Omit<T, keyof PageProps>) {
     const navigate = useNavigate();
-    const login = useAuthStore((s) => s.login);
 
     const injectedProps: PageProps = {
       onShowNotification: (message, type) => {
@@ -38,10 +35,6 @@ export function withPageProps<T extends PageProps>(
       },
       onSelectProject: (id) => navigate(`/project/${id}/overview`),
       onOpenApproval: () => navigate('/approvals'),
-      onLoginSuccess: (userData) => {
-        login('mock-token', userData || { name: 'User' });
-        navigate('/dashboard');
-      },
       projects: [],
     };
 

@@ -4,6 +4,7 @@ import { useLocation, Link } from 'react-router-dom';
 const labelMap: Record<string, string> = {
   dashboard: 'Dashboard',
   prospects: 'Prospek',
+  project: 'Proyek',
   projects: 'Proyek',
   approvals: 'Approval',
   kpi: 'KPI Dashboard',
@@ -57,7 +58,8 @@ export default function Breadcrumb() {
         <span className="material-symbols-outlined text-sm">home</span>
       </Link>
       {segments.map((seg, i) => {
-        const path = '/' + segments.slice(0, i + 1).join('/');
+        const segPath = segments.slice(0, i + 1);
+        const path = '/' + segPath.map(s => (s === 'project' ? 'projects' : s)).join('/');
         const label = labelMap[seg] || seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' ');
         const isLast = i === segments.length - 1;
 

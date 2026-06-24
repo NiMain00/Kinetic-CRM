@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_PROSPECTS } from '@/services/mock-data';
-import type { Prospect } from '@/types/domain';
+import { prospectService } from '../../services/prospects';
+import { masterDataService } from '../../services/master-data';
+
+interface Option { id: string; name: string; code?: string; }
 
 const questionnaireQuestions = [
   {
@@ -27,49 +29,102 @@ export default function ProspectFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
+  const [loading, setLoading] = useState(isEdit);
+  const [customers, setCustomers] = useState<Option[]>([]);
+  const [categories, setCategories] = useState<Option[]>([]);
+  const [branches, setBranches] = useState<Option[]>([]);
 
-  const existingProspect = isEdit ? INITIAL_PROSPECTS.find((p) => p.id === id) : null;
-
-  const [formName, setFormName] = useState(existingProspect?.name || '');
-  const [formClient, setFormClient] = useState(existingProspect?.client || 'PT. Telkom Indonesia Tbk.');
-  const [formValue, setFormValue] = useState(existingProspect?.estimatedValue ? String(existingProspect.estimatedValue) : '');
-  const [formDate, setFormDate] = useState(existingProspect?.date || '');
-  const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
+  const [formName, setFormName] = useState('');
+  const [formCustomerId, setFormCustomerId] = useState('');
+  const [formCategoryId, setFormCategoryId] = useState('');
+  const [formBranchId, setFormBranchId] = useState('');
+  const [formValue, setFormValue] = useState('');
+  const [formDate, setFormDate] = useState('');
+  const [formDesc, setFormDesc] = useState('');
   const [answers, setAnswers] = useState<Record<string, string>>({
     upsCapacity: 'UPS 2x3KVA',
     isFiberOpticReady: 'Ya, Terjadwal',
     groundingCableOption: 'Wajib menggunakan grounding tersendiri',
   });
 
-  const saveProspect = (status: string) => {
-    if (!formName) {
-      toast.error('Nama Prospek harus diisi!');
-      return false;
+  useEffect(() => {
+    Promise.all([
+      masterDataService.customers(),
+      masterDataService.projectCategories(),
+      masterDataService.branches(),
+    ]).then(([cRes, catRes, bRes]) => {
+      setCustomers(cRes.data.data || []);
+      setCategories(catRes.data.data || []);
+      setBranches(bRes.data.data || []);
+    }).catch(() => toast.error('Gagal memuat data referensi.'));
+  }, []);
+
+  useEffect(() => {
+    if (id) {
+      prospectService.get(id)
+        .then((res) => {
+          const p = res.data.data || res.data;
+          setFormName(p.name || '');
+          setFormCustomerId(p.customer?.id || '');
+          setFormCategoryId(p.category?.id || '');
+          setFormBranchId(p.branch?.id || '');
+          setFormValue(p.estimatedValue ? String(p.estimatedValue) : '');
+          setFormDate(p.estimatedDate || '');
+          setFormDesc(p.description || '');
+          if (p.answers) setAnswers(p.answers);
+        })
+        .catch(() => toast.error('Gagal memuat data prospek.'))
+        .finally(() => setLoading(false));
     }
-    const payload: Prospect = {
-      id: existingProspect?.id || String(Date.now()),
-      name: formName,
-      client: formClient,
-      status: status as Prospect['status'],
-      author: existingProspect?.author || 'Ahmad Faisal',
-      date: formDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      estimatedValue: Number(formValue) || undefined,
-      description: formDesc,
-      answers,
-    };
-    toast.success(status === 'Prospecting' ? 'Draf prospek berhasil disimpan.' : 'Prospek berhasil diajukan ke PM untuk review.');
-    navigate('/prospects');
-    return true;
+  }, [id]);
+
+  const saveProspect = async (status: string) => {
+    if (!formName) { toast.error('Nama Prospek harus diisi!'); return; }
+    if (status !== 'Prospecting' && (!formCustomerId || !formCategoryId || !formBranchId)) {
+      toast.error('Customer, Kategori, dan Cabang harus diisi sebelum submit review.');
+      return;
+    }
+    try {
+      const data: Record<string, unknown> = {
+        name: formName, description: formDesc,
+        estimatedValue: Number(formValue) || null, estimatedDate: formDate || null,
+        status, answers,
+      };
+      if (formCustomerId) data.customerId = formCustomerId;
+      if (formCategoryId) data.categoryId = formCategoryId;
+      if (formBranchId) data.branchId = formBranchId;
+
+      if (isEdit && id) {
+        await prospectService.update(id, data);
+      } else {
+        await prospectService.create(data);
+      }
+      toast.success(
+        status === 'Prospecting'
+          ? 'Draf prospek berhasil disimpan.'
+          : 'Prospek berhasil diajukan ke PM untuk review.',
+      );
+      navigate('/prospects');
+    } catch {
+      toast.error('Gagal menyimpan prospek.');
+    }
   };
 
   const handleSaveDraft = () => saveProspect('Prospecting');
   const handleSubmitReview = () => saveProspect('Waiting PM');
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <p className="text-secondary">Memuat data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-outline font-label-sm" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-xs text-outline font-label-sm">
           <button onClick={() => navigate('/dashboard')} className="hover:text-primary transition-colors">Dashboard</button>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <button onClick={() => navigate('/prospects')} className="hover:text-primary transition-colors">Prospek</button>
@@ -83,7 +138,6 @@ export default function ProspectFormPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: Basic Info */}
           <div className="lg:col-span-6 bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
             <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
               <span className="material-symbols-outlined">assignment</span>
@@ -92,37 +146,55 @@ export default function ProspectFormPage() {
 
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Nama Prospek *</label>
-              <input value={formName} onChange={(e) => setFormName(e.target.value)} required className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" aria-label="Nama Prospek" />
+              <input value={formName} onChange={(e) => setFormName(e.target.value)} required className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" />
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Customer / Client *</label>
-              <select value={formClient} onChange={(e) => setFormClient(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm" aria-label="Client">
-                <option>PT. Telkom Indonesia Tbk.</option>
-                <option>PT. Telekom Nusantara</option>
-                <option>Energi Bangsa Corp</option>
-                <option>Secure City Group</option>
-                <option>Bank Artha Graha</option>
+              <label className="font-semibold text-sm text-on-surface-variant">Customer *</label>
+              <select value={formCustomerId} onChange={(e) => setFormCustomerId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                <option value="">-- Pilih Customer --</option>
+                {customers.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name} {c.code ? `(${c.code})` : ''}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-sm text-on-surface-variant">Kategori Proyek *</label>
+              <select value={formCategoryId} onChange={(e) => setFormCategoryId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                <option value="">-- Pilih Kategori --</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="font-semibold text-sm text-on-surface-variant">Cabang *</label>
+              <select value={formBranchId} onChange={(e) => setFormBranchId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                <option value="">-- Pilih Cabang --</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name} {b.code ? `(${b.code})` : ''}</option>
+                ))}
               </select>
             </div>
 
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Estimasi Nilai Proyek (Rp)</label>
-              <input value={formValue} onChange={(e) => setFormValue(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="Contoh: 1500000000" type="number" aria-label="Estimasi Nilai" />
+              <input value={formValue} onChange={(e) => setFormValue(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="Contoh: 1500000000" type="number" />
             </div>
 
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Estimasi Tanggal Closing</label>
-              <input value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary" type="date" aria-label="Tanggal Closing" />
+              <input value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary" type="date" />
             </div>
 
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Deskripsi</label>
-              <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows={4} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Keterangan singkat mengenai kebutuhan proyek..." aria-label="Deskripsi" />
+              <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows={4} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Keterangan singkat mengenai kebutuhan proyek..." />
             </div>
           </div>
 
-          {/* Right: Questionnaire */}
           <div className="lg:col-span-6 bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
             <h3 className="font-bold text-sm text-status-teal border-b border-border pb-3 flex items-center gap-2">
               <span className="material-symbols-outlined">quiz</span>
@@ -149,16 +221,15 @@ export default function ProspectFormPage() {
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex justify-between items-center bg-white border border-border p-4 rounded-xl shadow-sm">
           <button onClick={() => navigate('/prospects')} className="px-6 py-2.5 bg-white border border-border text-on-surface font-semibold rounded-lg hover:bg-surface-container-low transition-all text-sm">
             Kembali ke Daftar
           </button>
           <div className="flex gap-3">
-            <button onClick={handleSaveDraft} className="px-6 py-2.5 bg-white border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all text-sm" aria-label="Simpan Draft">
+            <button onClick={handleSaveDraft} className="px-6 py-2.5 bg-white border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all text-sm">
               Simpan Draft
             </button>
-            <button onClick={handleSubmitReview} className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:brightness-110 transition-all text-sm flex items-center gap-2" aria-label="Kirim ke Review">
+            <button onClick={handleSubmitReview} className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:brightness-110 transition-all text-sm flex items-center gap-2">
               Kirim ke Review
               <span className="material-symbols-outlined text-[18px]">send</span>
             </button>

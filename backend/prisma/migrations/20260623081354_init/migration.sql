@@ -114,8 +114,11 @@ CREATE TABLE `User` (
     `departmentId` CHAR(36) NULL,
     `isActive` BOOLEAN NOT NULL DEFAULT true,
     `isLocked` BOOLEAN NOT NULL DEFAULT false,
+    `lockedUntil` DATETIME(3) NULL,
     `failedLoginCount` INTEGER NOT NULL DEFAULT 0,
+    `lastLoginIp` VARCHAR(45) NULL,
     `lastLoginAt` DATETIME(3) NULL,
+    `mustChangePassword` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
     `deletedAt` DATETIME(3) NULL,
@@ -129,14 +132,15 @@ CREATE TABLE `User` (
 CREATE TABLE `ActiveSession` (
     `id` CHAR(36) NOT NULL,
     `userId` CHAR(36) NOT NULL,
-    `tokenJti` VARCHAR(255) NOT NULL,
+    `jti` VARCHAR(255) NOT NULL,
+    `refreshTokenHash` VARCHAR(255) NOT NULL,
     `ipAddress` VARCHAR(45) NOT NULL,
     `userAgent` TEXT NULL,
     `expiresAt` DATETIME(3) NOT NULL,
     `revokedAt` DATETIME(3) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
-    UNIQUE INDEX `ActiveSession_tokenJti_key`(`tokenJti`),
+    UNIQUE INDEX `ActiveSession_refreshTokenHash_key`(`refreshTokenHash`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -347,9 +351,9 @@ CREATE TABLE `LossReason` (
 CREATE TABLE `Prospect` (
     `id` CHAR(36) NOT NULL,
     `name` VARCHAR(200) NOT NULL,
-    `customerId` CHAR(36) NOT NULL,
-    `branchId` CHAR(36) NOT NULL,
-    `categoryId` CHAR(36) NOT NULL,
+    `customerId` CHAR(36) NULL,
+    `branchId` CHAR(36) NULL,
+    `categoryId` CHAR(36) NULL,
     `description` TEXT NULL,
     `estimatedValue` DECIMAL(18, 2) NULL,
     `estimatedDate` DATE NULL,
@@ -894,3 +898,300 @@ CREATE TABLE `AiRequestLog` (
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Division` ADD CONSTRAINT `Division_companyId_fkey` FOREIGN KEY (`companyId`) REFERENCES `Company`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Division` ADD CONSTRAINT `Division_headUserId_fkey` FOREIGN KEY (`headUserId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Department` ADD CONSTRAINT `Department_divisionId_fkey` FOREIGN KEY (`divisionId`) REFERENCES `Division`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Department` ADD CONSTRAINT `Department_parentDepartmentId_fkey` FOREIGN KEY (`parentDepartmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Department` ADD CONSTRAINT `Department_headUserId_fkey` FOREIGN KEY (`headUserId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Branch` ADD CONSTRAINT `Branch_divisionId_fkey` FOREIGN KEY (`divisionId`) REFERENCES `Division`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Branch` ADD CONSTRAINT `Branch_picUserId_fkey` FOREIGN KEY (`picUserId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RolePermission` ADD CONSTRAINT `RolePermission_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RolePermission` ADD CONSTRAINT `RolePermission_permissionId_fkey` FOREIGN KEY (`permissionId`) REFERENCES `Permission`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `User` ADD CONSTRAINT `User_roleId_fkey` FOREIGN KEY (`roleId`) REFERENCES `Role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `User` ADD CONSTRAINT `User_branchId_fkey` FOREIGN KEY (`branchId`) REFERENCES `Branch`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `User` ADD CONSTRAINT `User_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ActiveSession` ADD CONSTRAINT `ActiveSession_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `UserPosition` ADD CONSTRAINT `UserPosition_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `UserPosition` ADD CONSTRAINT `UserPosition_positionId_fkey` FOREIGN KEY (`positionId`) REFERENCES `Position`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `QuestionTypeOption` ADD CONSTRAINT `QuestionTypeOption_questionTypeId_fkey` FOREIGN KEY (`questionTypeId`) REFERENCES `QuestionType`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Question` ADD CONSTRAINT `Question_questionTypeId_fkey` FOREIGN KEY (`questionTypeId`) REFERENCES `QuestionType`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `QuestionOption` ADD CONSTRAINT `QuestionOption_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `Question`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Prospect` ADD CONSTRAINT `Prospect_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Prospect` ADD CONSTRAINT `Prospect_branchId_fkey` FOREIGN KEY (`branchId`) REFERENCES `Branch`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Prospect` ADD CONSTRAINT `Prospect_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `ProjectCategory`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Prospect` ADD CONSTRAINT `Prospect_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Prospect` ADD CONSTRAINT `Prospect_convertedToProjectId_fkey` FOREIGN KEY (`convertedToProjectId`) REFERENCES `Project`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectAnswer` ADD CONSTRAINT `ProspectAnswer_prospectId_fkey` FOREIGN KEY (`prospectId`) REFERENCES `Prospect`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectAnswer` ADD CONSTRAINT `ProspectAnswer_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `Question`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectAnswer` ADD CONSTRAINT `ProspectAnswer_answerOptionId_fkey` FOREIGN KEY (`answerOptionId`) REFERENCES `QuestionOption`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectAnswerOption` ADD CONSTRAINT `ProspectAnswerOption_prospectAnswerId_fkey` FOREIGN KEY (`prospectAnswerId`) REFERENCES `ProspectAnswer`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectAnswerOption` ADD CONSTRAINT `ProspectAnswerOption_questionOptionId_fkey` FOREIGN KEY (`questionOptionId`) REFERENCES `QuestionOption`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectReviewQuestion` ADD CONSTRAINT `ProspectReviewQuestion_prospectId_fkey` FOREIGN KEY (`prospectId`) REFERENCES `Prospect`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectReviewQuestion` ADD CONSTRAINT `ProspectReviewQuestion_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectReviewNote` ADD CONSTRAINT `ProspectReviewNote_prospectId_fkey` FOREIGN KEY (`prospectId`) REFERENCES `Prospect`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProspectReviewNote` ADD CONSTRAINT `ProspectReviewNote_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Project` ADD CONSTRAINT `Project_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `Customer`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Project` ADD CONSTRAINT `Project_branchId_fkey` FOREIGN KEY (`branchId`) REFERENCES `Branch`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Project` ADD CONSTRAINT `Project_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `ProjectCategory`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Project` ADD CONSTRAINT `Project_statusId_fkey` FOREIGN KEY (`statusId`) REFERENCES `ProjectStatusDefinition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Project` ADD CONSTRAINT `Project_cancelledBy_fkey` FOREIGN KEY (`cancelledBy`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Project` ADD CONSTRAINT `Project_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProjectTimelineEvent` ADD CONSTRAINT `ProjectTimelineEvent_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProjectTimelineEvent` ADD CONSTRAINT `ProjectTimelineEvent_actorId_fkey` FOREIGN KEY (`actorId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Rks` ADD CONSTRAINT `Rks_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RksReviewQuestion` ADD CONSTRAINT `RksReviewQuestion_rksId_fkey` FOREIGN KEY (`rksId`) REFERENCES `Rks`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RksReviewQuestion` ADD CONSTRAINT `RksReviewQuestion_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RksReviewNote` ADD CONSTRAINT `RksReviewNote_rksId_fkey` FOREIGN KEY (`rksId`) REFERENCES `Rks`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `RksReviewNote` ADD CONSTRAINT `RksReviewNote_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsSios` ADD CONSTRAINT `LphsSios_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsSios` ADD CONSTRAINT `LphsSios_pmApprovedBy_fkey` FOREIGN KEY (`pmApprovedBy`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsSios` ADD CONSTRAINT `LphsSios_finalApprovedBy_fkey` FOREIGN KEY (`finalApprovedBy`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsDepartmentReview` ADD CONSTRAINT `LphsDepartmentReview_lphsSiosId_fkey` FOREIGN KEY (`lphsSiosId`) REFERENCES `LphsSios`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsDepartmentReview` ADD CONSTRAINT `LphsDepartmentReview_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsDepartmentReview` ADD CONSTRAINT `LphsDepartmentReview_reviewedBy_fkey` FOREIGN KEY (`reviewedBy`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsTargetedRevision` ADD CONSTRAINT `LphsTargetedRevision_lphsSiosId_fkey` FOREIGN KEY (`lphsSiosId`) REFERENCES `LphsSios`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsTargetedRevision` ADD CONSTRAINT `LphsTargetedRevision_initiatedBy_fkey` FOREIGN KEY (`initiatedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsTargetedRevisionDepartment` ADD CONSTRAINT `LphsTargetedRevisionDepartment_lphsTargetedRevisionId_fkey` FOREIGN KEY (`lphsTargetedRevisionId`) REFERENCES `LphsTargetedRevision`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LphsTargetedRevisionDepartment` ADD CONSTRAINT `LphsTargetedRevisionDepartment_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PriceSubmission` ADD CONSTRAINT `PriceSubmission_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `PriceSubmission` ADD CONSTRAINT `PriceSubmission_submittedBy_fkey` FOREIGN KEY (`submittedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProjectCompetitor` ADD CONSTRAINT `ProjectCompetitor_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ProjectCompetitor` ADD CONSTRAINT `ProjectCompetitor_competitorId_fkey` FOREIGN KEY (`competitorId`) REFERENCES `Competitor`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `TenderResult` ADD CONSTRAINT `TenderResult_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `TenderResult` ADD CONSTRAINT `TenderResult_lossReasonId_fkey` FOREIGN KEY (`lossReasonId`) REFERENCES `LossReason`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `TenderResult` ADD CONSTRAINT `TenderResult_decidedBy_fkey` FOREIGN KEY (`decidedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `DeliveryTarget` ADD CONSTRAINT `DeliveryTarget_projectId_fkey` FOREIGN KEY (`projectId`) REFERENCES `Project`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ApprovalWorkflowStage` ADD CONSTRAINT `ApprovalWorkflowStage_approverRoleId_fkey` FOREIGN KEY (`approverRoleId`) REFERENCES `Role`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Approval` ADD CONSTRAINT `Approval_stageId_fkey` FOREIGN KEY (`stageId`) REFERENCES `ApprovalWorkflowStage`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Approval` ADD CONSTRAINT `Approval_assignedToUserId_fkey` FOREIGN KEY (`assignedToUserId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Approval` ADD CONSTRAINT `Approval_assignedToRoleId_fkey` FOREIGN KEY (`assignedToRoleId`) REFERENCES `Role`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Approval` ADD CONSTRAINT `Approval_assignedToDepartmentId_fkey` FOREIGN KEY (`assignedToDepartmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Approval` ADD CONSTRAINT `Approval_decidedBy_fkey` FOREIGN KEY (`decidedBy`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ApprovalReassignment` ADD CONSTRAINT `ApprovalReassignment_approvalId_fkey` FOREIGN KEY (`approvalId`) REFERENCES `Approval`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ApprovalReassignment` ADD CONSTRAINT `ApprovalReassignment_previousAssigneeUserId_fkey` FOREIGN KEY (`previousAssigneeUserId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ApprovalReassignment` ADD CONSTRAINT `ApprovalReassignment_newAssigneeUserId_fkey` FOREIGN KEY (`newAssigneeUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ApprovalReassignment` ADD CONSTRAINT `ApprovalReassignment_reassignedBy_fkey` FOREIGN KEY (`reassignedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BackupApproverDelegation` ADD CONSTRAINT `BackupApproverDelegation_positionId_fkey` FOREIGN KEY (`positionId`) REFERENCES `Position`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BackupApproverDelegation` ADD CONSTRAINT `BackupApproverDelegation_primaryUserId_fkey` FOREIGN KEY (`primaryUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BackupApproverDelegation` ADD CONSTRAINT `BackupApproverDelegation_backupUserId_fkey` FOREIGN KEY (`backupUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BackupApproverDelegation` ADD CONSTRAINT `BackupApproverDelegation_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Document` ADD CONSTRAINT `Document_documentTypeId_fkey` FOREIGN KEY (`documentTypeId`) REFERENCES `DocumentTypeDefinition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Document` ADD CONSTRAINT `Document_departmentId_fkey` FOREIGN KEY (`departmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Document` ADD CONSTRAINT `Document_uploadedBy_fkey` FOREIGN KEY (`uploadedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `KpiWeight` ADD CONSTRAINT `KpiWeight_kpiDefinitionId_fkey` FOREIGN KEY (`kpiDefinitionId`) REFERENCES `KpiDefinition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `KpiWeight` ADD CONSTRAINT `KpiWeight_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Target` ADD CONSTRAINT `Target_kpiDefinitionId_fkey` FOREIGN KEY (`kpiDefinitionId`) REFERENCES `KpiDefinition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Target` ADD CONSTRAINT `Target_periodId_fkey` FOREIGN KEY (`periodId`) REFERENCES `PeriodDefinition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Target` ADD CONSTRAINT `Target_createdBy_fkey` FOREIGN KEY (`createdBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `TargetProgressSnapshot` ADD CONSTRAINT `TargetProgressSnapshot_targetId_fkey` FOREIGN KEY (`targetId`) REFERENCES `Target`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `NotificationTemplateRecipient` ADD CONSTRAINT `NotificationTemplateRecipient_notificationTemplateId_fkey` FOREIGN KEY (`notificationTemplateId`) REFERENCES `NotificationTemplate`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `NotificationTemplateRecipient` ADD CONSTRAINT `NotificationTemplateRecipient_recipientRoleId_fkey` FOREIGN KEY (`recipientRoleId`) REFERENCES `Role`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `NotificationTemplateRecipient` ADD CONSTRAINT `NotificationTemplateRecipient_recipientDepartmentId_fkey` FOREIGN KEY (`recipientDepartmentId`) REFERENCES `Department`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Notification` ADD CONSTRAINT `Notification_notificationTemplateId_fkey` FOREIGN KEY (`notificationTemplateId`) REFERENCES `NotificationTemplate`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Notification` ADD CONSTRAINT `Notification_recipientUserId_fkey` FOREIGN KEY (`recipientUserId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `AuditLog` ADD CONSTRAINT `AuditLog_actorId_fkey` FOREIGN KEY (`actorId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `SlaConfiguration` ADD CONSTRAINT `SlaConfiguration_stageId_fkey` FOREIGN KEY (`stageId`) REFERENCES `ApprovalWorkflowStage`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `SlaReminderConfiguration` ADD CONSTRAINT `SlaReminderConfiguration_slaConfigurationId_fkey` FOREIGN KEY (`slaConfigurationId`) REFERENCES `SlaConfiguration`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `SlaReminderConfiguration` ADD CONSTRAINT `SlaReminderConfiguration_escalationRoleId_fkey` FOREIGN KEY (`escalationRoleId`) REFERENCES `Role`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `UploadPolicyConfiguration` ADD CONSTRAINT `UploadPolicyConfiguration_documentTypeId_fkey` FOREIGN KEY (`documentTypeId`) REFERENCES `DocumentTypeDefinition`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `UploadPolicyMimeType` ADD CONSTRAINT `UploadPolicyMimeType_uploadPolicyConfigurationId_fkey` FOREIGN KEY (`uploadPolicyConfigurationId`) REFERENCES `UploadPolicyConfiguration`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `IntegrationConfiguration` ADD CONSTRAINT `IntegrationConfiguration_updatedBy_fkey` FOREIGN KEY (`updatedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `AiRequestLog` ADD CONSTRAINT `AiRequestLog_requestedBy_fkey` FOREIGN KEY (`requestedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;

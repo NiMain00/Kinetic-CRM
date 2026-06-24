@@ -1,28 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { User, UserRole } from '../../types/domain/users';
+import { userService } from '../../services/users';
 
 interface UsersViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
   onNavigatePage: (page: string) => void;
 }
 
-const INITIAL_USERS: User[] = [
-  { id: 'USR-001', username: 'asulistyo', fullName: 'Ahmad Sulistyo', email: 'ahmad.s@kinetic.co.id', role: 'Branch Manager', branch: 'Jakarta Pusat', department: 'Operations', phone: '0812-3456-7890', status: 'active', lastLogin: '2026-06-22 08:30:00', createdAt: '2024-01-15' },
-  { id: 'USR-002', username: 'bambang.pm', fullName: 'Bambang Permadi', email: 'b.permadi@kinetic.co.id', role: 'PM', branch: 'Project Management', department: 'Project Management Office', phone: '0812-3456-7891', status: 'active', lastLogin: '2026-06-21 14:20:00', createdAt: '2024-02-10' },
-  { id: 'USR-003', username: 'rina.ops', fullName: 'Rina Marlina', email: 'rina.marlina@kinetic.co.id', role: 'Dept Head', branch: 'Surabaya', department: 'Operations', phone: '0812-3456-7892', status: 'inactive', lastLogin: '2026-05-30 09:15:00', createdAt: '2024-03-05' },
-  { id: 'USR-004', username: 'doni.admin', fullName: 'Doni Wahyudi', email: 'doni.w@kinetic.co.id', role: 'Admin', branch: 'Head Office', department: 'IT', phone: '0812-3456-7893', status: 'active', lastLogin: '2026-06-22 07:45:00', createdAt: '2024-01-20' },
-  { id: 'USR-005', username: 'siti.am', fullName: 'Siti Aminah', email: 'siti.aminah@kinetic.co.id', role: 'Reviewer', branch: 'Jakarta Selatan', department: 'Quality Assurance', phone: '0812-3456-7894', status: 'active', lastLogin: '2026-06-21 16:00:00', createdAt: '2024-04-12' },
-  { id: 'USR-006', username: 'andi.w', fullName: 'Andi Wijaya', email: 'andi.w@kinetic.co.id', role: 'Staff', branch: 'Bandung', department: 'Field Operations', phone: '0812-3456-7895', status: 'active', lastLogin: '2026-06-20 11:30:00', createdAt: '2024-05-01' },
-  { id: 'USR-007', username: 'dewi.s', fullName: 'Dewi Sartika', email: 'dewi.s@kinetic.co.id', role: 'Branch Manager', branch: 'Medan', department: 'Operations', phone: '0812-3456-7896', status: 'active', lastLogin: '2026-06-22 06:50:00', createdAt: '2024-01-25' },
-  { id: 'USR-008', username: 'eko.p', fullName: 'Eko Prasetyo', email: 'eko.p@kinetic.co.id', role: 'Super Admin', branch: 'Head Office', department: 'IT', phone: '0812-3456-7897', status: 'active', lastLogin: '2026-06-22 08:00:00', createdAt: '2023-11-01' },
-];
-
 const ALL_ROLES: UserRole[] = ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'];
+
+const ROLE_CODE_MAP: Record<string, string> = {
+  'Super Admin': 'admin',
+  'Admin': 'admin',
+  'PM': 'pm',
+  'Branch Manager': 'management',
+  'Dept Head': 'department',
+  'Reviewer': 'department',
+  'Staff': 'cabang',
+};
 const ALL_BRANCHES = ['Head Office', 'Jakarta Pusat', 'Jakarta Selatan', 'Surabaya', 'Bandung', 'Medan', 'Makassar', 'Balikpapan'];
 const ALL_DEPARTMENTS = ['Operations', 'Project Management Office', 'IT', 'Quality Assurance', 'Field Operations', 'Finance', 'Legal', 'Marketing'];
 
 export default function UsersView({ onShowNotification, onNavigatePage }: UsersViewProps) {
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -32,17 +33,53 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
   const [formFullName, setFormFullName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formUsername, setFormUsername] = useState('');
+  const [formPassword, setFormPassword] = useState('');
   const [formRole, setFormRole] = useState<UserRole>('Staff');
   const [formBranch, setFormBranch] = useState('');
   const [formDepartment, setFormDepartment] = useState('');
   const [formPhone, setFormPhone] = useState('');
   const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('active');
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await userService.list({ search: searchQuery || undefined, isActive: statusFilter !== 'all' ? statusFilter === 'active' : undefined, perPage: 100 });
+      const apiUsers = res.data.data || [];
+      const roleCodeToLabel: Record<string, UserRole> = {
+        admin: 'Admin', management: 'Branch Manager', pm: 'PM',
+        department: 'Dept Head', cabang: 'Staff',
+      };
+      const mapped: User[] = apiUsers.map((u: any) => ({
+        id: u.id,
+        username: u.username,
+        fullName: u.name,
+        email: u.email,
+        role: roleCodeToLabel[u.role?.code] || 'Staff',
+        branch: u.branch?.name || '-',
+        department: u.department?.name || '-',
+        phone: '',
+        status: u.isActive ? 'active' : 'inactive',
+        lastLogin: u.lastLoginAt || '-',
+        createdAt: u.createdAt?.split('T')[0] || '-',
+      }));
+      setUsers(mapped);
+    } catch {
+      onShowNotification('Gagal memuat data pengguna.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, statusFilter, onShowNotification]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
   const handleOpenCreate = () => {
     setEditingUser(null);
     setFormFullName('');
     setFormEmail('');
     setFormUsername('');
+    setFormPassword('');
     setFormRole('Staff');
     setFormBranch('Jakarta Pusat');
     setFormDepartment('Operations');
@@ -56,48 +93,79 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
     setFormFullName(user.fullName);
     setFormEmail(user.email);
     setFormUsername(user.username);
+    setFormPassword('');
     setFormRole(user.role);
-    setFormBranch(user.branch);
-    setFormDepartment(user.department);
+    setFormBranch(user.branch === '-' ? '' : user.branch);
+    setFormDepartment(user.department === '-' ? '' : user.department);
     setFormPhone(user.phone);
     setFormStatus(user.status);
     setDrawerOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formFullName || !formEmail || !formUsername) {
       onShowNotification('Nama, Email, dan Username wajib diisi.', 'error');
       return;
     }
-    if (editingUser) {
-      setUsers(users.map(u => u.id === editingUser.id ? { ...u, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus } : u));
-      onShowNotification(`Pengguna ${formFullName} berhasil diperbarui.`, 'success');
-    } else {
-      const newUser: User = { id: `USR-${String(users.length + 1).padStart(3, '0')}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus, createdAt: new Date().toISOString().split('T')[0] };
-      setUsers([newUser, ...users]);
-      onShowNotification(`Pengguna ${formFullName} berhasil ditambahkan.`, 'success');
+    try {
+      if (editingUser) {
+        await userService.update(editingUser.id, {
+          name: formFullName,
+          email: formEmail,
+          isActive: formStatus === 'active',
+        });
+        onShowNotification(`Pengguna ${formFullName} berhasil diperbarui.`, 'success');
+      } else {
+        if (!formPassword || formPassword.length < 8) {
+          onShowNotification('Password minimal 8 karakter.', 'error');
+          return;
+        }
+        await userService.create({
+          name: formFullName,
+          username: formUsername,
+          email: formEmail,
+          password: formPassword,
+          role: ROLE_CODE_MAP[formRole] || 'cabang',
+        });
+        onShowNotification(`Pengguna ${formFullName} berhasil ditambahkan.`, 'success');
+      }
+      setDrawerOpen(false);
+      await fetchUsers();
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.message || 'Terjadi kesalahan.';
+      onShowNotification(msg, 'error');
     }
-    setDrawerOpen(false);
   };
 
-  const handleToggleStatus = (id: string) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u));
+  const handleToggleStatus = async (id: string) => {
     const target = users.find(u => u.id === id);
-    onShowNotification(`Status pengguna ${target?.fullName} diubah.`, 'success');
+    if (!target) return;
+    try {
+      await userService.update(id, { isActive: target.status !== 'active' });
+      onShowNotification(`Status pengguna ${target.fullName} diubah.`, 'success');
+      await fetchUsers();
+    } catch {
+      onShowNotification('Gagal mengubah status.', 'error');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const target = users.find(u => u.id === id);
-    setUsers(users.filter(u => u.id !== id));
-    onShowNotification(`Pengguna ${target?.fullName} berhasil dihapus.`, 'warning');
+    if (!target) return;
+    try {
+      await userService.deactivate(id);
+      onShowNotification(`Pengguna ${target.fullName} berhasil dihapus.`, 'warning');
+      await fetchUsers();
+    } catch {
+      onShowNotification('Gagal menonaktifkan pengguna.', 'error');
+    }
   };
 
   const filteredUsers = users.filter(u => {
     const matchesSearch = u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase()) || u.username.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
-    const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
-    return matchesSearch && matchesRole && matchesStatus;
+    return matchesSearch && matchesRole;
   });
 
   const roleBadgeClass = (role: UserRole) => {
@@ -143,7 +211,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                 <option value="active">Aktif</option>
                 <option value="inactive">Non-Aktif</option>
               </select>
-              <button onClick={() => { setSearchQuery(''); setRoleFilter('all'); setStatusFilter('all'); onShowNotification('Filter direset.', 'success'); }} className="px-3 py-2 border border-border rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Reset</button>
+              <button onClick={() => { setSearchQuery(''); setRoleFilter('all'); setStatusFilter('all'); }} className="px-3 py-2 border border-border rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">Reset</button>
             </div>
           </div>
 
@@ -162,7 +230,9 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filteredUsers.length === 0 ? (
+                  {loading ? (
+                    <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">Memuat data...</td></tr>
+                  ) : filteredUsers.length === 0 ? (
                     <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">Tidak ada pengguna ditemukan.</td></tr>
                   ) : (
                     filteredUsers.map(u => (
@@ -199,7 +269,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
             </div>
             <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
               <span>Menampilkan {filteredUsers.length} dari {users.length} pengguna</span>
-              <span>Static sandbox environment</span>
+              <span>Live API</span>
             </div>
           </div>
         </div>
@@ -230,6 +300,12 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                   <input type="text" value={formUsername} onChange={e => setFormUsername(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="username" required />
                 </div>
               </div>
+              {!editingUser && (
+                <div className="space-y-2">
+                  <label className="font-semibold text-slate-700 block">Password *</label>
+                  <input type="password" value={formPassword} onChange={e => setFormPassword(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Minimal 8 karakter" required={!editingUser} />
+                </div>
+              )}
               <div className="space-y-2">
                 <label className="font-semibold text-slate-700 block">Role *</label>
                 <select value={formRole} onChange={e => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs bg-white">

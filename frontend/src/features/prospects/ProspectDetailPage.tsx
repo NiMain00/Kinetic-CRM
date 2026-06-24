@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_PROSPECTS, INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
-import type { Prospect } from '@/types/domain';
+import { prospectService } from '../../services/prospects';
 
 const defaultAnswers: Record<string, string> = {
   upsCapacity: 'UPS 2x3KVA',
@@ -16,13 +15,87 @@ const questionnaireLabels: Record<string, string> = {
   groundingCableOption: 'Kebutuhan Proteksi Kelistrikan Ruang Server',
 };
 
+interface ProspectDetail {
+  id: string;
+  name: string;
+  customer: { id: string; name: string; code: string };
+  branch: { id: string; name: string };
+  category: { id: string; name: string };
+  creator: { id: string; name: string };
+  status: string;
+  description: string | null;
+  estimatedValue: number | null;
+  estimatedDate: string | null;
+  createdAt: string;
+  updatedAt: string;
+  answers?: Record<string, string>;
+}
+
 export default function ProspectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [prospect, setProspect] = useState<Prospect | undefined>(
-    () => INITIAL_PROSPECTS.find((p) => p.id === id),
-  );
-  const [events] = useState(INITIAL_TIMELINE_EVENTS);
+  const [prospect, setProspect] = useState<ProspectDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+    prospectService.get(id)
+      .then((res) => setProspect(res.data.data || res.data))
+      .catch(() => toast.error('Gagal memuat detail prospek.'))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const statusBadge = (status: string) => {
+    const map: Record<string, string> = {
+      Prospecting: 'bg-info/10 text-info',
+      'Waiting PM': 'bg-warning/10 text-warning',
+      Revision: 'bg-status-orange/10 text-status-orange',
+      Approved: 'bg-success/10 text-success',
+    };
+    return map[status] || 'bg-secondary-container/50 text-on-secondary-container';
+  };
+
+  const handleApprove = async () => {
+    if (!id || !prospect) return;
+    try {
+      await prospectService.update(id, { status: 'Approved' });
+      setProspect({ ...prospect, status: 'Approved' });
+      toast.success('Prospek berhasil disetujui.');
+    } catch {
+      toast.error('Gagal menyetujui prospek.');
+    }
+  };
+
+  const handleRequestRevision = async () => {
+    if (!id || !prospect) return;
+    try {
+      await prospectService.update(id, { status: 'Revision' });
+      setProspect({ ...prospect, status: 'Revision' });
+      toast.success('Permintaan revisi telah dikirim.');
+    } catch {
+      toast.error('Gagal meminta revisi.');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id) return;
+    if (!confirm('Apakah Anda yakin ingin menghapus prospek ini?')) return;
+    try {
+      await prospectService.delete(id);
+      toast.success('Prospek berhasil dihapus.');
+      navigate('/prospects');
+    } catch {
+      toast.error('Gagal menghapus prospek.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <p className="text-secondary">Memuat data...</p>
+      </div>
+    );
+  }
 
   if (!prospect) {
     return (
@@ -39,59 +112,9 @@ export default function ProspectDetailPage() {
     );
   }
 
-  const statusBadge = (status: string) => {
-    const map: Record<string, string> = {
-      Prospecting: 'bg-info/10 text-info',
-      'Waiting PM': 'bg-warning/10 text-warning',
-      Revision: 'bg-status-orange/10 text-status-orange',
-      Approved: 'bg-success/10 text-success',
-    };
-    return map[status] || 'bg-secondary-container/50 text-on-secondary-container';
-  };
-
-  const actionIcon = (type: string) => {
-    const map: Record<string, string> = {
-      approve: 'check_circle',
-      submit: 'send',
-      revision: 'edit_note',
-      upload: 'upload_file',
-      status_change: 'swap_horiz',
-      comment: 'chat',
-    };
-    return map[type] || 'circle';
-  };
-
-  const actionColor = (type: string) => {
-    const map: Record<string, string> = {
-      approve: 'text-success',
-      submit: 'text-primary',
-      revision: 'text-warning',
-      upload: 'text-status-purple',
-      status_change: 'text-info',
-      comment: 'text-secondary',
-    };
-    return map[type] || 'text-secondary';
-  };
-
-  const handleApprove = () => {
-    setProspect({ ...prospect, status: 'Approved' });
-    toast.success('Prospek berhasil disetujui.');
-  };
-
-  const handleRequestRevision = () => {
-    setProspect({ ...prospect, status: 'Revision' });
-    toast.success('Permintaan revisi telah dikirim.');
-  };
-
-  const handleDelete = () => {
-    toast.success('Prospek berhasil dihapus.');
-    navigate('/prospects');
-  };
-
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-xs text-outline font-label-sm" aria-label="Breadcrumb">
           <button onClick={() => navigate('/dashboard')} className="hover:text-primary transition-colors">Dashboard</button>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
@@ -100,7 +123,6 @@ export default function ProspectDetailPage() {
           <span className="text-primary font-semibold truncate max-w-[200px]">{prospect.name}</span>
         </nav>
 
-        {/* Header */}
         <div className="bg-white rounded-xl border border-border shadow-sm p-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div className="space-y-2">
@@ -110,15 +132,15 @@ export default function ProspectDetailPage() {
                   {prospect.status}
                 </span>
               </div>
-              <p className="text-sm text-secondary">{prospect.client}</p>
+              <p className="text-sm text-secondary">{prospect.customer?.name}</p>
               <div className="flex items-center gap-4 text-xs text-outline mt-2">
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">person</span>
-                  {prospect.author}
+                  {prospect.creator?.name}
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                  {prospect.date}
+                  {new Date(prospect.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
                 {prospect.estimatedValue && (
                   <span className="flex items-center gap-1 font-mono font-bold text-on-surface">
@@ -133,15 +155,15 @@ export default function ProspectDetailPage() {
                 <span className="material-symbols-outlined text-[18px]">edit</span>
                 Edit
               </button>
-              <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
+              <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                 Setujui
               </button>
-              <button onClick={handleRequestRevision} className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Minta revisi">
+              <button onClick={handleRequestRevision} className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px]">edit_note</span>
                 Revisi
               </button>
-              <button onClick={handleDelete} className="px-4 py-2 border border-danger text-danger rounded-lg text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
+              <button onClick={handleDelete} className="px-4 py-2 border border-danger text-danger rounded-lg text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px]">delete</span>
               </button>
             </div>
@@ -149,9 +171,7 @@ export default function ProspectDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Main Detail */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Description */}
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">description</span>
@@ -162,14 +182,13 @@ export default function ProspectDetailPage() {
               </p>
             </div>
 
-            {/* Dynamic Questionnaire Answers */}
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">quiz</span>
                 Jawaban Kuesioner Teknis
               </h3>
               <div className="space-y-4">
-                {(prospect.answers || defaultAnswers) && Object.entries(prospect.answers || defaultAnswers).map(([key, value]) => (
+                {Object.entries(prospect.answers || defaultAnswers).map(([key, value]) => (
                   <div key={key} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
                     <p className="text-xs text-outline font-semibold mb-1">{questionnaireLabels[key] || key}</p>
                     <p className="text-sm font-semibold text-on-surface">{value}</p>
@@ -179,45 +198,13 @@ export default function ProspectDetailPage() {
             </div>
           </div>
 
-          {/* Sidebar - Status Timeline */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">timeline</span>
                 Riwayat Status
               </h3>
-              <div className="space-y-0">
-                {events.map((event, idx) => (
-                  <div key={event.id} className="relative pb-6 pl-8 last:pb-0">
-                    {idx < events.length - 1 && (
-                      <div className="absolute left-3.5 top-6 w-0.5 h-full bg-border" />
-                    )}
-                    <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-full flex items-center justify-center ${actionColor(event.type)} bg-white border-2 border-current`}>
-                      <span className="material-symbols-outlined text-[14px]">{actionIcon(event.type)}</span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-on-surface">{event.title}</p>
-                      <p className="text-xs text-outline mt-0.5">{event.actor} · {event.role}</p>
-                      {event.description && (
-                        <p className="text-xs text-secondary mt-1 italic">{event.description}</p>
-                      )}
-                      {(event.prevVal || event.newVal) && (
-                        <div className="flex items-center gap-2 mt-1 text-xs">
-                          {event.prevVal && <span className="line-through text-outline">{event.prevVal}</span>}
-                          {event.newVal && <span className="font-semibold text-on-surface">{event.newVal}</span>}
-                        </div>
-                      )}
-                      {event.fileName && (
-                        <div className="flex items-center gap-1 mt-1 text-xs text-primary">
-                          <span className="material-symbols-outlined text-[14px]">attach_file</span>
-                          {event.fileName} {event.fileSize && `(${event.fileSize})`}
-                        </div>
-                      )}
-                      <p className="text-[10px] text-outline mt-1">{event.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-secondary">Riwayat status akan muncul setelah modul review selesai diintegrasikan.</p>
             </div>
           </div>
         </div>

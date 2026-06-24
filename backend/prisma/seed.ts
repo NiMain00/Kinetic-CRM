@@ -68,11 +68,15 @@ const PERMISSIONS = [
   { code: 'notifications.read', resource: 'notifications', action: 'read', label: 'Lihat Notifikasi' },
 
   { code: 'audit.read', resource: 'audit', action: 'read', label: 'Lihat Audit Log' },
+
+  { code: 'dashboard.read', resource: 'dashboard', action: 'read', label: 'Lihat Dashboard' },
+  { code: 'ai:access', resource: 'ai', action: 'access', label: 'Akses AI' },
 ];
 
 const ROLE_PERMISSIONS: Record<string, string[]> = {
   admin: PERMISSIONS.map((p) => p.code),
   management: [
+    'dashboard.read',
     'prospects.read', 'projects.read', 'projects.create', 'projects.update',
     'projects.rks.read', 'projects.lphs.read',
     'approvals.read', 'approvals.approve', 'approvals.reject',
@@ -81,6 +85,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'documents.read', 'notifications.read', 'audit.read',
   ],
   pm: [
+    'dashboard.read',
     'prospects.read', 'prospects.create', 'prospects.update', 'prospects.submit',
     'projects.read', 'projects.create', 'projects.update', 'projects.cancel',
     'projects.rks.read', 'projects.rks.update', 'projects.rks.submit',
@@ -92,6 +97,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'notifications.read',
   ],
   department: [
+    'dashboard.read',
     'prospects.read', 'projects.read',
     'projects.rks.read', 'projects.lphs.read', 'projects.lphs.update', 'projects.lphs.approve',
     'approvals.read', 'approvals.approve', 'approvals.reject', 'approvals.revise',
@@ -357,6 +363,358 @@ async function main() {
   } else {
     console.log('  Approval stages already exist, skipping SLA configs');
   }
+
+  // 12. Seed Company
+  const companyId = await (async () => {
+    const existing = await prisma.company.findUnique({ where: { name: 'PT Kinetic Solusi Integrasi' } });
+    if (existing) return existing.id;
+    const c = await prisma.company.create({
+      data: { id: uuidv4(), name: 'PT Kinetic Solusi Integrasi', address: 'Jl. Sudirman No. 123, Jakarta Pusat', isActive: true },
+    });
+    console.log('  Seeded company: PT Kinetic Solusi Integrasi');
+    return c.id;
+  })();
+
+  // 13. Seed Divisions
+  const divisionData = [
+    { name: 'Divisi Infrastruktur', code: 'INF' },
+    { name: 'Divisi Teknologi Informasi', code: 'TI' },
+    { name: 'Divisi Konsultansi', code: 'KON' },
+  ];
+  const divisionMap: Record<string, string> = {};
+  for (const d of divisionData) {
+    const existing = await prisma.division.findUnique({ where: { code: d.code } });
+    if (existing) { divisionMap[d.code] = existing.id; continue; }
+    const created = await prisma.division.create({
+      data: { id: uuidv4(), companyId, name: d.name, code: d.code, isActive: true },
+    });
+    divisionMap[d.code] = created.id;
+  }
+  console.log(`  Seeded ${divisionData.length} divisions`);
+
+  // 14. Seed Departments
+  const deptData = [
+    { name: 'Engineering', code: 'ENG', divisionCode: 'INF' },
+    { name: 'Project Management Office', code: 'PMO', divisionCode: 'INF' },
+    { name: 'Software Development', code: 'SWD', divisionCode: 'TI' },
+    { name: 'Network & Security', code: 'NET', divisionCode: 'TI' },
+    { name: 'IT Support', code: 'IT', divisionCode: 'TI' },
+    { name: 'Legal & Finance', code: 'LEG', divisionCode: 'KON' },
+    { name: 'Operations', code: 'OPS', divisionCode: 'KON' },
+    { name: 'Quality Assurance', code: 'QA', divisionCode: 'KON' },
+    { name: 'Field Operations', code: 'FLD-OPS', divisionCode: 'INF' },
+    { name: 'Marketing', code: 'MKT', divisionCode: 'KON' },
+  ];
+  const deptMap: Record<string, string> = {};
+  for (const d of deptData) {
+    const existing = await prisma.department.findUnique({ where: { code: d.code } });
+    if (existing) { deptMap[d.code] = existing.id; continue; }
+    const created = await prisma.department.create({
+      data: { id: uuidv4(), divisionId: divisionMap[d.divisionCode], name: d.name, code: d.code, isActive: true },
+    });
+    deptMap[d.code] = created.id;
+  }
+  console.log(`  Seeded ${deptData.length} departments`);
+
+  // 15. Seed Branches
+  const branchData = [
+    { name: 'Head Office', code: 'HO', city: 'Jakarta Pusat', divisionCode: 'KON' },
+    { name: 'Jakarta Pusat', code: 'JKT-PUSAT', city: 'Jakarta Pusat', divisionCode: 'INF' },
+    { name: 'Jakarta Selatan', code: 'JKT-SELATAN', city: 'Jakarta Selatan', divisionCode: 'TI' },
+    { name: 'Bandung', code: 'BDG', city: 'Bandung', divisionCode: 'INF' },
+    { name: 'Surabaya', code: 'SBY', city: 'Surabaya', divisionCode: 'TI' },
+    { name: 'Medan', code: 'MDN', city: 'Medan', divisionCode: 'INF' },
+  ];
+  const branchMap: Record<string, string> = {};
+  for (const b of branchData) {
+    const existing = await prisma.branch.findUnique({ where: { code: b.code } });
+    if (existing) { branchMap[b.code] = existing.id; continue; }
+    const created = await prisma.branch.create({
+      data: { id: uuidv4(), divisionId: divisionMap[b.divisionCode], name: b.name, code: b.code, city: b.city, isActive: true },
+    });
+    branchMap[b.code] = created.id;
+  }
+  console.log(`  Seeded ${branchData.length} branches`);
+
+  // 16. Seed Positions
+  const positionData = [
+    { name: 'Staff', approvalLevel: 1 },
+    { name: 'Supervisor', approvalLevel: 2 },
+    { name: 'Project Manager', approvalLevel: 3 },
+    { name: 'Head of Department', approvalLevel: 4 },
+    { name: 'Branch Manager', approvalLevel: 4 },
+    { name: 'Director', approvalLevel: 5 },
+  ];
+  const positionMap: Record<string, string> = {};
+  for (const p of positionData) {
+    const existing = await prisma.position.findUnique({ where: { name: p.name } });
+    if (existing) { positionMap[p.name] = existing.id; continue; }
+    const created = await prisma.position.create({
+      data: { id: uuidv4(), name: p.name, approvalLevel: p.approvalLevel, isActive: true },
+    });
+    positionMap[p.name] = created.id;
+  }
+  console.log(`  Seeded ${positionData.length} positions`);
+
+  // 17. Seed Non-Admin Users (matching frontend mock data)
+  const sampleUsers = [
+    { name: 'Eko Prasetyo', username: 'eko.p', email: 'eko.p@kinetic.co.id', roleCode: 'admin', branchCode: 'HO', deptCode: 'IT' },
+    { name: 'Ahmad Sulistyo', username: 'asulistyo', email: 'ahmad.s@kinetic.co.id', roleCode: 'management', branchCode: 'JKT-PUSAT', deptCode: 'OPS' },
+    { name: 'Bambang Permadi', username: 'bambang.pm', email: 'b.permadi@kinetic.co.id', roleCode: 'pm', branchCode: 'HO', deptCode: 'PMO' },
+    { name: 'Rina Marlina', username: 'rina.ops', email: 'rina.marlina@kinetic.co.id', roleCode: 'department', branchCode: 'SBY', deptCode: 'OPS', isActive: false },
+    { name: 'Doni Wahyudi', username: 'doni.admin', email: 'doni.w@kinetic.co.id', roleCode: 'admin', branchCode: 'HO', deptCode: 'IT' },
+    { name: 'Siti Aminah', username: 'siti.am', email: 'siti.aminah@kinetic.co.id', roleCode: 'department', branchCode: 'JKT-SELATAN', deptCode: 'QA' },
+    { name: 'Andi Wijaya', username: 'andi.w', email: 'andi.w@kinetic.co.id', roleCode: 'cabang', branchCode: 'BDG', deptCode: 'FLD-OPS' },
+    { name: 'Dewi Sartika', username: 'dewi.s', email: 'dewi.s@kinetic.co.id', roleCode: 'management', branchCode: 'MDN', deptCode: 'OPS' },
+  ];
+  const userMap: Record<string, string> = {};
+  for (const u of sampleUsers) {
+    const existing = await prisma.user.findUnique({ where: { username: u.username } });
+    if (existing) { userMap[u.username] = existing.id; continue; }
+    const passwordHash = await bcrypt.hash('User123!', BCRYPT_ROUNDS);
+    const created = await prisma.user.create({
+      data: {
+        id: uuidv4(), name: u.name, username: u.username, email: u.email,
+        passwordHash, roleId: roleMap[u.roleCode],
+        branchId: branchMap[u.branchCode], departmentId: deptMap[u.deptCode],
+        isActive: u.isActive !== false, isLocked: false, mustChangePassword: false,
+      },
+    });
+    userMap[u.username] = created.id;
+  }
+  console.log(`  Seeded ${sampleUsers.length} additional users`);
+
+  // 18. Seed User Positions
+  const userPositions = [
+    { username: 'eko.p', positionName: 'Director' },
+    { username: 'asulistyo', positionName: 'Branch Manager' },
+    { username: 'bambang.pm', positionName: 'Project Manager' },
+    { username: 'rina.ops', positionName: 'Head of Department' },
+    { username: 'doni.admin', positionName: 'Supervisor' },
+    { username: 'siti.am', positionName: 'Supervisor' },
+    { username: 'andi.w', positionName: 'Staff' },
+    { username: 'dewi.s', positionName: 'Branch Manager' },
+  ];
+  for (const up of userPositions) {
+    const userId = userMap[up.username];
+    const positionId = positionMap[up.positionName];
+    if (!userId || !positionId) continue;
+    const existing = await prisma.userPosition.findFirst({ where: { userId, positionId } });
+    if (!existing) {
+      await prisma.userPosition.create({
+        data: { id: uuidv4(), userId, positionId, isBackup: false },
+      });
+    }
+  }
+  console.log(`  Seeded ${userPositions.length} user-position assignments`);
+
+  // 19. Update Department heads & Branch PICs
+  const deptHeadMap: Record<string, string> = {
+    'ENG': 'bambang.pm', 'PMO': 'bambang.pm', 'SWD': 'doni.admin',
+    'NET': 'doni.admin', 'IT': 'doni.admin', 'LEG': 'eko.p',
+    'OPS': 'asulistyo', 'QA': 'siti.am', 'FLD-OPS': 'andi.w', 'MKT': 'dewi.s',
+  };
+  for (const [code, username] of Object.entries(deptHeadMap)) {
+    const deptId = deptMap[code];
+    const userId = userMap[username];
+    if (deptId && userId) {
+      await prisma.department.update({ where: { id: deptId }, data: { headUserId: userId } }).catch(() => {});
+    }
+  }
+  const branchPicMap: Record<string, string> = {
+    'HO': 'eko.p', 'JKT-PUSAT': 'asulistyo', 'JKT-SELATAN': 'siti.am',
+    'BDG': 'andi.w', 'SBY': 'dewi.s', 'MDN': 'dewi.s',
+  };
+  for (const [code, username] of Object.entries(branchPicMap)) {
+    const branchId = branchMap[code];
+    const userId = userMap[username];
+    if (branchId && userId) {
+      await prisma.branch.update({ where: { id: branchId }, data: { picUserId: userId } }).catch(() => {});
+    }
+  }
+  console.log('  Updated department heads and branch PICs');
+
+  // 20. Seed Customers
+  const customerData = [
+    { name: 'PT Astra International Tbk', code: 'ASTRA', type: 'swasta', picContact: 'Budi Santoso', email: 'budi@astra.co.id', phone: '021-12345678', address: 'Jl. Jend. Sudirman Kav. 5-6, Jakarta Utara', isActive: true },
+    { name: 'Bank Rakyat Indonesia', code: 'BRI', type: 'bumn', picContact: 'Siti Aminah', email: 'siti@bri.co.id', phone: '021-87654321', address: 'Jl. Jend. Sudirman Kav. 44-46, Jakarta Pusat', isActive: true },
+    { name: 'Dinas Kesehatan Prov DKI', code: 'DINKES', type: 'pemerintah', picContact: 'Herry Setiawan', email: 'herry@dinkes-dki.go.id', phone: '021-5551234', address: 'Jl. Kesehatan No. 10, Jakarta Pusat', isActive: false },
+    { name: 'Siemens Indonesia', code: 'SIEMENS', type: 'asing', picContact: 'John Doe', email: 'john.doe@siemens.com', phone: '021-9998877', address: 'Jl. HR Rasuna Said Kav. B-1, Jakarta Selatan', isActive: true },
+    { name: 'PT Telekomunikasi Indonesia Tbk', code: 'TELKOM', type: 'bumn', picContact: 'Agus Wijaya', email: 'agus@telkom.co.id', phone: '021-6665551', address: 'Jl. Gatot Subroto Kav. 52, Jakarta Selatan', isActive: true },
+    { name: 'PT Angkasa Pura II', code: 'AP2', type: 'bumn', picContact: 'Rina Kartika', email: 'rina@angkasapura2.co.id', phone: '021-5501234', address: 'Bandara Soekarno-Hatta, Tangerang', isActive: true },
+    { name: 'Energi Bangsa Corp', code: 'EBC', type: 'swasta', picContact: 'Bambang Sutejo', email: 'bambang@energi-bangsa.com', phone: '021-7778881', address: 'Jl. TB Simatupang Kav. 18, Jakarta Selatan', isActive: true },
+    { name: 'PT Pertamina (Persero)', code: 'PERTAMINA', type: 'bumn', picContact: 'Dwi Hartono', email: 'dwi@pertamina.com', phone: '021-3334441', address: 'Jl. Medan Merdeka Timur 1A, Jakarta Pusat', isActive: true },
+  ];
+  const customerMap: Record<string, string> = {};
+  for (const c of customerData) {
+    const existing = await prisma.customer.findUnique({ where: { name: c.name } });
+    if (existing) { customerMap[c.code] = existing.id; continue; }
+    const created = await prisma.customer.create({ data: { id: uuidv4(), ...c } });
+    customerMap[c.code] = created.id;
+  }
+  console.log(`  Seeded ${customerData.length} customers`);
+
+  // 21. Seed Competitors
+  const competitorData = [
+    { name: 'PT Astra Modern Ltd', shortCode: 'AMT', businessField: 'Konstruksi & Infrastruktur', description: 'Kompetitor utama di bidang konstruksi dengan pengalaman luas.', status: 'active' },
+    { name: 'Global Enterprise Solutions', shortCode: 'GES', businessField: 'Teknologi Informasi', description: 'Solusi TI enterprise dengan sertifikasi internasional.', status: 'active' },
+    { name: 'PT Nippon Power Corp', shortCode: 'NPC', businessField: 'Kelistrikan & Power', description: 'Teknologi mutakhir di bidang kelistrikan dan power system.', status: 'active' },
+    { name: 'PT Tekno Konstruksi Indonesia', shortCode: 'TKI', businessField: 'Konstruksi', description: 'Pemain lokal dengan harga kompetitif dan track record tepat waktu.', status: 'active' },
+  ];
+  for (const c of competitorData) {
+    const existing = await prisma.competitor.findUnique({ where: { name: c.name } });
+    if (!existing) {
+      await prisma.competitor.create({ data: { id: uuidv4(), ...c } });
+    }
+  }
+  console.log(`  Seeded ${competitorData.length} competitors`);
+
+  // 22. Seed Question Types (GAP-03 Critical)
+  const qtypeData = [
+    { code: 'text', label: 'Teks Singkat' },
+    { code: 'textarea', label: 'Teks Panjang / Paragraf' },
+    { code: 'radio', label: 'Pilihan Tunggal (Radio)' },
+    { code: 'checkbox', label: 'Pilihan Banyak (Checkbox)' },
+    { code: 'select', label: 'Dropdown Pilihan' },
+    { code: 'number', label: 'Angka / Numerik' },
+    { code: 'date', label: 'Tanggal' },
+  ];
+  const qtypeMap: Record<string, string> = {};
+  for (const qt of qtypeData) {
+    const existing = await prisma.questionType.findUnique({ where: { code: qt.code } });
+    if (existing) { qtypeMap[qt.code] = existing.id; continue; }
+    const created = await prisma.questionType.create({
+      data: { id: uuidv4(), code: qt.code, label: qt.label, isActive: true },
+    });
+    qtypeMap[qt.code] = created.id;
+  }
+  console.log(`  Seeded ${qtypeData.length} question types`);
+
+  // 23. Seed Questions + Options
+  const questionData = [
+    { text: 'Nama Lengkap Sesuai KTP', typeCode: 'text', context: 'prospect', categoryLabel: 'Data Pribadi', isRequired: true, displayOrder: 1 },
+    { text: 'Apakah domisili sesuai dengan domisili usaha?', typeCode: 'radio', context: 'prospect', categoryLabel: 'Lokasi', isRequired: true, displayOrder: 2 },
+    { text: 'Jenis badan usaha', typeCode: 'select', context: 'prospect', categoryLabel: 'Legalitas', isRequired: true, displayOrder: 3 },
+    { text: 'Estimasi omzet bulanan', typeCode: 'text', context: 'prospect', categoryLabel: 'Keuangan', isRequired: false, displayOrder: 4 },
+    { text: 'Upload foto tempat usaha', typeCode: 'radio', context: 'prospect', categoryLabel: 'Verifikasi Fisik', isRequired: true, displayOrder: 5 },
+    { text: 'Apakah proyek ini memerlukan RKS?', typeCode: 'radio', context: 'rks', categoryLabel: 'Dokumen', isRequired: true, displayOrder: 1 },
+    { text: 'Jelaskan ruang lingkup pekerjaan', typeCode: 'textarea', context: 'rks', categoryLabel: 'Teknis', isRequired: true, displayOrder: 2 },
+    { text: 'Estimasi waktu pelaksanaan (hari)', typeCode: 'number', context: 'both', categoryLabel: 'Jadwal', isRequired: true, displayOrder: 3 },
+    { text: 'Apakah ada persyaratan khusus?', typeCode: 'textarea', context: 'rks', categoryLabel: 'Lainnya', isRequired: false, displayOrder: 4 },
+    { text: 'Kategori proyek yang diminati', typeCode: 'select', context: 'both', categoryLabel: 'Kategori', isRequired: true, displayOrder: 5 },
+  ];
+  for (const q of questionData) {
+    const existing = await prisma.question.findFirst({ where: { text: q.text } });
+    if (existing) continue;
+    const typeId = qtypeMap[q.typeCode];
+    if (!typeId) continue;
+    const question = await prisma.question.create({
+      data: { id: uuidv4(), text: q.text, questionTypeId: typeId, context: q.context, categoryLabel: q.categoryLabel, isRequired: q.isRequired, displayOrder: q.displayOrder, isActive: true },
+    });
+    // Seed options for radio/select questions
+    if (q.typeCode === 'radio' || q.typeCode === 'select') {
+      let options: { label: string; order: number }[] = [];
+      if (q.text === 'Apakah domisili sesuai dengan domisili usaha?') {
+        options = [{ label: 'Ya', order: 1 }, { label: 'Tidak', order: 2 }];
+      } else if (q.text === 'Jenis badan usaha') {
+        options = [{ label: 'PT', order: 1 }, { label: 'CV', order: 2 }, { label: 'Firma', order: 3 }, { label: 'Koperasi', order: 4 }];
+      } else if (q.text === 'Upload foto tempat usaha') {
+        options = [{ label: 'Sudah', order: 1 }, { label: 'Belum', order: 2 }];
+      } else if (q.text === 'Apakah proyek ini memerlukan RKS?') {
+        options = [{ label: 'Ya', order: 1 }, { label: 'Tidak', order: 2 }];
+      } else if (q.text === 'Kategori proyek yang diminati') {
+        options = [
+          { label: 'IT Infrastructure', order: 1 }, { label: 'Telecommunication', order: 2 },
+          { label: 'Security System', order: 3 }, { label: 'Network & Connectivity', order: 4 },
+          { label: 'Data Center', order: 5 }, { label: 'IoT & Smart Systems', order: 6 },
+        ];
+      }
+      for (const opt of options) {
+        await prisma.questionOption.create({
+          data: { id: uuidv4(), questionId: question.id, optionLabel: opt.label, displayOrder: opt.order },
+        });
+      }
+    }
+  }
+  console.log(`  Seeded ${questionData.length} questions with options`);
+
+  // 24. Seed Document Types (matching frontend mock)
+  const docTypeData = [
+    { code: 'RKS', label: 'Dokumen Tender / RKS', appliesToStage: 'tender' },
+    { code: 'LPHS', label: 'Draft LPHS', appliesToStage: 'lphs' },
+    { code: 'SPK', label: 'Surat Perintah Kerja', appliesToStage: 'delivery' },
+    { code: 'SURAT_KALAH', label: 'Surat Kekalahan', appliesToStage: 'winner' },
+    { code: 'HARGA', label: 'Dokumen Harga Penawaran', appliesToStage: 'pricing' },
+    { code: 'INVOICE', label: 'Invoice / Tagihan', appliesToStage: 'delivery' },
+  ];
+  for (const dt of docTypeData) {
+    const existing = await prisma.documentTypeDefinition.findUnique({ where: { code: dt.code } });
+    if (!existing) {
+      await prisma.documentTypeDefinition.create({
+        data: { id: uuidv4(), code: dt.code, label: dt.label, appliesToStage: dt.appliesToStage, isActive: true },
+      });
+    }
+  }
+  console.log(`  Seeded ${docTypeData.length} document types`);
+
+  // 25. Seed Approval Level Definitions
+  const approvalLevels = [
+    { level: 1, label: 'Staff', description: 'Level approval staf' },
+    { level: 2, label: 'Supervisor', description: 'Level approval supervisor' },
+    { level: 3, label: 'Manager', description: 'Level approval manager' },
+    { level: 4, label: 'Director', description: 'Level approval direktur' },
+    { level: 5, label: 'Executive', description: 'Level approval eksekutif' },
+  ];
+  for (const al of approvalLevels) {
+    const existing = await prisma.approvalLevelDefinition.findUnique({ where: { level: al.level } });
+    if (!existing) {
+      await prisma.approvalLevelDefinition.create({
+        data: { id: uuidv4(), level: al.level, label: al.label, description: al.description },
+      });
+    }
+  }
+  console.log(`  Seeded ${approvalLevels.length} approval level definitions`);
+
+  // 26. Seed Dummy Prospects
+  const prospectData = [
+    { name: 'Modernisasi Data Center - Jakarta Pusat', customerCode: 'TELKOM', categoryName: 'Data Center', branchCode: 'JKT-PUSAT', username: 'andi.w', description: 'Upgrade infrastruktur server dan storage untuk mendukung transformasi digital.', estimatedValue: 2500000000, estimatedDate: '2025-08-15', status: 'Prospecting' },
+    { name: 'Implementasi Jaringan FO - Bandung', customerCode: 'TELKOM', categoryName: 'Network & Connectivity', branchCode: 'BDG', username: 'andi.w', description: 'Pemasangan jaringan fiber optik untuk 50 titik di area Bandung Timur.', estimatedValue: 875000000, estimatedDate: '2025-09-01', status: 'Waiting PM' },
+    { name: 'Sistem Keamanan Terpadu - Kantor Pusat', customerCode: 'BRI', categoryName: 'Security System', branchCode: 'HO', username: 'bambang.pm', description: 'Integration of CCTV, access control, and fire alarm systems.', estimatedValue: 1500000000, estimatedDate: '2025-07-30', status: 'Revision' },
+    { name: 'Upgrade Jaringan Bank BRI - Regional', customerCode: 'BRI', categoryName: 'IT Infrastructure', branchCode: 'SBY', username: 'bambang.pm', description: 'Modernisasi perangkat jaringan untuk 20 cabang di Jawa Timur.', estimatedValue: 3200000000, estimatedDate: '2025-10-20', status: 'Approved' },
+    { name: 'Smart Office Solution - Pertamina', customerCode: 'PERTAMINA', categoryName: 'IoT & Smart Systems', branchCode: 'JKT-SELATAN', username: 'siti.am', description: 'Implementasi IoT untuk monitoring energi dan otomatisasi gedung.', estimatedValue: null, estimatedDate: null, status: 'Prospecting' },
+    { name: 'DC Backup Power - Astra', customerCode: 'ASTRA', categoryName: 'Data Center', branchCode: 'HO', username: 'eko.p', description: 'Pengadaan dan instalasi UPS serta generator backup untuk data center.', estimatedValue: 4500000000, estimatedDate: '2025-12-01', status: 'Waiting PM' },
+    { name: 'Jaringan Komunikasi Bandara - AP II', customerCode: 'AP2', categoryName: 'Telecommunication', branchCode: 'MDN', username: 'dewi.s', description: 'Pembangunan infrastruktur komunikasi serat optik di 5 bandara.', estimatedValue: 7800000000, estimatedDate: '2026-01-15', status: 'Prospecting' },
+  ];
+  let prospectCount = 0;
+  for (const pd of prospectData) {
+    const customerId = customerMap[pd.customerCode];
+    const categoryId = categoryMap[pd.categoryName];
+    const branchId = branchMap[pd.branchCode];
+    const userId = userMap[pd.username];
+    if (!customerId || !categoryId || !branchId || !userId) {
+      console.log(`    Skipping prospect "${pd.name}": missing reference data`);
+      continue;
+    }
+    const existing = await prisma.prospect.findFirst({ where: { name: pd.name } });
+    if (!existing) {
+      await prisma.prospect.create({
+        data: {
+          id: uuidv4(),
+          name: pd.name,
+          customerId,
+          branchId,
+          categoryId,
+          description: pd.description,
+          estimatedValue: pd.estimatedValue,
+          estimatedDate: pd.estimatedDate ? new Date(pd.estimatedDate) : null,
+          status: pd.status,
+          createdBy: userId,
+        },
+      });
+      prospectCount++;
+    }
+  }
+  console.log(`  Seeded ${prospectCount} dummy prospects`);
 
   console.log('Seeding complete!');
 }

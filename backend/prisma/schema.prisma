@@ -401,9 +401,9 @@ model LossReason {
 model Prospect {
   id                   String    @id @default(uuid()) @db.Char(36)
   name                 String    @db.VarChar(200)
-  customerId           String    @db.Char(36)
-  branchId             String    @db.Char(36)
-  categoryId           String    @db.Char(36)
+  customerId           String?   @db.Char(36)
+  branchId             String?   @db.Char(36)
+  categoryId           String?   @db.Char(36)
   description          String?   @db.Text
   estimatedValue       Decimal?  @db.Decimal(18, 2)
   estimatedDate        DateTime? @db.Date
@@ -414,9 +414,9 @@ model Prospect {
   updatedAt            DateTime  @updatedAt
   deletedAt            DateTime?
 
-  customer         Customer                 @relation(fields: [customerId], references: [id])
-  branch           Branch                   @relation(fields: [branchId], references: [id])
-  category         ProjectCategory          @relation(fields: [categoryId], references: [id])
+  customer         Customer?                @relation(fields: [customerId], references: [id])
+  branch           Branch?                  @relation(fields: [branchId], references: [id])
+  category         ProjectCategory?         @relation(fields: [categoryId], references: [id])
   creator          User                     @relation("ProspectCreator", fields: [createdBy], references: [id])
   convertedProject Project?                 @relation("ProspectConversion", fields: [convertedToProjectId], references: [id])
   answers          ProspectAnswer[]
