@@ -10,7 +10,7 @@ const labelMap: Record<string, string> = {
   reports: 'Laporan',
   'master-data': 'Master Data',
   users: 'Pengguna',
-  audit: 'Audit Log',
+  'audit-log': 'Audit Log',
   notifications: 'Notifikasi',
   config: 'Konfigurasi',
   profile: 'Profil',

@@ -6,30 +6,7 @@ import { CUSTOMER_TYPES } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useAuthStore } from '@/stores/authStore';
-
-// Industri options (Master Industri)
-const INDUSTRIES = [
-  { id: 'ind-1', name: 'Perbankan & Keuangan' },
-  { id: 'ind-2', name: 'Telekomunikasi' },
-  { id: 'ind-3', name: 'Pemerintahan & BUMN' },
-  { id: 'ind-4', name: 'Minyak & Gas' },
-  { id: 'ind-5', name: 'Manufaktur' },
-  { id: 'ind-6', name: 'Kesehatan' },
-  { id: 'ind-7', name: 'Pendidikan' },
-  { id: 'ind-8', name: 'Pertambangan' },
-  { id: 'ind-9', name: 'Transportasi & Logistik' },
-  { id: 'ind-10', name: 'Teknologi Informasi' },
-  { id: 'ind-11', name: 'Lainnya' },
-];
-
-// Provider Existing options (dari Master Kompetitor)
-const PROVIDER_EXISTING = [
-  { id: 'prov-1', name: 'Infrastructure Alpha' },
-  { id: 'prov-2', name: 'BuildCore Systems' },
-  { id: 'prov-3', name: 'TechData Solutions' },
-  { id: 'prov-4', name: 'NetPrime Services' },
-  { id: 'prov-5', name: 'Lainnya' },
-];
+import { useMasterDataStore } from '@/stores/masterDataStore';
 
 const questionnaireQuestions = [
   {
@@ -78,6 +55,9 @@ export default function ProspectFormPage() {
   const { prospects, addProspect, updateProspect } = useProspectStore();
   const { addCustomer } = useCustomerStore();
   const authUser = useAuthStore((s) => s.user);
+  const industries = useMasterDataStore((s) => s.industries);
+  const competitors = useMasterDataStore((s) => s.competitors);
+  const addMasterData = useMasterDataStore((s) => s.addData);
 
   const existingProspect = isEdit ? prospects.find((p) => p.id === id) : null;
 
@@ -217,6 +197,18 @@ export default function ProspectFormPage() {
       } else {
         // Auto-save new customer ke customerStore (Fase 1 item 1.4)
         addCustomer(customerData);
+        // Juga sinkronkan ke masterDataStore agar muncul di Master Data Customer
+        addMasterData('customers', {
+          id: customerData.id,
+          name: customerData.name,
+          code: customerData.code,
+          type: customerData.type,
+          pic_name: customerData.picName,
+          pic_email: '',
+          pic_phone: customerData.picPhone,
+          city: customerData.city,
+          is_active: true,
+        });
       }
     }
 
@@ -386,7 +378,7 @@ export default function ProspectFormPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="font-semibold text-sm text-on-surface-variant">Tipe Customer</label>
-                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
                     {CUSTOMER_TYPES.map(t => (
                       <option key={t.value} value={t.value}>{t.label}</option>
                     ))}
@@ -409,7 +401,7 @@ export default function ProspectFormPage() {
               {customerMode === 'existing' && selectedCustomer ? (
                 <div className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-sm text-on-surface">
                   {(() => {
-                    const ind = INDUSTRIES.find(i => i.id === industryId);
+                    const ind = industries.find(i => i.id === industryId);
                     return ind ? ind.name : 'Tidak diisi';
                   })()}
                 </div>
@@ -423,7 +415,7 @@ export default function ProspectFormPage() {
                   className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
                 >
                   <option value="">Pilih Industri</option>
-                  {INDUSTRIES.map(ind => (
+                  {industries.map(ind => (
                     <option key={ind.id} value={ind.id}>{ind.name}</option>
                   ))}
                 </select>
@@ -444,7 +436,7 @@ export default function ProspectFormPage() {
                   className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
                 >
                   <option value="">Tidak Ada</option>
-                  {PROVIDER_EXISTING.map(prov => (
+                  {competitors.map(prov => (
                     <option key={prov.id} value={prov.name}>{prov.name}</option>
                   ))}
                 </select>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { Project } from '../../types/domain';
 import { INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
 import { useProjectStore } from '@/stores/projectStore';
@@ -22,7 +23,9 @@ export default function ProjectDetailView({
 
   const getProjectById = useProjectStore((s) => s.getProjectById);
   const updateProject = useProjectStore((s) => s.updateProject);
+  const deleteProject = useProjectStore((s) => s.deleteProject);
   const getProspectById = useProspectStore((s) => s.getProspectById);
+  const updateProspect = useProspectStore((s) => s.updateProspect);
 
   const project = propProject || (projectId ? getProjectById(projectId) : undefined);
 
@@ -184,6 +187,22 @@ export default function ProjectDetailView({
     onShowNotification('Draf harga penawaran berhasil diperbarui!', 'success');
   };
 
+  const handleDeleteProject = () => {
+    if (!projectId) return;
+    if (confirm('Apakah Anda yakin ingin menghapus proyek ini?')) {
+      // Jika proyek berasal dari prospek, reset status konversi
+      if (project.sourceProspectId) {
+        updateProspect(project.sourceProspectId, {
+          isConverted: false,
+          projectId: undefined,
+        });
+      }
+      deleteProject(projectId);
+      toast.success('Proyek berhasil dihapus.');
+      onNavigatePage('projects');
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
@@ -236,6 +255,13 @@ export default function ProjectDetailView({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleDeleteProject}
+              className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">delete</span>
+              Hapus
+            </button>
             <button className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all">
               Revisi
             </button>

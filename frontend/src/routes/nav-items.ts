@@ -15,7 +15,6 @@ export const navItems: NavItem[] = [
   { label: 'Master Data', path: '/master-data', icon: 'database', roles: ['Super Admin', 'Admin'] },
   { label: 'Pengguna', path: '/users', icon: 'people', roles: ['Super Admin'] },
   { label: 'Notifikasi', path: '/notifications', icon: 'notifications', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'] },
-  { label: 'Audit Log', path: '/audit', icon: 'history', roles: ['Super Admin'] },
   { label: 'Konfigurasi', path: '/config', icon: 'settings', roles: ['Super Admin'] },
 ];
 

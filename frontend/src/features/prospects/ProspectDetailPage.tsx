@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
@@ -6,20 +6,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
-
-const INDUSTRIES: Record<string, string> = {
-  'ind-1': 'Perbankan & Keuangan',
-  'ind-2': 'Telekomunikasi',
-  'ind-3': 'Pemerintahan & BUMN',
-  'ind-4': 'Minyak & Gas',
-  'ind-5': 'Manufaktur',
-  'ind-6': 'Kesehatan',
-  'ind-7': 'Pendidikan',
-  'ind-8': 'Pertambangan',
-  'ind-9': 'Transportasi & Logistik',
-  'ind-10': 'Teknologi Informasi',
-  'ind-11': 'Lainnya',
-};
+import { useMasterDataStore } from '@/stores/masterDataStore';
 
 const defaultAnswers: Record<string, string> = {
   upsCapacity: 'UPS 2x3KVA',
@@ -48,9 +35,15 @@ export default function ProspectDetailPage() {
   const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
   const getCustomerById = useCustomerStore((s) => s.getCustomerById);
   const addProject = useProjectStore((s) => s.addProject);
+  const deleteProject = useProjectStore((s) => s.deleteProject);
   const projects = useProjectStore((s) => s.projects);
 
   const authUser = useAuthStore((s) => s.user);
+  const industries = useMasterDataStore((s) => s.industries);
+  const industryMap = useMemo(
+    () => Object.fromEntries(industries.map(i => [i.id, i.name])),
+    [industries]
+  );
   const userRole = authUser?.roleName;
   const isSuperAdmin = userRole === 'Super Admin';
 
@@ -139,6 +132,10 @@ export default function ProspectDetailPage() {
 
   const handleDelete = () => {
     if (confirm('Apakah Anda yakin ingin menghapus prospek ini?')) {
+      // Jika prospek sudah dikonversi ke proyek, hapus juga proyeknya
+      if (prospect.isConverted && prospect.projectId) {
+        deleteProject(prospect.projectId);
+      }
       deleteProspect(prospect.id);
       toast.success('Prospek berhasil dihapus.');
       navigate('/prospects');
@@ -317,10 +314,10 @@ export default function ProspectDetailPage() {
                   </div>
                 )}
                 {/* Bidang Customer / Industri — tampilkan jika ada */}
-                {prospect.industryId && INDUSTRIES[prospect.industryId] && (
+                {prospect.industryId && industryMap[prospect.industryId] && (
                   <div>
                     <p className="text-xs text-secondary">Bidang Customer</p>
-                    <p className="font-semibold text-on-surface">{INDUSTRIES[prospect.industryId]}</p>
+                    <p className="font-semibold text-on-surface">{industryMap[prospect.industryId]}</p>
                   </div>
                 )}
                 {/* Status konversi */}
@@ -392,10 +389,10 @@ export default function ProspectDetailPage() {
                       </div>
                     )}
                     {/* Bidang customer (industri) */}
-                    {customer.industryId && INDUSTRIES[customer.industryId] && (
+                    {customer.industryId && industryMap[customer.industryId] && (
                       <div>
                         <p className="text-xs text-secondary">Bidang / Industri</p>
-                        <p className="font-semibold text-on-surface">{INDUSTRIES[customer.industryId]}</p>
+                        <p className="font-semibold text-on-surface">{industryMap[customer.industryId]}</p>
                       </div>
                     )}
                     {/* Provider Existing */}

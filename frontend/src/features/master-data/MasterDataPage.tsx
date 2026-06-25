@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useMasterDataStore } from '@/stores/masterDataStore';
 
 interface MasterDataViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -207,203 +208,7 @@ interface NotificationTemplate {
   is_system: boolean;
 }
 
-// 2. Initial Datasets (Unifying multiple operations)
-const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'AUD-77291102',
-    time: '2026-06-18 14:32:01',
-    user: 'Admin User',
-    userInitials: 'AS',
-    action: 'UPDATE',
-    actionColor: 'bg-status-indigo/10 text-status-indigo',
-    entity: 'PRJ-4022',
-    entityName: 'Infrastructure Dev',
-    impact: 'Medium',
-    beforeJson: `{\n  "id": "PRJ-4022",\n  "status": "PENDING_REVIEW",\n  "budget_cap": 250000.00,\n  "last_modified_by": "PB_INTERNAL"\n}`,
-    afterJson: `{\n  "id": "PRJ-4022",\n  "status": "ACTIVE_OPERATIONAL",\n  "budget_cap": 375000.00,\n  "last_modified_by": "PB_INTERNAL",\n  "revision": 14\n}`
-  },
-  {
-    id: 'AUD-77291103',
-    time: '2026-06-18 14:15:22',
-    user: 'Pam Beesly',
-    userInitials: 'PB',
-    action: 'APPROVE',
-    actionColor: 'bg-success/10 text-success',
-    entity: 'INV-20993',
-    entityName: 'Invoice Unit 2',
-    impact: 'Low',
-    beforeJson: `{\n  "invoice_id": "INV-20993",\n  "approved": false\n}`,
-    afterJson: `{\n  "invoice_id": "INV-20993",\n  "approved": true,\n  "approved_by": "Pam Beesly"\n}`
-  },
-  {
-    id: 'AUD-77291104',
-    time: '2026-06-18 13:58:10',
-    user: 'Dwight Schrute',
-    userInitials: 'DS',
-    action: 'DELETE',
-    actionColor: 'bg-danger/10 text-danger',
-    entity: 'TMP_REPORT_01',
-    entityName: 'Temporary Report',
-    impact: 'High',
-    beforeJson: `{\n  "report_name": "TMP_REPORT_01",\n  "owner": "Dwight Schrute"\n}`,
-    afterJson: `null`
-  },
-  {
-    id: 'AUD-77291105',
-    time: '2026-06-18 13:42:45',
-    user: 'Michael Scott',
-    userInitials: 'MS',
-    action: 'CREATE',
-    actionColor: 'bg-status-teal/10 text-status-teal',
-    entity: 'LEAD-8812',
-    entityName: 'Prospect Lead X',
-    impact: 'Low',
-    beforeJson: `null`,
-    afterJson: `{\n  "lead_id": "LEAD-8812",\n  "title": "Pondasi Region 3",\n  "created_by": "Michael Scott"\n}`
-  }
-];
-
-const INITIAL_QUESTION_TYPES: QuestionType[] = [
-  { id: 'QT-01', name: 'Teks Singkat', code: 'text', description: 'Input teks satu baris', has_options: false, validation_config: '{"maxLength":500}', is_system: true, is_active: true },
-  { id: 'QT-02', name: 'Teks Panjang', code: 'textarea', description: 'Input teks paragraf', has_options: false, validation_config: '{"maxLength":2000}', is_system: true, is_active: true },
-  { id: 'QT-03', name: 'Pilihan Tunggal (Radio)', code: 'radio', description: 'Satu pilihan dari beberapa opsi', has_options: true, validation_config: '{}', is_system: true, is_active: true },
-  { id: 'QT-04', name: 'Pilihan Banyak (Checkbox)', code: 'checkbox', description: 'Beberapa pilihan dari opsi tersedia', has_options: true, validation_config: '{}', is_system: true, is_active: true },
-  { id: 'QT-05', name: 'Dropdown Pilihan', code: 'select', description: 'Dropdown pilihan tunggal', has_options: true, validation_config: '{}', is_system: true, is_active: true },
-  { id: 'QT-06', name: 'Angka / Numerik', code: 'number', description: 'Input angka', has_options: false, validation_config: '{"min":0,"max":9999999999}', is_system: true, is_active: true },
-  { id: 'QT-07', name: 'Tanggal', code: 'date', description: 'Date picker', has_options: false, validation_config: '{"format":"YYYY-MM-DD"}', is_system: true, is_active: true }
-];
-
-const INITIAL_USERS: MasterUser[] = [
-  { id: '1', name: 'Ahmad Sulistyo', branch: 'Cabang Jakarta Pusat', username: 'asulistyo_jkp', email: 'ahmad.s@kinetic.co.id', role: 'Cabang', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-primary/10 text-primary' },
-  { id: '2', name: 'Bambang Permadi', branch: 'Project Management', username: 'bambang.pm', email: 'b.permadi@kinetic.co.id', role: 'PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-purple/10 text-status-purple' },
-  { id: '3', name: 'Rina Marlina', branch: 'Operations Dept', username: 'rina.ops', email: 'rina.marlina@kinetic.co.id', role: 'Dept', roleColor: 'bg-secondary-fixed text-on-secondary-fixed-variant', active: false, avatarColor: 'bg-status-orange/10 text-status-orange' },
-  { id: '4', name: 'Doni Wahyudi', branch: 'Head Office', username: 'doni.admin', email: 'doni.w@kinetic.co.id', role: 'Admin', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' }
-];
-
-const INITIAL_CUSTOMERS: Customer[] = [
-  { id: '1', name: 'PT Astra International Tbk', code: 'ASTRA', type: 'swasta', industry_id: 'IND-06', pic_name: 'Budi Santoso', pic_email: 'budi.s@astra.co.id', pic_phone: '021-12345678', address: 'Jl. Gaya Motor Raya No.8', city: 'Jakarta Utara', province: 'DKI Jakarta', npwp: '01.234.567.8-091.000', notes: 'Mitra utama otomotif', is_active: true },
-  { id: '2', name: 'Bank Rakyat Indonesia', code: 'BRI', type: 'bumn', industry_id: 'IND-04', pic_name: 'Siti Aminah', pic_email: 'siti.a@bri.co.id', pic_phone: '021-87654321', address: 'Jl. Jenderal Sudirman No.44', city: 'Jakarta Pusat', province: 'DKI Jakarta', npwp: '02.345.678.9-092.001', notes: 'Bank BUMN terbesar', is_active: true },
-  { id: '3', name: 'Dinas Kesehatan Prov DKI', code: 'DINKES', type: 'pemerintah', industry_id: 'IND-07', pic_name: 'Herry Setiawan', pic_email: 'herry@dinkes.jakarta.go.id', pic_phone: '021-56789012', address: 'Jl. Kesehatan No.1', city: 'Jakarta Pusat', province: 'DKI Jakarta', npwp: '03.456.789.0-093.002', notes: '', is_active: false }
-];
-
-const INITIAL_DEPARTMENTS: Department[] = [
-  { id: '01', name: 'IT Infrastructure', code: 'DEPT-INF-01', head: 'Budi Santoso', division: 'Technology', status: true },
-  { id: '02', name: 'Financial Audit', code: 'DEPT-FIN-02', head: 'Siti Aminah', division: 'Finance & Ops', status: true },
-  { id: '03', name: 'Brand Expansion', code: 'DEPT-MKT-03', head: 'Rizky Pratama', division: 'Marketing', status: false }
-];
-
-const INITIAL_COMPETITORS: Competitor[] = [
-  { id: '1', name: 'PT Astra Modern Ltd', code: 'AMODERN', industry_id: 'IND-06', bidang_usaha: 'Distribusi alat berat', website: 'https://astramodern.co.id', description: 'Kompetitor utama di sektor konstruksi', is_active: true },
-  { id: '2', name: 'Global Enterprise Solutions', code: 'GESOL', industry_id: 'IND-03', bidang_usaha: 'IT & Sistem Informasi', website: 'https://ges.co.id', description: 'Pesaing kuat di tender IT', is_active: true },
-  { id: '3', name: 'PT Nippon Power Corp', code: 'NPOWER', industry_id: 'IND-01', bidang_usaha: 'Energi & Ketenagalistrikan', website: 'https://nipponpower.co.id', description: '', is_active: true },
-  { id: '4', name: 'PT Tekno Konstruksi Indonesia', code: 'TEKNO', industry_id: 'IND-02', bidang_usaha: 'Konstruksi sipil', website: 'https://teknokonstruksi.co.id', description: 'Kompetitor terkuat di tender infrastruktur', is_active: true }
-];
-
-const INITIAL_QUESTIONS: MasterQuestion[] = [
-  { id: 'Q-001', question_text: 'Nama Lengkap Sesuai KTP', question_type_id: 'QT-01', context: 'prospect', category: 'Data Pribadi', is_required: true, sort_order: 1, placeholder_text: 'Contoh: Ahmad Subarjo', help_text: 'Masukkan nama lengkap sesuai identitas resmi yang masih berlaku.', is_active: true },
-  { id: 'Q-002', question_text: 'Domisili Sesuai Domisili Usaha?', question_type_id: 'QT-03', context: 'prospect', category: 'Lokasi', is_required: true, sort_order: 2, placeholder_text: '', help_text: 'Pilih Ya jika alamat rumah sama dengan lokasi operasional bisnis.', is_active: true, options: ['Ya, Sama', 'Tidak, Berbeda'] },
-  { id: 'Q-003', question_text: 'Unggah Foto Tempat Usaha', question_type_id: 'QT-03', context: 'prospect', category: 'Verifikasi Fisik', is_required: true, sort_order: 3, placeholder_text: '', help_text: 'Pastikan papan nama atau tampak depan bangunan terlihat jelas.', is_active: false, options: ['Ada Papan Nama', 'Tidak Ada Papan Nama'] },
-  { id: 'Q-004', question_text: 'Estimasi Omzet Bulanan', question_type_id: 'QT-06', context: 'prospect', category: 'Keuangan', is_required: false, sort_order: 4, placeholder_text: 'Rp 0', help_text: 'Rata-rata pendapatan kotor dalam satu bulan operasional.', is_active: true }
-];
-
-const INITIAL_INDUSTRIES: Industry[] = [
-  { id: 'IND-01', name: 'Energi & Pertambangan', code: 'ENERGI', is_active: true },
-  { id: 'IND-02', name: 'Konstruksi & Infrastruktur', code: 'KONSTRUKSI', is_active: true },
-  { id: 'IND-03', name: 'Teknologi Informasi', code: 'TI', is_active: true },
-  { id: 'IND-04', name: 'Perbankan & Keuangan', code: 'BANK', is_active: true },
-  { id: 'IND-05', name: 'Manufaktur', code: 'MANUFAKTUR', is_active: true },
-  { id: 'IND-06', name: 'Pemerintahan', code: 'PEMERINTAH', is_active: true },
-  { id: 'IND-07', name: 'Kesehatan', code: 'KESEHATAN', is_active: true },
-  { id: 'IND-08', name: 'Pendidikan', code: 'PENDIDIKAN', is_active: true },
-  { id: 'IND-09', name: 'Retail & Distribusi', code: 'RETAIL', is_active: true },
-  { id: 'IND-10', name: 'Telekomunikasi', code: 'TELKO', is_active: true },
-  { id: 'IND-11', name: 'Lainnya', code: 'LAINNYA', is_active: true }
-];
-
-const INITIAL_CATEGORIES: ProjectCategory[] = [
-  { id: 'CAT-01', name: 'Konstruksi & Sipil', code: 'KONSTRUKSI', description: 'Pekerjaan konstruksi bangunan dan sipil', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#2563EB', sort_order: 1, is_active: true },
-  { id: 'CAT-02', name: 'IT & Sistem Informasi', code: 'IT_SISTEM', description: 'Pengembangan perangkat lunak dan sistem informasi', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#7C3AED', sort_order: 2, is_active: true },
-  { id: 'CAT-03', name: 'Jasa Konsultansi', code: 'KONSULTANSI', description: 'Jasa konsultansi manajemen dan teknis', requires_lphs: false, requires_rks: true, default_workflow_type: 'tender', color_hex: '#0D9488', sort_order: 3, is_active: true },
-  { id: 'CAT-04', name: 'Pengadaan Barang', code: 'PENGADAAN', description: 'Pengadaan barang dan perlengkapan', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#D97706', sort_order: 4, is_active: true },
-  { id: 'CAT-05', name: 'Jasa Umum', code: 'JASA_UMUM', description: 'Penyediaan jasa umum dan outsourcing', requires_lphs: false, requires_rks: true, default_workflow_type: 'prospecting', color_hex: '#0284C7', sort_order: 5, is_active: true },
-  { id: 'CAT-06', name: 'Lainnya', code: 'LAINNYA', description: 'Kategori proyek lainnya', requires_lphs: false, requires_rks: false, default_workflow_type: 'prospecting', color_hex: '#6B7280', sort_order: 6, is_active: true }
-];
-
-const INITIAL_PROJECT_STATUSES: ProjectStatus[] = [
-  { id: 'PS-01', code: 'created', label: 'Dibuat', description: 'Proyek baru dibuat', color_hex: '#6B7280', text_color_hex: '#FFFFFF', sort_order: 1, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
-  { id: 'PS-02', code: 'submit_rks', label: 'RKS Disubmit', description: 'RKS telah disubmit', color_hex: '#2563A8', text_color_hex: '#FFFFFF', sort_order: 2, is_system: true, is_terminal: false, is_active: true, applicable_to: 'tender' },
-  { id: 'PS-03', code: 'review_department', label: 'Review Departemen', description: 'Dalam review oleh departemen', color_hex: '#7C3AED', text_color_hex: '#FFFFFF', sort_order: 3, is_system: true, is_terminal: false, is_active: true, applicable_to: 'tender' },
-  { id: 'PS-04', code: 'lphs_sios', label: 'LPHS/SIOS', description: 'Proses LPHS dan SIOS', color_hex: '#4338CA', text_color_hex: '#FFFFFF', sort_order: 4, is_system: true, is_terminal: false, is_active: true, applicable_to: 'tender' },
-  { id: 'PS-05', code: 'revision', label: 'Revisi', description: 'Proyek dalam revisi', color_hex: '#D97706', text_color_hex: '#FFFFFF', sort_order: 5, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
-  { id: 'PS-06', code: 'submit_harga', label: 'Input Harga', description: 'Input harga penawaran', color_hex: '#0D9488', text_color_hex: '#FFFFFF', sort_order: 6, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
-  { id: 'PS-07', code: 'pengumuman_pemenang', label: 'Pengumuman Pemenang', description: 'Pengumuman pemenang tender', color_hex: '#EA580C', text_color_hex: '#FFFFFF', sort_order: 7, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
-  { id: 'PS-08', code: 'target_delivery', label: 'Target Delivery', description: 'Proyek dalam tahap delivery', color_hex: '#0284C7', text_color_hex: '#FFFFFF', sort_order: 8, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
-  { id: 'PS-09', code: 'selesai', label: 'Selesai', description: 'Proyek selesai', color_hex: '#16A34A', text_color_hex: '#FFFFFF', sort_order: 9, is_system: true, is_terminal: true, is_active: true, applicable_to: 'both' },
-  { id: 'PS-10', code: 'cancelled', label: 'Dibatalkan', description: 'Proyek dibatalkan', color_hex: '#9F1239', text_color_hex: '#FFFFFF', sort_order: 10, is_system: true, is_terminal: true, is_active: true, applicable_to: 'both' }
-];
-
-const INITIAL_DOCUMENT_TYPES: DocumentType[] = [
-  { id: 'DT-01', name: 'Dokumen Tender / RKS', code: 'RKS', description: 'Dokumen tender dan RKS', allowed_extensions: ['pdf', 'docx'], max_size_mb: 25, is_required_at_stage: ['submit_rks'], applicable_to: 'tender', sort_order: 1, is_system: true, is_active: true },
-  { id: 'DT-02', name: 'Draft LPHS', code: 'LPHS', description: 'Daftar Harga Perkiraan Sendiri', allowed_extensions: ['pdf', 'docx', 'xlsx'], max_size_mb: 50, is_required_at_stage: ['lphs_sios'], applicable_to: 'tender', sort_order: 2, is_system: true, is_active: true },
-  { id: 'DT-03', name: 'Draft SIOS', code: 'SIOS', description: 'Surat Ijin Operasional Sementara', allowed_extensions: ['pdf', 'docx'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'tender', sort_order: 3, is_system: true, is_active: true },
-  { id: 'DT-04', name: 'Surat Perintah Kerja / Kontrak', code: 'SPK', description: 'SPK atau kontrak proyek', allowed_extensions: ['pdf'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'both', sort_order: 4, is_system: true, is_active: true },
-  { id: 'DT-05', name: 'Surat Kekalahan', code: 'SURAT_KALAH', description: 'Surat pernyataan kekalahan', allowed_extensions: ['pdf'], max_size_mb: 10, is_required_at_stage: null, applicable_to: 'both', sort_order: 5, is_system: true, is_active: true },
-  { id: 'DT-06', name: 'Dokumen Harga Penawaran', code: 'HARGA', description: 'Dokumen harga penawaran', allowed_extensions: ['pdf', 'xlsx'], max_size_mb: 10, is_required_at_stage: ['submit_harga'], applicable_to: 'both', sort_order: 6, is_system: true, is_active: true },
-  { id: 'DT-07', name: 'Invoice / Tagihan', code: 'INVOICE', description: 'Invoice dan tagihan', allowed_extensions: ['pdf'], max_size_mb: 10, is_required_at_stage: null, applicable_to: 'both', sort_order: 7, is_system: true, is_active: true },
-  { id: 'DT-08', name: 'Dokumen Lainnya', code: 'LAINNYA', description: 'Dokumen pendukung lainnya', allowed_extensions: ['pdf', 'docx', 'xlsx', 'jpg', 'png'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'both', sort_order: 8, is_system: true, is_active: true }
-];
-
-const INITIAL_PERIODS: ReportingPeriod[] = [
-  { id: 'PER-01', name: 'Q1 2025', code: '2025-Q1', type: 'quarterly', year: 2025, start_date: '2025-01-01', end_date: '2025-03-31', is_active: false, is_locked: true, notes: 'Periode Q1 sudah tutup' },
-  { id: 'PER-02', name: 'Q2 2025', code: '2025-Q2', type: 'quarterly', year: 2025, start_date: '2025-04-01', end_date: '2025-06-30', is_active: true, is_locked: false, notes: '' },
-  { id: 'PER-03', name: 'FY 2025', code: '2025-FY', type: 'annual', year: 2025, start_date: '2025-01-01', end_date: '2025-12-31', is_active: false, is_locked: false, notes: '' }
-];
-
-const INITIAL_HOLIDAYS: PublicHoliday[] = [
-  { id: 'HOL-01', date: '2025-01-01', name: 'Tahun Baru Masehi', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-02', date: '2025-01-27', name: 'Isra Miraj Nabi Muhammad SAW', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-03', date: '2025-01-29', name: 'Tahun Baru Imlek 2576', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-04', date: '2025-03-29', name: 'Hari Raya Nyepi', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-05', date: '2025-05-01', name: 'Hari Buruh Internasional', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-06', date: '2025-05-12', name: 'Hari Raya Idul Fitri 1 Syawal 1446 H', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-07', date: '2025-05-13', name: 'Hari Raya Idul Fitri 2 Syawal 1446 H', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-08', date: '2025-05-29', name: 'Kenaikan Isa Al Masih', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-09', date: '2025-06-01', name: 'Hari Lahir Pancasila', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-10', date: '2025-06-06', name: 'Hari Raya Idul Adha', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-11', date: '2025-06-27', name: 'Tahun Baru Islam 1447 H', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-12', date: '2025-08-17', name: 'Hari Kemerdekaan RI', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-13', date: '2025-09-05', name: 'Maulid Nabi Muhammad SAW', type: 'national', year: 2025, is_active: true },
-  { id: 'HOL-14', date: '2025-12-25', name: 'Hari Raya Natal', type: 'national', year: 2025, is_active: true }
-];
-
-const INITIAL_LOSS_REASONS: LossReason[] = [
-  { id: 'LR-01', name: 'Harga Penawaran Terlalu Tinggi', code: 'HARGA_TERLALU_TINGGI', category: 'harga', description: 'Harga yang ditawarkan melebihi batas wajar', sort_order: 1, is_active: true },
-  { id: 'LR-02', name: 'Harga Tidak Kompetitif vs Kompetitor', code: 'HARGA_TIDAK_KOMPETITIF', category: 'harga', description: 'Harga kalah bersaing dengan kompetitor', sort_order: 2, is_active: true },
-  { id: 'LR-03', name: 'Tidak Memenuhi Spesifikasi Teknis', code: 'SPESIFIKASI_TEKNIS', category: 'teknis', description: 'Spesifikasi teknis tidak sesuai persyaratan', sort_order: 3, is_active: true },
-  { id: 'LR-04', name: 'Pengalaman / Track Record Kurang', code: 'PENGALAMAN_KURANG', category: 'teknis', description: 'Kurang pengalaman di bidang terkait', sort_order: 4, is_active: true },
-  { id: 'LR-05', name: 'Kompetitor Memiliki Hubungan Lebih Baik dengan Client', code: 'RELASI_KOMPETITOR', category: 'relasi', description: 'Kompetitor memiliki hubungan lebih baik', sort_order: 5, is_active: true },
-  { id: 'LR-06', name: 'Tidak Lulus Evaluasi Administrasi', code: 'EVALUASI_ADMIN', category: 'administrasi', description: 'Dokumen administrasi tidak lolos', sort_order: 6, is_active: true },
-  { id: 'LR-07', name: 'Dokumen Tidak Lengkap', code: 'DOK_TIDAK_LENGKAP', category: 'administrasi', description: 'Persyaratan dokumen tidak lengkap', sort_order: 7, is_active: true },
-  { id: 'LR-08', name: 'Keterlambatan Pengiriman Dokumen', code: 'KETERLAMBATAN', category: 'waktu', description: 'Dokumen terlambat diserahkan', sort_order: 8, is_active: true },
-  { id: 'LR-09', name: 'Tender Dibatalkan oleh Client', code: 'BATALKAN_CLIENT', category: 'lainnya', description: 'Client membatalkan tender', sort_order: 9, is_active: true },
-  { id: 'LR-10', name: 'Alasan Tidak Diketahui', code: 'TIDAK_DIKETAHUI', category: 'lainnya', description: 'Alasan kekalahan tidak diketahui', sort_order: 10, is_active: true },
-  { id: 'LR-11', name: 'Alasan Lain (isi keterangan)', code: 'LAINNYA', category: 'lainnya', description: 'Alasan lain yang perlu dijelaskan', sort_order: 11, is_active: true }
-];
-
-const INITIAL_APPROVAL_LEVELS: ApprovalLevel[] = [
-  { id: 'AL-01', name: 'Review PM / Kepala Cabang', code: 'L1', level_number: 1, escalates_to_level_id: 'AL-02', description: 'Level pertama approval oleh Project Manager', is_active: true },
-  { id: 'AL-02', name: 'Review Departemen / Kepala Dept', code: 'L2', level_number: 2, escalates_to_level_id: 'AL-03', description: 'Level kedua approval oleh Kepala Departemen', is_active: true },
-  { id: 'AL-03', name: 'Persetujuan Management', code: 'L3', level_number: 3, escalates_to_level_id: null, description: 'Level akhir approval oleh Management', is_active: true }
-];
-
-const INITIAL_NOTIF_TEMPLATES: NotificationTemplate[] = [
-  { id: 'NT-01', event_code: 'prospect.submitted', event_name: 'Prospek Disubmit ke PM', template_inapp: 'Prospek {{prospectName}} dari {{branchName}} menunggu review Anda.', recipient_roles: ['pm'], available_variables: ['prospectName', 'branchName'], is_active: true, is_system: true },
-  { id: 'NT-02', event_code: 'prospect.revision_sent', event_name: 'Revisi Prospek Dikirim', template_inapp: 'PM meminta revisi untuk prospek {{prospectName}}. Silakan periksa pertanyaan review.', recipient_roles: ['cabang'], available_variables: ['prospectName'], is_active: true, is_system: true },
-  { id: 'NT-03', event_code: 'prospect.approved', event_name: 'Prospek Disetujui', template_inapp: 'Prospek {{prospectName}} telah disetujui oleh PM. Anda dapat mengkonversinya menjadi proyek.', recipient_roles: ['cabang'], available_variables: ['prospectName'], is_active: true, is_system: true },
-  { id: 'NT-04', event_code: 'project.rks_submitted', event_name: 'RKS Disubmit', template_inapp: 'RKS proyek {{projectName}} menunggu review Anda.', recipient_roles: ['pm'], available_variables: ['projectName'], is_active: true, is_system: true },
-  { id: 'NT-05', event_code: 'project.deadline_approaching', event_name: 'Deadline Tender Mendekat', template_inapp: 'Proyek {{projectName}} memiliki deadline tender dalam {{daysRemaining}} hari ({{deadlineDate}}).', recipient_roles: ['cabang', 'pm'], available_variables: ['projectName', 'daysRemaining', 'deadlineDate'], is_active: true, is_system: true },
-  { id: 'NT-06', event_code: 'project.cancelled', event_name: 'Proyek Dibatalkan', template_inapp: 'Proyek {{projectName}} telah dibatalkan. Alasan: {{cancelReason}}.', recipient_roles: ['cabang'], available_variables: ['projectName', 'cancelReason'], is_active: true, is_system: true }
-];
+// Data is sourced from useMasterDataStore (Zustand persist)
 
 type SuperTab = 'customers' | 'industries' | 'categories' | 'competitors' | 'statuses' | 'doc_types' | 'questions' | 'question_types' | 'periods' | 'holidays' | 'loss_reasons' | 'approval_levels' | 'notif_templates' | 'departments' | 'users' | 'audit_logs';
 
@@ -411,85 +216,62 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
   const [activeTab, setActiveTab] = useState<SuperTab>('customers');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // 1. MASTER CUSTOMER STATES (Doc 021)
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  // Store — all master data sourced from useMasterDataStore (Zustand persist)
+  const store = useMasterDataStore();
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
+
+  const customers = useMasterDataStore((s) => s.customers) as unknown as Customer[];
+  const industries = useMasterDataStore((s) => s.industries) as unknown as Industry[];
+  const categories = useMasterDataStore((s) => s.categories) as unknown as ProjectCategory[];
+  const competitors = useMasterDataStore((s) => s.competitors) as unknown as Competitor[];
+  const projectStatuses = useMasterDataStore((s) => s.projectStatuses) as unknown as ProjectStatus[];
+  const documentTypes = useMasterDataStore((s) => s.documentTypes) as unknown as DocumentType[];
+  const questions = useMasterDataStore((s) => s.questions) as unknown as MasterQuestion[];
+  const questionTypes = useMasterDataStore((s) => s.questionTypes) as unknown as QuestionType[];
+  const periods = useMasterDataStore((s) => s.periods) as unknown as ReportingPeriod[];
+  const holidays = useMasterDataStore((s) => s.holidays) as unknown as PublicHoliday[];
+  const lossReasons = useMasterDataStore((s) => s.lossReasons) as unknown as LossReason[];
+  const approvalLevels = useMasterDataStore((s) => s.approvalLevels) as unknown as ApprovalLevel[];
+  const notifTemplates = useMasterDataStore((s) => s.notifTemplates) as unknown as NotificationTemplate[];
+  const departments = useMasterDataStore((s) => s.departments) as unknown as Department[];
+  const users = useMasterDataStore((s) => s.users) as unknown as MasterUser[];
+  const auditLogs = useMasterDataStore((s) => s.auditLogs) as unknown as AuditLog[];
+
+  // UI-only state (drawers, modals, etc.)
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [newCust, setNewCust] = useState<Partial<Customer>>({});
-
-  // 2. INDUSTRY STATES (Doc 021)
-  const [industries, setIndustries] = useState<Industry[]>(INITIAL_INDUSTRIES);
   const [industryDrawerOpen, setIndustryDrawerOpen] = useState(false);
   const [editingIndustry, setEditingIndustry] = useState<Industry | null>(null);
-
-  // 3. PROJECT CATEGORY STATES (Doc 021)
-  const [categories, setCategories] = useState<ProjectCategory[]>(INITIAL_CATEGORIES);
   const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<ProjectCategory | null>(null);
-
-  // 4. COMPETITOR STATES (Doc 023)
-  const [competitors, setCompetitors] = useState<Competitor[]>(INITIAL_COMPETITORS);
   const [compDrawerOpen, setCompDrawerOpen] = useState(false);
   const [newComp, setNewComp] = useState<Partial<Competitor>>({});
-
-  // 5. PROJECT STATUS STATES (Doc 022)
-  const [projectStatuses, setProjectStatuses] = useState<ProjectStatus[]>(INITIAL_PROJECT_STATUSES);
   const [statusDrawerOpen, setStatusDrawerOpen] = useState(false);
   const [editingStatus, setEditingStatus] = useState<ProjectStatus | null>(null);
-
-  // 6. DOCUMENT TYPE STATES (Doc 022)
-  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>(INITIAL_DOCUMENT_TYPES);
   const [docTypeDrawerOpen, setDocTypeDrawerOpen] = useState(false);
   const [editingDocType, setEditingDocType] = useState<DocumentType | null>(null);
-
-  // 7. QUESTION MASTER STATES (Doc 024)
-  const [questions, setQuestions] = useState<MasterQuestion[]>(INITIAL_QUESTIONS);
   const [selectedQuestionId, setSelectedQuestionId] = useState<string>('Q-001');
   const [questionDrawerOpen, setQuestionDrawerOpen] = useState(false);
   const [activeContextTab, setActiveContextTab] = useState<'prospect' | 'rks' | 'both'>('prospect');
   const selectedQuestion = questions.find(q => q.id === selectedQuestionId) || questions[0];
-
-  // 8. QUESTION TYPE STATES (Doc 024)
-  const [questionTypes, setQuestionTypes] = useState<QuestionType[]>(INITIAL_QUESTION_TYPES);
   const [editingQuestionType, setEditingQuestionType] = useState<QuestionType | null>(null);
   const [qtDrawerOpen, setQtDrawerOpen] = useState(false);
-
-  // 9. REPORTING PERIOD STATES (Doc 025)
-  const [periods, setPeriods] = useState<ReportingPeriod[]>(INITIAL_PERIODS);
   const [periodDrawerOpen, setPeriodDrawerOpen] = useState(false);
   const [editingPeriod, setEditingPeriod] = useState<ReportingPeriod | null>(null);
-
-  // 10. PUBLIC HOLIDAY STATES (Doc 025)
-  const [holidays, setHolidays] = useState<PublicHoliday[]>(INITIAL_HOLIDAYS);
   const [holidayDrawerOpen, setHolidayDrawerOpen] = useState(false);
   const [editingHoliday, setEditingHoliday] = useState<PublicHoliday | null>(null);
-
-  // 11. LOSS REASON STATES (Doc 026)
-  const [lossReasons, setLossReasons] = useState<LossReason[]>(INITIAL_LOSS_REASONS);
   const [lossReasonDrawerOpen, setLossReasonDrawerOpen] = useState(false);
   const [editingLossReason, setEditingLossReason] = useState<LossReason | null>(null);
-
-  // 12. APPROVAL LEVEL STATES (Doc 026)
-  const [approvalLevels, setApprovalLevels] = useState<ApprovalLevel[]>(INITIAL_APPROVAL_LEVELS);
   const [alDrawerOpen, setAlDrawerOpen] = useState(false);
   const [editingAl, setEditingAl] = useState<ApprovalLevel | null>(null);
-
-  // 13. NOTIFICATION TEMPLATE STATES (Doc 026)
-  const [notifTemplates, setNotifTemplates] = useState<NotificationTemplate[]>(INITIAL_NOTIF_TEMPLATES);
   const [notifDrawerOpen, setNotifDrawerOpen] = useState(false);
   const [editingNotif, setEditingNotif] = useState<NotificationTemplate | null>(null);
-
-  // 14. MASTER DEPARTEMEN STATES
-  const [departments, setDepartments] = useState<Department[]>(INITIAL_DEPARTMENTS);
   const [editingDepartment, setEditingDepartment] = useState<Department | null>(null);
   const [deptDrawerOpen, setDeptDrawerOpen] = useState(false);
-
-  // 15. USER MANAGEMENT STATES
-  const [users, setUsers] = useState<MasterUser[]>(INITIAL_USERS);
   const [editingUser, setEditingUser] = useState<MasterUser | null>(null);
   const [userDrawerOpen, setUserDrawerOpen] = useState(false);
-
-  // 16. SYSTEM AUDIT LOG STATES
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
   const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLog | null>(null);
   const [auditDetailOpen, setAuditDetailOpen] = useState(false);
 
@@ -696,7 +478,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                         </span>
                       </td>
                       <td className="p-3 text-right">
-                        <button onClick={() => { setCustomers(customers.filter(x => x.id !== c.id)); onShowNotification('Customer dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-650 rounded cursor-pointer">
+                        <button onClick={() => { deleteData('customers', c.id); onShowNotification('Customer dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-650 rounded cursor-pointer">
                           <span className="material-symbols-outlined text-base">delete</span>
                         </button>
                       </td>
@@ -1008,7 +790,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                           <td className="p-3 text-slate-600 text-[11px]">{qTypeLabel(q.question_type_id)}</td>
                           <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600">{q.category}</span></td>
                           <td className="p-3 text-center">
-                            <input type="checkbox" checked={q.is_required} onChange={(e) => { e.stopPropagation(); setQuestions(questions.map(x => x.id === q.id ? { ...x, is_required: e.target.checked } : x)); }} className="rounded text-primary focus:ring-0 cursor-pointer shrink-0" />
+                            <input type="checkbox" checked={q.is_required} onChange={(e) => { e.stopPropagation(); updateData('questions', q.id, { is_required: e.target.checked } as any); }} className="rounded text-primary focus:ring-0 cursor-pointer shrink-0" />
                           </td>
                           <td className="p-3 text-center">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${q.is_active ? 'bg-success/15 text-success' : 'bg-amber-100 text-amber-700'}`}>{q.is_active ? 'Aktif' : 'Tidak'}</span>
@@ -1059,11 +841,11 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                   <div className="space-y-3 text-xs">
                     <div>
                       <label className="text-[11px] font-bold text-slate-500 block mb-1">Teks Pertanyaan</label>
-                      <input type="text" value={selectedQuestion.question_text} onChange={(e) => { setQuestions(questions.map(q => q.id === selectedQuestion.id ? { ...q, question_text: e.target.value } : q)); }} className="w-full p-2 border border-border rounded-lg text-xs" />
+                      <input type="text" value={selectedQuestion.question_text} onChange={(e) => { updateData('questions', selectedQuestion.id, { question_text: e.target.value } as any); }} className="w-full p-2 border border-border rounded-lg text-xs" />
                     </div>
                     <div>
                       <label className="text-[11px] font-bold text-slate-500 block mb-1">Help Text</label>
-                      <textarea rows={2} value={selectedQuestion.help_text} onChange={(e) => { setQuestions(questions.map(q => q.id === selectedQuestion.id ? { ...q, help_text: e.target.value } : q)); }} className="w-full p-2 border border-border rounded-lg text-xs resize-none" />
+                      <textarea rows={2} value={selectedQuestion.help_text} onChange={(e) => { updateData('questions', selectedQuestion.id, { help_text: e.target.value } as any); }} className="w-full p-2 border border-border rounded-lg text-xs resize-none" />
                     </div>
                   </div>
                 </div>
@@ -1303,7 +1085,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                       <td className="p-4"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full bg-status-indigo/20 text-status-indigo flex items-center justify-center text-[10px]"><span className="material-symbols-outlined text-[12px]">person</span></div><span className="font-semibold text-slate-750">{d.head}</span></div></td>
                       <td className="p-4"><span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">{d.division}</span></td>
                       <td className="p-4 text-center">
-                        <button onClick={() => { setDepartments(departments.map(x => x.id === d.id ? { ...x, status: !x.status } : x)); onShowNotification(`Status departemen ${d.name} dirubah.`, 'success'); }} className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${d.status ? 'bg-success' : 'bg-slate-350 bg-slate-300'}`}>
+                        <button onClick={() => { updateData('departments', d.id, { status: !d.status } as any); onShowNotification(`Status departemen ${d.name} dirubah.`, 'success'); }} className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${d.status ? 'bg-success' : 'bg-slate-350 bg-slate-300'}`}>
                           <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition duration-200 ${d.status ? 'translate-x-5' : 'translate-x-1'}`} />
                         </button>
                       </td>
@@ -1532,7 +1314,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!newCust.name) { onShowNotification('Nama customer wajib dimasukkan.', 'error'); return; }
                 const added: Customer = { id: String(customers.length + 1), name: newCust.name, code: newCust.code || `CST-${Math.floor(100 + Math.random() * 899)}`, type: newCust.type || 'swasta', industry_id: newCust.industry_id || null, pic_name: newCust.pic_name || '', pic_email: newCust.pic_email || '', pic_phone: newCust.pic_phone || '', address: newCust.address || '', city: newCust.city || '', province: newCust.province || '', npwp: newCust.npwp || '', notes: newCust.notes || '', is_active: true };
-                setCustomers([...customers, added]);
+                addData('customers', added);
                 onShowNotification(`Customer ${newCust.name} berhasil ditambahkan.`, 'success');
                 setCustomerModalOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan Customer</button>
@@ -1562,7 +1344,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!newComp.name) { onShowNotification('Nama kompetitor wajib diisi.', 'error'); return; }
                 const added: Competitor = { id: String(competitors.length + 1), name: newComp.name, code: newComp.code || `COMP-${Math.floor(100 + Math.random() * 899)}`, industry_id: newComp.industry_id || null, bidang_usaha: newComp.bidang_usaha || '', website: newComp.website || '', description: newComp.description || '', is_active: true };
-                setCompetitors([...competitors, added]);
+                addData('competitors', added);
                 onShowNotification(`Kompetitor ${newComp.name} didaftarkan.`, 'success');
                 setCompDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan Kompetitor</button>
@@ -1650,7 +1432,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button
                 onClick={() => {
                   if (editingUser) {
-                    setUsers(users.map(u => u.id === editingUser.id ? editingUser : u));
+                    updateData('users', editingUser.id, editingUser);
                     onShowNotification(`Hak akses untuk ${editingUser.name} berhasil dimutasi.`, 'success');
                   } else {
                     onShowNotification('Pembuatan pengguna baru disimulasikan.', 'success');
@@ -1736,7 +1518,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 if (!text) { onShowNotification('Teks pertanyaan wajib dimasukkan.', 'error'); return; }
                 const maxSort = Math.max(...questions.map(q => q.sort_order), 0);
                 const added: MasterQuestion = { id: `Q-${String(questions.length + 1).padStart(3, '0')}`, question_text: text, question_type_id: typeId, context: ctx, category: cat, is_required: false, sort_order: maxSort + 1, placeholder_text: ph, help_text: help, is_active: true };
-                setQuestions([...questions, added]);
+                addData('questions', added);
                 setSelectedQuestionId(added.id);
                 onShowNotification(`Pertanyaan "${text}" berhasil ditambahkan.`, 'success');
                 setQuestionDrawerOpen(false);
@@ -1766,11 +1548,11 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!editingQuestionType?.name || !editingQuestionType?.code) { onShowNotification('Nama dan kode wajib diisi.', 'error'); return; }
                 if (editingQuestionType.id) {
-                  setQuestionTypes(questionTypes.map(qt => qt.id === editingQuestionType.id ? editingQuestionType as QuestionType : qt));
+                  updateData('questionTypes', editingQuestionType.id, editingQuestionType as any);
                   onShowNotification(`Tipe ${editingQuestionType.name} diperbarui.`, 'success');
                 } else {
                   const added: QuestionType = { id: `QT-${String(questionTypes.length + 1).padStart(2, '0')}`, name: editingQuestionType.name, code: editingQuestionType.code, description: editingQuestionType.description || '', has_options: editingQuestionType.has_options ?? false, validation_config: editingQuestionType.validation_config || '{}', is_system: false, is_active: true };
-                  setQuestionTypes([...questionTypes, added]);
+                  addData('questionTypes', added);
                   onShowNotification(`Tipe ${added.name} ditambahkan.`, 'success');
                 }
                 setQtDrawerOpen(false);
@@ -1797,7 +1579,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!editingIndustry?.name) { onShowNotification('Nama industri wajib diisi.', 'error'); return; }
                 const added: Industry = { id: `IND-${String(industries.length + 1).padStart(2, '0')}`, name: editingIndustry.name, code: editingIndustry.code || editingIndustry.name.slice(0, 5).toUpperCase(), is_active: true };
-                setIndustries([...industries, added]);
+                addData('industries', added);
                 onShowNotification(`Industri ${added.name} ditambahkan.`, 'success');
                 setIndustryDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>
@@ -1829,7 +1611,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!editingCategory?.name) { onShowNotification('Nama kategori wajib diisi.', 'error'); return; }
                 const added: ProjectCategory = { id: `CAT-${String(categories.length + 1).padStart(2, '0')}`, name: editingCategory.name, code: editingCategory.code || editingCategory.name.slice(0, 8).toUpperCase(), description: '', requires_lphs: editingCategory.requires_lphs ?? true, requires_rks: editingCategory.requires_rks ?? true, default_workflow_type: editingCategory.default_workflow_type || 'tender', color_hex: editingCategory.color_hex || '#6B7280', sort_order: categories.length + 1, is_active: true };
-                setCategories([...categories, added]);
+                addData('categories', added);
                 onShowNotification(`Kategori ${added.name} ditambahkan.`, 'success');
                 setCategoryDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>
@@ -1861,7 +1643,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 if (!editingStatus?.code || !editingStatus?.label) { onShowNotification('Kode dan label wajib diisi.', 'error'); return; }
                 const maxSort = Math.max(...projectStatuses.map(s => s.sort_order), 0);
                 const added: ProjectStatus = { id: `PS-${String(projectStatuses.length + 1).padStart(2, '0')}`, code: editingStatus.code, label: editingStatus.label, description: '', color_hex: editingStatus.color_hex || '#6B7280', text_color_hex: editingStatus.text_color_hex || '#FFFFFF', sort_order: maxSort + 1, is_system: false, is_terminal: false, is_active: true, applicable_to: editingStatus.applicable_to || 'both' };
-                setProjectStatuses([...projectStatuses, added]);
+                addData('projectStatuses', added);
                 onShowNotification(`Status ${added.label} ditambahkan.`, 'success');
                 setStatusDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>
@@ -1890,7 +1672,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!editingDocType?.name || !editingDocType?.code) { onShowNotification('Nama dan kode wajib diisi.', 'error'); return; }
                 const added: DocumentType = { id: `DT-${String(documentTypes.length + 1).padStart(2, '0')}`, name: editingDocType.name, code: editingDocType.code, description: '', allowed_extensions: editingDocType.allowed_extensions || ['pdf'], max_size_mb: editingDocType.max_size_mb || 25, is_required_at_stage: null, applicable_to: editingDocType.applicable_to || 'both', sort_order: documentTypes.length + 1, is_system: false, is_active: true };
-                setDocumentTypes([...documentTypes, added]);
+                addData('documentTypes', added);
                 onShowNotification(`Tipe dokumen ${added.name} ditambahkan.`, 'success');
                 setDocTypeDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>
@@ -1924,7 +1706,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <button onClick={() => {
                 if (!editingPeriod?.name) { onShowNotification('Nama periode wajib diisi.', 'error'); return; }
                 const added: ReportingPeriod = { id: `PER-${String(periods.length + 1).padStart(2, '0')}`, name: editingPeriod.name, code: editingPeriod.code || `${editingPeriod.year || 2026}-${(editingPeriod.type || 'quarterly').slice(0, 2).toUpperCase()}`, type: editingPeriod.type || 'quarterly', year: editingPeriod.year || 2026, start_date: editingPeriod.start_date || `${editingPeriod.year || 2026}-01-01`, end_date: editingPeriod.end_date || `${editingPeriod.year || 2026}-12-31`, is_active: true, is_locked: false, notes: '' };
-                setPeriods([...periods, added]);
+                addData('periods', added);
                 onShowNotification(`Periode ${added.name} ditambahkan.`, 'success');
                 setPeriodDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>
@@ -1952,7 +1734,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 if (!editingHoliday?.name || !editingHoliday?.date) { onShowNotification('Nama dan tanggal wajib diisi.', 'error'); return; }
                 const year = parseInt(editingHoliday.date.slice(0, 4));
                 const added: PublicHoliday = { id: `HOL-${String(holidays.length + 1).padStart(2, '0')}`, name: editingHoliday.name, date: editingHoliday.date, type: editingHoliday.type || 'national', year, is_active: true };
-                setHolidays([...holidays, added]);
+                addData('holidays', added);
                 onShowNotification(`Hari libur ${added.name} ditambahkan.`, 'success');
                 setHolidayDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>
@@ -1981,7 +1763,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 if (!editingLossReason?.name) { onShowNotification('Nama alasan wajib diisi.', 'error'); return; }
                 const maxSort = Math.max(...lossReasons.map(l => l.sort_order), 0);
                 const added: LossReason = { id: `LR-${String(lossReasons.length + 1).padStart(2, '0')}`, name: editingLossReason.name, code: editingLossReason.code || editingLossReason.name.slice(0, 8).toUpperCase().replace(/\s/g, '_'), category: editingLossReason.category || 'lainnya', description: editingLossReason.description || '', sort_order: maxSort + 1, is_active: true };
-                setLossReasons([...lossReasons, added]);
+                addData('lossReasons', added);
                 onShowNotification(`Alasan kekalahan ${added.name} ditambahkan.`, 'success');
                 setLossReasonDrawerOpen(false);
               }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan</button>

@@ -83,6 +83,110 @@ export interface MasterCustomer {
   is_active: boolean;
 }
 
+// ===== NEW ENTITIES =====
+
+export interface MasterIndustry {
+  id: string;
+  name: string;
+  code: string;
+  is_active: boolean;
+}
+
+export interface MasterProjectStatus {
+  id: string;
+  code: string;
+  label: string;
+  description: string;
+  color_hex: string;
+  text_color_hex: string;
+  sort_order: number;
+  is_system: boolean;
+  is_terminal: boolean;
+  is_active: boolean;
+  applicable_to: string;
+}
+
+export interface MasterDocumentType {
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+  allowed_extensions: string[];
+  max_size_mb: number;
+  is_required_at_stage: string[] | null;
+  applicable_to: string;
+  sort_order: number;
+  is_system: boolean;
+  is_active: boolean;
+}
+
+export interface MasterQuestionType {
+  id: string;
+  name: string;
+  code: string;
+  description: string;
+  has_options: boolean;
+  validation_config: string;
+  is_system: boolean;
+  is_active: boolean;
+}
+
+export interface MasterDepartment {
+  id: string;
+  name: string;
+  code: string;
+  head: string;
+  division: string;
+  status: boolean;
+}
+
+export interface MasterUser {
+  id: string;
+  name: string;
+  branch: string;
+  username: string;
+  email: string;
+  role: string;
+  roleColor: string;
+  active: boolean;
+  avatarColor: string;
+}
+
+export interface MasterAuditLog {
+  id: string;
+  time: string;
+  user: string;
+  userInitials: string;
+  action: string;
+  actionColor: string;
+  entity: string;
+  entityName: string;
+  impact: 'Low' | 'Medium' | 'High';
+  beforeJson: string;
+  afterJson: string;
+}
+
+export interface MasterApprovalLevel {
+  id: string;
+  name: string;
+  code: string;
+  level_number: number;
+  escalates_to_level_id: string | null;
+  description: string;
+  is_active: boolean;
+}
+
+export interface MasterNotifTemplate {
+  id: string;
+  event_code: string;
+  event_name: string;
+  template_inapp: string;
+  recipient_roles: string[];
+  available_variables: string[];
+  is_active: boolean;
+  is_system: boolean;
+}
+
 // Initial data
 const INITIAL_CATEGORIES: MasterCategory[] = [
   { id: 'CAT-01', name: 'Konstruksi & Sipil', code: 'KONSTRUKSI', description: 'Pekerjaan konstruksi bangunan dan sipil', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#2563EB', sort_order: 1, is_active: true },
@@ -149,7 +253,92 @@ const INITIAL_MASTER_CUSTOMERS: MasterCustomer[] = [
   { id: 'C-004', name: 'Siemens Indonesia', code: 'SIEMENS', type: 'asing', pic_name: 'John Doe', pic_email: 'john@siemens.co.id', pic_phone: '021-23456789', city: 'Jakarta Selatan', is_active: true },
 ];
 
-type EntityType = 'categories' | 'competitors' | 'docTypes' | 'questions' | 'holidays' | 'lossReasons' | 'periods' | 'customers';
+// ===== NEW INITIAL DATA =====
+
+const INITIAL_INDUSTRIES: MasterIndustry[] = [
+  { id: 'IND-01', name: 'Energi & Pertambangan', code: 'ENERGI', is_active: true },
+  { id: 'IND-02', name: 'Konstruksi & Infrastruktur', code: 'KONSTRUKSI', is_active: true },
+  { id: 'IND-03', name: 'Teknologi Informasi', code: 'TI', is_active: true },
+  { id: 'IND-04', name: 'Perbankan & Keuangan', code: 'BANK', is_active: true },
+  { id: 'IND-05', name: 'Manufaktur', code: 'MANUFAKTUR', is_active: true },
+  { id: 'IND-06', name: 'Pemerintahan', code: 'PEMERINTAH', is_active: true },
+  { id: 'IND-07', name: 'Kesehatan', code: 'KESEHATAN', is_active: true },
+  { id: 'IND-08', name: 'Pendidikan', code: 'PENDIDIKAN', is_active: true },
+  { id: 'IND-09', name: 'Retail & Distribusi', code: 'RETAIL', is_active: true },
+  { id: 'IND-10', name: 'Telekomunikasi', code: 'TELKO', is_active: true },
+  { id: 'IND-11', name: 'Lainnya', code: 'LAINNYA', is_active: true },
+];
+
+const INITIAL_PROJECT_STATUSES: MasterProjectStatus[] = [
+  { id: 'PS-01', code: 'created', label: 'Dibuat', description: 'Proyek baru dibuat', color_hex: '#6B7280', text_color_hex: '#FFFFFF', sort_order: 1, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
+  { id: 'PS-02', code: 'submit_rks', label: 'RKS Disubmit', description: 'RKS telah disubmit', color_hex: '#2563A8', text_color_hex: '#FFFFFF', sort_order: 2, is_system: true, is_terminal: false, is_active: true, applicable_to: 'tender' },
+  { id: 'PS-03', code: 'review_department', label: 'Review Departemen', description: 'Dalam review oleh departemen', color_hex: '#7C3AED', text_color_hex: '#FFFFFF', sort_order: 3, is_system: true, is_terminal: false, is_active: true, applicable_to: 'tender' },
+  { id: 'PS-04', code: 'lphs_sios', label: 'LPHS/SIOS', description: 'Proses LPHS dan SIOS', color_hex: '#4338CA', text_color_hex: '#FFFFFF', sort_order: 4, is_system: true, is_terminal: false, is_active: true, applicable_to: 'tender' },
+  { id: 'PS-05', code: 'revision', label: 'Revisi', description: 'Proyek dalam revisi', color_hex: '#D97706', text_color_hex: '#FFFFFF', sort_order: 5, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
+  { id: 'PS-06', code: 'submit_harga', label: 'Input Harga', description: 'Input harga penawaran', color_hex: '#0D9488', text_color_hex: '#FFFFFF', sort_order: 6, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
+  { id: 'PS-07', code: 'pengumuman_pemenang', label: 'Pengumuman Pemenang', description: 'Pengumuman pemenang tender', color_hex: '#EA580C', text_color_hex: '#FFFFFF', sort_order: 7, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
+  { id: 'PS-08', code: 'target_delivery', label: 'Target Delivery', description: 'Proyek dalam tahap delivery', color_hex: '#0284C7', text_color_hex: '#FFFFFF', sort_order: 8, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
+  { id: 'PS-09', code: 'selesai', label: 'Selesai', description: 'Proyek selesai', color_hex: '#16A34A', text_color_hex: '#FFFFFF', sort_order: 9, is_system: true, is_terminal: true, is_active: true, applicable_to: 'both' },
+  { id: 'PS-10', code: 'cancelled', label: 'Dibatalkan', description: 'Proyek dibatalkan', color_hex: '#9F1239', text_color_hex: '#FFFFFF', sort_order: 10, is_system: true, is_terminal: true, is_active: true, applicable_to: 'both' },
+];
+
+const INITIAL_DOCUMENT_TYPES: MasterDocumentType[] = [
+  { id: 'DT-01', name: 'Dokumen Tender / RKS', code: 'RKS', description: 'Dokumen tender dan RKS', allowed_extensions: ['pdf', 'docx'], max_size_mb: 25, is_required_at_stage: ['submit_rks'], applicable_to: 'tender', sort_order: 1, is_system: true, is_active: true },
+  { id: 'DT-02', name: 'Draft LPHS', code: 'LPHS', description: 'Daftar Harga Perkiraan Sendiri', allowed_extensions: ['pdf', 'docx', 'xlsx'], max_size_mb: 50, is_required_at_stage: ['lphs_sios'], applicable_to: 'tender', sort_order: 2, is_system: true, is_active: true },
+  { id: 'DT-03', name: 'Draft SIOS', code: 'SIOS', description: 'Surat Ijin Operasional Sementara', allowed_extensions: ['pdf', 'docx'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'tender', sort_order: 3, is_system: true, is_active: true },
+  { id: 'DT-04', name: 'Surat Perintah Kerja / Kontrak', code: 'SPK', description: 'SPK atau kontrak proyek', allowed_extensions: ['pdf'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'both', sort_order: 4, is_system: true, is_active: true },
+  { id: 'DT-05', name: 'Surat Kekalahan', code: 'SURAT_KALAH', description: 'Surat pernyataan kekalahan', allowed_extensions: ['pdf'], max_size_mb: 10, is_required_at_stage: null, applicable_to: 'both', sort_order: 5, is_system: true, is_active: true },
+  { id: 'DT-06', name: 'Dokumen Harga Penawaran', code: 'HARGA', description: 'Dokumen harga penawaran', allowed_extensions: ['pdf', 'xlsx'], max_size_mb: 10, is_required_at_stage: ['submit_harga'], applicable_to: 'both', sort_order: 6, is_system: true, is_active: true },
+  { id: 'DT-07', name: 'Invoice / Tagihan', code: 'INVOICE', description: 'Invoice dan tagihan', allowed_extensions: ['pdf'], max_size_mb: 10, is_required_at_stage: null, applicable_to: 'both', sort_order: 7, is_system: true, is_active: true },
+  { id: 'DT-08', name: 'Dokumen Lainnya', code: 'LAINNYA', description: 'Dokumen pendukung lainnya', allowed_extensions: ['pdf', 'docx', 'xlsx', 'jpg', 'png'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'both', sort_order: 8, is_system: true, is_active: true },
+];
+
+const INITIAL_QUESTION_TYPES: MasterQuestionType[] = [
+  { id: 'QT-01', name: 'Teks Singkat', code: 'text', description: 'Input teks satu baris', has_options: false, validation_config: '{"maxLength":500}', is_system: true, is_active: true },
+  { id: 'QT-02', name: 'Teks Panjang', code: 'textarea', description: 'Input teks paragraf', has_options: false, validation_config: '{"maxLength":2000}', is_system: true, is_active: true },
+  { id: 'QT-03', name: 'Pilihan Tunggal (Radio)', code: 'radio', description: 'Satu pilihan dari beberapa opsi', has_options: true, validation_config: '{}', is_system: true, is_active: true },
+  { id: 'QT-04', name: 'Pilihan Banyak (Checkbox)', code: 'checkbox', description: 'Beberapa pilihan dari opsi tersedia', has_options: true, validation_config: '{}', is_system: true, is_active: true },
+  { id: 'QT-05', name: 'Dropdown Pilihan', code: 'select', description: 'Dropdown pilihan tunggal', has_options: true, validation_config: '{}', is_system: true, is_active: true },
+  { id: 'QT-06', name: 'Angka / Numerik', code: 'number', description: 'Input angka', has_options: false, validation_config: '{"min":0,"max":9999999999}', is_system: true, is_active: true },
+  { id: 'QT-07', name: 'Tanggal', code: 'date', description: 'Date picker', has_options: false, validation_config: '{"format":"YYYY-MM-DD"}', is_system: true, is_active: true },
+];
+
+const INITIAL_DEPARTMENTS: MasterDepartment[] = [
+  { id: '01', name: 'IT Infrastructure', code: 'DEPT-INF-01', head: 'Budi Santoso', division: 'Technology', status: true },
+  { id: '02', name: 'Financial Audit', code: 'DEPT-FIN-02', head: 'Siti Aminah', division: 'Finance & Ops', status: true },
+  { id: '03', name: 'Brand Expansion', code: 'DEPT-MKT-03', head: 'Rizky Pratama', division: 'Marketing', status: false },
+];
+
+const INITIAL_USERS: MasterUser[] = [
+  { id: '1', name: 'Ahmad Sulistyo', branch: 'Cabang Jakarta Pusat', username: 'asulistyo_jkp', email: 'ahmad.s@kinetic.co.id', role: 'Cabang', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-primary/10 text-primary' },
+  { id: '2', name: 'Bambang Permadi', branch: 'Project Management', username: 'bambang.pm', email: 'b.permadi@kinetic.co.id', role: 'PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-purple/10 text-status-purple' },
+  { id: '3', name: 'Rina Marlina', branch: 'Operations Dept', username: 'rina.ops', email: 'rina.marlina@kinetic.co.id', role: 'Dept', roleColor: 'bg-secondary-fixed text-on-secondary-fixed-variant', active: false, avatarColor: 'bg-status-orange/10 text-status-orange' },
+  { id: '4', name: 'Doni Wahyudi', branch: 'Head Office', username: 'doni.admin', email: 'doni.w@kinetic.co.id', role: 'Admin', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
+];
+
+const INITIAL_AUDIT_LOGS: MasterAuditLog[] = [
+  { id: 'AUD-77291102', time: '2026-06-18 14:32:01', user: 'Admin User', userInitials: 'AS', action: 'UPDATE', actionColor: 'bg-status-indigo/10 text-status-indigo', entity: 'PRJ-4022', entityName: 'Infrastructure Dev', impact: 'Medium', beforeJson: '{\n  "id": "PRJ-4022",\n  "status": "PENDING_REVIEW",\n  "budget_cap": 250000.00,\n  "last_modified_by": "PB_INTERNAL"\n}', afterJson: '{\n  "id": "PRJ-4022",\n  "status": "ACTIVE_OPERATIONAL",\n  "budget_cap": 375000.00,\n  "last_modified_by": "PB_INTERNAL",\n  "revision": 14\n}' },
+  { id: 'AUD-77291103', time: '2026-06-18 14:15:22', user: 'Pam Beesly', userInitials: 'PB', action: 'APPROVE', actionColor: 'bg-success/10 text-success', entity: 'INV-20993', entityName: 'Invoice Unit 2', impact: 'Low', beforeJson: '{\n  "invoice_id": "INV-20993",\n  "approved": false\n}', afterJson: '{\n  "invoice_id": "INV-20993",\n  "approved": true,\n  "approved_by": "Pam Beesly"\n}' },
+  { id: 'AUD-77291104', time: '2026-06-18 13:58:10', user: 'Dwight Schrute', userInitials: 'DS', action: 'DELETE', actionColor: 'bg-danger/10 text-danger', entity: 'TMP_REPORT_01', entityName: 'Temporary Report', impact: 'High', beforeJson: '{\n  "report_name": "TMP_REPORT_01",\n  "owner": "Dwight Schrute"\n}', afterJson: 'null' },
+  { id: 'AUD-77291105', time: '2026-06-18 13:42:45', user: 'Michael Scott', userInitials: 'MS', action: 'CREATE', actionColor: 'bg-status-teal/10 text-status-teal', entity: 'LEAD-8812', entityName: 'Prospect Lead X', impact: 'Low', beforeJson: 'null', afterJson: '{\n  "lead_id": "LEAD-8812",\n  "title": "Pondasi Region 3",\n  "created_by": "Michael Scott"\n}' },
+];
+
+const INITIAL_APPROVAL_LEVELS: MasterApprovalLevel[] = [
+  { id: 'AL-01', name: 'Review PM / Kepala Cabang', code: 'L1', level_number: 1, escalates_to_level_id: 'AL-02', description: 'Level pertama approval oleh Project Manager', is_active: true },
+  { id: 'AL-02', name: 'Review Departemen / Kepala Dept', code: 'L2', level_number: 2, escalates_to_level_id: 'AL-03', description: 'Level kedua approval oleh Kepala Departemen', is_active: true },
+  { id: 'AL-03', name: 'Persetujuan Management', code: 'L3', level_number: 3, escalates_to_level_id: null, description: 'Level akhir approval oleh Management', is_active: true },
+];
+
+const INITIAL_NOTIF_TEMPLATES: MasterNotifTemplate[] = [
+  { id: 'NT-01', event_code: 'prospect.submitted', event_name: 'Prospek Disubmit ke PM', template_inapp: 'Prospek {{prospectName}} dari {{branchName}} menunggu review Anda.', recipient_roles: ['pm'], available_variables: ['prospectName', 'branchName'], is_active: true, is_system: true },
+  { id: 'NT-02', event_code: 'prospect.revision_sent', event_name: 'Revisi Prospek Dikirim', template_inapp: 'PM meminta revisi untuk prospek {{prospectName}}. Silakan periksa pertanyaan review.', recipient_roles: ['cabang'], available_variables: ['prospectName'], is_active: true, is_system: true },
+  { id: 'NT-03', event_code: 'prospect.approved', event_name: 'Prospek Disetujui', template_inapp: 'Prospek {{prospectName}} telah disetujui oleh PM. Anda dapat mengkonversinya menjadi proyek.', recipient_roles: ['cabang'], available_variables: ['prospectName'], is_active: true, is_system: true },
+  { id: 'NT-04', event_code: 'project.rks_submitted', event_name: 'RKS Disubmit', template_inapp: 'RKS proyek {{projectName}} menunggu review Anda.', recipient_roles: ['pm'], available_variables: ['projectName'], is_active: true, is_system: true },
+  { id: 'NT-05', event_code: 'project.deadline_approaching', event_name: 'Deadline Tender Mendekat', template_inapp: 'Proyek {{projectName}} memiliki deadline tender dalam {{daysRemaining}} hari ({{deadlineDate}}).', recipient_roles: ['cabang', 'pm'], available_variables: ['projectName', 'daysRemaining', 'deadlineDate'], is_active: true, is_system: true },
+  { id: 'NT-06', event_code: 'project.cancelled', event_name: 'Proyek Dibatalkan', template_inapp: 'Proyek {{projectName}} telah dibatalkan. Alasan: {{cancelReason}}.', recipient_roles: ['cabang'], available_variables: ['projectName', 'cancelReason'], is_active: true, is_system: true },
+];
+
+type EntityType = 'categories' | 'competitors' | 'docTypes' | 'questions' | 'holidays' | 'lossReasons' | 'periods' | 'customers' | 'industries' | 'projectStatuses' | 'documentTypes' | 'questionTypes' | 'departments' | 'users' | 'auditLogs' | 'approvalLevels' | 'notifTemplates';
 
 const INITIAL_DATA: Record<EntityType, any[]> = {
   categories: INITIAL_CATEGORIES,
@@ -160,6 +349,15 @@ const INITIAL_DATA: Record<EntityType, any[]> = {
   lossReasons: INITIAL_LOSS_REASONS,
   periods: INITIAL_PERIODS,
   customers: INITIAL_MASTER_CUSTOMERS,
+  industries: INITIAL_INDUSTRIES,
+  projectStatuses: INITIAL_PROJECT_STATUSES,
+  documentTypes: INITIAL_DOCUMENT_TYPES,
+  questionTypes: INITIAL_QUESTION_TYPES,
+  departments: INITIAL_DEPARTMENTS,
+  users: INITIAL_USERS,
+  auditLogs: INITIAL_AUDIT_LOGS,
+  approvalLevels: INITIAL_APPROVAL_LEVELS,
+  notifTemplates: INITIAL_NOTIF_TEMPLATES,
 };
 
 interface MasterDataState {
@@ -171,6 +369,15 @@ interface MasterDataState {
   lossReasons: MasterLossReason[];
   periods: MasterPeriod[];
   customers: MasterCustomer[];
+  industries: MasterIndustry[];
+  projectStatuses: MasterProjectStatus[];
+  documentTypes: MasterDocumentType[];
+  questionTypes: MasterQuestionType[];
+  departments: MasterDepartment[];
+  users: MasterUser[];
+  auditLogs: MasterAuditLog[];
+  approvalLevels: MasterApprovalLevel[];
+  notifTemplates: MasterNotifTemplate[];
   getData: <T>(entity: EntityType) => T[];
   addData: <T>(entity: EntityType, item: T) => void;
   updateData: <T extends { id: string }>(entity: EntityType, id: string, data: Partial<T>) => void;
@@ -188,6 +395,15 @@ export const useMasterDataStore = create<MasterDataState>()(
       lossReasons: INITIAL_LOSS_REASONS,
       periods: INITIAL_PERIODS,
       customers: INITIAL_MASTER_CUSTOMERS,
+      industries: INITIAL_INDUSTRIES,
+      projectStatuses: INITIAL_PROJECT_STATUSES,
+      documentTypes: INITIAL_DOCUMENT_TYPES,
+      questionTypes: INITIAL_QUESTION_TYPES,
+      departments: INITIAL_DEPARTMENTS,
+      users: INITIAL_USERS,
+      auditLogs: INITIAL_AUDIT_LOGS,
+      approvalLevels: INITIAL_APPROVAL_LEVELS,
+      notifTemplates: INITIAL_NOTIF_TEMPLATES,
 
       getData: <T>(entity: EntityType) => get()[entity] as unknown as T[],
       addData: <T>(entity: EntityType, item: T) =>
