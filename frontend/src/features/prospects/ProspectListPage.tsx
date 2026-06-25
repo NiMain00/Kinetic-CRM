@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { INITIAL_PROSPECTS } from '@/services/mock-data';
+import { useProspectStore } from '@/stores/prospectStore';
 import type { Prospect } from '@/types/domain';
 
 const PAGE_SIZE = 5;
 
 export default function ProspectListPage() {
   const navigate = useNavigate();
-  const [prospects] = useState<Prospect[]>(INITIAL_PROSPECTS);
+  const prospects = useProspectStore((s) => s.prospects);
   const [activeFilter, setActiveFilter] = useState<'All' | 'Prospecting' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);

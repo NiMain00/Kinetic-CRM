@@ -2,38 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface ProjectCategory {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  requires_lphs: boolean;
-  requires_rks: boolean;
-  default_workflow_type: 'tender' | 'prospecting';
-  color_hex: string;
-  sort_order: number;
-  is_active: boolean;
-}
-
-const INITIAL_CATEGORIES: ProjectCategory[] = [
-  { id: 'CAT-01', name: 'Konstruksi & Sipil', code: 'KONSTRUKSI', description: 'Pekerjaan konstruksi bangunan dan sipil', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#2563EB', sort_order: 1, is_active: true },
-  { id: 'CAT-02', name: 'IT & Sistem Informasi', code: 'IT_SISTEM', description: 'Pengembangan perangkat lunak dan sistem informasi', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#7C3AED', sort_order: 2, is_active: true },
-  { id: 'CAT-03', name: 'Jasa Konsultansi', code: 'KONSULTANSI', description: 'Jasa konsultansi manajemen dan teknis', requires_lphs: false, requires_rks: true, default_workflow_type: 'tender', color_hex: '#0D9488', sort_order: 3, is_active: true },
-  { id: 'CAT-04', name: 'Pengadaan Barang', code: 'PENGADAAN', description: 'Pengadaan barang dan perlengkapan', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#D97706', sort_order: 4, is_active: true },
-  { id: 'CAT-05', name: 'Jasa Umum', code: 'JASA_UMUM', description: 'Penyediaan jasa umum dan outsourcing', requires_lphs: false, requires_rks: true, default_workflow_type: 'prospecting', color_hex: '#0284C7', sort_order: 5, is_active: true },
-  { id: 'CAT-06', name: 'Lainnya', code: 'LAINNYA', description: 'Kategori proyek lainnya', requires_lphs: false, requires_rks: false, default_workflow_type: 'prospecting', color_hex: '#6B7280', sort_order: 6, is_active: true },
-];
+import { useMasterDataStore, type MasterCategory } from '@/stores/masterDataStore';
 
 const COLORS = ['#2563EB', '#7C3AED', '#0D9488', '#D97706', '#0284C7', '#DC2626', '#16A34A', '#6B7280', '#EC4899', '#F59E0B'];
 
 export default function MasterCategoryPage() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<ProjectCategory[]>(INITIAL_CATEGORIES);
+  const categories = useMasterDataStore((s) => s.categories);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<ProjectCategory | null>(null);
-  const [form, setForm] = useState<Partial<ProjectCategory>>({});
+  const [editing, setEditing] = useState<MasterCategory | null>(null);
+  const [form, setForm] = useState<Partial<MasterCategory>>({});
 
   const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -43,7 +24,7 @@ export default function MasterCategoryPage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (c: ProjectCategory) => {
+  const openEdit = (c: MasterCategory) => {
     setEditing(c);
     setForm({ ...c });
     setDrawerOpen(true);
@@ -53,19 +34,22 @@ export default function MasterCategoryPage() {
     e.preventDefault();
     if (!form.name || !form.code) { toast.error('Nama dan Kode wajib diisi'); return; }
     if (editing) {
-      setCategories(categories.map(c => c.id === editing.id ? { ...c, ...form } as ProjectCategory : c));
+      updateData<MasterCategory>('categories', editing.id, form);
       toast.success('Kategori berhasil diperbarui');
     } else {
       const id = `CAT-${String(categories.length + 1).padStart(2, '0')}`;
-      setCategories([{ ...form, id } as ProjectCategory, ...categories]);
+      addData<MasterCategory>('categories', { ...form, id } as MasterCategory);
       toast.success('Kategori berhasil ditambahkan');
     }
     setDrawerOpen(false);
   };
 
   const toggleStatus = (id: string) => {
-    setCategories(categories.map(c => c.id === id ? { ...c, is_active: !c.is_active } : c));
-    toast.success('Status kategori diubah');
+    const current = categories.find(c => c.id === id);
+    if (current) {
+      updateData<MasterCategory>('categories', id, { is_active: !current.is_active });
+      toast.success('Status kategori diubah');
+    }
   };
 
   return (

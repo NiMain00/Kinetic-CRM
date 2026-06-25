@@ -2,31 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface LossReason {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  is_active: boolean;
-}
-
-const INITIAL_LOSS_REASONS: LossReason[] = [
-  { id: 'LR-01', name: 'Harga Penawaran Terlalu Tinggi', code: 'HARGA_TERLALU_TINGGI', description: 'Harga yang ditawarkan melebihi batas wajar', is_active: true },
-  { id: 'LR-02', name: 'Harga Tidak Kompetitif', code: 'HARGA_TIDAK_KOMPETITIF', description: 'Harga kalah bersaing dengan kompetitor', is_active: true },
-  { id: 'LR-03', name: 'Tidak Memenuhi Spesifikasi Teknis', code: 'SPESIFIKASI_TEKNIS', description: 'Spesifikasi teknis tidak sesuai persyaratan', is_active: true },
-  { id: 'LR-04', name: 'Pengalaman / Track Record Kurang', code: 'PENGALAMAN_KURANG', description: 'Kurang pengalaman di bidang terkait', is_active: true },
-  { id: 'LR-05', name: 'Dokumen Tidak Lengkap', code: 'DOK_TIDAK_LENGKAP', description: 'Persyaratan dokumen tidak lengkap', is_active: true },
-  { id: 'LR-06', name: 'Keterlambatan Pengiriman Dokumen', code: 'KETERLAMBATAN', description: 'Dokumen terlambat diserahkan', is_active: false },
-];
+import { useMasterDataStore, type MasterLossReason } from '@/stores/masterDataStore';
 
 export default function MasterLossReasonPage() {
   const navigate = useNavigate();
-  const [lossReasons, setLossReasons] = useState<LossReason[]>(INITIAL_LOSS_REASONS);
+  const lossReasons = useMasterDataStore((s) => s.lossReasons);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<LossReason | null>(null);
-  const [form, setForm] = useState<Partial<LossReason>>({});
+  const [editing, setEditing] = useState<MasterLossReason | null>(null);
+  const [form, setForm] = useState<Partial<MasterLossReason>>({});
 
   const filtered = lossReasons.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -36,7 +23,7 @@ export default function MasterLossReasonPage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (r: LossReason) => {
+  const openEdit = (r: MasterLossReason) => {
     setEditing(r);
     setForm({ ...r });
     setDrawerOpen(true);
@@ -46,24 +33,27 @@ export default function MasterLossReasonPage() {
     e.preventDefault();
     if (!form.name || !form.code) { toast.error('Nama dan Kode alasan wajib diisi'); return; }
     if (editing) {
-      setLossReasons(lossReasons.map(r => r.id === editing.id ? { ...r, ...form } as LossReason : r));
+      updateData<MasterLossReason>('lossReasons', editing.id, form);
       toast.success('Alasan kekalahan berhasil diperbarui');
     } else {
       const id = `LR-${String(lossReasons.length + 1).padStart(2, '0')}`;
-      setLossReasons([{ ...form, id } as LossReason, ...lossReasons]);
+      addData<MasterLossReason>('lossReasons', { ...form, id } as MasterLossReason);
       toast.success('Alasan kekalahan berhasil ditambahkan');
     }
     setDrawerOpen(false);
   };
 
   const toggleStatus = (id: string) => {
-    setLossReasons(lossReasons.map(r => r.id === id ? { ...r, is_active: !r.is_active } : r));
-    toast.success('Status alasan kekalahan diubah');
+    const current = lossReasons.find(r => r.id === id);
+    if (current) {
+      updateData<MasterLossReason>('lossReasons', id, { is_active: !current.is_active });
+      toast.success('Status alasan kekalahan diubah');
+    }
   };
 
   const handleDelete = (id: string) => {
     const target = lossReasons.find(r => r.id === id);
-    setLossReasons(lossReasons.filter(r => r.id !== id));
+    deleteData('lossReasons', id);
     toast.success(`Alasan ${target?.name} dihapus`);
   };
 

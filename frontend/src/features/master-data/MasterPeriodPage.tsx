@@ -2,30 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface Period {
-  id: string;
-  name: string;
-  start_date: string;
-  end_date: string;
-  is_active: boolean;
-}
-
-const INITIAL_PERIODS: Period[] = [
-  { id: 'PER-01', name: '2025 Q1', start_date: '2025-01-01', end_date: '2025-03-31', is_active: false },
-  { id: 'PER-02', name: '2025 Q2', start_date: '2025-04-01', end_date: '2025-06-30', is_active: true },
-  { id: 'PER-03', name: '2025 Q3', start_date: '2025-07-01', end_date: '2025-09-30', is_active: true },
-  { id: 'PER-04', name: '2025 FY', start_date: '2025-01-01', end_date: '2025-12-31', is_active: false },
-  { id: 'PER-05', name: '2026 Q1', start_date: '2026-01-01', end_date: '2026-03-31', is_active: true },
-];
+import { useMasterDataStore, type MasterPeriod } from '@/stores/masterDataStore';
 
 export default function MasterPeriodPage() {
   const navigate = useNavigate();
-  const [periods, setPeriods] = useState<Period[]>(INITIAL_PERIODS);
+  const periods = useMasterDataStore((s) => s.periods);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<Period | null>(null);
-  const [form, setForm] = useState<Partial<Period>>({});
+  const [editing, setEditing] = useState<MasterPeriod | null>(null);
+  const [form, setForm] = useState<Partial<MasterPeriod>>({});
 
   const filtered = periods.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -35,7 +23,7 @@ export default function MasterPeriodPage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (p: Period) => {
+  const openEdit = (p: MasterPeriod) => {
     setEditing(p);
     setForm({ ...p });
     setDrawerOpen(true);
@@ -45,24 +33,27 @@ export default function MasterPeriodPage() {
     e.preventDefault();
     if (!form.name || !form.start_date || !form.end_date) { toast.error('Nama, Tanggal Mulai, dan Tanggal Selesai wajib diisi'); return; }
     if (editing) {
-      setPeriods(periods.map(p => p.id === editing.id ? { ...p, ...form } as Period : p));
+      updateData<MasterPeriod>('periods', editing.id, form);
       toast.success('Periode berhasil diperbarui');
     } else {
       const id = `PER-${String(periods.length + 1).padStart(2, '0')}`;
-      setPeriods([{ ...form, id } as Period, ...periods]);
+      addData<MasterPeriod>('periods', { ...form, id } as MasterPeriod);
       toast.success('Periode berhasil ditambahkan');
     }
     setDrawerOpen(false);
   };
 
   const toggleStatus = (id: string) => {
-    setPeriods(periods.map(p => p.id === id ? { ...p, is_active: !p.is_active } : p));
-    toast.success('Status periode diubah');
+    const current = periods.find(p => p.id === id);
+    if (current) {
+      updateData<MasterPeriod>('periods', id, { is_active: !current.is_active });
+      toast.success('Status periode diubah');
+    }
   };
 
   const handleDelete = (id: string) => {
     const target = periods.find(p => p.id === id);
-    setPeriods(periods.filter(p => p.id !== id));
+    deleteData('periods', id);
     toast.success(`Periode ${target?.name} dihapus`);
   };
 

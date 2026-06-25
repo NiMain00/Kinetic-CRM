@@ -2,32 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface Holiday {
-  id: string;
-  name: string;
-  date: string;
-  type: 'national' | 'regional';
-  year: number;
-}
-
-const INITIAL_HOLIDAYS: Holiday[] = [
-  { id: 'HOL-01', name: 'Tahun Baru Masehi', date: '2025-01-01', type: 'national', year: 2025 },
-  { id: 'HOL-02', name: 'Hari Raya Idul Fitri', date: '2025-05-12', type: 'national', year: 2025 },
-  { id: 'HOL-03', name: 'Hari Kemerdekaan RI', date: '2025-08-17', type: 'national', year: 2025 },
-  { id: 'HOL-04', name: 'Hari Raya Natal', date: '2025-12-25', type: 'national', year: 2025 },
-  { id: 'HOL-05', name: 'Hari Jadi Jakarta', date: '2025-06-22', type: 'regional', year: 2025 },
-  { id: 'HOL-06', name: 'Tahun Baru 2026', date: '2026-01-01', type: 'national', year: 2026 },
-];
+import { useMasterDataStore, type MasterHoliday } from '@/stores/masterDataStore';
 
 export default function MasterHolidayPage() {
   const navigate = useNavigate();
-  const [holidays, setHolidays] = useState<Holiday[]>(INITIAL_HOLIDAYS);
+  const holidays = useMasterDataStore((s) => s.holidays);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [yearFilter, setYearFilter] = useState<number | 'all'>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<Holiday | null>(null);
-  const [form, setForm] = useState<Partial<Holiday>>({});
+  const [editing, setEditing] = useState<MasterHoliday | null>(null);
+  const [form, setForm] = useState<Partial<MasterHoliday>>({});
 
   const years = [...new Set(holidays.map(h => h.year))].sort();
 
@@ -42,7 +29,7 @@ export default function MasterHolidayPage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (h: Holiday) => {
+  const openEdit = (h: MasterHoliday) => {
     setEditing(h);
     setForm({ ...h });
     setDrawerOpen(true);
@@ -52,13 +39,13 @@ export default function MasterHolidayPage() {
     e.preventDefault();
     if (!form.name || !form.date) { toast.error('Nama dan Tanggal libur wajib diisi'); return; }
     const year = new Date(form.date).getFullYear();
-    const data = { ...form, year } as Holiday;
+    const data = { ...form, year } as MasterHoliday;
     if (editing) {
-      setHolidays(holidays.map(h => h.id === editing.id ? { ...h, ...data } : h));
+      updateData<MasterHoliday>('holidays', editing.id, data);
       toast.success('Hari libur berhasil diperbarui');
     } else {
       const id = `HOL-${String(holidays.length + 1).padStart(2, '0')}`;
-      setHolidays([{ ...data, id }, ...holidays]);
+      addData<MasterHoliday>('holidays', { ...data, id } as MasterHoliday);
       toast.success('Hari libur berhasil ditambahkan');
     }
     setDrawerOpen(false);
@@ -66,7 +53,7 @@ export default function MasterHolidayPage() {
 
   const handleDelete = (id: string) => {
     const target = holidays.find(h => h.id === id);
-    setHolidays(holidays.filter(h => h.id !== id));
+    deleteData('holidays', id);
     toast.success(`Hari libur ${target?.name} dihapus`);
   };
 
@@ -167,7 +154,7 @@ export default function MasterHolidayPage() {
               </div>
               <div className="space-y-2">
                 <label className="font-semibold text-slate-700 block">Tipe</label>
-                <select value={form.type || 'national'} onChange={e => setForm({ ...form, type: e.target.value as Holiday['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                <select value={form.type || 'national'} onChange={e => setForm({ ...form, type: e.target.value as MasterHoliday['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
                   <option value="national">Nasional</option>
                   <option value="regional">Regional</option>
                 </select>

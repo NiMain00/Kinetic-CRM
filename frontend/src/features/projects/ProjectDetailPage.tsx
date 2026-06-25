@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Project } from '../../types/domain';
 import { INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
@@ -21,6 +21,7 @@ export default function ProjectDetailView({
   const navigate = useNavigate();
 
   const getProjectById = useProjectStore((s) => s.getProjectById);
+  const updateProject = useProjectStore((s) => s.updateProject);
   const getProspectById = useProspectStore((s) => s.getProspectById);
 
   const project = propProject || (projectId ? getProjectById(projectId) : undefined);
@@ -40,33 +41,26 @@ export default function ProjectDetailView({
     );
   }
 
-  const tabPathMap: Record<string, string> = {
-    'Overview': 'overview',
-    'RKS': 'rks',
-    'Review RKS': 'review-rks',
-    'LPHS/SIOS': 'lphs',
-    'Harga': 'harga',
-    'Kompetitor': 'kompetitor',
-    'Pemenang': 'pemenang',
-    'Target Delivery': 'target-delivery',
-    'Timeline': 'timeline',
-    'Dokumen': 'dokumen',
-  };
+  // Single source of truth for tabs & stepper
+  const tabs = React.useMemo(() => {
+    const items: Array<{ label: string; path: string }> = [
+      { label: 'Overview', path: 'overview' },
+      { label: 'RKS', path: 'rks' },
+      { label: 'LPHS/SIOS', path: 'lphs' },
+      { label: 'Harga', path: 'harga' },
+      { label: 'Kompetitor', path: 'kompetitor' },
+      { label: 'Pemenang', path: 'pemenang' },
+      { label: 'Target Delivery', path: 'target-delivery' },
+      { label: 'Timeline', path: 'timeline' },
+      { label: 'Dokumen', path: 'dokumen' },
+    ];
+    if (project.type === 'Tender') {
+      items.splice(2, 0, { label: 'Review RKS', path: 'review-rks' });
+    }
+    return items;
+  }, [project.type]);
 
-  const pathToTabMap: Record<string, string> = {
-    'overview': 'Overview',
-    'rks': 'RKS',
-    'review-rks': 'Review RKS',
-    'lphs': 'LPHS/SIOS',
-    'harga': 'Harga',
-    'kompetitor': 'Kompetitor',
-    'pemenang': 'Pemenang',
-    'target-delivery': 'Target Delivery',
-    'timeline': 'Timeline',
-    'dokumen': 'Dokumen',
-  };
-
-  const activeTab = pathToTabMap[urlTab || 'overview'] || 'Overview';
+  const activeTab = tabs.find(t => t.path === (urlTab || 'overview'))?.label || 'Overview';
   const isOverview = activeTab === 'Overview';
 
   // Competitor list state
@@ -114,11 +108,41 @@ export default function ProjectDetailView({
 
   const [isOpenUploadDrawer, setIsOpenUploadDrawer] = useState(false);
 
+  // Auto-sync prospect data ke project jika ada sourceProspect
+  useEffect(() => {
+    if (projectId && sourceProspect && project) {
+      const updates: Partial<Project> = {};
+      if (sourceProspect.estimatedValue && sourceProspect.estimatedValue !== project.estimatedValue) {
+        updates.estimatedValue = sourceProspect.estimatedValue;
+      }
+      if (sourceProspect.client && sourceProspect.client !== project.client) {
+        updates.client = sourceProspect.client;
+      }
+      if (Object.keys(updates).length > 0) {
+        updateProject(projectId, updates);
+      }
+    }
+  }, [sourceProspect?.estimatedValue, sourceProspect?.client]);
+
   const toggleDocGroup = (key: string) => {
     setDocsOpened({ ...docsOpened, [key]: !docsOpened[key] });
   };
 
   const handleApplyWinnerOutcome = () => {
+    if (projectId && outcome) {
+      const isWin = outcome === 'menang';
+      updateProject(projectId, {
+        status: isWin ? 'Selesai (Menang)' : 'Selesai (Kalah)',
+        winnerDetails: {
+          outcome,
+          contractValue: isWin ? Number(finalContractValue) : undefined,
+          startDate: isWin ? startDate : undefined,
+          duration: isWin ? Number(durationDays) : undefined,
+          loseReason: isWin ? undefined : failureReason,
+          loseNote: isWin ? undefined : failureReason,
+        },
+      });
+    }
     onShowNotification(
       `Hasil tender berhasil terkonfirmasi dan diselesaikan sebagai proyek ${
         outcome === 'menang' ? 'MENANG' : 'KALAH'
@@ -148,6 +172,15 @@ export default function ProjectDetailView({
   };
 
   const handleSavePricing = () => {
+    if (projectId) {
+      updateProject(projectId, {
+        pricing: {
+          value: hargaPenawaran,
+          margin: marginPercentage,
+          note: pricingNotes,
+        },
+      });
+    }
     onShowNotification('Draf harga penawaran berhasil diperbarui!', 'success');
   };
 
@@ -217,29 +250,22 @@ export default function ProjectDetailView({
         </div>
       </section>
 
-      {/* Conditional Stepper: Untuk Prospecting type & bukan dari Non Potensial (Fase 4) */}
-      {isOverview && project.type === 'Prospecting' && !isFromNonPotensial && (
+      {/* Dynamic Stepper: mengikuti daftar tab (single source of truth) */}
+      {isOverview && !(project.type === 'Prospecting' && isFromNonPotensial) && (
         <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto shrink-0 select-none">
           <div className="min-w-[600px] flex items-center justify-between relative">
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
 
-            {['Prospek', 'LPHS/SIOS', 'Harga', 'Pemenang', 'Delivery'].map((step, index) => {
+            {tabs.map((step, index) => {
               const stepNum = index + 1;
-              const isCompleted = stepNum < 2;
-              const isActive = stepNum === 2;
-
-              const stepToPathProspecting: Record<string, string> = {
-                'Prospek': 'overview',
-                'LPHS/SIOS': 'lphs',
-                'Harga': 'harga',
-                'Pemenang': 'pemenang',
-                'Delivery': 'target-delivery'
-              };
+              const activeIndex = tabs.findIndex(t => t.label === activeTab);
+              const isCompleted = stepNum <= activeIndex;
+              const isActive = step.label === activeTab;
 
               return (
-                <div 
-                  key={step} 
-                  onClick={() => navigate(`/project/${projectId}/${stepToPathProspecting[step]}`)}
+                <div
+                  key={step.label}
+                  onClick={() => navigate(`/project/${projectId}/${step.path}`)}
                   className="relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 cursor-pointer hover:scale-105 transition-transform"
                 >
                 {isCompleted ? (
@@ -255,57 +281,8 @@ export default function ProjectDetailView({
                     {stepNum}
                   </div>
                 )}
-                <span className={`font-label-sm text-xs ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
-                  {step}
-                </span>
-              </div>
-            );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Stepper untuk Tender type (existing 5-step) */}
-      {isOverview && project.type === 'Tender' && (
-        <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto shrink-0 select-none">
-          <div className="min-w-[800px] flex items-center justify-between relative">
-            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
-            <div className="absolute top-1/2 left-0 w-3/5 h-0.5 bg-primary -translate-y-1/2 -z-0"></div>
-
-            {['RKS', 'Dept Review', 'LPHS/SIOS', 'Harga', 'Pemenang'].map((step, index) => {
-              const stepNum = index + 1;
-              const isCompleted = stepNum < 3;
-              const isActive = stepNum === 3;
-
-              const stepToPathMap: Record<string, string> = {
-                'RKS': 'rks',
-                'Dept Review': 'review-rks',
-                'LPHS/SIOS': 'lphs',
-                'Harga': 'harga',
-                'Pemenang': 'pemenang'
-              };
-
-              return (
-                <div 
-                  key={step} 
-                  onClick={() => navigate(`/project/${projectId}/${stepToPathMap[step]}`)}
-                  className="relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 cursor-pointer hover:scale-105 transition-transform"
-                >
-                {isCompleted ? (
-                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                    <span className="material-symbols-outlined text-[16px]">check</span>
-                  </div>
-                ) : isActive ? (
-                  <div className="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
-                    3
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-border text-on-surface-variant flex items-center justify-center font-bold text-sm">
-                    {stepNum}
-                  </div>
-                )}
-                <span className={`font-label-sm text-xs ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
-                  {step}
+                <span className={`font-label-sm text-xs whitespace-nowrap ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
+                  {step.label}
                 </span>
               </div>
             );
@@ -317,28 +294,17 @@ export default function ProjectDetailView({
       {isOverview && (
         <nav className="bg-white border-b border-border px-8 overflow-x-auto shrink-0 select-none">
           <div className="flex items-center gap-8 min-w-max">
-            {[
-              'Overview',
-              project.type === 'Tender' ? 'RKS' : null,
-              project.type === 'Tender' ? 'Review RKS' : null,
-              'LPHS/SIOS',
-              'Harga',
-              'Kompetitor',
-              'Pemenang',
-              'Target Delivery',
-              'Timeline',
-              'Dokumen',
-            ].filter(Boolean).map((tab) => (
+            {tabs.map((tab) => (
               <button
-                key={tab}
-                onClick={() => navigate(`/project/${projectId}/${tabPathMap[tab!] || 'overview'}`)}
+                key={tab.label}
+                onClick={() => navigate(`/project/${projectId}/${tab.path}`)}
                 className={`py-4 font-label-sm text-sm transition-all relative ${
-                  activeTab === tab
+                  activeTab === tab.label
                     ? 'text-primary font-bold border-b-2 border-primary'
                     : 'text-on-surface-variant hover:text-primary'
                 }`}
               >
-                {tab}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -363,6 +329,12 @@ export default function ProjectDetailView({
                     <div>
                       <p className="text-secondary text-xs uppercase tracking-wider">Nilai Estimasi</p>
                       <p className="font-semibold text-primary text-base">Rp {project.estimatedValue.toLocaleString('id-ID')}</p>
+                      {sourceProspect && (
+                        <span className="text-[10px] text-emerald-500 flex items-center gap-1 mt-0.5">
+                          <span className="material-symbols-outlined text-[12px]">sync</span>
+                          Tersinkron dari Prospek
+                        </span>
+                      )}
                     </div>
                     <div>
                       <p className="text-secondary text-xs uppercase tracking-wider">Lokasi Pekerjaan resmi</p>
@@ -390,6 +362,45 @@ export default function ProjectDetailView({
                   </div>
                 </div>
 
+                {/* Section Status Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {[
+                    { label: 'RKS', icon: 'description', path: 'rks', done: true },
+                    { label: 'LPHS/SIOS', icon: 'request_quote', path: 'lphs', done: false },
+                    { label: 'Harga', icon: 'payments', path: 'harga', done: false },
+                    { label: 'Kompetitor', icon: 'groups', path: 'kompetitor', done: false },
+                    { label: 'Pemenang', icon: 'emoji_events', path: 'pemenang', done: false },
+                    { label: 'Delivery', icon: 'local_shipping', path: 'target-delivery', done: false },
+                    { label: 'Timeline', icon: 'timeline', path: 'timeline', done: true },
+                    { label: 'Dokumen', icon: 'folder', path: 'dokumen', done: false },
+                  ].map(s => (
+                    <button
+                      key={s.label}
+                      onClick={() => navigate(`/project/${projectId}/${s.path}`)}
+                      className={`bg-white rounded-xl border p-4 shadow-sm hover:shadow-md transition-all text-left group ${
+                        s.done ? 'border-emerald-200' : 'border-border'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className={`material-symbols-outlined text-[22px] ${
+                          s.done ? 'text-emerald-500' : 'text-slate-300'
+                        }`}>{s.icon}</span>
+                        {s.done ? (
+                          <span className="material-symbols-outlined text-[16px] text-emerald-500">check_circle</span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 font-semibold">Pending</span>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-slate-700">{s.label}</p>
+                      <div className="mt-2 h-1 rounded-full bg-slate-100 overflow-hidden">
+                        <div className={`h-full rounded-full transition-all ${
+                          s.done ? 'w-full bg-emerald-400' : 'w-0 bg-slate-200'
+                        }`} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
                 {/* Progress card */}
                 <div className="bg-primary-container text-on-primary-container rounded-xl p-6 shadow-md overflow-hidden relative">
                   <div className="relative z-10">
@@ -413,19 +424,33 @@ export default function ProjectDetailView({
               <div className="space-y-6">
                 <div className="bg-white rounded-xl border border-border p-6 shadow-sm">
                   <h4 className="font-label-sm text-sm text-on-surface-variant mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-success">verified_user</span>
-                    Security Clearance
+                    <span className="material-symbols-outlined text-primary">dashboard</span>
+                    Progres Section
                   </h4>
-                  <div className="space-y-3 text-sm">
-                    <p className="flex items-center gap-2 text-xs">
-                      <span className="w-2 h-2 bg-success rounded-full"></span> PKP Verified Status
-                    </p>
-                    <p className="flex items-center gap-2 text-xs">
-                      <span className="w-2 h-2 bg-success rounded-full"></span> Branch Pricing Lock-In Active
-                    </p>
-                    <p className="flex items-center gap-2 text-xs">
-                      <span className="w-2 h-2 bg-warning rounded-full"></span> Awaiting HQ Pre-Review
-                    </p>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'RKS', icon: 'description', status: 'selesai', color: 'text-emerald-500' },
+                      { label: 'Review RKS', icon: 'rate_review', status: project.type === 'Prospecting' ? 'none' : 'proses', color: 'text-amber-500' },
+                      { label: 'LPHS/SIOS', icon: 'request_quote', status: 'proses', color: 'text-amber-500' },
+                      { label: 'Harga', icon: 'payments', status: 'belum', color: 'text-slate-300' },
+                      { label: 'Kompetitor', icon: 'groups', status: 'belum', color: 'text-slate-300' },
+                      { label: 'Pemenang', icon: 'emoji_events', status: 'belum', color: 'text-slate-300' },
+                      { label: 'Target Delivery', icon: 'local_shipping', status: 'belum', color: 'text-slate-300' },
+                      { label: 'Timeline', icon: 'timeline', status: 'selesai', color: 'text-emerald-500' },
+                      { label: 'Dokumen', icon: 'folder', status: 'proses', color: 'text-amber-500' },
+                    ].filter(s => s.status !== 'none').map(s => (
+                      <div key={s.label} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <span className={`material-symbols-outlined text-[18px] ${s.color}`}>{s.icon}</span>
+                          <span className="text-xs font-semibold text-slate-700">{s.label}</span>
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                          s.status === 'selesai' ? 'bg-emerald-50 text-emerald-600' :
+                          s.status === 'proses' ? 'bg-amber-50 text-amber-600' :
+                          'bg-slate-50 text-slate-400'
+                        }`}>{s.status}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -702,14 +727,30 @@ export default function ProjectDetailView({
                   <div className="flex gap-3 w-full sm:w-auto">
                     <button
                       type="button"
-                      onClick={() => onShowNotification('Draf RKS berhasil disimpan.', 'success')}
+                      onClick={() => {
+                        if (projectId) {
+                          updateProject(projectId, {
+                            location: workLocation,
+                            deadlineTender,
+                          });
+                        }
+                        onShowNotification('Draf RKS berhasil disimpan.', 'success');
+                      }}
                       className="flex-1 sm:flex-initial px-6 py-2.5 bg-white border border-border text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-100 transition-all"
                     >
                       Simpan Draft
                     </button>
                     <button
                       type="button"
-                      onClick={() => onShowNotification('RKS sukses dikirim ke tim Review!', 'success')}
+                      onClick={() => {
+                        if (projectId) {
+                          updateProject(projectId, {
+                            location: workLocation,
+                            deadlineTender,
+                          });
+                        }
+                        onShowNotification('RKS sukses dikirim ke tim Review!', 'success');
+                      }}
                       className="flex-1 sm:flex-initial px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-container shadow transition-all flex items-center justify-center gap-2"
                     >
                       Kirim ke Review
@@ -1195,7 +1236,22 @@ export default function ProjectDetailView({
               <div className="mt-8 flex justify-end space-x-4 border-t pt-6 border-border">
                 <button
                   type="button"
-                  onClick={() => onShowNotification('Draf hasil tender berhasil disimpan.', 'success')}
+                  onClick={() => {
+                    if (projectId && outcome) {
+                      const isWin = outcome === 'menang';
+                      updateProject(projectId, {
+                        winnerDetails: {
+                          outcome,
+                          contractValue: isWin ? Number(finalContractValue) : undefined,
+                          startDate: isWin ? startDate : undefined,
+                          duration: isWin ? Number(durationDays) : undefined,
+                          loseReason: isWin ? undefined : failureReason,
+                          loseNote: isWin ? undefined : failureReason,
+                        },
+                      });
+                    }
+                    onShowNotification('Draf hasil tender berhasil disimpan.', 'success');
+                  }}
                   className="px-6 py-2.5 rounded-lg border border-border bg-white text-secondary hover:bg-slate-50 transition-all font-semibold text-xs flex items-center"
                 >
                   <span className="material-symbols-outlined mr-2 text-[18px]">drafts</span> Simpan Draft

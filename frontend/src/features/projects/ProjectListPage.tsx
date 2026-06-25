@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
+import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { StatusBadge } from '@/components/shared';
 import { Button, Input, Card } from '@/components/ui';
@@ -26,7 +25,7 @@ export default function ProjectListPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
 
-  const projects = INITIAL_PROJECTS as Project[];
+  const projects = useProjectStore((s) => s.projects);
 
   const filtered = useMemo(() => {
     let list = projects;

@@ -2,16 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface Question {
-  id: string;
-  question_text: string;
-  type: 'text' | 'select' | 'boolean';
-  category: string;
-  is_required: boolean;
-  sort_order: number;
-  is_active: boolean;
-}
+import { useMasterDataStore, type MasterQuestion } from '@/stores/masterDataStore';
 
 const QUESTION_CATEGORIES = ['Data Pribadi', 'Lokasi', 'Verifikasi Fisik', 'Keuangan', 'Legalitas', 'Lainnya'];
 const QUESTION_TYPES = [
@@ -20,21 +11,16 @@ const QUESTION_TYPES = [
   { value: 'boolean', label: 'Ya/Tidak' },
 ];
 
-const INITIAL_QUESTIONS: Question[] = [
-  { id: 'Q-001', question_text: 'Nama Lengkap Sesuai KTP', type: 'text', category: 'Data Pribadi', is_required: true, sort_order: 1, is_active: true },
-  { id: 'Q-002', question_text: 'Apakah domisili sesuai dengan domisili usaha?', type: 'boolean', category: 'Lokasi', is_required: true, sort_order: 2, is_active: true },
-  { id: 'Q-003', question_text: 'Jenis badan usaha', type: 'select', category: 'Legalitas', is_required: true, sort_order: 3, is_active: true },
-  { id: 'Q-004', question_text: 'Estimasi omzet bulanan', type: 'text', category: 'Keuangan', is_required: false, sort_order: 4, is_active: true },
-  { id: 'Q-005', question_text: 'Upload foto tempat usaha', type: 'boolean', category: 'Verifikasi Fisik', is_required: true, sort_order: 5, is_active: false },
-];
-
 export default function MasterQuestionPage() {
   const navigate = useNavigate();
-  const [questions, setQuestions] = useState<Question[]>(INITIAL_QUESTIONS);
+  const questions = useMasterDataStore((s) => s.questions);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<Question | null>(null);
-  const [form, setForm] = useState<Partial<Question>>({});
+  const [editing, setEditing] = useState<MasterQuestion | null>(null);
+  const [form, setForm] = useState<Partial<MasterQuestion>>({});
 
   const filtered = questions.filter(q => q.question_text.toLowerCase().includes(search.toLowerCase()));
 
@@ -44,7 +30,7 @@ export default function MasterQuestionPage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (q: Question) => {
+  const openEdit = (q: MasterQuestion) => {
     setEditing(q);
     setForm({ ...q });
     setDrawerOpen(true);
@@ -54,19 +40,28 @@ export default function MasterQuestionPage() {
     e.preventDefault();
     if (!form.question_text) { toast.error('Teks pertanyaan wajib diisi'); return; }
     if (editing) {
-      setQuestions(questions.map(q => q.id === editing.id ? { ...q, ...form } as Question : q));
+      updateData<MasterQuestion>('questions', editing.id, form);
       toast.success('Pertanyaan berhasil diperbarui');
     } else {
       const id = `Q-${String(questions.length + 1).padStart(3, '0')}`;
-      setQuestions([{ ...form, id } as Question, ...questions]);
+      addData<MasterQuestion>('questions', { ...form, id } as MasterQuestion);
       toast.success('Pertanyaan berhasil ditambahkan');
     }
     setDrawerOpen(false);
   };
 
   const toggleStatus = (id: string) => {
-    setQuestions(questions.map(q => q.id === id ? { ...q, is_active: !q.is_active } : q));
-    toast.success('Status pertanyaan diubah');
+    const current = questions.find(q => q.id === id);
+    if (current) {
+      updateData<MasterQuestion>('questions', id, { is_active: !current.is_active });
+      toast.success('Status pertanyaan diubah');
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    const target = questions.find(q => q.id === id);
+    deleteData('questions', id);
+    toast.success(`Pertanyaan ${target?.question_text} dihapus`);
   };
 
   const typeBadge = (type: string) => {
@@ -132,7 +127,10 @@ export default function MasterQuestionPage() {
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => openEdit(q)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                          <div className="flex gap-1 justify-end">
+                            <button onClick={() => openEdit(q)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                            <button onClick={() => handleDelete(q.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -162,7 +160,7 @@ export default function MasterQuestionPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Tipe Jawaban</label>
-                  <select value={form.type || 'text'} onChange={e => setForm({ ...form, type: e.target.value as Question['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                  <select value={form.type || 'text'} onChange={e => setForm({ ...form, type: e.target.value as MasterQuestion['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
                     {QUESTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
                 </div>

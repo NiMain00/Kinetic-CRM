@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Card } from '@/components/ui';
 import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
+import { useProjectStore } from '@/stores/projectStore';
 
 const CLIENTS = [
   'PT. Telkom Indonesia Tbk.',
@@ -22,6 +22,8 @@ const PROJECT_TYPES = ['Tender', 'Prospecting'] as const;
 
 export default function ProjectFormPage() {
   const navigate = useNavigate();
+  const addProject = useProjectStore((s) => s.addProject);
+  const projectCount = useProjectStore((s) => s.projects.length);
 
   const [name, setName] = useState('');
   const [client, setClient] = useState(CLIENTS[0]);
@@ -46,7 +48,7 @@ export default function ProjectFormPage() {
 
     const newProject: Project = {
       id: `PR-${Date.now()}`,
-      code: `PRJ-${String(INITIAL_PROJECTS.length + 1).padStart(4, '0')}`,
+      code: `PRJ-${String(projectCount + 1).padStart(4, '0')}`,
       name: name.trim(),
       client,
       status: 'RKS',
@@ -60,7 +62,7 @@ export default function ProjectFormPage() {
       deadlineTender: deadlineTender || undefined,
     };
 
-    INITIAL_PROJECTS.unshift(newProject);
+    addProject(newProject);
     toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
     navigate('/projects');
   };

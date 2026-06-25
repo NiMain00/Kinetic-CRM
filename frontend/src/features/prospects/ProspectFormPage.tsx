@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_CUSTOMERS } from '@/services/mock-data';
 import type { Prospect, Customer } from '@/types/domain';
 import { CUSTOMER_TYPES } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
@@ -96,13 +95,13 @@ export default function ProspectFormPage() {
   );
   const [customerSearch, setCustomerSearch] = useState('');
 
-  // New customer fields
-  const [newCustName, setNewCustName] = useState('');
-  const [newCustCode, setNewCustCode] = useState('');
-  const [newCustType, setNewCustType] = useState('swasta');
-  const [newCustCity, setNewCustCity] = useState('');
-  const [newCustNpwp, setNewCustNpwp] = useState('');
-  const [newCustIndustryId, setNewCustIndustryId] = useState('');
+  // New customer fields — populated from existingProspect?.customerData saat edit
+  const [newCustName, setNewCustName] = useState(existingProspect?.customerData?.name || '');
+  const [newCustCode, setNewCustCode] = useState(existingProspect?.customerData?.code || '');
+  const [newCustType, setNewCustType] = useState(existingProspect?.customerData?.type || 'swasta');
+  const [newCustCity, setNewCustCity] = useState(existingProspect?.customerData?.city || '');
+  const [newCustNpwp, setNewCustNpwp] = useState(existingProspect?.customerData?.npwp || '');
+  const [newCustIndustryId, setNewCustIndustryId] = useState(existingProspect?.customerData?.industryId || '');
 
   // PIC Customer fields
   const [picName, setPicName] = useState(existingProspect?.customerData?.picName || '');
@@ -121,6 +120,12 @@ export default function ProspectFormPage() {
   const [formDate, setFormDate] = useState(existingProspect?.date || '');
   const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
 
+  // Tipe Proyek
+  const [projectType, setProjectType] = useState<'Tender' | 'Prospecting'>(
+    // ProspectFormPage payload uses projectType on Prospect
+    existingProspect?.projectType || 'Tender'
+  );
+
   // Potensi Penambahan Unit
   const [potensiUnit, setPotensiUnit] = useState(
     existingProspect?.potensiUnit !== undefined ? String(existingProspect.potensiUnit) : '0'
@@ -133,7 +138,8 @@ export default function ProspectFormPage() {
   });
 
   // --- Existing customer auto-fill logic ---
-  const selectedCustomer = INITIAL_CUSTOMERS.find(c => c.id === selectedCustomerId);
+  const customers = useCustomerStore((s) => s.customers);
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
   // Saat selectedCustomerId berubah, auto-fill PIC, industry, provider
   React.useEffect(() => {
@@ -149,7 +155,7 @@ export default function ProspectFormPage() {
   }, [selectedCustomerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter customers by search
-  const filteredCustomers = INITIAL_CUSTOMERS.filter(c =>
+  const filteredCustomers = customers.filter(c =>
     c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.code.toLowerCase().includes(customerSearch.toLowerCase())
   );
@@ -187,8 +193,10 @@ export default function ProspectFormPage() {
     // Build customerData untuk new customer
     let customerData: Customer | undefined;
     if (customerMode === 'new') {
+      // Saat edit, reuse ID yang sudah ada agar tidak duplikat
+      const existingCustomerId = existingProspect?.customerData?.id;
       customerData = {
-        id: `new-${Date.now()}`,
+        id: existingCustomerId || `new-${Date.now()}`,
         name: newCustName,
         code: newCustCode || newCustName.substring(0, 3).toUpperCase(),
         type: newCustType as 'swasta' | 'bumn' | 'pemerintah' | 'asing',
@@ -203,8 +211,13 @@ export default function ProspectFormPage() {
         needsVerification: true,
       };
 
-      // Auto-save new customer ke customerStore (Fase 1 item 1.4)
-      addCustomer(customerData);
+      if (isEdit && existingCustomerId) {
+        // Update existing customer di store, jangan duplikat
+        useCustomerStore.getState().updateCustomer(existingCustomerId, customerData);
+      } else {
+        // Auto-save new customer ke customerStore (Fase 1 item 1.4)
+        addCustomer(customerData);
+      }
     }
 
     const payload: Prospect = {
@@ -225,6 +238,7 @@ export default function ProspectFormPage() {
       answers,
       industryId: customerMode === 'existing' ? industryId : (newCustIndustryId || undefined),
       providerExisting: providerExisting || undefined,
+      projectType: projectType,
     };
 
     if (isEdit && existingProspect) {
@@ -242,7 +256,7 @@ export default function ProspectFormPage() {
   const handleSubmitReview = () => saveProspect('Waiting PM');
 
   // Reset auto-fill ketika ganti customer
-  const handleSelectCustomer = (c: typeof INITIAL_CUSTOMERS[0]) => {
+  const handleSelectCustomer = (c: Customer) => {
     setSelectedCustomerId(c.id);
     setCustomerSearch('');
     setPicName(c.picName);
@@ -480,6 +494,21 @@ export default function ProspectFormPage() {
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Nama Prospek *</label>
                 <input value={formName} onChange={(e) => setFormName(e.target.value)} required className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" aria-label="Nama Prospek" />
+              </div>
+
+              {/* Tipe Proyek — menentukan apakah proyek Tender atau Prospecting */}
+              <div className="space-y-1.5">
+                <label className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>
+                <select
+                  value={projectType}
+                  onChange={(e) => setProjectType(e.target.value as 'Tender' | 'Prospecting')}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
+                  aria-label="Tipe Proyek"
+                >
+                  <option value="Tender">Tender</option>
+                  <option value="Prospecting">Prospecting</option>
+                </select>
+                <p className="text-[10px] text-secondary">Pilih "Tender" jika proyek melalui proses tender, atau "Prospecting" jika penawaran langsung.</p>
               </div>
 
               {/* Estimasi Nilai Proyek — non-mandatory (Fase 1 item 1.7) */}

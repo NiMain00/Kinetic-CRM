@@ -159,7 +159,7 @@ export default function ProspectDetailPage() {
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       progress: 0,
       estimatedValue: prospect.estimatedValue || 0,
-      type: 'Prospecting' as const,
+      type: prospect.projectType || 'Prospecting' as const,
       sourceProspectId: prospect.id,
       providerExisting: prospect.providerExisting,
     };
@@ -241,8 +241,8 @@ export default function ProspectDetailPage() {
                 Edit
               </button>
 
-              {/* Kondisional: "Buat Proyek" untuk Potensial (Fase 3 item 2) */}
-              {isPotensial && !isConverted && (
+              {/* Kondisional: "Buat Proyek" untuk Approved (Fase 3 item 2) */}
+              {prospect.status === 'Approved' && !isConverted && (
                 <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">add_business</span>
                   Buat Proyek
@@ -293,6 +293,12 @@ export default function ProspectDetailPage() {
                   <p className="text-xs text-secondary">Tipe Prospek</p>
                   <p className="font-semibold text-on-surface">
                     {isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : prospect.status}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-secondary">Tipe Proyek</p>
+                  <p className="font-semibold text-on-surface">
+                    {prospect.projectType || '-'}
                   </p>
                 </div>
                 <div>

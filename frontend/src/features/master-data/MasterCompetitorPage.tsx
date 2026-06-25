@@ -2,22 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface Competitor {
-  id: string;
-  name: string;
-  min_price: number;
-  max_price: number;
-  advantages: string;
-  notes: string;
-}
-
-const INITIAL_COMPETITORS: Competitor[] = [
-  { id: 'CP-001', name: 'PT Astra Modern Ltd', min_price: 500000000, max_price: 1500000000, advantages: 'Pengalaman luas di konstruksi, jaringan kuat', notes: 'Kompetitor utama di tender infrastruktur' },
-  { id: 'CP-002', name: 'Global Enterprise Solutions', min_price: 300000000, max_price: 800000000, advantages: 'Tim IT berpengalaman, sertifikasi internasional', notes: 'Pesaing kuat di tender IT' },
-  { id: 'CP-003', name: 'PT Nippon Power Corp', min_price: 750000000, max_price: 2000000000, advantages: 'Teknologi mutakhir, dukungan purna jual', notes: '' },
-  { id: 'CP-004', name: 'PT Tekno Konstruksi Indonesia', min_price: 400000000, max_price: 1200000000, advantages: 'Harga kompetitif, proyek tepat waktu', notes: 'Kompetitor terkuat di sektor konstruksi sipil' },
-];
+import { useMasterDataStore, type MasterCompetitor } from '@/stores/masterDataStore';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
@@ -25,11 +10,14 @@ function formatCurrency(n: number) {
 
 export default function MasterCompetitorPage() {
   const navigate = useNavigate();
-  const [competitors, setCompetitors] = useState<Competitor[]>(INITIAL_COMPETITORS);
+  const competitors = useMasterDataStore((s) => s.competitors);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<Competitor | null>(null);
-  const [form, setForm] = useState<Partial<Competitor>>({});
+  const [editing, setEditing] = useState<MasterCompetitor | null>(null);
+  const [form, setForm] = useState<Partial<MasterCompetitor>>({});
 
   const filtered = competitors.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -39,7 +27,7 @@ export default function MasterCompetitorPage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (c: Competitor) => {
+  const openEdit = (c: MasterCompetitor) => {
     setEditing(c);
     setForm({ ...c });
     setDrawerOpen(true);
@@ -49,11 +37,11 @@ export default function MasterCompetitorPage() {
     e.preventDefault();
     if (!form.name) { toast.error('Nama kompetitor wajib diisi'); return; }
     if (editing) {
-      setCompetitors(competitors.map(c => c.id === editing.id ? { ...c, ...form } as Competitor : c));
+      updateData<MasterCompetitor>('competitors', editing.id, form);
       toast.success('Kompetitor berhasil diperbarui');
     } else {
       const id = `CP-${String(competitors.length + 1).padStart(3, '0')}`;
-      setCompetitors([{ ...form, id } as Competitor, ...competitors]);
+      addData<MasterCompetitor>('competitors', { ...form, id } as MasterCompetitor);
       toast.success('Kompetitor berhasil ditambahkan');
     }
     setDrawerOpen(false);
@@ -61,7 +49,7 @@ export default function MasterCompetitorPage() {
 
   const handleDelete = (id: string) => {
     const target = competitors.find(c => c.id === id);
-    setCompetitors(competitors.filter(c => c.id !== id));
+    deleteData('competitors', id);
     toast.success(`Kompetitor ${target?.name} berhasil dihapus`);
   };
 

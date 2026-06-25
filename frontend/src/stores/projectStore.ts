@@ -7,6 +7,7 @@ interface ProjectState {
   projects: Project[];
   addProject: (p: Project) => void;
   updateProject: (id: string, data: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
   getProjectById: (id: string) => Project | undefined;
 }
 
@@ -19,6 +20,8 @@ export const useProjectStore = create<ProjectState>()(
         set((s) => ({
           projects: s.projects.map((p) => (p.id === id ? { ...p, ...data } : p)),
         })),
+      deleteProject: (id) =>
+        set((s) => ({ projects: s.projects.filter((p) => p.id !== id) })),
       getProjectById: (id) => get().projects.find((p) => p.id === id),
     }),
     { name: 'kinetic-projects' },

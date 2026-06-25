@@ -2,37 +2,22 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Modal, Card } from '@/components/ui';
-
-interface Customer {
-  id: string;
-  name: string;
-  code: string;
-  type: 'swasta' | 'bumn' | 'pemerintah' | 'asing';
-  pic_name: string;
-  pic_email: string;
-  pic_phone: string;
-  city: string;
-  is_active: boolean;
-}
-
-const INITIAL_CUSTOMERS: Customer[] = [
-  { id: 'C-001', name: 'PT Astra International Tbk', code: 'ASTRA', type: 'swasta', pic_name: 'Budi Santoso', pic_email: 'budi@astra.co.id', pic_phone: '021-12345678', city: 'Jakarta Utara', is_active: true },
-  { id: 'C-002', name: 'Bank Rakyat Indonesia', code: 'BRI', type: 'bumn', pic_name: 'Siti Aminah', pic_email: 'siti@bri.co.id', pic_phone: '021-87654321', city: 'Jakarta Pusat', is_active: true },
-  { id: 'C-003', name: 'Dinas Kesehatan Prov DKI', code: 'DINKES', type: 'pemerintah', pic_name: 'Herry Setiawan', pic_email: 'herry@dinkes.go.id', pic_phone: '021-56789012', city: 'Jakarta Pusat', is_active: false },
-  { id: 'C-004', name: 'Siemens Indonesia', code: 'SIEMENS', type: 'asing', pic_name: 'John Doe', pic_email: 'john@siemens.co.id', pic_phone: '021-23456789', city: 'Jakarta Selatan', is_active: true },
-];
+import { useMasterDataStore, type MasterCustomer } from '@/stores/masterDataStore';
 
 const typeLabels: Record<string, string> = { swasta: 'Swasta', bumn: 'BUMN', pemerintah: 'Pemerintah', asing: 'Asing' };
 const typeVariants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple'> = { swasta: 'default', bumn: 'info', pemerintah: 'warning', asing: 'purple' };
 
 export default function MasterCustomerPage() {
   const navigate = useNavigate();
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  const customers = useMasterDataStore((s) => s.customers);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<Customer | null>(null);
-  const [form, setForm] = useState<Partial<Customer>>({});
+  const [editing, setEditing] = useState<MasterCustomer | null>(null);
+  const [form, setForm] = useState<Partial<MasterCustomer>>({});
 
   const filtered = customers.filter(c => {
     const q = search.toLowerCase();
@@ -47,7 +32,7 @@ export default function MasterCustomerPage() {
     setModalOpen(true);
   };
 
-  const openEdit = (c: Customer) => {
+  const openEdit = (c: MasterCustomer) => {
     setEditing(c);
     setForm({ ...c });
     setModalOpen(true);
@@ -60,19 +45,28 @@ export default function MasterCustomerPage() {
       return;
     }
     if (editing) {
-      setCustomers(customers.map(c => c.id === editing.id ? { ...c, ...form } as Customer : c));
+      updateData<MasterCustomer>('customers', editing.id, form);
       toast.success('Customer berhasil diperbarui');
     } else {
       const id = `C-${String(customers.length + 1).padStart(3, '0')}`;
-      setCustomers([{ ...form, id } as Customer, ...customers]);
+      addData<MasterCustomer>('customers', { ...form, id } as MasterCustomer);
       toast.success('Customer berhasil ditambahkan');
     }
     setModalOpen(false);
   };
 
   const toggleStatus = (id: string) => {
-    setCustomers(customers.map(c => c.id === id ? { ...c, is_active: !c.is_active } : c));
-    toast.success('Status customer diubah');
+    const current = customers.find(c => c.id === id);
+    if (current) {
+      updateData<MasterCustomer>('customers', id, { is_active: !current.is_active });
+      toast.success('Status customer diubah');
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    const target = customers.find(c => c.id === id);
+    deleteData('customers', id);
+    toast.success(`Customer ${target?.name} dihapus`);
   };
 
   return (
@@ -148,6 +142,7 @@ export default function MasterCustomerPage() {
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
                             <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                            <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                           </div>
                         </td>
                       </tr>
@@ -174,7 +169,7 @@ export default function MasterCustomerPage() {
           </div>
           <div className="space-y-2">
             <label className="font-semibold text-slate-700 block">Tipe Customer *</label>
-            <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as Customer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+            <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as MasterCustomer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
               <option value="swasta">Swasta</option>
               <option value="bumn">BUMN</option>
               <option value="pemerintah">Pemerintah</option>

@@ -34,6 +34,7 @@ export interface Prospect {
   answers?: Record<string, string>;
   industryId?: string;
   providerExisting?: string;
+  projectType?: 'Tender' | 'Prospecting';
   isConverted?: boolean;
   projectId?: string;
 }
@@ -135,3 +136,6 @@ export const INITIAL_CUSTOMERS: Customer[] = [
 ];
 
 export * from './users';
+
+// NOTE: Some parts of the app use a different Prospect/Project typing model.
+// This file re-exports the canonical domain types. Update them carefully.

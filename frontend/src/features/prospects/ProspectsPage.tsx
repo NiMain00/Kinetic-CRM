@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
+import { useProjectStore } from '@/stores/projectStore';
 
 interface ProspectsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -15,6 +17,9 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const navigate = useNavigate();
   const prospects = useProspectStore((s) => s.prospects);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
+  const updateProspect = useProspectStore((s) => s.updateProspect);
+  const addProject = useProjectStore((s) => s.addProject);
+  const projects = useProjectStore((s) => s.projects);
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -23,6 +28,34 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       deleteProspect(id);
       onShowNotification('Prospek berhasil dihapus.', 'success');
     }
+  };
+
+  const handleBuatProyek = (prospek: typeof prospects[0]) => {
+    const newProject = {
+      id: `PRJ-${Date.now()}`,
+      code: `PRJ-${new Date().getFullYear()}-${String(projects.length + 1).padStart(4, '0')}`,
+      name: prospek.name,
+      client: prospek.client,
+      status: 'Prospecting',
+      phase: 'Overview',
+      location: prospek.branch || '-',
+      author: prospek.author,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      progress: 0,
+      estimatedValue: prospek.estimatedValue || 0,
+      type: prospek.projectType || 'Prospecting',
+      sourceProspectId: prospek.id,
+      providerExisting: prospek.providerExisting,
+    };
+
+    addProject(newProject as any);
+    updateProspect(prospek.id, {
+      isConverted: true,
+      projectId: newProject.id,
+    });
+
+    onShowNotification('Prospek berhasil dikonversi ke proyek!', 'success');
+    navigate(`/project/${newProject.id}/overview`);
   };
 
   // Filter prospects
@@ -169,6 +202,15 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         <span className="text-on-surface text-xs">{row.author}</span>
                       </div>
                       <div className="flex items-center gap-2">
+                        {row.status === 'Approved' && !row.isConverted && (
+                          <button
+                            onClick={() => handleBuatProyek(row)}
+                            className="touch-min flex items-center justify-center text-success hover:text-success hover:bg-success/10 rounded-lg transition-all"
+                            title="Konversi ke Proyek"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">add_business</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => navigate(`/prospects/${row.id}/edit`)}
                           className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
@@ -245,6 +287,15 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         <td className="px-6 py-4 text-xs text-secondary">{row.date}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            {row.status === 'Approved' && !row.isConverted && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleBuatProyek(row); }}
+                                className="touch-min flex items-center justify-center text-success hover:text-success hover:bg-success/10 rounded-lg transition-all"
+                                title="Konversi ke Proyek"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">add_business</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => navigate(`/prospects/${row.id}/edit`)}
                               className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"

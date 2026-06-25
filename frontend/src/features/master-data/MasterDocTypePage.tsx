@@ -2,34 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
-
-interface DocumentType {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  category: string;
-  is_active: boolean;
-}
+import { useMasterDataStore, type MasterDocType } from '@/stores/masterDataStore';
 
 const CATEGORIES = ['Tender', 'Prospecting', 'Both'];
 
-const INITIAL_DOC_TYPES: DocumentType[] = [
-  { id: 'DT-01', name: 'Dokumen Tender / RKS', code: 'RKS', description: 'Dokumen tender dan RKS', category: 'Tender', is_active: true },
-  { id: 'DT-02', name: 'Draft LPHS', code: 'LPHS', description: 'Daftar Harga Perkiraan Sendiri', category: 'Tender', is_active: true },
-  { id: 'DT-03', name: 'Surat Perintah Kerja', code: 'SPK', description: 'SPK atau kontrak proyek', category: 'Both', is_active: true },
-  { id: 'DT-04', name: 'Surat Kekalahan', code: 'SURAT_KALAH', description: 'Surat pernyataan kekalahan', category: 'Both', is_active: true },
-  { id: 'DT-05', name: 'Dokumen Harga Penawaran', code: 'HARGA', description: 'Dokumen harga penawaran', category: 'Both', is_active: true },
-  { id: 'DT-06', name: 'Invoice / Tagihan', code: 'INVOICE', description: 'Invoice dan tagihan', category: 'Both', is_active: false },
-];
-
 export default function MasterDocTypePage() {
   const navigate = useNavigate();
-  const [docTypes, setDocTypes] = useState<DocumentType[]>(INITIAL_DOC_TYPES);
+  const docTypes = useMasterDataStore((s) => s.docTypes);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editing, setEditing] = useState<DocumentType | null>(null);
-  const [form, setForm] = useState<Partial<DocumentType>>({});
+  const [editing, setEditing] = useState<MasterDocType | null>(null);
+  const [form, setForm] = useState<Partial<MasterDocType>>({});
 
   const filtered = docTypes.filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -39,7 +25,7 @@ export default function MasterDocTypePage() {
     setDrawerOpen(true);
   };
 
-  const openEdit = (d: DocumentType) => {
+  const openEdit = (d: MasterDocType) => {
     setEditing(d);
     setForm({ ...d });
     setDrawerOpen(true);
@@ -49,24 +35,27 @@ export default function MasterDocTypePage() {
     e.preventDefault();
     if (!form.name || !form.code) { toast.error('Nama dan Kode wajib diisi'); return; }
     if (editing) {
-      setDocTypes(docTypes.map(d => d.id === editing.id ? { ...d, ...form } as DocumentType : d));
+      updateData<MasterDocType>('docTypes', editing.id, form);
       toast.success('Tipe dokumen berhasil diperbarui');
     } else {
       const id = `DT-${String(docTypes.length + 1).padStart(2, '0')}`;
-      setDocTypes([{ ...form, id } as DocumentType, ...docTypes]);
+      addData<MasterDocType>('docTypes', { ...form, id } as MasterDocType);
       toast.success('Tipe dokumen berhasil ditambahkan');
     }
     setDrawerOpen(false);
   };
 
   const toggleStatus = (id: string) => {
-    setDocTypes(docTypes.map(d => d.id === id ? { ...d, is_active: !d.is_active } : d));
-    toast.success('Status tipe dokumen diubah');
+    const current = docTypes.find(d => d.id === id);
+    if (current) {
+      updateData<MasterDocType>('docTypes', id, { is_active: !current.is_active });
+      toast.success('Status tipe dokumen diubah');
+    }
   };
 
   const handleDelete = (id: string) => {
     const target = docTypes.find(d => d.id === id);
-    setDocTypes(docTypes.filter(d => d.id !== id));
+    deleteData('docTypes', id);
     toast.success(`Tipe dokumen ${target?.name} dihapus`);
   };
 
