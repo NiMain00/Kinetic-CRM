@@ -1,37 +1,46 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import type { Prospect } from '../../types/domain';
-import { INITIAL_PROSPECTS } from '../../services/mock-data';
+import { useProspectStore } from '@/stores/prospectStore';
 
 interface ProspectsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
   onNavigatePage: (page: string) => void;
 }
 
+type FilterTab = 'All' | 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved' | 'Perlu Verifikasi';
+
 export default function ProspectsView({ onShowNotification, onNavigatePage }: ProspectsViewProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [prospects, setProspects] = useState<Prospect[]>(INITIAL_PROSPECTS);
-  const [activeFilter, setActiveFilter] = useState<'All' | 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
+  const prospects = useProspectStore((s) => s.prospects);
+  const deleteProspect = useProspectStore((s) => s.deleteProspect);
+  const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleDelete = (id: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus prospek ini dari draf?')) {
-      setProspects(prospects.filter(p => p.id !== id));
+      deleteProspect(id);
       onShowNotification('Prospek berhasil dihapus.', 'success');
     }
   };
 
   // Filter prospects
   const filteredProspects = prospects.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.client.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTab = activeFilter === 'All' || p.status === activeFilter;
+    let matchesTab: boolean;
+    if (activeFilter === 'All') {
+      matchesTab = true;
+    } else if (activeFilter === 'Perlu Verifikasi') {
+      matchesTab = p.customerData?.needsVerification === true;
+    } else {
+      matchesTab = p.status === activeFilter;
+    }
     return matchesSearch && matchesTab;
   });
 
-  const statusColor = (status: string, prospect?: Prospect) => {
+  const statusColor = (status: string, prospect?: typeof prospects[0]) => {
     // New customer needs verification badge
     if (prospect?.customerData?.needsVerification) {
       return 'bg-amber-100 text-amber-700';
@@ -44,6 +53,17 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       case 'Approved': return 'bg-success/10 text-success';
       default: return 'bg-info/10 text-info';
     }
+  };
+
+  const FILTER_TABS: FilterTab[] = ['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved', 'Perlu Verifikasi'];
+  const FILTER_LABELS: Record<FilterTab, string> = {
+    All: 'Semua',
+    'Non Potensial': 'Non Potensial',
+    Potensial: 'Potensial',
+    'Waiting PM': 'Waiting PM',
+    Revision: 'Revision',
+    Approved: 'Approved',
+    'Perlu Verifikasi': 'Perlu Verifikasi',
   };
 
   return (
@@ -74,17 +94,17 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-border shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
             <div className="flex gap-2 p-1 bg-surface-container-low rounded-lg border border-border overflow-x-auto w-full sm:w-auto">
-              {['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved'].map(tab => (
+              {FILTER_TABS.map(tab => (
                 <button
                   key={tab}
-                  onClick={() => setActiveFilter(tab as any)}
+                  onClick={() => setActiveFilter(tab)}
                   className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
                     activeFilter === tab
                       ? 'bg-white text-primary shadow-sm border border-border font-bold'
                       : 'text-secondary hover:bg-surface-container-high'
                   }`}
                 >
-                  {tab === 'All' ? 'Semua' : tab === 'Non Potensial' ? 'Non Potensial' : tab === 'Potensial' ? 'Potensial' : tab === 'Waiting PM' ? 'Waiting PM' : tab}
+                  {FILTER_LABELS[tab]}
                 </button>
               ))}
             </div>

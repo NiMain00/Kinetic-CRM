@@ -6,6 +6,8 @@ export interface AuthUser {
   roleName?: string;
   email?: string;
   avatarUrl?: string;
+  branchName?: string;
+  branchId?: string;
 }
 
 interface AuthState {

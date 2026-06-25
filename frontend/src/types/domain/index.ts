@@ -8,8 +8,12 @@ export interface Customer {
   picName: string;
   picPosition: string;
   picPhone: string;
+  industryId?: string;
+  providerExisting?: string;
   isNew?: boolean;
   needsVerification?: boolean;
+  verifiedAt?: string;
+  verifiedBy?: string;
 }
 
 export interface Prospect {
@@ -28,6 +32,10 @@ export interface Prospect {
   description?: string;
   branch?: string;
   answers?: Record<string, string>;
+  industryId?: string;
+  providerExisting?: string;
+  isConverted?: boolean;
+  projectId?: string;
 }
 
 export interface Project {
@@ -43,6 +51,8 @@ export interface Project {
   progress: number;
   estimatedValue: number;
   type: 'Tender' | 'Prospecting';
+  sourceProspectId?: string;
+  providerExisting?: string;
   deadlineTender?: string;
   pricing?: {
     value: number;

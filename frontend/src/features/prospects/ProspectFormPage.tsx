@@ -1,9 +1,36 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_PROSPECTS, INITIAL_CUSTOMERS } from '@/services/mock-data';
+import { INITIAL_CUSTOMERS } from '@/services/mock-data';
 import type { Prospect, Customer } from '@/types/domain';
-import { BRANCHES, CUSTOMER_TYPES } from '@/types/domain';
+import { CUSTOMER_TYPES } from '@/types/domain';
+import { useProspectStore } from '@/stores/prospectStore';
+import { useCustomerStore } from '@/stores/customerStore';
+import { useAuthStore } from '@/stores/authStore';
+
+// Industri options (Master Industri)
+const INDUSTRIES = [
+  { id: 'ind-1', name: 'Perbankan & Keuangan' },
+  { id: 'ind-2', name: 'Telekomunikasi' },
+  { id: 'ind-3', name: 'Pemerintahan & BUMN' },
+  { id: 'ind-4', name: 'Minyak & Gas' },
+  { id: 'ind-5', name: 'Manufaktur' },
+  { id: 'ind-6', name: 'Kesehatan' },
+  { id: 'ind-7', name: 'Pendidikan' },
+  { id: 'ind-8', name: 'Pertambangan' },
+  { id: 'ind-9', name: 'Transportasi & Logistik' },
+  { id: 'ind-10', name: 'Teknologi Informasi' },
+  { id: 'ind-11', name: 'Lainnya' },
+];
+
+// Provider Existing options (dari Master Kompetitor)
+const PROVIDER_EXISTING = [
+  { id: 'prov-1', name: 'Infrastructure Alpha' },
+  { id: 'prov-2', name: 'BuildCore Systems' },
+  { id: 'prov-3', name: 'TechData Solutions' },
+  { id: 'prov-4', name: 'NetPrime Services' },
+  { id: 'prov-5', name: 'Lainnya' },
+];
 
 const questionnaireQuestions = [
   {
@@ -22,7 +49,6 @@ const questionnaireQuestions = [
     isText: true,
     placeholder: 'Contoh: Wajib menggunakan grounding tersendiri',
   },
-  // Fase 1 item 8: 2 new questions
   {
     key: 'jenisPengadaan',
     label: '4. Apakah jenis pengadaan customer beli putus?',
@@ -49,7 +75,15 @@ export default function ProspectFormPage() {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
 
-  const existingProspect = isEdit ? INITIAL_PROSPECTS.find((p) => p.id === id) : null;
+  // --- Stores ---
+  const { prospects, addProspect, updateProspect } = useProspectStore();
+  const { addCustomer } = useCustomerStore();
+  const authUser = useAuthStore((s) => s.user);
+
+  const existingProspect = isEdit ? prospects.find((p) => p.id === id) : null;
+
+  // --- Branch readonly dari user login ---
+  const userBranch = authUser?.branchName || 'Jakarta Pusat';
 
   // Customer selection: 'existing' | 'new'
   const [customerMode, setCustomerMode] = useState<'existing' | 'new'>(
@@ -68,11 +102,18 @@ export default function ProspectFormPage() {
   const [newCustType, setNewCustType] = useState('swasta');
   const [newCustCity, setNewCustCity] = useState('');
   const [newCustNpwp, setNewCustNpwp] = useState('');
+  const [newCustIndustryId, setNewCustIndustryId] = useState('');
 
-  // PIC Customer fields (Fase 1 item 4)
-  const [picName, setPicName] = useState('');
-  const [picPosition, setPicPosition] = useState('');
-  const [picPhone, setPicPhone] = useState('');
+  // PIC Customer fields
+  const [picName, setPicName] = useState(existingProspect?.customerData?.picName || '');
+  const [picPosition, setPicPosition] = useState(existingProspect?.customerData?.picPosition || '');
+  const [picPhone, setPicPhone] = useState(existingProspect?.customerData?.picPhone || '');
+
+  // Bidang Customer / Industry
+  const [industryId, setIndustryId] = useState(existingProspect?.industryId || '');
+
+  // Provider Existing
+  const [providerExisting, setProviderExisting] = useState(existingProspect?.providerExisting || '');
 
   // Prospect fields
   const [formName, setFormName] = useState(existingProspect?.name || '');
@@ -80,13 +121,10 @@ export default function ProspectFormPage() {
   const [formDate, setFormDate] = useState(existingProspect?.date || '');
   const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
 
-  // Potensi Penambahan Unit (Fase 1 item 5)
+  // Potensi Penambahan Unit
   const [potensiUnit, setPotensiUnit] = useState(
     existingProspect?.potensiUnit !== undefined ? String(existingProspect.potensiUnit) : '0'
   );
-
-  // Branch dropdown (Fase 1 item 6)
-  const [branch, setBranch] = useState(existingProspect?.branch || 'Jakarta Pusat');
 
   // Answers / questionnaire
   const [answers, setAnswers] = useState<Record<string, string>>({
@@ -94,13 +132,27 @@ export default function ProspectFormPage() {
     ...(existingProspect?.answers || {}),
   });
 
+  // --- Existing customer auto-fill logic ---
+  const selectedCustomer = INITIAL_CUSTOMERS.find(c => c.id === selectedCustomerId);
+
+  // Saat selectedCustomerId berubah, auto-fill PIC, industry, provider
+  React.useEffect(() => {
+    if (customerMode === 'existing' && selectedCustomer) {
+      // Auto-fill PIC fields (readonly display)
+      setPicName(selectedCustomer.picName);
+      setPicPosition(selectedCustomer.picPosition);
+      setPicPhone(selectedCustomer.picPhone);
+      // Auto-fill industry & provider
+      setIndustryId(selectedCustomer.industryId || '');
+      setProviderExisting(selectedCustomer.providerExisting || '');
+    }
+  }, [selectedCustomerId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Filter customers by search
   const filteredCustomers = INITIAL_CUSTOMERS.filter(c =>
     c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.code.toLowerCase().includes(customerSearch.toLowerCase())
   );
-
-  const selectedCustomer = INITIAL_CUSTOMERS.find(c => c.id === selectedCustomerId);
 
   const getClientName = (): string => {
     if (customerMode === 'existing' && selectedCustomer) {
@@ -132,7 +184,7 @@ export default function ProspectFormPage() {
     const autoStatus = status === 'Waiting PM' ? 'Waiting PM' : (potensi > 0 ? 'Potensial' : 'Non Potensial');
     const prospectType = potensi > 0 ? 'potensial' : 'non_potensial';
 
-    // Build customerData for new customer
+    // Build customerData untuk new customer
     let customerData: Customer | undefined;
     if (customerMode === 'new') {
       customerData = {
@@ -145,9 +197,14 @@ export default function ProspectFormPage() {
         picName: picName,
         picPosition: picPosition,
         picPhone: picPhone,
+        industryId: newCustIndustryId || undefined,
+        providerExisting: providerExisting || undefined,
         isNew: true,
         needsVerification: true,
       };
+
+      // Auto-save new customer ke customerStore (Fase 1 item 1.4)
+      addCustomer(customerData);
     }
 
     const payload: Prospect = {
@@ -164,9 +221,17 @@ export default function ProspectFormPage() {
       date: formDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       estimatedValue: Number(formValue) || undefined,
       description: formDesc,
-      branch,
+      branch: userBranch,
       answers,
+      industryId: customerMode === 'existing' ? industryId : (newCustIndustryId || undefined),
+      providerExisting: providerExisting || undefined,
     };
+
+    if (isEdit && existingProspect) {
+      updateProspect(existingProspect.id, payload);
+    } else {
+      addProspect(payload);
+    }
 
     toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');
     navigate('/prospects');
@@ -175,6 +240,17 @@ export default function ProspectFormPage() {
 
   const handleSaveDraft = () => saveProspect('Potensial');
   const handleSubmitReview = () => saveProspect('Waiting PM');
+
+  // Reset auto-fill ketika ganti customer
+  const handleSelectCustomer = (c: typeof INITIAL_CUSTOMERS[0]) => {
+    setSelectedCustomerId(c.id);
+    setCustomerSearch('');
+    setPicName(c.picName);
+    setPicPosition(c.picPosition);
+    setPicPhone(c.picPhone);
+    setIndustryId(c.industryId || '');
+    setProviderExisting(c.providerExisting || '');
+  };
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
@@ -201,7 +277,7 @@ export default function ProspectFormPage() {
               Data Customer
             </h3>
 
-            {/* Toggle Existing / New Customer (Fase 1 item 2) */}
+            {/* Toggle Existing / New Customer */}
             <div className="flex gap-3 pb-2">
               <label className="flex items-center gap-2 cursor-pointer text-sm">
                 <input
@@ -220,7 +296,14 @@ export default function ProspectFormPage() {
                   name="customerMode"
                   value="new"
                   checked={customerMode === 'new'}
-                  onChange={() => setCustomerMode('new')}
+                  onChange={() => {
+                    setCustomerMode('new');
+                    setPicName('');
+                    setPicPosition('');
+                    setPicPhone('');
+                    setIndustryId('');
+                    setProviderExisting('');
+                  }}
                   className="text-primary focus:ring-primary h-4 w-4"
                 />
                 New Customer
@@ -229,7 +312,7 @@ export default function ProspectFormPage() {
 
             {customerMode === 'existing' ? (
               <>
-                {/* Autocomplete / Search Existing Customer (Fase 1 item 1 - left column) */}
+                {/* Autocomplete / Search Existing Customer */}
                 <div className="space-y-1.5">
                   <label className="font-semibold text-sm text-on-surface-variant">Cari Customer Existing</label>
                   <input
@@ -249,10 +332,7 @@ export default function ProspectFormPage() {
                       filteredCustomers.map(c => (
                         <button
                           key={c.id}
-                          onClick={() => {
-                            setSelectedCustomerId(c.id);
-                            setCustomerSearch('');
-                          }}
+                          onClick={() => handleSelectCustomer(c)}
                           className={`w-full text-left p-3 text-sm hover:bg-surface-container-low transition-colors ${
                             selectedCustomerId === c.id ? 'bg-primary/5 font-semibold' : ''
                           }`}
@@ -275,7 +355,7 @@ export default function ProspectFormPage() {
                 )}
               </>
             ) : (
-              /* New Customer form (Fase 1 item 1 - right column, Fase 1 item 3) */
+              /* New Customer form */
               <div className="space-y-3">
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500"></span>
@@ -309,7 +389,55 @@ export default function ProspectFormPage() {
               </div>
             )}
 
-            {/* PIC Customer (Fase 1 item 4) - always visible */}
+            {/* Bidang Customer / Industri (Fase 1 item 1.6) */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-sm text-on-surface-variant">Bidang Customer / Industri</label>
+              {customerMode === 'existing' && selectedCustomer ? (
+                <div className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-sm text-on-surface">
+                  {(() => {
+                    const ind = INDUSTRIES.find(i => i.id === industryId);
+                    return ind ? ind.name : 'Tidak diisi';
+                  })()}
+                </div>
+              ) : (
+                <select
+                  value={customerMode === 'new' ? newCustIndustryId : industryId}
+                  onChange={(e) => {
+                    if (customerMode === 'new') setNewCustIndustryId(e.target.value);
+                    else setIndustryId(e.target.value);
+                  }}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
+                >
+                  <option value="">Pilih Industri</option>
+                  {INDUSTRIES.map(ind => (
+                    <option key={ind.id} value={ind.id}>{ind.name}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Provider Existing (Fase 1 item 1.5) — non-mandatory */}
+            <div className="space-y-1.5">
+              <label className="font-semibold text-sm text-on-surface-variant">Provider Existing</label>
+              {customerMode === 'existing' && selectedCustomer ? (
+                <div className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-sm text-on-surface">
+                  {providerExisting || 'Tidak diisi'}
+                </div>
+              ) : (
+                <select
+                  value={providerExisting}
+                  onChange={(e) => setProviderExisting(e.target.value)}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
+                >
+                  <option value="">Tidak Ada</option>
+                  {PROVIDER_EXISTING.map(prov => (
+                    <option key={prov.id} value={prov.name}>{prov.name}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* PIC Customer — always visible */}
             <div className="border-t border-border pt-4 space-y-3">
               <h4 className="font-semibold text-sm text-on-surface-variant flex items-center gap-1">
                 <span className="material-symbols-outlined text-[18px]">contact_phone</span>
@@ -317,9 +445,9 @@ export default function ProspectFormPage() {
               </h4>
               {customerMode === 'existing' && selectedCustomer ? (
                 <div className="p-3 bg-surface-container-low rounded-lg space-y-1 text-sm">
-                  <div className="font-medium">{selectedCustomer.picName}</div>
-                  <div className="text-xs text-secondary">{selectedCustomer.picPosition}</div>
-                  <div className="text-xs text-secondary">{selectedCustomer.picPhone}</div>
+                  <div className="font-medium">{picName}</div>
+                  <div className="text-xs text-secondary">{picPosition}</div>
+                  <div className="text-xs text-secondary">{picPhone}</div>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -354,32 +482,33 @@ export default function ProspectFormPage() {
                 <input value={formName} onChange={(e) => setFormName(e.target.value)} required className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" aria-label="Nama Prospek" />
               </div>
 
+              {/* Estimasi Nilai Proyek — non-mandatory (Fase 1 item 1.7) */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Estimasi Nilai Proyek (Rp)</label>
                 <input value={formValue} onChange={(e) => setFormValue(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="Contoh: 1500000000" type="number" aria-label="Estimasi Nilai" />
               </div>
 
+              {/* Estimasi Tanggal Closing — non-mandatory (Fase 1 item 1.7) */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Estimasi Tanggal Closing</label>
                 <input value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary" type="date" aria-label="Tanggal Closing" />
               </div>
 
-              {/* Potensi Penambahan Unit (Fase 1 item 5) */}
+              {/* Potensi Penambahan Unit */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Potensi Penambahan Unit</label>
                 <input value={potensiUnit} onChange={(e) => setPotensiUnit(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="0" type="number" min="0" aria-label="Potensi Penambahan Unit" />
                 <p className="text-[10px] text-secondary">Jika 0 = status "Non Potensial". Jika di atas 0 = status "Potensial".</p>
               </div>
 
-              {/* Cabang / Branch (Fase 1 item 6) */}
+              {/* Branch — READONLY dari user login (Fase 1 item 1.1) */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Cabang (Branch)</label>
-                <select value={branch} onChange={(e) => setBranch(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
-                  {BRANCHES.map(b => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
-                <p className="text-[10px] text-secondary">Default dari user login. Tidak wajib diisi.</p>
+                <div className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-sm text-on-surface flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px] text-outline">business</span>
+                  {userBranch}
+                </div>
+                <p className="text-[10px] text-secondary">Cabang diambil dari data user login. Tidak dapat diubah.</p>
               </div>
 
               <div className="space-y-1.5">
@@ -388,7 +517,7 @@ export default function ProspectFormPage() {
               </div>
             </div>
 
-            {/* Questionnaire - "Pertanyaan Standar" (Fase 1 item 7 - renamed from "Evaluasi & Ketentuan Teknis") */}
+            {/* Questionnaire - "Pertanyaan Standar" */}
             <div className="bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
               <h3 className="font-bold text-sm text-status-teal border-b border-border pb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined">quiz</span>

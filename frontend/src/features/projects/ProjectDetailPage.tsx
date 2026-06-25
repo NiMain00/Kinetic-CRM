@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { Project } from '../../types/domain';
-import { INITIAL_PROJECTS, INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
+import { INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
+import { useProjectStore } from '@/stores/projectStore';
+import { useProspectStore } from '@/stores/prospectStore';
 
 interface ProjectDetailViewProps {
   key?: string;
@@ -18,7 +20,14 @@ export default function ProjectDetailView({
   const { projectId, tab: urlTab } = useParams<{ projectId: string; tab: string }>();
   const navigate = useNavigate();
 
-  const project = propProject || INITIAL_PROJECTS.find((p) => p.id === projectId);
+  const getProjectById = useProjectStore((s) => s.getProjectById);
+  const getProspectById = useProspectStore((s) => s.getProspectById);
+
+  const project = propProject || (projectId ? getProjectById(projectId) : undefined);
+
+  // Cek apakah project berasal dari prospek Non Potensial (Fase 4 item 4.2)
+  const sourceProspect = project?.sourceProspectId ? getProspectById(project.sourceProspectId) : undefined;
+  const isFromNonPotensial = sourceProspect?.prospectType === 'non_potensial' || sourceProspect?.status === 'Non Potensial';
 
   if (!project) {
     return (
@@ -208,8 +217,8 @@ export default function ProjectDetailView({
         </div>
       </section>
 
-      {/* Conditional Stepper: Untuk Prospecting type, tampilkan stepper sederhana (Fase 4) */}
-      {isOverview && project.type === 'Prospecting' && (
+      {/* Conditional Stepper: Untuk Prospecting type & bukan dari Non Potensial (Fase 4) */}
+      {isOverview && project.type === 'Prospecting' && !isFromNonPotensial && (
         <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto shrink-0 select-none">
           <div className="min-w-[600px] flex items-center justify-between relative">
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
@@ -366,6 +375,18 @@ export default function ProjectDetailView({
                         {project.author}
                       </p>
                     </div>
+                    {project.providerExisting && (
+                      <div>
+                        <p className="text-secondary text-xs uppercase tracking-wider">Provider Existing</p>
+                        <p className="font-semibold text-on-surface">{project.providerExisting}</p>
+                      </div>
+                    )}
+                    {project.sourceProspectId && (
+                      <div>
+                        <p className="text-secondary text-xs uppercase tracking-wider">Berasal dari Prospek</p>
+                        <p className="font-semibold text-on-surface text-xs">{project.sourceProspectId}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 

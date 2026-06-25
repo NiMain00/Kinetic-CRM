@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_PROSPECTS, INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
-import type { Prospect } from '@/types/domain';
+import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
+import { useProspectStore } from '@/stores/prospectStore';
+import { useCustomerStore } from '@/stores/customerStore';
+import { useProjectStore } from '@/stores/projectStore';
+import { useAuthStore } from '@/stores/authStore';
+
+const INDUSTRIES: Record<string, string> = {
+  'ind-1': 'Perbankan & Keuangan',
+  'ind-2': 'Telekomunikasi',
+  'ind-3': 'Pemerintahan & BUMN',
+  'ind-4': 'Minyak & Gas',
+  'ind-5': 'Manufaktur',
+  'ind-6': 'Kesehatan',
+  'ind-7': 'Pendidikan',
+  'ind-8': 'Pertambangan',
+  'ind-9': 'Transportasi & Logistik',
+  'ind-10': 'Teknologi Informasi',
+  'ind-11': 'Lainnya',
+};
 
 const defaultAnswers: Record<string, string> = {
   upsCapacity: 'UPS 2x3KVA',
@@ -23,10 +40,27 @@ const questionnaireLabels: Record<string, string> = {
 export default function ProspectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [prospect, setProspect] = useState<Prospect | undefined>(
-    () => INITIAL_PROSPECTS.find((p) => p.id === id),
-  );
+
+  // --- Stores ---
+  const getProspectById = useProspectStore((s) => s.getProspectById);
+  const updateProspect = useProspectStore((s) => s.updateProspect);
+  const deleteProspect = useProspectStore((s) => s.deleteProspect);
+  const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
+  const getCustomerById = useCustomerStore((s) => s.getCustomerById);
+  const addProject = useProjectStore((s) => s.addProject);
+  const projects = useProjectStore((s) => s.projects);
+
+  const authUser = useAuthStore((s) => s.user);
+  const userRole = authUser?.roleName;
+  const isSuperAdmin = userRole === 'Super Admin';
+
+  const prospect = getProspectById(id || '');
   const [events] = useState(INITIAL_TIMELINE_EVENTS);
+
+  // Cari customer terkait (untuk data verifikasi & auto-fill)
+  const customer = prospect?.customerId
+    ? getCustomerById(prospect.customerId) || prospect.customerData
+    : prospect?.customerData;
 
   if (!prospect) {
     return (
@@ -45,7 +79,10 @@ export default function ProspectDetailPage() {
 
   const isNonPotensial = prospect.status === 'Non Potensial' || prospect.prospectType === 'non_potensial';
   const isPotensial = prospect.status === 'Potensial' || prospect.prospectType === 'potensial';
-  const needsVerification = prospect.customerData?.needsVerification;
+  const needsVerification = customer?.needsVerification;
+
+  // Cek apakah prospect sudah dikonversi ke proyek
+  const isConverted = prospect.isConverted && prospect.projectId;
 
   const statusBadge = (status: string) => {
     if (needsVerification) {
@@ -91,22 +128,60 @@ export default function ProspectDetailPage() {
   };
 
   const handleApprove = () => {
-    setProspect({ ...prospect, status: 'Approved' });
+    updateProspect(prospect.id, { status: 'Approved' });
     toast.success('Prospek berhasil disetujui.');
   };
 
   const handleRequestRevision = () => {
-    setProspect({ ...prospect, status: 'Revision' });
+    updateProspect(prospect.id, { status: 'Revision' });
     toast.success('Permintaan revisi telah dikirim.');
   };
 
   const handleDelete = () => {
-    toast.success('Prospek berhasil dihapus.');
-    navigate('/prospects');
+    if (confirm('Apakah Anda yakin ingin menghapus prospek ini?')) {
+      deleteProspect(prospect.id);
+      toast.success('Prospek berhasil dihapus.');
+      navigate('/prospects');
+    }
   };
 
+  // --- KONVERSI KE PROYEK (Fase 3 item 3.3) ---
   const handleBuatProyek = () => {
-    toast.success('Fitur konversi prospek ke proyek akan segera tersedia.');
+    const newProject = {
+      id: `PRJ-${Date.now()}`,
+      code: `PRJ-${new Date().getFullYear()}-${String(projects.length + 1).padStart(4, '0')}`,
+      name: prospect.name,
+      client: prospect.client,
+      status: 'Prospecting',
+      phase: 'Overview',
+      location: prospect.branch || '-',
+      author: prospect.author,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      progress: 0,
+      estimatedValue: prospect.estimatedValue || 0,
+      type: 'Prospecting' as const,
+      sourceProspectId: prospect.id,
+      providerExisting: prospect.providerExisting,
+    };
+
+    addProject(newProject);
+    updateProspect(prospect.id, {
+      isConverted: true,
+      projectId: newProject.id,
+    });
+
+    toast.success('Prospek berhasil dikonversi ke proyek!');
+    navigate(`/project/${newProject.id}/overview`);
+  };
+
+  // --- VERIFIKASI CUSTOMER (Fase 3 item 3.5) — hanya Super Admin ---
+  const handleVerifikasi = () => {
+    if (!customer?.id) {
+      toast.error('Data customer tidak ditemukan.');
+      return;
+    }
+    verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
+    toast.success('Customer berhasil diverifikasi!');
   };
 
   return (
@@ -130,7 +205,6 @@ export default function ProspectDetailPage() {
                 <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBadge(prospect.status)}`}>
                   {statusLabel()}
                 </span>
-                {/* Badge "Perlu Verifikasi" untuk new customer (Fase 3 item 3) */}
                 {needsVerification && (
                   <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-300">
                     Perlu Verifikasi
@@ -166,13 +240,26 @@ export default function ProspectDetailPage() {
                 <span className="material-symbols-outlined text-[18px]">edit</span>
                 Edit
               </button>
-              {/* Kondisional tombol (Fase 3 item 2) */}
-              {isPotensial && (
+
+              {/* Kondisional: "Buat Proyek" untuk Potensial (Fase 3 item 2) */}
+              {isPotensial && !isConverted && (
                 <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">add_business</span>
                   Buat Proyek
                 </button>
               )}
+
+              {/* Sudah dikonversi → "Lihat Proyek" (Fase 3 item 3.4) */}
+              {isConverted && (
+                <button
+                  onClick={() => navigate(`/project/${prospect.projectId}/overview`)}
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[18px]">visibility</span>
+                  Lihat Proyek
+                </button>
+              )}
+
               <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                 Setujui
@@ -191,7 +278,7 @@ export default function ProspectDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Detail */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Overview Section (Fase 3 item 1) */}
+            {/* Overview Section */}
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">overview</span>
@@ -216,38 +303,100 @@ export default function ProspectDetailPage() {
                   <p className="text-xs text-secondary">Cabang</p>
                   <p className="font-semibold text-on-surface">{prospect.branch || '-'}</p>
                 </div>
+                {/* Provider Existing — tampilkan jika ada */}
+                {prospect.providerExisting && (
+                  <div className="col-span-2">
+                    <p className="text-xs text-secondary">Provider Existing</p>
+                    <p className="font-semibold text-on-surface">{prospect.providerExisting}</p>
+                  </div>
+                )}
+                {/* Bidang Customer / Industri — tampilkan jika ada */}
+                {prospect.industryId && INDUSTRIES[prospect.industryId] && (
+                  <div>
+                    <p className="text-xs text-secondary">Bidang Customer</p>
+                    <p className="font-semibold text-on-surface">{INDUSTRIES[prospect.industryId]}</p>
+                  </div>
+                )}
+                {/* Status konversi */}
+                {isConverted && (
+                  <div>
+                    <p className="text-xs text-secondary">Sudah dikonversi</p>
+                    <p className="font-semibold text-success flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                      Ya — {prospect.projectId}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Customer Info Card (Fase 3 item 4) */}
+            {/* Customer Info Card */}
             <div className="bg-white rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">business</span>
                 Informasi Customer
+                {customer?.needsVerification && customer?.id && (
+                  <button
+                    onClick={handleVerifikasi}
+                    disabled={!isSuperAdmin}
+                    className={`ml-2 px-3 py-1 text-[10px] font-bold rounded-lg transition-all flex items-center gap-1 ${
+                      isSuperAdmin
+                        ? 'bg-primary text-white hover:brightness-110 cursor-pointer'
+                        : 'bg-surface-container-low text-outline cursor-not-allowed'
+                    }`}
+                    title={!isSuperAdmin ? 'Hanya Super Admin yang bisa verifikasi' : 'Klik untuk verifikasi customer'}
+                  >
+                    <span className="material-symbols-outlined text-[14px]">verified</span>
+                    {isSuperAdmin ? 'Verifikasi Customer' : 'Tidak bisa verifikasi'}
+                  </button>
+                )}
               </h3>
+
+              {/* Verification badge info */}
+              {customer?.verifiedAt && customer?.verifiedBy && (
+                <div className="mb-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-700">
+                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  Terverifikasi oleh {customer.verifiedBy} pada {new Date(customer.verifiedAt).toLocaleDateString('id-ID')}
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-y-3 text-sm">
                 <div className="col-span-2">
                   <p className="text-xs text-secondary">Nama Customer</p>
                   <p className="font-semibold text-on-surface">{prospect.client}</p>
                 </div>
-                {prospect.customerData && (
+                {customer && (
                   <>
                     <div>
                       <p className="text-xs text-secondary">Kode</p>
-                      <p className="font-semibold text-on-surface">{prospect.customerData.code}</p>
+                      <p className="font-semibold text-on-surface">{customer.code}</p>
                     </div>
                     <div>
                       <p className="text-xs text-secondary">Tipe</p>
-                      <p className="font-semibold text-on-surface capitalize">{prospect.customerData.type}</p>
+                      <p className="font-semibold text-on-surface capitalize">{customer.type}</p>
                     </div>
                     <div>
                       <p className="text-xs text-secondary">Kota</p>
-                      <p className="font-semibold text-on-surface">{prospect.customerData.city}</p>
+                      <p className="font-semibold text-on-surface">{customer.city}</p>
                     </div>
-                    {prospect.customerData.npwp && (
+                    {customer.npwp && (
                       <div>
                         <p className="text-xs text-secondary">NPWP</p>
-                        <p className="font-semibold text-on-surface">{prospect.customerData.npwp}</p>
+                        <p className="font-semibold text-on-surface">{customer.npwp}</p>
+                      </div>
+                    )}
+                    {/* Bidang customer (industri) */}
+                    {customer.industryId && INDUSTRIES[customer.industryId] && (
+                      <div>
+                        <p className="text-xs text-secondary">Bidang / Industri</p>
+                        <p className="font-semibold text-on-surface">{INDUSTRIES[customer.industryId]}</p>
+                      </div>
+                    )}
+                    {/* Provider Existing */}
+                    {customer.providerExisting && (
+                      <div>
+                        <p className="text-xs text-secondary">Provider Existing</p>
+                        <p className="font-semibold text-on-surface">{customer.providerExisting}</p>
                       </div>
                     )}
                   </>
@@ -256,10 +405,10 @@ export default function ProspectDetailPage() {
                   <p className="text-xs text-secondary mb-1">PIC Customer</p>
                   <div className="bg-surface-container-low p-3 rounded-lg space-y-1">
                     <p className="font-medium text-on-surface">
-                      {prospect.customerData?.picName || '-'}
+                      {customer?.picName || '-'}
                     </p>
-                    <p className="text-xs text-secondary">{prospect.customerData?.picPosition || '-'}</p>
-                    <p className="text-xs text-secondary">{prospect.customerData?.picPhone || '-'}</p>
+                    <p className="text-xs text-secondary">{customer?.picPosition || '-'}</p>
+                    <p className="text-xs text-secondary">{customer?.picPhone || '-'}</p>
                   </div>
                 </div>
               </div>
