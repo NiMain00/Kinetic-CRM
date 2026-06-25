@@ -36,7 +36,7 @@ export function withPageProps<T extends PageProps>(
         };
         navigate(pathMap[page] || `/${page}`);
       },
-      onSelectProject: (id) => navigate(`/project/${id}/overview`),
+      onSelectProject: (id) => navigate(`/projects/${id}/overview`),
       onOpenApproval: () => navigate('/approvals'),
       onLoginSuccess: (userData) => {
         login('mock-token', userData || { name: 'User' });

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_PROSPECTS, INITIAL_CUSTOMERS } from '@/services/mock-data';
+import { useProspectStore } from '@/stores/prospectStore';
 import type { Prospect, Customer } from '@/types/domain';
 import { BRANCHES, CUSTOMER_TYPES } from '@/types/domain';
 
@@ -48,8 +48,12 @@ export default function ProspectFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
+  const getProspect = useProspectStore((s) => s.getProspect);
+  const addProspect = useProspectStore((s) => s.addProspect);
+  const updateProspect = useProspectStore((s) => s.updateProspect);
+  const customers = useProspectStore((s) => s.customers);
 
-  const existingProspect = isEdit ? INITIAL_PROSPECTS.find((p) => p.id === id) : null;
+  const existingProspect = isEdit ? getProspect(id!) : null;
 
   // Customer selection: 'existing' | 'new'
   const [customerMode, setCustomerMode] = useState<'existing' | 'new'>(
@@ -95,12 +99,12 @@ export default function ProspectFormPage() {
   });
 
   // Filter customers by search
-  const filteredCustomers = INITIAL_CUSTOMERS.filter(c =>
+  const filteredCustomers = customers.filter(c =>
     c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.code.toLowerCase().includes(customerSearch.toLowerCase())
   );
 
-  const selectedCustomer = INITIAL_CUSTOMERS.find(c => c.id === selectedCustomerId);
+  const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
   const getClientName = (): string => {
     if (customerMode === 'existing' && selectedCustomer) {
@@ -168,7 +172,14 @@ export default function ProspectFormPage() {
       answers,
     };
 
-    toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');
+    // Simpan ke store
+    if (isEdit && existingProspect) {
+      updateProspect(existingProspect.id, payload);
+      toast.success('Prospek berhasil diperbarui.');
+    } else {
+      addProspect(payload);
+      toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');
+    }
     navigate('/prospects');
     return true;
   };

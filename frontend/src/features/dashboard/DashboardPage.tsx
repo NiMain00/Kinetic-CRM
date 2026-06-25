@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import type { ApprovalItem } from '../../types/domain';
-import { INITIAL_APPROVALS } from '../../services/mock-data';
+import type { ApprovalItem } from '@/types/domain';
+import { INITIAL_APPROVALS } from '@/services/mock-data';
 
 export default function DashboardPage() {
   const navigate = useNavigate();

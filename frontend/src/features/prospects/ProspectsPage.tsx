@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import type { Prospect } from '../../types/domain';
-import { INITIAL_PROSPECTS } from '../../services/mock-data';
+import { useProspectStore } from '@/stores/prospectStore';
+import type { Prospect } from '@/types/domain';
 
 interface ProspectsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -12,13 +12,14 @@ interface ProspectsViewProps {
 export default function ProspectsView({ onShowNotification, onNavigatePage }: ProspectsViewProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const [prospects, setProspects] = useState<Prospect[]>(INITIAL_PROSPECTS);
+  const prospects = useProspectStore((s) => s.prospects);
+  const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const [activeFilter, setActiveFilter] = useState<'All' | 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleDelete = (id: string) => {
     if (confirm('Apakah Anda yakin ingin menghapus prospek ini dari draf?')) {
-      setProspects(prospects.filter(p => p.id !== id));
+      deleteProspect(id);
       onShowNotification('Prospek berhasil dihapus.', 'success');
     }
   };
@@ -32,7 +33,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   });
 
   const statusColor = (status: string, prospect?: Prospect) => {
-    // New customer needs verification badge
     if (prospect?.customerData?.needsVerification) {
       return 'bg-amber-100 text-amber-700';
     }

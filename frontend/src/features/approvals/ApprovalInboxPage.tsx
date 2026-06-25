@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import type { ApprovalItem } from '../../types/domain';
-import { INITIAL_APPROVALS } from '../../services/mock-data';
+import type { ApprovalItem } from '@/types/domain';
+import { INITIAL_APPROVALS } from '@/services/mock-data';
 
 interface ApprovalInboxViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { INITIAL_PROSPECTS, INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
+import { useProspectStore } from '@/stores/prospectStore';
+import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 import type { Prospect } from '@/types/domain';
 
 const defaultAnswers: Record<string, string> = {
@@ -23,8 +24,11 @@ const questionnaireLabels: Record<string, string> = {
 export default function ProspectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const getProspect = useProspectStore((s) => s.getProspect);
+  const updateProspectInStore = useProspectStore((s) => s.updateProspect);
+  const deleteProspectFromStore = useProspectStore((s) => s.deleteProspect);
   const [prospect, setProspect] = useState<Prospect | undefined>(
-    () => INITIAL_PROSPECTS.find((p) => p.id === id),
+    () => getProspect(id!),
   );
   const [events] = useState(INITIAL_TIMELINE_EVENTS);
 
@@ -101,6 +105,9 @@ export default function ProspectDetailPage() {
   };
 
   const handleDelete = () => {
+    if (prospect) {
+      deleteProspectFromStore(prospect.id);
+    }
     toast.success('Prospek berhasil dihapus.');
     navigate('/prospects');
   };

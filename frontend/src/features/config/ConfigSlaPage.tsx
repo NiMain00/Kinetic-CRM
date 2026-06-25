@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SlaConfig } from '../../types/domain/users';
+import type { SlaConfig } from '@/types/domain/users';
 
 interface ConfigSlaViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;

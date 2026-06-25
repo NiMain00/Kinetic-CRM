@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import type { AuditLogEntry } from '../../types/domain/users';
+import type { AuditLogEntry } from '@/types/domain/users';
 
 const ACTION_COLORS: Record<string, string> = {
   CREATE: 'bg-success/10 text-success',

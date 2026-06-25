@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { User, UserRole } from '../../types/domain/users';
+import type { User, UserRole } from '@/types/domain/users';
 
 interface UsersViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;

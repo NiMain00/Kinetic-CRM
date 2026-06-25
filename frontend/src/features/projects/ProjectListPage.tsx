@@ -135,7 +135,7 @@ export default function ProjectListPage() {
                 filtered.map((project) => (
                   <tr
                     key={project.id}
-                    onClick={() => navigate(`/project/${project.id}/overview`)}
+                    onClick={() => navigate(`/projects/${project.id}/overview`)}
                     className="cursor-pointer hover:bg-primary/5 transition-colors"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-outline">{project.code}</td>

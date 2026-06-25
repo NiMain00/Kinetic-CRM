@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import type { Project } from '../../types/domain';
-import { INITIAL_PROJECTS, INITIAL_TIMELINE_EVENTS, COMPETITORS } from '../../services/mock-data';
+import type { Project } from '@/types/domain';
+import { INITIAL_PROJECTS, INITIAL_TIMELINE_EVENTS, COMPETITORS } from '@/services/mock-data';
 
 interface ProjectDetailViewProps {
   key?: string;
@@ -159,7 +159,7 @@ export default function ProjectDetailView({
           <span className="material-symbols-outlined text-[14px] text-slate-300">chevron_right</span>
           <button
             type="button"
-            onClick={() => navigate(`/project/${projectId}/overview`)}
+            onClick={() => navigate(`/projects/${projectId}/overview`)}
             className="hover:text-primary transition-colors font-semibold text-slate-600"
           >
             {project.code}
@@ -177,7 +177,7 @@ export default function ProjectDetailView({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/project/${projectId}/overview`)}
+              onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/projects/${projectId}/overview`)}
               className="p-1.5 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center border border-border bg-white"
             >
               <span className="material-symbols-outlined text-primary text-[20px]">arrow_back</span>
@@ -230,7 +230,7 @@ export default function ProjectDetailView({
               return (
                 <div 
                   key={step} 
-                  onClick={() => navigate(`/project/${projectId}/${stepToPathProspecting[step]}`)}
+                  onClick={() => navigate(`/projects/${projectId}/${stepToPathProspecting[step]}`)}
                   className="relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 cursor-pointer hover:scale-105 transition-transform"
                 >
                 {isCompleted ? (
@@ -279,7 +279,7 @@ export default function ProjectDetailView({
               return (
                 <div 
                   key={step} 
-                  onClick={() => navigate(`/project/${projectId}/${stepToPathMap[step]}`)}
+                  onClick={() => navigate(`/projects/${projectId}/${stepToPathMap[step]}`)}
                   className="relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 cursor-pointer hover:scale-105 transition-transform"
                 >
                 {isCompleted ? (
@@ -322,7 +322,7 @@ export default function ProjectDetailView({
             ].filter(Boolean).map((tab) => (
               <button
                 key={tab}
-                onClick={() => navigate(`/project/${projectId}/${tabPathMap[tab!] || 'overview'}`)}
+                onClick={() => navigate(`/projects/${projectId}/${tabPathMap[tab!] || 'overview'}`)}
                 className={`py-4 font-label-sm text-sm transition-all relative ${
                   activeTab === tab
                     ? 'text-primary font-bold border-b-2 border-primary'

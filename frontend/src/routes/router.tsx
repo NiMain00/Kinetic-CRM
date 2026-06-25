@@ -14,17 +14,6 @@ const LazyLoad = (Component: ComponentType<any>) => {
   );
 };
 
-const LazyLoadRole = (Component: ComponentType<any>, roles: string[]) => {
-  const Wrapped = withPageProps(Component);
-  return (props: Record<string, unknown>) => (
-    <Suspense fallback={<PageLoader />}>
-      <RoleRoute roles={roles}>
-        <Wrapped {...props} />
-      </RoleRoute>
-    </Suspense>
-  );
-};
-
 // Auth pages
 const LoginPage = LazyLoad(lazy(() => import('@/features/auth/LoginPage')));
 const ForgotPasswordPage = LazyLoad(lazy(() => import('@/features/auth/ForgotPasswordPage')));
@@ -56,8 +45,7 @@ const WinLossReportPage = LazyLoad(lazy(() => import('@/features/reports/WinLoss
 const PipelineReportPage = LazyLoad(lazy(() => import('@/features/reports/PipelineReportPage')));
 const ReportsIndexPage = LazyLoad(lazy(() => import('@/features/reports/ReportsIndexPage')));
 
-// Master Data
-const MasterDataPage = LazyLoad(lazy(() => import('@/features/master-data/MasterDataPage')));
+// Master Data — standalone pages loaded inside MasterDataLayout
 const MasterCustomerPage = LazyLoad(lazy(() => import('@/features/master-data/MasterCustomerPage')));
 const MasterCompetitorPage = LazyLoad(lazy(() => import('@/features/master-data/MasterCompetitorPage')));
 const MasterCategoryPage = LazyLoad(lazy(() => import('@/features/master-data/MasterCategoryPage')));
@@ -129,7 +117,7 @@ export default function AppRouter() {
         {/* Projects */}
         <Route path="projects" element={<ProjectListPage />} />
         <Route path="projects/new" element={<ProjectFormPage />} />
-        <Route path="project/:projectId/:tab?" element={<ProjectDetailPage />} />
+        <Route path="projects/:projectId/:tab?" element={<ProjectDetailPage />} />
 
         {/* Approvals */}
         <Route path="approvals" element={<ApprovalInboxPage />} />
@@ -148,44 +136,44 @@ export default function AppRouter() {
         <Route path="kpi/progress" element={<Navigate to="/reports/kpi/progress" replace />} />
         <Route path="kpi/targets" element={<Navigate to="/reports/kpi/targets" replace />} />
 
-        {/* Master Data */}
-        <Route path="master-data" element={<MasterDataPage />} />
-        <Route path="master-data/customers" element={<MasterCustomerPage />} />
-        <Route path="master-data/competitors" element={<MasterCompetitorPage />} />
-        <Route path="master-data/categories" element={<MasterCategoryPage />} />
-        <Route path="master-data/document-types" element={<MasterDocTypePage />} />
-        <Route path="master-data/questions" element={<MasterQuestionPage />} />
-        <Route path="master-data/holidays" element={<MasterHolidayPage />} />
-        <Route path="master-data/loss-reasons" element={<MasterLossReasonPage />} />
-        <Route path="master-data/periods" element={<MasterPeriodPage />} />
+        {/* Master Data — admin only (standalone pages with their own layout) */}
+        <Route path="master-data" element={<Navigate to="/master-data/customers" replace />} />
+        <Route path="master-data/customers" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterCustomerPage /></RoleRoute>} />
+        <Route path="master-data/competitors" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterCompetitorPage /></RoleRoute>} />
+        <Route path="master-data/categories" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterCategoryPage /></RoleRoute>} />
+        <Route path="master-data/document-types" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterDocTypePage /></RoleRoute>} />
+        <Route path="master-data/questions" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterQuestionPage /></RoleRoute>} />
+        <Route path="master-data/holidays" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterHolidayPage /></RoleRoute>} />
+        <Route path="master-data/loss-reasons" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterLossReasonPage /></RoleRoute>} />
+        <Route path="master-data/periods" element={<RoleRoute roles={['Super Admin', 'Admin']}><MasterPeriodPage /></RoleRoute>} />
 
-        {/* Users */}
-        <Route path="users" element={<UsersPage />} />
-        <Route path="users/list" element={<UserListPage />} />
-        <Route path="users/new" element={<UserFormPage />} />
-        <Route path="users/:id" element={<UserDetailPage />} />
-        <Route path="users/:id/edit" element={<UserFormPage />} />
+        {/* Users — admin only */}
+        <Route path="users" element={<RoleRoute roles={['Super Admin', 'Admin']}><UsersPage /></RoleRoute>} />
+        <Route path="users/list" element={<RoleRoute roles={['Super Admin', 'Admin']}><UserListPage /></RoleRoute>} />
+        <Route path="users/new" element={<RoleRoute roles={['Super Admin', 'Admin']}><UserFormPage /></RoleRoute>} />
+        <Route path="users/:id" element={<RoleRoute roles={['Super Admin', 'Admin']}><UserDetailPage /></RoleRoute>} />
+        <Route path="users/:id/edit" element={<RoleRoute roles={['Super Admin', 'Admin']}><UserFormPage /></RoleRoute>} />
 
-        {/* Audit */}
-        <Route path="audit" element={<AuditPage />} />
-        <Route path="audit/log" element={<AuditLogPage />} />
+        {/* Audit — admin only */}
+        <Route path="audit" element={<RoleRoute roles={['Super Admin', 'Admin']}><AuditPage /></RoleRoute>} />
+        <Route path="audit/log" element={<RoleRoute roles={['Super Admin', 'Admin']}><AuditLogPage /></RoleRoute>} />
 
         {/* Notifications */}
         <Route path="notifications" element={<NotificationsPage />} />
 
-        {/* Configuration */}
-        <Route path="config" element={<ConfigDashboardPage />} />
-        <Route path="config/org" element={<ConfigOrgPage />} />
-        <Route path="config/status" element={<ConfigStatusPage />} />
-        <Route path="config/notifications" element={<ConfigNotifTemplatePage />} />
-        <Route path="config/sla" element={<ConfigSlaPage />} />
-        <Route path="config/roles" element={<ConfigRolesPage />} />
-        <Route path="config/targets" element={<ConfigTargetsPage />} />
-        <Route path="config/workflow" element={<ConfigWorkflowPage />} />
-        <Route path="config/integration" element={<ConfigIntegrationPage />} />
-        <Route path="config/upload" element={<ConfigUploadPage />} />
-        <Route path="config/period" element={<ConfigPeriodPage />} />
-        <Route path="config/question-types" element={<ConfigQuestionTypesPage />} />
+        {/* Configuration — admin only */}
+        <Route path="config" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigDashboardPage /></RoleRoute>} />
+        <Route path="config/org" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigOrgPage /></RoleRoute>} />
+        <Route path="config/status" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigStatusPage /></RoleRoute>} />
+        <Route path="config/notifications" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigNotifTemplatePage /></RoleRoute>} />
+        <Route path="config/sla" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigSlaPage /></RoleRoute>} />
+        <Route path="config/roles" element={<RoleRoute roles={['Super Admin']}><ConfigRolesPage /></RoleRoute>} />
+        <Route path="config/targets" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigTargetsPage /></RoleRoute>} />
+        <Route path="config/workflow" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigWorkflowPage /></RoleRoute>} />
+        <Route path="config/integration" element={<RoleRoute roles={['Super Admin']}><ConfigIntegrationPage /></RoleRoute>} />
+        <Route path="config/upload" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigUploadPage /></RoleRoute>} />
+        <Route path="config/period" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigPeriodPage /></RoleRoute>} />
+        <Route path="config/question-types" element={<RoleRoute roles={['Super Admin', 'Admin']}><ConfigQuestionTypesPage /></RoleRoute>} />
 
         {/* Error pages */}
         <Route path="403" element={<ForbiddenPage />} />

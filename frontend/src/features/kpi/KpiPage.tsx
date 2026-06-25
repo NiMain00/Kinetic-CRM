@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import type { KpiTarget } from '../../types/domain/users';
+import type { KpiTarget } from '@/types/domain/users';
 
 const INITIAL_KPIS: KpiTarget[] = [
   { id: 'KPI-001', name: 'Win Rate', category: 'win_rate', targetValue: 70, actualValue: 65.5, unit: '%', period: '2026 Q2', status: 'at_risk' },
