@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import type { Project, LphsChecklistItem, TimelineEvent } from '@/types/domain';
+import { useProjectStore } from '@/stores/projectStore';
 import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
@@ -11,31 +10,34 @@ interface TabProps {
 
 type CheckStatus = 'passed' | 'failed' | 'na';
 
-interface ChecklistItem {
-  id: string;
-  name: string;
-  description: string;
-  status: CheckStatus;
-  document?: string;
-}
+const defaultChecklist: LphsChecklistItem[] = [
+  { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'na', document: '' },
+  { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'na', document: '' },
+  { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'na', document: '' },
+  { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'na', document: '' },
+  { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'na', document: '' },
+  { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
+  { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'na', document: '' },
+  { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'na', document: '' },
+];
 
-export default function LphsSiosTab({ project: propProject }: TabProps) {
-  const project = propProject || INITIAL_PROJECTS[0];
+export default function LphsSiosTab({ project }: TabProps) {
+  const updateProject = useProjectStore((s) => s.updateProject);
+  const updateProjectLphs = useProjectStore((s) => s.updateProjectLphs);
+  const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
 
-  const [items, setItems] = useState<ChecklistItem[]>([
-    { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'adms_checklist.pdf' },
-    { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec_v2.pdf' },
-    { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'failed', document: '' },
-    { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'na', document: '' },
-    { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule_bar.pdf' },
-    { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
-    { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
-    { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'failed', document: '' },
-  ]);
+  const [items, setItems] = useState<LphsChecklistItem[]>(project?.lphsChecklist || defaultChecklist);
+
+  useEffect(() => {
+    setItems(project?.lphsChecklist || defaultChecklist);
+  }, [project?.id]);
 
   const handleStatusChange = (id: string, newStatus: CheckStatus) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, status: newStatus } : item));
-    toast.success(`Status item berhasil diperbarui`);
+    const updated = items.map(item => item.id === id ? { ...item, status: newStatus } : item);
+    setItems(updated);
+    if (project?.id) {
+      updateProjectLphs(project.id, updated);
+    }
   };
 
   const handleUpload = (id: string) => {
@@ -44,11 +46,33 @@ export default function LphsSiosTab({ project: propProject }: TabProps) {
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        setItems(prev => prev.map(item => item.id === id ? { ...item, document: file.name } : item));
-        toast.success(`Dokumen ${file.name} berhasil diunggah`);
+        const updated = items.map(item => item.id === id ? { ...item, document: file.name } : item);
+        setItems(updated);
+        if (project?.id) {
+          updateProjectLphs(project.id, updated);
+        }
       }
     };
     input.click();
+  };
+
+  const handleSubmit = () => {
+    if (!project?.id) return;
+    // Persist final state
+    updateProjectLphs(project.id, items);
+    // Add timeline event
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'LPHS/SIOS Selesai',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+      description: 'LPHS/SIOS checklist telah selesai direview.',
+    };
+    addTimelineEvent(project.id, event);
+    // Advance status
+    updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
   };
 
   const statusIcon = (status: CheckStatus) => {
@@ -108,7 +132,13 @@ export default function LphsSiosTab({ project: propProject }: TabProps) {
 
         <div className="bg-primary-container text-on-primary-container rounded-xl p-5 relative overflow-hidden">
           <h4 className="font-semibold text-sm mb-1">Ringkasan LPHS/SIOS</h4>
-          <p className="text-xs opacity-80">Proyek {project.name} sedang dalam proses review checklist. {counts.passed} dari {items.length} item telah lolos verifikasi.</p>
+          <p className="text-xs opacity-80">Proyek {project?.name} sedang dalam proses review checklist. {counts.passed} dari {items.length} item telah lolos verifikasi.</p>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button onClick={handleSubmit} rightIcon={<span className="material-symbols-outlined text-[18px]">send</span>}>
+            Selesaikan & Lanjutkan
+          </Button>
         </div>
       </div>
 

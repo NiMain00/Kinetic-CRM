@@ -39,6 +39,60 @@ export interface Prospect {
   projectId?: string;
 }
 
+export interface RksData {
+  nomorTender: string;
+  namaTender: string;
+  deadlineTender: string;
+  aanwijzing: string;
+  workLocation: string;
+  mainScope: string;
+  additionalNotes: string;
+  uploadedFiles: Array<{ name: string; size: string; time: string }>;
+  answers?: Record<string, string>;
+}
+
+export interface LphsChecklistItem {
+  id: string;
+  name: string;
+  description: string;
+  status: 'passed' | 'failed' | 'na';
+  document?: string;
+}
+
+export interface CompetitorEntry {
+  id: string;
+  name: string;
+  estPrice: number;
+  advantages: string[];
+  notes: string;
+}
+
+export interface MilestoneEntry {
+  id: string;
+  name: string;
+  completed: boolean;
+  date?: string;
+}
+
+export interface DocumentEntry {
+  id: string;
+  name: string;
+  size: string;
+  uploadDate: string;
+  uploader: string;
+  version: string;
+  icon: string;
+  iconColor: string;
+}
+
+export interface DocGroup {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+  documents: DocumentEntry[];
+}
+
 export interface Project {
   id: string;
   code: string;
@@ -73,7 +127,14 @@ export interface Project {
     startDate?: string;
     endDate?: string;
     note?: string;
+    progress?: number;
+    milestones?: MilestoneEntry[];
   };
+  rks?: RksData;
+  lphsChecklist?: LphsChecklistItem[];
+  competitors?: CompetitorEntry[];
+  documents?: DocGroup[];
+  timeline?: TimelineEvent[];
 }
 
 export interface ApprovalItem {

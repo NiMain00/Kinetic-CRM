@@ -40,11 +40,15 @@ export interface MasterDocType {
 export interface MasterQuestion {
   id: string;
   question_text: string;
-  type: 'text' | 'select' | 'boolean';
+  question_type_id: string;
+  context: 'prospect' | 'rks' | 'both';
   category: string;
   is_required: boolean;
   sort_order: number;
+  placeholder_text: string;
+  help_text: string;
   is_active: boolean;
+  options?: string[];
 }
 
 export interface MasterHoliday {
@@ -214,11 +218,14 @@ const INITIAL_DOC_TYPES: MasterDocType[] = [
 ];
 
 const INITIAL_QUESTIONS: MasterQuestion[] = [
-  { id: 'Q-001', question_text: 'Nama Lengkap Sesuai KTP', type: 'text', category: 'Data Pribadi', is_required: true, sort_order: 1, is_active: true },
-  { id: 'Q-002', question_text: 'Apakah domisili sesuai dengan domisili usaha?', type: 'boolean', category: 'Lokasi', is_required: true, sort_order: 2, is_active: true },
-  { id: 'Q-003', question_text: 'Jenis badan usaha', type: 'select', category: 'Legalitas', is_required: true, sort_order: 3, is_active: true },
-  { id: 'Q-004', question_text: 'Estimasi omzet bulanan', type: 'text', category: 'Keuangan', is_required: false, sort_order: 4, is_active: true },
-  { id: 'Q-005', question_text: 'Upload foto tempat usaha', type: 'boolean', category: 'Verifikasi Fisik', is_required: true, sort_order: 5, is_active: false },
+  { id: 'Q-001', question_text: 'Nama Lengkap Sesuai KTP', question_type_id: 'QT-01', context: 'prospect', category: 'Data Pribadi', is_required: true, sort_order: 1, placeholder_text: 'Masukkan nama lengkap', help_text: '', is_active: true },
+  { id: 'Q-002', question_text: 'Apakah domisili sesuai dengan domisili usaha?', question_type_id: 'QT-02', context: 'prospect', category: 'Lokasi', is_required: true, sort_order: 2, placeholder_text: '', help_text: 'Pilih Ya jika sesuai', is_active: true },
+  { id: 'Q-003', question_text: 'Jenis badan usaha', question_type_id: 'QT-03', context: 'prospect', category: 'Legalitas', is_required: true, sort_order: 3, placeholder_text: '', help_text: '', is_active: true, options: ['PT', 'CV', 'Perorangan', 'Lainnya'] },
+  { id: 'Q-004', question_text: 'Estimasi omzet bulanan', question_type_id: 'QT-01', context: 'prospect', category: 'Keuangan', is_required: false, sort_order: 4, placeholder_text: 'Contoh: Rp 500.000.000', help_text: '', is_active: true },
+  { id: 'Q-005', question_text: 'Upload foto tempat usaha', question_type_id: 'QT-02', context: 'prospect', category: 'Verifikasi Fisik', is_required: true, sort_order: 5, placeholder_text: '', help_text: '', is_active: false },
+  { id: 'Q-006', question_text: 'Apakah spesifikasi teknis dalam RKS sudah sesuai dengan kebutuhan proyek?', question_type_id: 'QT-02', context: 'rks', category: 'Teknis', is_required: true, sort_order: 1, placeholder_text: '', help_text: 'Pastikan spesifikasi sesuai dengan dokumen tender', is_active: true },
+  { id: 'Q-007', question_text: 'Apakah ada ketentuan khusus terkait jadwal pelaksanaan?', question_type_id: 'QT-02', context: 'rks', category: 'Jadwal', is_required: true, sort_order: 2, placeholder_text: '', help_text: '', is_active: true },
+  { id: 'Q-008', question_text: 'Apakah dokumen pendukung sudah lengkap?', question_type_id: 'QT-02', context: 'both', category: 'Dokumen', is_required: true, sort_order: 3, placeholder_text: '', help_text: 'Lampirkan semua dokumen yang diperlukan', is_active: true },
 ];
 
 const INITIAL_HOLIDAYS: MasterHoliday[] = [
@@ -419,6 +426,16 @@ export const useMasterDataStore = create<MasterDataState>()(
           [entity]: (s[entity] as any[]).filter((item: any) => item.id !== id),
         } as any)),
     }),
-    { name: 'kinetic-master-data' },
+    {
+      name: 'kinetic-master-data',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        if (version === 0) {
+          // Re-initialize with latest defaults to pick up new fields (e.g. has_options)
+          return { ...INITIAL_DATA as any };
+        }
+        return persisted as any;
+      },
+    },
   ),
 );

@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
+import { useState, useEffect } from 'react';
+import type { Project, MilestoneEntry, TimelineEvent } from '@/types/domain';
+import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import toast from 'react-hot-toast';
 import { Card, Button, Input } from '@/components/ui';
 
 interface TabProps {
@@ -10,39 +9,59 @@ interface TabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-interface Milestone {
-  id: string;
-  name: string;
-  completed: boolean;
-  date?: string;
-}
+export default function DeliveryTab({ project, onShowNotification }: TabProps) {
+  const updateProject = useProjectStore((s) => s.updateProject);
+  const updateProjectDelivery = useProjectStore((s) => s.updateProjectDelivery);
+  const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
 
-export default function DeliveryTab({ project: propProject }: TabProps) {
-  const project = propProject || INITIAL_PROJECTS[0];
-  const [startDate, setStartDate] = useState('2026-06-20');
-  const [endDate, setEndDate] = useState('2026-06-28');
-  const [deliveryNote, setDeliveryNote] = useState('Kirim bertahap menggunakan kontainer transit utama. Seluruh armada truk wajib melewati ruko pengecekan berat muatan di gerbang exit tol barat.');
-  const [progress, setProgress] = useState(35);
-  const [milestones, setMilestones] = useState<Milestone[]>([
-    { id: '1', name: 'Persiapan dokumen pengiriman', completed: true, date: '2026-06-18' },
-    { id: '2', name: 'Pengecekan dan packing material', completed: true, date: '2026-06-19' },
-    { id: '3', name: 'Pengiriman gelombang 1', completed: false, date: '2026-06-22' },
-    { id: '4', name: 'Pengiriman gelombang 2', completed: false },
-    { id: '5', name: 'Quality check di lokasi', completed: false },
-    { id: '6', name: 'Serah terima material', completed: false },
-  ]);
+  const [startDate, setStartDate] = useState(project?.delivery?.startDate || '');
+  const [endDate, setEndDate] = useState(project?.delivery?.endDate || '');
+  const [deliveryNote, setDeliveryNote] = useState(project?.delivery?.note || '');
+  const [progress, setProgress] = useState(project?.delivery?.progress ?? 0);
+  const [milestones, setMilestones] = useState<MilestoneEntry[]>(project?.delivery?.milestones || []);
+
+  // Sync when switching projects
+  useEffect(() => {
+    setStartDate(project?.delivery?.startDate || '');
+    setEndDate(project?.delivery?.endDate || '');
+    setDeliveryNote(project?.delivery?.note || '');
+    setProgress(project?.delivery?.progress ?? 0);
+    setMilestones(project?.delivery?.milestones || []);
+  }, [project?.id]);
 
   const handleMilestoneToggle = (id: string) => {
-    setMilestones(prev => prev.map(m => m.id === id ? { ...m, completed: !m.completed } : m));
-    toast.success('Status milestone diperbarui');
+    const updated = milestones.map(m => m.id === id ? { ...m, completed: !m.completed } : m);
+    setMilestones(updated);
+    // Auto-persist on toggle
+    if (project?.id) {
+      updateProjectDelivery(project.id, { milestones: updated });
+    }
   };
 
   const handleSave = () => {
-    toast.success('Draf jadwal delivery berhasil disimpan');
+    if (!project?.id) return;
+    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote, progress, milestones });
+    onShowNotification?.('Draf jadwal delivery berhasil disimpan', 'success');
   };
 
   const handleConfirm = () => {
-    toast.success('Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi');
+    if (!project?.id) return;
+    // Persist
+    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote, progress, milestones });
+    // Add timeline event
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Target Delivery Dikonfirmasi',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+      description: 'Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi.',
+    };
+    addTimelineEvent(project.id, event);
+    // Advance status
+    updateProject(project.id, { status: 'Executing', phase: 'Executing' });
+    onShowNotification?.('Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi', 'success');
   };
 
   const completedCount = milestones.filter(m => m.completed).length;
@@ -138,42 +157,19 @@ export default function DeliveryTab({ project: propProject }: TabProps) {
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Klien</span>
-                <span className="font-semibold text-slate-800">{project.client}</span>
+                <span className="font-semibold text-slate-800">{project?.client}</span>
               </div>
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Nilai Proyek</span>
-                <span className="font-semibold text-primary">{formatCurrency(project.estimatedValue)}</span>
+                <span className="font-semibold text-primary">{formatCurrency(project?.estimatedValue || 0)}</span>
               </div>
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Lokasi</span>
-                <span className="font-semibold text-slate-800">{project.location}</span>
+                <span className="font-semibold text-slate-800">{project?.location}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-secondary font-medium">Progress Overall</span>
-                <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[10px]">{project.progress}%</span>
-              </div>
-            </div>
-          </Card>
-
-          <Card padding="none" className="overflow-hidden">
-            <div className="p-4 border-b border-border bg-slate-50 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-700 flex items-center">
-                <span className="material-symbols-outlined mr-1.5 text-slate-400 text-[18px]">map</span>
-                Pratinjau Distribusi
-              </span>
-              <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-semibold">Aktif</span>
-            </div>
-            <div className="relative h-44 bg-slate-200 overflow-hidden flex items-center justify-center">
-              <img
-                referrerPolicy="no-referrer"
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=400&q=80"
-                alt="Logistics Map"
-                className="w-full h-full object-cover filter brightness-90 saturate-50"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none" />
-              <div className="absolute bottom-3 left-3 right-3 text-white flex flex-col">
-                <span className="text-[10px] font-mono tracking-wider opacity-90 uppercase">Transit Center</span>
-                <span className="text-xs font-bold drop-shadow">{project.location}</span>
+                <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[10px]">{project?.progress || 0}%</span>
               </div>
             </div>
           </Card>

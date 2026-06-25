@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS, COMPETITORS } from '@/services/mock-data';
+import { useState, useEffect } from 'react';
+import type { Project, CompetitorEntry } from '@/types/domain';
+import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency } from '@/utils/formatters';
-import toast from 'react-hot-toast';
 import { Card, Button, Input, Table } from '@/components/ui';
 import type { Column } from '@/components/ui';
 
@@ -11,47 +10,56 @@ interface TabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-interface CompetitorRow {
-  id: string;
-  name: string;
-  estPrice: number;
-  advantages: string[];
-  notes: string;
-}
+export default function HargaTab({ project }: TabProps) {
+  const updateProjectPricing = useProjectStore((s) => s.updateProjectPricing);
+  const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
+  const updateProjectCompetitors = useProjectStore((s) => s.updateProjectCompetitors);
 
-export default function HargaTab({ project: propProject }: TabProps) {
-  const project = propProject || INITIAL_PROJECTS[0];
-  const [hargaPenawaran, setHargaPenawaran] = useState(project.pricing?.value || 1250000000);
-  const [marginPercentage, setMarginPercentage] = useState(project.pricing?.margin || 12.5);
-  const [pricingNotes, setPricingNotes] = useState(project.pricing?.note || '');
-  const [competitors, setCompetitors] = useState<CompetitorRow[]>(COMPETITORS);
+  const [hargaPenawaran, setHargaPenawaran] = useState(project?.pricing?.value || 0);
+  const [marginPercentage, setMarginPercentage] = useState(project?.pricing?.margin || 0);
+  const [pricingNotes, setPricingNotes] = useState(project?.pricing?.note || '');
+  const [competitors, setCompetitors] = useState<CompetitorEntry[]>(project?.competitors || []);
   const [newCompName, setNewCompName] = useState('');
   const [newCompPrice, setNewCompPrice] = useState('');
   const [newCompAdv, setNewCompAdv] = useState('');
   const [newCompNote, setNewCompNote] = useState('');
 
+  // Sync from project when switching projects
+  useEffect(() => {
+    setHargaPenawaran(project?.pricing?.value || 0);
+    setMarginPercentage(project?.pricing?.margin || 0);
+    setPricingNotes(project?.pricing?.note || '');
+    setCompetitors(project?.competitors || []);
+  }, [project?.id]);
+
   const handleSavePricing = () => {
-    toast.success('Draf harga penawaran berhasil diperbarui!');
+    if (!project?.id) return;
+    updateProjectPricing(project.id, {
+      value: hargaPenawaran,
+      margin: marginPercentage,
+      note: pricingNotes,
+    });
   };
 
   const handleAddCompetitor = () => {
-    if (!newCompName) { toast.error('Nama kompetitor harus diisi.'); return; }
-    const newItem: CompetitorRow = {
-      id: String(competitors.length + 1),
+    if (!project?.id) return;
+    if (!newCompName) return;
+    const newItem: CompetitorEntry = {
+      id: `comp-${Date.now()}`,
       name: newCompName,
       estPrice: Number(newCompPrice) || 0,
-      advantages: newCompAdv ? newCompAdv.split(',').map(s => s.trim()) : ['BIM Integration'],
-      notes: newCompNote || '-'
+      advantages: newCompAdv ? newCompAdv.split(',').map(s => s.trim()) : [],
+      notes: newCompNote || '-',
     };
+    addProjectCompetitor(project.id, newItem);
     setCompetitors(prev => [...prev, newItem]);
     setNewCompName(''); setNewCompPrice(''); setNewCompAdv(''); setNewCompNote('');
-    toast.success(`Kompetitor ${newItem.name} berhasil ditambahkan`);
   };
 
   const grossMargin = (hargaPenawaran * marginPercentage) / 100;
   const cogs = hargaPenawaran - grossMargin;
 
-  const competitorColumns: Column<CompetitorRow>[] = [
+  const competitorColumns: Column<CompetitorEntry>[] = [
     { key: 'name', header: 'Nama Kompetitor', render: (row) => <span className="font-semibold">{row.name}</span> },
     { key: 'estPrice', header: 'Estimasi Harga', align: 'right', render: (row) => <span className="font-mono">{formatCurrency(row.estPrice)}</span> },
     { key: 'advantages', header: 'Kelebihan', render: (row) => (
@@ -132,7 +140,7 @@ export default function HargaTab({ project: propProject }: TabProps) {
         <Table
           columns={competitorColumns}
           data={competitors}
-          keyExtractor={(row) => (row as CompetitorRow).id}
+          keyExtractor={(row) => (row as CompetitorEntry).id}
           emptyState={<p className="text-sm text-secondary">Belum ada data kompetitor</p>}
         />
         <div className="mt-4 pt-4 border-t border-border grid grid-cols-12 gap-3 items-end">

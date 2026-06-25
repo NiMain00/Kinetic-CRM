@@ -11,3 +11,5 @@ export { default as Tabs } from './Tabs';
 export type { Tab } from './Tabs';
 export { default as Toast } from './Toast';
 export { default as DatePicker } from './DatePicker';
+export { default as Stepper } from './Stepper';
+export type { StepperStep } from './Stepper';

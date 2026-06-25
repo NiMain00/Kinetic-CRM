@@ -1,39 +1,38 @@
-import { useState } from 'react';
-import type { Project } from '@/types/domain';
-import { COMPETITORS } from '@/services/mock-data';
+import { useState, useEffect } from 'react';
+import type { Project, CompetitorEntry } from '@/types/domain';
+import { useProjectStore } from '@/stores/projectStore';
 
 interface TabProps {
   project?: Project;
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-interface CompetitorRow {
-  id: string;
-  name: string;
-  estPrice: number;
-  advantages: string[];
-  notes: string;
-}
-
-export default function KompetitorTab({ project: _project, onShowNotification }: TabProps) {
-  const [competitors, setCompetitors] = useState<CompetitorRow[]>(COMPETITORS);
+export default function KompetitorTab({ project, onShowNotification }: TabProps) {
+  const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
+  const [competitors, setCompetitors] = useState<CompetitorEntry[]>(project?.competitors || []);
   const [newCompName, setNewCompName] = useState('');
   const [newCompPrice, setNewCompPrice] = useState('');
   const [newCompAdv, setNewCompAdv] = useState('');
   const [newCompNote, setNewCompNote] = useState('');
 
+  useEffect(() => {
+    setCompetitors(project?.competitors || []);
+  }, [project?.id]);
+
   const handleAddCompetitor = () => {
+    if (!project?.id) return;
     if (!newCompName) {
       onShowNotification?.('Nama kompetitor harus diisi.', 'error');
       return;
     }
-    const newItem: CompetitorRow = {
-      id: String(competitors.length + 1),
+    const newItem: CompetitorEntry = {
+      id: `comp-${Date.now()}`,
       name: newCompName,
       estPrice: Number(newCompPrice) || 0,
-      advantages: newCompAdv ? newCompAdv.split(',').map((s) => s.trim()) : ['BIM Integration'],
+      advantages: newCompAdv ? newCompAdv.split(',').map((s) => s.trim()) : [],
       notes: newCompNote || '-',
     };
+    addProjectCompetitor(project.id, newItem);
     setCompetitors([...competitors, newItem]);
     setNewCompName('');
     setNewCompPrice('');
@@ -46,6 +45,9 @@ export default function KompetitorTab({ project: _project, onShowNotification }:
     <div className="space-y-6">
       <div className="bg-white border border-border p-6 rounded-xl shadow-sm">
         <h3 className="font-heading-section text-heading-section mb-4">Competitor Breakdown &amp; Market Position</h3>
+        {competitors.length === 0 && (
+          <p className="text-sm text-secondary mb-4">Belum ada data kompetitor. Tambahkan kompetitor di bawah.</p>
+        )}
         <div className="overflow-x-auto table-mobile-compact">
           <table className="w-full text-left text-sm border-collapse table-auto">
             <thead className="bg-surface-container-low text-on-surface border-b border-border">

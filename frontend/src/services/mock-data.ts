@@ -12,16 +12,16 @@ export const INITIAL_CUSTOMERS: Customer[] = [
   { id: 'C007', name: 'Global Tech Solutions', code: 'GTS', type: 'asing', city: 'Jakarta Selatan', npwp: '04.567.890.1-094.003', picName: 'John Smith', picPosition: 'Regional Manager', picPhone: '0817-8901-2345' },
 ];
 
-export const INITIAL_PROSPECTS: Prospect[] = [
-  { id: '1', name: 'Modernization of Data Center Jakarta', client: 'PT. Telekom Nusantara', customerId: 'C002', customerType: 'existing', status: 'Potensial', prospectType: 'potensial', potensiUnit: 3, author: 'Andi Wijaya', date: 'Oct 24, 2023', estimatedValue: 1250000000, description: 'Pengadaan infrastruktur server modular untuk perluasan kapasitas regional base DC Jakarta.', branch: 'Jakarta Pusat' },
-  { id: '2', name: 'Supply of Industrial High-Voltage Cables', client: 'Energi Bangsa Corp', customerId: 'C003', customerType: 'existing', status: 'Approved', potensiUnit: 5, author: 'Siti Aminah', date: 'Oct 22, 2023', estimatedValue: 3400000000, description: 'Pengadaan kabel transmisi tegangan tinggi untuk gardu induk Sumatera Selatan.', branch: 'Surabaya' },
-  { id: '3', name: 'Surveillance System Implementation Phase 2', client: 'Secure City Group', customerId: 'C004', customerType: 'existing', status: 'Waiting PM', potensiUnit: 2, author: 'Budi Santoso', date: 'Oct 21, 2023', estimatedValue: 850000000, description: 'Instalasi pemantauan cerdas dengan IP camera berbasis AI di area komersial.', branch: 'Jakarta Selatan' },
-  { id: '4', name: 'Cloud Infrastructure Migration Strategy', client: 'Bank Artha Graha', customerId: 'C005', customerType: 'existing', status: 'Revision', potensiUnit: 1, author: 'Rina Kartika', date: 'Oct 19, 2023', estimatedValue: 1800000000, description: 'Consulting dan restrukturisasi database on-premise ke multi-cloud architecture.', branch: 'Jakarta Barat' },
-  { id: '5', name: 'Solar Panel Installation - North Branch', client: 'Lestari Eco Farms', customerType: 'new', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Andi Wijaya', date: 'Oct 18, 2023', estimatedValue: 950000000, branch: 'Bandung', customerData: { id: 'new-1', name: 'Lestari Eco Farms', code: 'LEF', type: 'swasta', city: 'Bandung', picName: 'Dewi Lestari', picPosition: 'Owner', picPhone: '0821-1234-5678', isNew: true, needsVerification: true } },
-  { id: '6', name: 'Enterprise Firewall Upgrade - Global', client: 'Defense Tech Solutions', status: 'Approved', potensiUnit: 4, author: 'Budi Santoso', date: 'Oct 15, 2023', estimatedValue: 600000000, branch: 'Jakarta Pusat' },
-  { id: '7', name: 'Network Optimization Project v3.0', client: 'Global Logistics Inc.', status: 'Waiting PM', potensiUnit: 2, author: 'Rina Kartika', date: 'Oct 14, 2023', estimatedValue: 1100000000, branch: 'Makassar' },
-  { id: '8', name: 'Warehouse Automation Consultation', client: 'Express Delivery Hub', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Siti Aminah', date: 'Oct 12, 2023', estimatedValue: 500000000, branch: 'Surabaya' },
-];
+  export const INITIAL_PROSPECTS: Prospect[] = [
+    { id: '1', name: 'Modernization of Data Center Jakarta', client: 'PT. Telekom Nusantara', customerId: 'C002', customerType: 'existing', status: 'Potensial', prospectType: 'potensial', potensiUnit: 3, author: 'Andi Wijaya', date: 'Oct 24, 2023', estimatedValue: 1250000000, description: 'Pengadaan infrastruktur server modular untuk perluasan kapasitas regional base DC Jakarta.', branch: 'Jakarta Pusat' },
+    { id: '2', name: 'Supply of Industrial High-Voltage Cables', client: 'Energi Bangsa Corp', customerId: 'C003', customerType: 'existing', status: 'Approved', potensiUnit: 5, author: 'Siti Aminah', date: 'Oct 22, 2023', estimatedValue: 3400000000, description: 'Pengadaan kabel transmisi tegangan tinggi untuk gardu induk Sumatera Selatan.', branch: 'Surabaya' },
+    { id: '3', name: 'Surveillance System Implementation Phase 2', client: 'Secure City Group', customerId: 'C004', customerType: 'existing', status: 'Waiting PM', potensiUnit: 2, author: 'Budi Santoso', date: 'Oct 21, 2023', estimatedValue: 850000000, description: 'Instalasi pemantauan cerdas dengan IP camera berbasis AI di area komersial.', branch: 'Jakarta Selatan' },
+    { id: '4', name: 'Cloud Infrastructure Migration Strategy', client: 'Bank Artha Graha', customerId: 'C005', customerType: 'existing', status: 'Revision', potensiUnit: 1, author: 'Rina Kartika', date: 'Oct 19, 2023', estimatedValue: 1800000000, description: 'Consulting dan restrukturisasi database on-premise ke multi-cloud architecture.', branch: 'Jakarta Barat' },
+    { id: '5', name: 'Solar Panel Installation - North Branch', client: 'Lestari Eco Farms', customerType: 'new', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Andi Wijaya', date: 'Oct 18, 2023', estimatedValue: 950000000, branch: 'Bandung', customerData: { id: 'new-1', name: 'Lestari Eco Farms', code: 'LEF', type: 'swasta', city: 'Bandung', picName: 'Dewi Lestari', picPosition: 'Owner', picPhone: '0821-1234-5678', isNew: true, needsVerification: true } },
+    { id: '6', name: 'Enterprise Firewall Upgrade - Global', client: 'Defense Tech Solutions', status: 'Approved', potensiUnit: 4, author: 'Budi Santoso', date: 'Oct 15, 2023', estimatedValue: 600000000, branch: 'Jakarta Pusat' },
+    { id: '7', name: 'Network Optimization Project v3.0', client: 'Global Logistics Inc.', status: 'Waiting PM', potensiUnit: 2, author: 'Rina Kartika', date: 'Oct 14, 2023', estimatedValue: 1100000000, branch: 'Makassar' },
+    { id: '8', name: 'Warehouse Automation Consultation', client: 'Express Delivery Hub', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Siti Aminah', date: 'Oct 12, 2023', estimatedValue: 500000000, branch: 'Surabaya' },
+  ];
 
 export const INITIAL_PROJECTS: Project[] = [
   {
@@ -46,7 +46,67 @@ export const INITIAL_PROJECTS: Project[] = [
     },
     winnerDetails: {
       outcome: null
-    }
+    },
+    rks: {
+      nomorTender: 'TND/2025/HQ/0042',
+      namaTender: 'Pembangunan Infrastruktur Data Center - Tahap II',
+      deadlineTender: '2026-06-25',
+      aanwijzing: 'Ya, Terjadwal',
+      workLocation: 'Gatot Subroto, Jakarta',
+      mainScope: 'Pembangunan infrastruktur data center terintegrasi meliputi instalasi kelistrikan, rack server, unit pendingin, dan fire suppression system.',
+      additionalNotes: 'Perhatikan persyaratan sertifikasi TKDN minimal 40% untuk seluruh perangkat.',
+      uploadedFiles: [
+        { name: 'RKS_Technical_Draft_v1.pdf', size: '4.2 MB', time: '2 mins ago' },
+        { name: 'BOQ_Analysis_v3.xlsx', size: '1.8 MB', time: '1 day ago' },
+      ]
+    },
+    lphsChecklist: [
+      { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'adms_checklist.pdf' },
+      { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec_v2.pdf' },
+      { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'passed', document: 'ahs_analysis.xlsx' },
+      { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'na', document: '' },
+      { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule_bar.pdf' },
+      { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
+      { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
+      { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'failed', document: '' },
+    ],
+    competitors: [
+      { id: '1', name: 'Infrastructure Alpha', estPrice: 142500000000, advantages: ['Fast-track Delivery', 'Legacy Support'], notes: 'Strong political ties with the regional aviation authority.' },
+      { id: '2', name: 'BuildCore Systems', estPrice: 138200000000, advantages: ['BIM Integration'], notes: 'Price leader but lacks heavy civil experience.' },
+    ],
+    timeline: [
+      { id: 'evt-1', title: 'Proyek Dibuat', actor: 'Bambang Sutejo', role: 'Project Manager', time: 'Feb 24, 2025', type: 'submit' },
+      { id: 'evt-2', title: 'RKS Disubmit', actor: 'Bambang Sutejo', role: 'Project Manager', time: 'Mar 1, 2025', type: 'submit', description: 'RKS berhasil dikirim ke tim review.' },
+      { id: 'evt-3', title: 'RKS Direview', actor: 'Anies Wijaya', role: 'Regional Director', time: 'Mar 5, 2025', type: 'approve', description: 'Review RKS selesai, lanjut ke tahap LPHS/SIOS.' },
+      { id: 'evt-4', title: 'Status Berubah', actor: 'System', role: 'System', time: 'Mar 5, 2025', type: 'status_change', prevVal: 'RKS', newVal: 'LPHS/SIOS' },
+    ],
+    documents: [
+      {
+        key: 'RKS', label: 'Rencana Kerja & Syarat-Syarat', icon: 'RKS', color: 'bg-primary/10 text-primary',
+        documents: [
+          { id: 'd1', name: 'RKS_Tahap_1_Pondasi_Final.pdf', size: '4.2 MB', uploadDate: '2025-10-12', uploader: 'Ahmad Subarjo', version: 'v2.4', icon: 'picture_as_pdf', iconColor: 'text-red-500' },
+          { id: 'd2', name: 'RKS_BOQ_v2.xlsx', size: '1.8 MB', uploadDate: '2025-10-10', uploader: 'Deni Saputra', version: 'v2.0', icon: 'table_chart', iconColor: 'text-emerald-500' },
+        ]
+      },
+      {
+        key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-teal-50 text-teal-600',
+        documents: []
+      },
+      {
+        key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-purple-50 text-purple-600',
+        documents: []
+      },
+      {
+        key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-amber-50 text-amber-600',
+        documents: []
+      },
+      {
+        key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-sky-50 text-sky-600',
+        documents: [
+          { id: 'd3', name: 'Site_Photos_Sept_2023.zip', size: '128 MB', uploadDate: '2025-09-28', uploader: 'Siti Aminah', version: 'v1.0', icon: 'folder_zip', iconColor: 'text-sky-500' },
+        ]
+      },
+    ],
   },
   {
     id: 'PR-2025-002',
@@ -70,7 +130,47 @@ export const INITIAL_PROJECTS: Project[] = [
     },
     winnerDetails: {
       outcome: null
-    }
+    },
+    rks: {
+      nomorTender: 'FTTH/2024/MTR/0018',
+      namaTender: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2',
+      deadlineTender: '2026-06-30',
+      aanwijzing: 'Ya, Terjadwal',
+      workLocation: 'Menteng, Jakarta Pusat, DKI Jakarta',
+      mainScope: 'Penggelaran kabel fiber optik sepanjang 12 km mencakup 3.500 rumah, instalasi ODP, dan koneksi last-mile.',
+      additionalNotes: '',
+      uploadedFiles: [
+        { name: 'RKS_FTTH_Menteng_v2.pdf', size: '3.1 MB', time: '2 weeks ago' },
+      ]
+    },
+    lphsChecklist: [
+      { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'admin_checklist.pdf' },
+      { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec_v1.pdf' },
+      { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'passed', document: '' },
+      { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'passed', document: '' },
+      { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule_v2.pdf' },
+      { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
+      { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
+      { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'na', document: '' },
+    ],
+    competitors: [
+      { id: '1', name: 'PT. Solusi Fiber Nusantara', estPrice: 1320000000, advantages: ['Harga kompetitif', 'Cakupan luas'], notes: 'Kompetitor utama, sudah memiliki infrastruktur di area sekitar.' },
+      { id: '2', name: 'NetConnect Pro', estPrice: 1185000000, advantages: ['Teknologi terbaru'], notes: 'Pendatang baru dengan teknologi GPON terbaru.' },
+    ],
+    timeline: [
+      { id: 'evt-5', title: 'Proyek Dibuat', actor: 'Alex BranchManager', role: 'Branch Manager', time: 'Aug 14, 2024', type: 'submit' },
+      { id: 'evt-6', title: 'RKS Disubmit', actor: 'Alex BranchManager', role: 'Branch Manager', time: 'Aug 20, 2024', type: 'submit' },
+      { id: 'evt-7', title: 'RKS Direview & Disetujui', actor: 'Anies Wijaya', role: 'Regional Director', time: 'Aug 25, 2024', type: 'approve' },
+      { id: 'evt-8', title: 'LPHS/SIOS Selesai', actor: 'Deni Saputra', role: 'Procurement', time: 'Sep 5, 2024', type: 'approve' },
+      { id: 'evt-9', title: 'Status Berubah', actor: 'System', role: 'System', time: 'Sep 5, 2024', type: 'status_change', prevVal: 'LPHS/SIOS', newVal: 'Input Harga' },
+    ],
+    documents: [
+      { key: 'RKS', label: 'Rencana Kerja & Syarat-Syarat', icon: 'RKS', color: 'bg-primary/10 text-primary', documents: [] },
+      { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-teal-50 text-teal-600', documents: [] },
+      { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-purple-50 text-purple-600', documents: [] },
+      { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-amber-50 text-amber-600', documents: [] },
+      { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-sky-50 text-sky-600', documents: [] },
+    ],
   },
   {
     id: 'PR-2025-003',
@@ -78,7 +178,7 @@ export const INITIAL_PROJECTS: Project[] = [
     name: 'Modernization of Terminal 3',
     client: 'PT. Angkasa Pura II',
     status: 'Executing',
-    phase: 'Overview',
+    phase: 'Executing',
     location: 'Cengkareng, Tangerang',
     author: 'John Doe',
     date: 'Jan 10, 2024',
@@ -86,12 +186,87 @@ export const INITIAL_PROJECTS: Project[] = [
     estimatedValue: 142500000000,
     type: 'Tender',
     deadlineTender: '2026-05-30',
+    pricing: {
+      value: 142500000000,
+      margin: 15.2,
+      note: 'Harga penawaran final setelah negosiasi kontrak.',
+    },
     winnerDetails: {
       outcome: 'menang',
       contractValue: 138200000000,
       startDate: '2024-02-01',
-      duration: 360
-    }
+      duration: 360,
+    },
+    delivery: {
+      startDate: '2024-02-01',
+      endDate: '2025-01-26',
+      note: 'Pengiriman material secara bertahap sesuai jadwal kontrak.',
+      progress: 95,
+      milestones: [
+        { id: 'm1', name: 'Mobilisasi alat & material', completed: true, date: '2024-02-15' },
+        { id: 'm2', name: 'Pembangunan pondasi', completed: true, date: '2024-04-30' },
+        { id: 'm3', name: 'Instalasi struktur utama', completed: true, date: '2024-07-15' },
+        { id: 'm4', name: 'Pekerjaan MEP', completed: true, date: '2024-10-30' },
+        { id: 'm5', name: 'Finishing & komisioning', completed: false, date: '2025-01-15' },
+        { id: 'm6', name: 'Serah terima proyek', completed: false, date: '2025-01-26' },
+      ],
+    },
+    rks: {
+      nomorTender: 'AP2/2024/T3/001',
+      namaTender: 'Modernization of Terminal 3',
+      deadlineTender: '2026-05-30',
+      aanwijzing: 'Ya, Terjadwal',
+      workLocation: 'Cengkareng, Tangerang',
+      mainScope: 'Modernisasi terminal 3 meliputi perluasan area check-in, pemasangan AVSEC baru, dan pembaruan sistem HVAC.',
+      additionalNotes: 'Proyek prioritas nasional, wajib selesai sebelum Q2 2025.',
+      uploadedFiles: [
+        { name: 'RKS_Terminal3_Final.pdf', size: '8.5 MB', time: 'Jan 5, 2024' },
+      ],
+    },
+    lphsChecklist: [
+      { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'admin.pdf' },
+      { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec.pdf' },
+      { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'passed', document: '' },
+      { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'passed', document: '' },
+      { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule.pdf' },
+      { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'passed', document: '' },
+      { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
+      { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'passed', document: '' },
+    ],
+    competitors: [
+      { id: '1', name: 'Infrastructure Alpha', estPrice: 142500000000, advantages: ['Fast-track Delivery', 'Legacy Support'], notes: 'Strong political ties.' },
+      { id: '2', name: 'BuildCore Systems', estPrice: 138200000000, advantages: ['BIM Integration'], notes: 'Price leader.' },
+      { id: '3', name: 'Mega Konstruksi Perkasa', estPrice: 145000000000, advantages: ['Peralatan lengkap'], notes: 'Memiliki pengalaman proyek serupa di bandara.' },
+    ],
+    timeline: [
+      { id: 'evt-10', title: 'Proyek Dibuat', actor: 'John Doe', role: 'Project Manager', time: 'Jan 10, 2024', type: 'submit' },
+      { id: 'evt-11', title: 'RKS Disubmit', actor: 'John Doe', role: 'Project Manager', time: 'Jan 15, 2024', type: 'submit' },
+      { id: 'evt-12', title: 'RKS Lolos Review', actor: 'Anies Wijaya', role: 'Regional Director', time: 'Jan 18, 2024', type: 'approve' },
+      { id: 'evt-13', title: 'LPHS/SIOS Selesai', actor: 'Deni Saputra', role: 'Procurement', time: 'Jan 22, 2024', type: 'approve' },
+      { id: 'evt-14', title: 'Proyek Menang Tender', actor: 'John Doe', role: 'Project Manager', time: 'Jan 28, 2024', type: 'status_change', prevVal: 'Input Harga', newVal: 'Pemenang' },
+      { id: 'evt-15', title: 'Kontrak Ditandatangani', actor: 'John Doe', role: 'Project Manager', time: 'Feb 1, 2024', type: 'approve', description: 'Nilai kontrak final Rp 138.200.000.000' },
+      { id: 'evt-16', title: 'Target Delivery Dimulai', actor: 'John Doe', role: 'Project Manager', time: 'Feb 1, 2024', type: 'status_change', prevVal: 'Pemenang', newVal: 'Target Delivery' },
+      { id: 'evt-17', title: 'Progres 50%', actor: 'Rina Amalia', role: 'Site Engineer', time: 'Jul 15, 2024', type: 'comment', description: 'Progres pembangunan mencapai 50%, sesuai jadwal.' },
+      { id: 'evt-18', title: 'Progress 75%', actor: 'Rina Amalia', role: 'Site Engineer', time: 'Oct 30, 2024', type: 'comment', description: 'Struktur utama selesai, masuk tahap finishing.' },
+      { id: 'evt-19', title: 'Dokumen QA Diunggah', actor: 'Rina Amalia', role: 'Site Engineer', time: 'Dec 15, 2024', type: 'upload', fileName: 'QA_Report_Q4_2024.pdf', fileSize: '2.3 MB' },
+    ],
+    documents: [
+      { key: 'RKS', label: 'Rencana Kerja & Syarat-Syarat', icon: 'RKS', color: 'bg-primary/10 text-primary', documents: [
+        { id: 'd1', name: 'RKS_Terminal3_Final.pdf', size: '8.5 MB', uploadDate: '2024-01-05', uploader: 'John Doe', version: 'v3.0', icon: 'picture_as_pdf', iconColor: 'text-red-500' },
+      ]},
+      { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-teal-50 text-teal-600', documents: [
+        { id: 'd2', name: 'LPHS_Analysis.xlsx', size: '2.1 MB', uploadDate: '2024-01-20', uploader: 'Deni Saputra', version: 'v1.2', icon: 'table_chart', iconColor: 'text-emerald-500' },
+      ]},
+      { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-purple-50 text-purple-600', documents: [
+        { id: 'd3', name: 'SIOS_Approval.pdf', size: '0.5 MB', uploadDate: '2024-02-01', uploader: 'Anies Wijaya', version: 'v1.0', icon: 'picture_as_pdf', iconColor: 'text-red-500' },
+      ]},
+      { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-amber-50 text-amber-600', documents: [
+        { id: 'd4', name: 'Penawaran_Harga_Final.pdf', size: '3.2 MB', uploadDate: '2024-01-25', uploader: 'John Doe', version: 'v2.1', icon: 'picture_as_pdf', iconColor: 'text-red-500' },
+      ]},
+      { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-sky-50 text-sky-600', documents: [
+        { id: 'd5', name: 'Site_Docs_Progress.zip', size: '256 MB', uploadDate: '2024-12-15', uploader: 'Rina Amalia', version: 'v4.0', icon: 'folder_zip', iconColor: 'text-sky-500' },
+      ]},
+    ],
   },
   {
     id: 'PR-2025-004',
@@ -109,8 +284,21 @@ export const INITIAL_PROJECTS: Project[] = [
     winnerDetails: {
       outcome: 'menang',
       contractValue: 1450000
-    }
-  }
+    },
+    delivery: {
+      startDate: '2023-06-01',
+      endDate: '2023-11-30',
+      note: 'Pengiriman material secara bertahap.',
+      progress: 90,
+      milestones: [
+        { id: 'm1', name: 'Persiapan lokasi', completed: true, date: '2023-06-15' },
+        { id: 'm2', name: 'Pekerjaan pondasi', completed: true, date: '2023-07-30' },
+        { id: 'm3', name: 'Struktur utama', completed: true, date: '2023-09-15' },
+        { id: 'm4', name: 'Finishing', completed: false, date: '2023-11-01' },
+        { id: 'm5', name: 'Serah terima', completed: false, date: '2023-11-30' },
+      ],
+    },
+  },
 ];
 
 export const INITIAL_APPROVALS: ApprovalItem[] = [
@@ -118,11 +306,11 @@ export const INITIAL_APPROVALS: ApprovalItem[] = [
   { id: 'app-1', ref: 'PR-2023-08-001', name: 'Budi Pratama', branch: 'Jakarta Central (HQ)', waitingSince: '3 days 4h ago', slaStatus: 'Overdue', type: 'Prospek', client: 'PT. Telekom Nusantara' },
   { id: 'app-2', ref: 'PR-2023-08-005', name: 'Siti Mulyani', branch: 'Surabaya Timur', waitingSince: '18h 22m ago', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Energi Bangsa Corp' },
   { id: 'app-3', ref: 'PR-2023-08-012', name: 'Dedi Arianto', branch: 'Bandung Utara', waitingSince: '2h 15m ago', slaStatus: 'Normal', type: 'Prospek', client: 'Secure City Group' },
-  
+
   // RKS Approvals
   { id: 'app-4', ref: 'RKS-88902-B', name: 'Maintenance Tower IX - Fase 2', branch: 'Medan Belawan', waitingSince: '4 days 12h ago', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia' },
   { id: 'app-5', ref: 'RKS-89011-A', name: 'Pengadaan AC Central Lobby', branch: 'Makassar Center', waitingSince: '5h 30m ago', slaStatus: 'Normal', type: 'RKS', client: 'PT. Angkasa Pura' },
-  
+
   // LPHS Approvals
   { id: 'app-6', ref: 'SURV-902-B', name: 'Site K-902 Balikpapan', branch: 'Balikpapan Base', waitingSince: '1d 6h ago', slaStatus: 'Near Deadline', type: 'LPHS', client: 'Balikpapan Offsh.' }
 ];
@@ -177,9 +365,4 @@ export const INITIAL_TIMELINE_EVENTS: TimelineEvent[] = [
     type: 'comment',
     description: '"Meeting with local community leaders concluded successfully. No major objections recorded for the new access road."'
   }
-];
-
-export const COMPETITORS = [
-  { id: '1', name: 'Infrastructure Alpha', estPrice: 142500000000, advantages: ['Fast-track Delivery', 'Legacy Support'], notes: 'Strong political ties with the regional aviation authority.' },
-  { id: '2', name: 'BuildCore Systems', estPrice: 138200000000, advantages: ['BIM Integration'], notes: 'Price leader but lacks heavy civil experience.' },
 ];

@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
+import { useState, useEffect } from 'react';
+import type { Project, DocGroup, DocumentEntry } from '@/types/domain';
+import { useProjectStore } from '@/stores/projectStore';
 import { formatDate } from '@/utils/formatters';
-import toast from 'react-hot-toast';
 import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
@@ -10,87 +9,62 @@ interface TabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-interface Document {
-  id: string;
-  name: string;
-  size: string;
-  uploadDate: string;
-  uploader: string;
-  version: string;
-  icon: string;
-  iconColor: string;
-}
+const defaultDocGroups: DocGroup[] = [
+  { key: 'RKS', label: 'Rencana Kerja & Syarat-Syarat', icon: 'RKS', color: 'bg-primary/10 text-primary', documents: [] },
+  { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-teal-50 text-teal-600', documents: [] },
+  { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-purple-50 text-purple-600', documents: [] },
+  { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-amber-50 text-amber-600', documents: [] },
+  { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-sky-50 text-sky-600', documents: [] },
+];
 
-interface DocGroup {
-  key: string;
-  label: string;
-  icon: string;
-  color: string;
-  documents: Document[];
-}
+export default function DokumenTab({ project, onShowNotification }: TabProps) {
+  const updateProjectDocuments = useProjectStore((s) => s.updateProjectDocuments);
 
-export default function DokumenTab({ project: propProject }: TabProps) {
-  const project = propProject || INITIAL_PROJECTS[0];
-
-  const [docGroups, setDocGroups] = useState<DocGroup[]>([
-    {
-      key: 'RKS',
-      label: 'Rencana Kerja & Syarat-Syarat',
-      icon: 'RKS',
-      color: 'bg-primary/10 text-primary',
-      documents: [
-        { id: 'd1', name: 'RKS_Tahap_1_Pondasi_Final.pdf', size: '4.2 MB', uploadDate: '2025-10-12', uploader: 'Ahmad Subarjo', version: 'v2.4', icon: 'picture_as_pdf', iconColor: 'text-red-500' },
-        { id: 'd2', name: 'RKS_BOQ_v2.xlsx', size: '1.8 MB', uploadDate: '2025-10-10', uploader: 'Deni Saputra', version: 'v2.0', icon: 'table_chart', iconColor: 'text-emerald-500' },
-      ]
-    },
-    {
-      key: 'LPHS',
-      label: 'Laporan Penilaian Harga Satuan',
-      icon: 'LPHS',
-      color: 'bg-teal-50 text-teal-600',
-      documents: []
-    },
-    {
-      key: 'SIOS',
-      label: 'Surat Instruksi Operasional Site',
-      icon: 'SIOS',
-      color: 'bg-purple-50 text-purple-600',
-      documents: []
-    },
-    {
-      key: 'Harga',
-      label: 'Dokumen Penawaran Harga Final',
-      icon: 'HRG',
-      color: 'bg-amber-50 text-amber-600',
-      documents: []
-    },
-    {
-      key: 'MISC',
-      label: 'Dokumen Lampiran & Foto Lapangan',
-      icon: 'MISC',
-      color: 'bg-sky-50 text-sky-600',
-      documents: [
-        { id: 'd3', name: 'Site_Photos_Sept_2023.zip', size: '128 MB', uploadDate: '2025-09-28', uploader: 'Siti Aminah', version: 'v1.0', icon: 'folder_zip', iconColor: 'text-sky-500' },
-      ]
-    },
-  ]);
-
+  const [docGroups, setDocGroups] = useState<DocGroup[]>(project?.documents || defaultDocGroups);
   const [openedGroups, setOpenedGroups] = useState<Record<string, boolean>>({
-    RKS: true, LPHS: false, SIOS: false, Harga: false, MISC: true,
+    RKS: true, LPHS: false, SIOS: false, Harga: false, MISC: false,
   });
   const [isUploadDrawerOpen, setIsUploadDrawerOpen] = useState(false);
+  const [uploadGroup, setUploadGroup] = useState('RKS');
+  const [uploadFileName, setUploadFileName] = useState('');
+
+  useEffect(() => {
+    setDocGroups(project?.documents || defaultDocGroups);
+  }, [project?.id]);
 
   const toggleGroup = (key: string) => {
     setOpenedGroups(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleUpload = (groupKey: string) => {
-    toast.success(`Upload dokumen untuk kategori ${groupKey} dibuka`);
+  const handleUploadOpen = (groupKey: string) => {
+    setUploadGroup(groupKey);
+    setUploadFileName('');
     setIsUploadDrawerOpen(true);
   };
 
-  const handleDownload = (doc: Document) => {
-    toast.success(`Mengunduh ${doc.name} (${doc.size})`);
+  const handleUploadConfirm = () => {
+    if (!project?.id || !uploadFileName) return;
+    const newDoc: DocumentEntry = {
+      id: `doc-${Date.now()}`,
+      name: uploadFileName,
+      size: '0 MB',
+      uploadDate: new Date().toISOString().split('T')[0],
+      uploader: project.author,
+      version: 'v1.0',
+      icon: 'description',
+      iconColor: 'text-primary',
+    };
+    const updated = docGroups.map(g =>
+      g.key === uploadGroup ? { ...g, documents: [...g.documents, newDoc] } : g
+    );
+    setDocGroups(updated);
+    updateProjectDocuments(project.id, updated);
+    setIsUploadDrawerOpen(false);
+    onShowNotification?.('Dokumen berhasil diunggah.', 'success');
+  };
+
+  const handleDownload = (doc: DocumentEntry) => {
+    onShowNotification?.(`Mengunduh ${doc.name} (${doc.size})`, 'success');
   };
 
   const totalDocs = docGroups.reduce((sum, g) => sum + g.documents.length, 0);
@@ -109,7 +83,7 @@ export default function DokumenTab({ project: propProject }: TabProps) {
           </h3>
           <p className="text-secondary text-xs mt-1">Kelola seluruh draf berkas, arsip RKS, data LPHS, serta dokumen penawaran harga secara terpusat.</p>
         </div>
-        <Button onClick={() => setIsUploadDrawerOpen(true)} leftIcon={<span className="material-symbols-outlined text-[18px]">cloud_upload</span>}>
+        <Button onClick={() => handleUploadOpen('RKS')} leftIcon={<span className="material-symbols-outlined text-[18px]">cloud_upload</span>}>
           Unggah Dokumen Baru
         </Button>
       </div>
@@ -148,7 +122,7 @@ export default function DokumenTab({ project: propProject }: TabProps) {
           </div>
           <div>
             <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Proyek</p>
-            <p className="font-bold text-base text-slate-700">{project.code}</p>
+            <p className="font-bold text-base text-slate-700">{project?.code}</p>
           </div>
         </div>
       </div>
@@ -214,7 +188,7 @@ export default function DokumenTab({ project: propProject }: TabProps) {
                     <div className="p-10 text-center text-slate-400 text-xs italic border-t border-border bg-slate-50/40">
                       <span className="material-symbols-outlined text-3xl mb-2 text-slate-300 block">inventory_2</span>
                       Belum ada dokumen yang terunggah dalam kategori <span className="font-bold text-slate-500">{group.label}</span>.
-                      <button onClick={() => handleUpload(group.key)} className="block mx-auto mt-3 px-4 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-container transition-colors">
+                      <button onClick={() => handleUploadOpen(group.key)} className="block mx-auto mt-3 px-4 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary-container transition-colors">
                         Upload Dokumen
                       </button>
                     </div>
@@ -245,16 +219,24 @@ export default function DokumenTab({ project: propProject }: TabProps) {
             <div className="p-6 flex-1 overflow-y-auto space-y-6">
               <div>
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Nama Dokumen</label>
-                <input type="text" className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-slate-800" placeholder="Masukkan nama berkas..." />
+                <input
+                  value={uploadFileName}
+                  onChange={e => setUploadFileName(e.target.value)}
+                  type="text"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-slate-800"
+                  placeholder="Masukkan nama berkas..."
+                />
               </div>
               <div>
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Kategori Folder</label>
-                <select className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-slate-800 bg-white">
-                  <option value="RKS">Rencana Kerja & Syarat-Syarat (RKS)</option>
-                  <option value="LPHS">Laporan Penilaian Harga Satuan (LPHS)</option>
-                  <option value="SIOS">Surat Instruksi Operasional Site (SIOS)</option>
-                  <option value="Harga">Dokumen Penawaran Harga Final</option>
-                  <option value="MISC">Dokumen Lampiran & Foto Lapangan (MISC)</option>
+                <select
+                  value={uploadGroup}
+                  onChange={e => setUploadGroup(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-slate-800 bg-white"
+                >
+                  {docGroups.map(g => (
+                    <option key={g.key} value={g.key}>{g.label}</option>
+                  ))}
                 </select>
               </div>
               <div>
@@ -265,17 +247,11 @@ export default function DokumenTab({ project: propProject }: TabProps) {
                   <p className="text-[10px] text-slate-400 mt-1">PDF, DOCX, XLSX, atau ZIP (Maks 50MB)</p>
                 </div>
               </div>
-              <div>
-                <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Catatan Tambahan (Opsional)</label>
-                <textarea rows={4} className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none text-slate-800" placeholder="Tambahkan catatan singkat perubahan revisi berkas ini..." />
-              </div>
             </div>
 
             <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
               <Button variant="secondary" onClick={() => setIsUploadDrawerOpen(false)}>Batal</Button>
-              <Button onClick={() => { toast.success('Dokumen berhasil diunggah dan disimpan ke repositori.'); setIsUploadDrawerOpen(false); }}>
-                Simpan & Upload
-              </Button>
+              <Button onClick={handleUploadConfirm}>Simpan & Upload</Button>
             </div>
           </div>
         </div>

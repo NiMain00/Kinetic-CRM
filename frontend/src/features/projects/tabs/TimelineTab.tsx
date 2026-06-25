@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import type { Project, TimelineEvent } from '@/types/domain';
-import { INITIAL_PROJECTS, INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
-import toast from 'react-hot-toast';
 import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
@@ -36,9 +34,8 @@ const typeLabels: Record<TimelineEvent['type'], string> = {
   comment: 'Komentar',
 };
 
-export default function TimelineTab({ project: propProject }: TabProps) {
-  const project = propProject || INITIAL_PROJECTS[0];
-  const events = INITIAL_TIMELINE_EVENTS;
+export default function TimelineTab({ project }: TabProps) {
+  const events = project?.timeline || [];
   const [filter, setFilter] = useState<TimelineEvent['type'] | 'all'>('all');
 
   const filteredEvents = filter === 'all' ? events : events.filter(e => e.type === filter);
@@ -48,12 +45,6 @@ export default function TimelineTab({ project: propProject }: TabProps) {
     { key: 'status_change', label: 'Update Status' },
     { key: 'upload', label: 'Dokumen' },
   ];
-
-  const handleDownload = (event: TimelineEvent) => {
-    if (event.fileName) {
-      toast.success(`Mengunduh ${event.fileName}...`);
-    }
-  };
 
   return (
     <div className="space-y-8 animate-fade-in text-slate-800">
@@ -86,7 +77,7 @@ export default function TimelineTab({ project: propProject }: TabProps) {
       <div className="relative pl-4 sm:pl-8 space-y-8 before:absolute before:left-8 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200 before:z-0">
         <div className="relative z-10 flex items-center">
           <div className="bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-sm">
-            Timeline Proyek {project.code}
+            Timeline Proyek {project?.code}
           </div>
         </div>
 
@@ -153,7 +144,7 @@ export default function TimelineTab({ project: propProject }: TabProps) {
                 )}
 
                 {event.fileName && (
-                  <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors w-full sm:w-2/3 cursor-pointer" onClick={() => handleDownload(event)}>
+                  <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors w-full sm:w-2/3 cursor-pointer">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-red-500 text-3xl">picture_as_pdf</span>
                       <div>
@@ -168,17 +159,6 @@ export default function TimelineTab({ project: propProject }: TabProps) {
             </div>
           );
         })}
-      </div>
-
-      <div className="text-center pt-4">
-        <button
-          type="button"
-          onClick={() => toast.success('Seluruh histori telah ditampilkan.')}
-          className="px-6 py-2 border border-border bg-white text-secondary hover:bg-slate-50 font-semibold text-xs rounded-lg transition-colors inline-flex items-center"
-        >
-          <span className="material-symbols-outlined mr-1.5 text-[18px]">expand_more</span>
-          Muat Riwayat Lebih Lama
-        </button>
       </div>
     </div>
   );

@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import type { Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
+import { useState, useEffect } from 'react';
+import type { Project, TimelineEvent } from '@/types/domain';
+import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import toast from 'react-hot-toast';
 import { Card, Button, Input, Select } from '@/components/ui';
 
 interface TabProps {
@@ -10,25 +9,82 @@ interface TabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-export default function PemenangTab({ project: propProject }: TabProps) {
-  const project = propProject || INITIAL_PROJECTS[0];
-  const [outcome, setOutcome] = useState<'menang' | 'kalah' | null>(null);
-  const [finalContractValue, setFinalContractValue] = useState('1250000000');
-  const [durationDays, setDurationDays] = useState('180');
-  const [startDate, setStartDate] = useState('2026-07-01');
-  const [failureReason, setFailureReason] = useState('');
-  const [loseNote, setLoseNote] = useState('');
+export default function PemenangTab({ project, onShowNotification }: TabProps) {
+  const updateProject = useProjectStore((s) => s.updateProject);
+  const updateProjectWinner = useProjectStore((s) => s.updateProjectWinner);
+  const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
 
-  const handleApply = () => {
-    if (!outcome) { toast.error('Pilih hasil tender terlebih dahulu'); return; }
-    toast.success(
-      `Hasil tender berhasil terkonfirmasi dan diselesaikan sebagai proyek ${outcome === 'menang' ? 'MENANG' : 'KALAH'}!`,
-      { icon: outcome === 'menang' ? '' : '' }
-    );
-  };
+  const [outcome, setOutcome] = useState<'menang' | 'kalah' | null>(project?.winnerDetails?.outcome || null);
+  const [finalContractValue, setFinalContractValue] = useState(String(project?.winnerDetails?.contractValue || project?.pricing?.value || ''));
+  const [durationDays, setDurationDays] = useState(String(project?.winnerDetails?.duration || ''));
+  const [startDate, setStartDate] = useState(project?.winnerDetails?.startDate || '');
+  const [failureReason, setFailureReason] = useState(project?.winnerDetails?.loseReason || '');
+  const [loseNote, setLoseNote] = useState(project?.winnerDetails?.loseNote || '');
+
+  // Sync when switching projects
+  useEffect(() => {
+    setOutcome(project?.winnerDetails?.outcome || null);
+    setFinalContractValue(String(project?.winnerDetails?.contractValue || project?.pricing?.value || ''));
+    setDurationDays(String(project?.winnerDetails?.duration || ''));
+    setStartDate(project?.winnerDetails?.startDate || '');
+    setFailureReason(project?.winnerDetails?.loseReason || '');
+    setLoseNote(project?.winnerDetails?.loseNote || '');
+  }, [project?.id]);
 
   const handleSaveDraft = () => {
-    toast.success('Draf hasil tender berhasil disimpan');
+    if (!project?.id) return;
+    updateProjectWinner(project.id, {
+      outcome,
+      contractValue: outcome === 'menang' ? Number(finalContractValue) : undefined,
+      startDate: outcome === 'menang' ? startDate : undefined,
+      duration: outcome === 'menang' ? Number(durationDays) : undefined,
+      loseReason: outcome === 'kalah' ? failureReason : undefined,
+      loseNote: outcome === 'kalah' ? loseNote : undefined,
+    });
+    onShowNotification?.('Draf hasil tender berhasil disimpan', 'success');
+  };
+
+  const handleApply = () => {
+    if (!project?.id) return;
+    if (!outcome) {
+      onShowNotification?.('Pilih hasil tender terlebih dahulu', 'error');
+      return;
+    }
+    // Persist winner details
+    updateProjectWinner(project.id, {
+      outcome,
+      contractValue: outcome === 'menang' ? Number(finalContractValue) : undefined,
+      startDate: outcome === 'menang' ? startDate : undefined,
+      duration: outcome === 'menang' ? Number(durationDays) : undefined,
+      loseReason: outcome === 'kalah' ? failureReason : undefined,
+      loseNote: outcome === 'kalah' ? loseNote : undefined,
+    });
+
+    // Add timeline event
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: outcome === 'menang' ? 'Proyek Menang Tender' : 'Proyek Kalah Tender',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: outcome === 'menang' ? 'approve' : 'revision',
+      description: outcome === 'menang'
+        ? `Nilai kontrak final Rp ${Number(finalContractValue).toLocaleString('id-ID')}`
+        : `Alasan: ${failureReason}`,
+    };
+    addTimelineEvent(project.id, event);
+
+    // Advance status
+    if (outcome === 'menang') {
+      updateProject(project.id, { status: 'Target Delivery', phase: 'Target Delivery' });
+    } else {
+      updateProject(project.id, { status: 'Kalah', phase: 'Selesai' });
+    }
+
+    onShowNotification?.(
+      `Hasil tender berhasil terkonfirmasi sebagai ${outcome === 'menang' ? 'MENANG' : 'KALAH'}!`,
+      'success'
+    );
   };
 
   return (
@@ -134,10 +190,7 @@ export default function PemenangTab({ project: propProject }: TabProps) {
                 </div>
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Dokumen SPK / Kontrak</label>
-                  <div
-                    onClick={() => toast.success('Sistem unggah dokumen kontrak disimulasikan.')}
-                    className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group"
-                  >
+                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group">
                     <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary transition-colors mb-2">cloud_upload</span>
                     <p className="text-sm font-semibold text-secondary">Seret file ke sini atau <span className="text-primary underline">klik untuk unggah</span></p>
                     <p className="text-xs text-slate-400 mt-1">PDF, DOCX, ZIP (Maks. 25MB)</p>

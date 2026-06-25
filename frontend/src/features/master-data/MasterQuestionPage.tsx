@@ -4,16 +4,79 @@ import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
 import { useMasterDataStore, type MasterQuestion } from '@/stores/masterDataStore';
 
-const QUESTION_CATEGORIES = ['Data Pribadi', 'Lokasi', 'Verifikasi Fisik', 'Keuangan', 'Legalitas', 'Lainnya'];
-const QUESTION_TYPES = [
-  { value: 'text', label: 'Teks' },
-  { value: 'select', label: 'Pilihan' },
-  { value: 'boolean', label: 'Ya/Tidak' },
+const QUESTION_CATEGORIES = ['Data Pribadi', 'Lokasi', 'Verifikasi Fisik', 'Keuangan', 'Legalitas', 'Teknis', 'Jadwal', 'Dokumen', 'Lainnya'];
+const QUESTION_CONTEXTS = [
+  { value: 'prospect', label: 'Prospek' },
+  { value: 'rks', label: 'RKS' },
+  { value: 'both', label: 'Both' },
 ];
+
+function OptionsInput({ options, onChange }: { options: string[]; onChange: (options: string[]) => void }) {
+  const [input, setInput] = useState('');
+
+  const add = () => {
+    const val = input.trim();
+    if (!val) return;
+    if (options.includes(val)) return;
+    onChange([...options, val]);
+    setInput('');
+  };
+
+  const remove = (idx: number) => {
+    onChange(options.filter((_, i) => i !== idx));
+  };
+  
+
+  return (
+    <div className="space-y-3">
+      <label className="font-semibold text-slate-700 block">Pilihan Jawaban</label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
+          className="flex-1 rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
+          placeholder="Ketik pilihan lalu tekan Enter..."
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="px-3 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:brightness-110 transition-colors cursor-pointer shrink-0"
+        >
+          Tambah
+        </button>
+      </div>
+      {options.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {options.map((opt, i) => (
+            <span
+              key={i}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-xs font-semibold rounded-full border border-primary/20"
+            >
+              {opt}
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[14px]">close</span>
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      {options.length === 0 && (
+        <p className="text-[10px] text-slate-400">Belum ada pilihan. Tambahkan minimal 1 pilihan.</p>
+      )}
+    </div>
+  );
+}
 
 export default function MasterQuestionPage() {
   const navigate = useNavigate();
   const questions = useMasterDataStore((s) => s.questions);
+  const questionTypes = useMasterDataStore((s) => s.questionTypes);
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
@@ -26,7 +89,7 @@ export default function MasterQuestionPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ type: 'text', category: 'Data Pribadi', is_required: false, sort_order: questions.length + 1, is_active: true });
+    setForm({ question_type_id: 'QT-01', context: 'prospect', category: 'Data Pribadi', is_required: false, sort_order: questions.length + 1, placeholder_text: '', help_text: '', is_active: true, options: [] });
     setDrawerOpen(true);
   };
 
@@ -64,10 +127,19 @@ export default function MasterQuestionPage() {
     toast.success(`Pertanyaan ${target?.question_text} dihapus`);
   };
 
-  const typeBadge = (type: string) => {
-    const map: Record<string, 'default' | 'info' | 'warning'> = { text: 'default', select: 'info', boolean: 'warning' };
-    return <Badge variant={map[type] || 'default'}>{QUESTION_TYPES.find(t => t.value === type)?.label || type}</Badge>;
+  const typeBadge = (typeId: string) => {
+    const qt = questionTypes.find(t => t.id === typeId);
+    const name = qt?.name || typeId;
+    const map: Record<string, 'default' | 'info' | 'warning'> = { Teks: 'default', Pilihan: 'info', 'Ya/Tidak': 'warning' };
+    return <Badge variant={map[name] || 'default'}>{name}</Badge>;
   };
+
+  const contextBadge = (ctx: string) => {
+    const map: Record<string, 'default' | 'info' | 'warning'> = { prospect: 'info', rks: 'warning', both: 'default' };
+    return <Badge variant={map[ctx] || 'default'}>{ctx}</Badge>;
+  };
+  console.log('questionTypes', questionTypes);
+console.log('selected', form.question_type_id);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
@@ -103,6 +175,7 @@ export default function MasterQuestionPage() {
                   <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Pertanyaan</th>
                     <th className="px-6 py-3.5">Tipe</th>
+                    <th className="px-6 py-3.5">Konteks</th>
                     <th className="px-6 py-3.5">Kategori</th>
                     <th className="px-6 py-3.5 text-center">Wajib</th>
                     <th className="px-6 py-3.5 text-center">Urutan</th>
@@ -112,12 +185,13 @@ export default function MasterQuestionPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">Tidak ada pertanyaan ditemukan.</td></tr>
+                    <tr><td colSpan={8} className="px-6 py-12 text-center text-slate-400 italic">Tidak ada pertanyaan ditemukan.</td></tr>
                   ) : (
                     filtered.map(q => (
                       <tr key={q.id} className="hover:bg-slate-50/65 transition-colors">
                         <td className="px-6 py-4 font-bold text-slate-800 max-w-[300px]">{q.question_text}</td>
-                        <td className="px-6 py-4">{typeBadge(q.type)}</td>
+                        <td className="px-6 py-4">{typeBadge(q.question_type_id)}</td>
+                        <td className="px-6 py-4">{contextBadge(q.context)}</td>
                         <td className="px-6 py-4 text-slate-500">{q.category}</td>
                         <td className="px-6 py-4 text-center"><Badge variant={q.is_required ? 'success' : 'default'}>{q.is_required ? 'Ya' : 'Tidak'}</Badge></td>
                         <td className="px-6 py-4 text-center text-slate-500">{q.sort_order}</td>
@@ -160,28 +234,51 @@ export default function MasterQuestionPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Tipe Jawaban</label>
-                  <select value={form.type || 'text'} onChange={e => setForm({ ...form, type: e.target.value as MasterQuestion['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
-                    {QUESTION_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  <select value={form.question_type_id || 'QT-01'} onChange={e => setForm({ ...form, question_type_id: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                    {questionTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
+                <div className="space-y-2">
+                  <label className="font-semibold text-slate-700 block">Konteks</label>
+                  <select value={form.context || 'prospect'} onChange={e => setForm({ ...form, context: e.target.value as MasterQuestion['context'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                    {QUESTION_CONTEXTS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {(['QT-03', 'QT-04', 'QT-05'].includes(form.question_type_id || '') || questionTypes.find(t => t.id === form.question_type_id)?.has_options) && (
+                <OptionsInput
+                  options={form.options || []}
+                  onChange={(options) => setForm({ ...form, options })}
+                />
+              )}
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Kategori</label>
                   <select value={form.category || 'Data Pribadi'} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
                     {QUESTION_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Urutan</label>
                   <input type="number" value={form.sort_order || 0} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-slate-700 block">Wajib Diisi</label>
-                  <div className="flex gap-4 pt-2">
-                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="required" checked={form.is_required === true} onChange={() => setForm({ ...form, is_required: true })} className="text-primary" /><span className="text-xs">Ya</span></label>
-                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="required" checked={form.is_required === false} onChange={() => setForm({ ...form, is_required: false })} className="text-primary" /><span className="text-xs">Tidak</span></label>
-                  </div>
+                  <label className="font-semibold text-slate-700 block">Placeholder</label>
+                  <input type="text" value={form.placeholder_text || ''} onChange={e => setForm({ ...form, placeholder_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks petunjuk input" />
+                </div>
+                <div className="space-y-2">
+                  <label className="font-semibold text-slate-700 block">Help Text</label>
+                  <input type="text" value={form.help_text || ''} onChange={e => setForm({ ...form, help_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks bantuan" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="font-semibold text-slate-700 block">Wajib Diisi</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="required" checked={form.is_required === true} onChange={() => setForm({ ...form, is_required: true })} className="text-primary" /><span className="text-xs">Ya</span></label>
+                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="required" checked={form.is_required === false} onChange={() => setForm({ ...form, is_required: false })} className="text-primary" /><span className="text-xs">Tidak</span></label>
                 </div>
               </div>
               <div className="space-y-2">
