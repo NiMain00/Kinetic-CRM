@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/stores/userStore';
 import type { UserRole } from '@/types/domain/users';
+import { usePermission } from '@/hooks/usePermission';
 
 
 const ALL_ROLES: UserRole[] = ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'];
@@ -20,6 +21,7 @@ const PAGE_SIZE = 5;
 
 export default function UserListPage() {
   const navigate = useNavigate();
+  const { can } = usePermission();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,10 +50,12 @@ export default function UserListPage() {
             </nav>
             <h1 className="text-xl font-extrabold text-on-surface">User Management</h1>
           </div>
-          <button onClick={() => navigate('/users/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 transition-all" aria-label="Tambah Pengguna Baru">
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Add User
-          </button>
+          {can('users_manage') && (
+            <button onClick={() => navigate('/users/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 transition-all" aria-label="Tambah Pengguna Baru">
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Add User
+            </button>
+          )}
         </div>
 
         {/* Filter */}

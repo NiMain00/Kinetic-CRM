@@ -143,8 +143,6 @@ export default function MasterQuestionPage() {
     const map: Record<string, 'default' | 'info' | 'warning'> = { prospect: 'info', rks: 'warning', both: 'default' };
     return <Badge variant={map[ctx] || 'default'}>{ctx}</Badge>;
   };
-  console.log('questionTypes', questionTypes);
-console.log('selected', form.question_type_id);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
@@ -271,12 +269,6 @@ console.log('selected', form.question_type_id);
               {(() => {
                 const selectedType = questionTypes.find(t => t.id === form.question_type_id);
                 const shouldShowOptions = Boolean(selectedType?.has_options);
-
-                if (typeof window !== 'undefined') {
-                  console.log('[MasterQuestionPage] question_type_id:', form.question_type_id);
-                  console.log('[MasterQuestionPage] selectedType:', selectedType);
-                  console.log('[MasterQuestionPage] shouldShowOptions:', shouldShowOptions);
-                }
 
                 return shouldShowOptions ? (
                   <OptionsInput

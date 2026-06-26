@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Card, Badge, Button, Select } from '@/components/ui';
 import EmptyState from '@/components/shared/EmptyState';
 import type { KpiTarget } from '@/types/domain/users';
+import { useMasterPeriods } from '@/hooks/useConfigData';
 
 const INITIAL_KPIS: KpiTarget[] = [
   { id: 'KPI-001', name: 'Win Rate', category: 'win_rate', targetValue: 70, actualValue: 65.5, unit: '%', period: '2026 Q2', status: 'at_risk' },
@@ -12,13 +13,6 @@ const INITIAL_KPIS: KpiTarget[] = [
   { id: 'KPI-004', name: 'Average Margin', category: 'avg_margin', targetValue: 18, actualValue: 16.2, unit: '%', period: '2026 Q2', status: 'at_risk' },
   { id: 'KPI-005', name: 'SLA Compliance', category: 'sla_compliance', targetValue: 98, actualValue: 94.3, unit: '%', period: '2026 Q2', status: 'at_risk' },
   { id: 'KPI-006', name: 'Customer Satisfaction', category: 'customer_satisfaction', targetValue: 4.5, actualValue: 4.2, unit: '/5', period: '2026 H1', status: 'on_track' },
-];
-
-const PERIOD_OPTIONS = [
-  { value: '2026 Q2', label: '2026 Q2' },
-  { value: '2026 Q1', label: '2026 Q1' },
-  { value: '2026 H1', label: '2026 H1' },
-  { value: '2025 FY', label: '2025 FY' },
 ];
 
 const MONTHLY_DATA = [
@@ -57,7 +51,10 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warni
 export default function KPIDashboardPage() {
   const navigate = useNavigate();
   const [kpis] = useState<KpiTarget[]>(INITIAL_KPIS);
-  const [periodFilter, setPeriodFilter] = useState('2026 Q2');
+  const periods = useMasterPeriods();
+  const periodOptions = useMemo(() => periods.map(p => ({ value: p.name, label: p.name })), [periods]);
+  const defaultPeriod = periods.find(p => p.is_active)?.name || periods[0]?.name || '';
+  const [periodFilter, setPeriodFilter] = useState(defaultPeriod);
 
   const formatValue = (kpi: KpiTarget) => {
     if (kpi.category === 'revenue') return `Rp ${(kpi.actualValue / 1000000000).toFixed(1)}B`;
@@ -75,7 +72,7 @@ export default function KPIDashboardPage() {
 
   const getProgress = (kpi: KpiTarget) => Math.min(100, Math.round((kpi.actualValue / kpi.targetValue) * 100));
 
-  const filteredKpis = kpis.filter(k => k.period === periodFilter || k.period === '2026 H1');
+  const filteredKpis = kpis.filter(k => k.period === periodFilter);
 
   const handleExport = () => {
     toast.success('Laporan KPI sedang diekspor.');
@@ -105,7 +102,7 @@ export default function KPIDashboardPage() {
           <div className="flex items-center gap-3" role="toolbar" aria-label="Filter periode">
             <span className="text-xs font-semibold text-slate-500">Periode:</span>
             <Select
-              options={PERIOD_OPTIONS}
+              options={periodOptions}
               value={periodFilter}
               onChange={e => setPeriodFilter(e.target.value)}
               className="w-40"

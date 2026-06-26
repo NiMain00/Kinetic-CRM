@@ -7,6 +7,7 @@ import type {
   Connector,
   UploadConfig,
   OrgUnit,
+  ProjectPhase,
 } from '@/types/domain/config';
 
 // ── Initial Data ──
@@ -69,6 +70,19 @@ const INITIAL_CONNECTORS: Connector[] = [
   { id: 'CONN-006', name: 'LDAP Authentication', type: 'LDAP', description: 'Autentikasi pengguna via LDAP/AD', status: 'error', active: false, lastTested: '2026-06-20 09:30' },
 ];
 
+const INITIAL_PHASES: ProjectPhase[] = [
+  { id: 'PH-01', status: 'Prospecting', phase: 'RKS', order: 1, isActive: true },
+  { id: 'PH-02', status: 'RKS', phase: 'RKS', order: 2, isActive: true },
+  { id: 'PH-03', status: 'Review RKS', phase: 'Review RKS', order: 3, isActive: true },
+  { id: 'PH-04', status: 'LPHS/SIOS', phase: 'LPHS/SIOS', order: 4, isActive: true },
+  { id: 'PH-05', status: 'Input Harga', phase: 'Harga', order: 5, isActive: true },
+  { id: 'PH-06', status: 'Kompetitor', phase: 'Kompetitor', order: 6, isActive: true },
+  { id: 'PH-07', status: 'Pemenang', phase: 'Pemenang', order: 7, isActive: true },
+  { id: 'PH-08', status: 'Target Delivery', phase: 'Target Delivery', order: 8, isActive: true },
+  { id: 'PH-09', status: 'Executing', phase: 'Timeline', order: 9, isActive: true },
+  { id: 'PH-10', status: 'Completed', phase: 'Dokumen', order: 10, isActive: true },
+];
+
 const INITIAL_UPLOAD: UploadConfig = {
   maxFileSizeMb: 10,
   allowedExtensions: ['pdf', 'doc,docx', 'xls,xlsx', 'jpg,jpeg,png,gif'],
@@ -112,6 +126,7 @@ interface ConfigState {
   connectors: Connector[];
   uploadConfig: UploadConfig;
   orgUnits: OrgUnit[];
+  projectPhases: ProjectPhase[];
 
   getConfigData: <T>(entity: ConfigEntityType) => T[];
   addConfigData: <T extends Record<string, any> = Record<string, any>>(entity: ConfigEntityType, item: T) => void;
@@ -131,6 +146,7 @@ export const useConfigStore = create<ConfigState>()(
       connectors: INITIAL_CONNECTORS,
       uploadConfig: INITIAL_UPLOAD,
       orgUnits: INITIAL_ORG,
+      projectPhases: INITIAL_PHASES,
 
       getConfigData: <T>(entity: ConfigEntityType) => get()[entity] as unknown as T[],
 

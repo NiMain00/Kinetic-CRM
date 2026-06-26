@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Card, Badge, Button, Select, Table } from '@/components/ui';
 import type { Column } from '@/components/ui';
 import type { KpiTarget } from '@/types/domain/users';
+import { useMasterPeriods } from '@/hooks/useConfigData';
 
 interface KpiProgressRow extends Record<string, unknown> {
   id: string;
@@ -38,13 +39,7 @@ const CATEGORY_OPTIONS = [
   { value: 'customer_satisfaction', label: 'Customer Satisfaction' },
 ];
 
-const PERIOD_OPTIONS = [
-  { value: 'all', label: 'Semua Periode' },
-  { value: '2026 Q2', label: '2026 Q2' },
-  { value: '2026 Q1', label: '2026 Q1' },
-  { value: '2026 H1', label: '2026 H1' },
-  { value: '2025 FY', label: '2025 FY' },
-];
+// PERIOD_OPTIONS now built dynamically in the component via useMasterPeriods()
 
 const CATEGORY_LABELS: Record<string, string> = {
   win_rate: 'Win Rate',
@@ -119,6 +114,11 @@ function TrendSparkline({ data }: { data: number[] }) {
 export default function KPIProgressPage() {
   const navigate = useNavigate();
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const periods = useMasterPeriods();
+  const periodOptions = useMemo(() => [
+    { value: 'all', label: 'Semua Periode' },
+    ...periods.map(p => ({ value: p.name, label: p.name })),
+  ], [periods]);
   const [periodFilter, setPeriodFilter] = useState('all');
 
   const filteredData = PROGRESS_DATA.filter(row => {
@@ -239,7 +239,7 @@ export default function KPIProgressPage() {
             <div>
               <Select
                 label="Periode"
-                options={PERIOD_OPTIONS}
+                options={periodOptions}
                 value={periodFilter}
                 onChange={e => setPeriodFilter(e.target.value)}
                 aria-label="Filter periode KPI"

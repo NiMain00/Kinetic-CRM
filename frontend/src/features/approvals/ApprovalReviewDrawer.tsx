@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import type { ApprovalItem, TimelineEvent } from '@/types/domain';
+import type { ApprovalItem, TimelineEvent, SlaConfig } from '@/types/domain';
 import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
+import { useSlaConfigs } from '@/hooks/useConfigData';
 
 interface ApprovalReviewDrawerProps {
   item: ApprovalItem;
@@ -42,6 +43,22 @@ const actionColor: Record<string, string> = {
 export default function ApprovalReviewDrawer({ item, onClose, onApprove, onReject }: ApprovalReviewDrawerProps) {
   const [comment, setComment] = useState('');
   const [timelineEvents] = useState<TimelineEvent[]>(INITIAL_TIMELINE_EVENTS);
+  const slaConfigs = useSlaConfigs();
+
+  const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
+    const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
+    const config = slaConfigs.find(s => s.entityType === entityMap[type] && s.active);
+    if (!config) return 'Normal';
+    const elapsedMs = Date.now() - new Date(waitingSince).getTime();
+    const elapsedHours = elapsedMs / 3_600_000;
+    const critH = config.unit === 'days' ? config.criticalThreshold * 24 : config.criticalThreshold;
+    const warnH = config.unit === 'days' ? config.warningThreshold * 24 : config.warningThreshold;
+    if (elapsedHours >= critH) return 'Overdue';
+    if (elapsedHours >= warnH) return 'Near Deadline';
+    return 'Normal';
+  };
+
+  const slaStatus = computeSlaStatus(item.waitingSince, item.type);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Panel review persetujuan">
@@ -65,8 +82,8 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
               <span className="bg-primary text-on-primary text-[10px] uppercase font-bold px-2.5 py-0.5 rounded">
                 {item.type} — {item.ref}
               </span>
-              <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${slaStatusBg[item.slaStatus]} ${slaStatusColor[item.slaStatus]}`}>
-                {item.slaStatus}
+              <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${slaStatusBg[slaStatus]} ${slaStatusColor[slaStatus]}`}>
+                {slaStatus}
               </span>
             </div>
             <h5 className="text-base font-extrabold text-on-surface">{item.name}</h5>

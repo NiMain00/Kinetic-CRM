@@ -61,6 +61,14 @@ export interface Connector {
   configJson?: string;
 }
 
+export interface ProjectPhase {
+  id: string;
+  status: string;
+  phase: string;
+  order: number;
+  isActive: boolean;
+}
+
 export interface UploadConfig {
   maxFileSizeMb: number;
   allowedExtensions: string[];

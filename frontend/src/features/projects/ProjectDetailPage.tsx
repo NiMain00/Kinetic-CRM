@@ -5,30 +5,7 @@ import type { Project } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useApprovalStore } from '@/stores/approvalStore';
-
-// ── Approval workflow sequence ──
-const WORKFLOW: Array<{ status: string; phase: string }> = [
-  { status: 'Prospecting', phase: 'RKS' },
-  { status: 'RKS', phase: 'RKS' },
-  { status: 'Review RKS', phase: 'Review RKS' },
-  { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' },
-  { status: 'Input Harga', phase: 'Harga' },
-  { status: 'Kompetitor', phase: 'Kompetitor' },
-  { status: 'Pemenang', phase: 'Pemenang' },
-  { status: 'Target Delivery', phase: 'Target Delivery' },
-  { status: 'Executing', phase: 'Timeline' },
-  { status: 'Completed', phase: 'Dokumen' },
-];
-
-const STATUS_STEP_MAP = Object.fromEntries(WORKFLOW.map(s => [s.status, s.phase])) as Record<string, string>;
-
-const pct = (i: number, total: number) => Math.round(((i + 1) / total) * 100);
-const NEXT_PHASE_MAP = Object.fromEntries(
-  WORKFLOW.slice(0, -1).map((step, i) => {
-    const next = WORKFLOW[i + 1];
-    return [step.status, { status: next.status, phase: next.phase, progress: pct(i, WORKFLOW.length - 1) }];
-  })
-) as Record<string, { status: string; phase: string; progress: number }>;
+import { useStatusStepMap, useNextPhaseMap } from '@/hooks/useConfigData';
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -64,6 +41,8 @@ export default function ProjectDetailView({
   const getProspectById = useProspectStore((s) => s.getProspectById);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const { approvals, approveItem } = useApprovalStore();
+  const STATUS_STEP_MAP = useStatusStepMap();
+  const NEXT_PHASE_MAP = useNextPhaseMap();
 
   const project = propProject || (projectId ? getProjectById(projectId) : undefined);
 

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Card, Badge, Button, Select, Input, Modal, Table } from '@/components/ui';
 import type { Column } from '@/components/ui';
 import type { KpiTarget } from '@/types/domain/users';
+import { useMasterPeriods } from '@/hooks/useConfigData';
+import { usePermission } from '@/hooks/usePermission';
 
 interface TargetForm {
   name: string;
@@ -22,15 +24,7 @@ const CATEGORY_OPTIONS = [
   { value: 'customer_satisfaction', label: 'Customer Satisfaction' },
 ];
 
-const PERIOD_OPTIONS = [
-  { value: '2026 Q2', label: '2026 Q2' },
-  { value: '2026 Q3', label: '2026 Q3' },
-  { value: '2026 Q4', label: '2026 Q4' },
-  { value: '2026 H1', label: '2026 H1' },
-  { value: '2026 H2', label: '2026 H2' },
-  { value: '2026 FY', label: '2026 FY' },
-  { value: '2025 FY', label: '2025 FY' },
-];
+// PERIOD_OPTIONS now built dynamically in the component via useMasterPeriods()
 
 const UNIT_MAP: Record<string, string> = {
   win_rate: '%',
@@ -73,19 +67,18 @@ const CATEGORY_ICONS: Record<string, string> = {
   customer_satisfaction: 'star',
 };
 
-const EMPTY_FORM: TargetForm = {
-  name: '',
-  category: 'win_rate',
-  period: '2026 Q2',
-  targetValue: '',
-  unit: '%',
-};
+// EMPTY_FORM now built inside the component to get default period from store
 
 export default function KPITargetsPage() {
   const navigate = useNavigate();
+  const { can } = usePermission();
+  const periods = useMasterPeriods();
+  const periodOptions = useMemo(() => periods.map(p => ({ value: p.name, label: p.name })), [periods]);
+  const defaultPeriod = periods.find(p => p.is_active)?.name || periods[0]?.name || '';
+  const emptyForm: TargetForm = { name: '', category: 'win_rate', period: defaultPeriod, targetValue: '', unit: '%' };
   const [targets, setTargets] = useState<(KpiTarget & { createdAt: string } & Record<string, unknown>)[]>(INITIAL_TARGETS);
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState<TargetForm>(EMPTY_FORM);
+  const [form, setForm] = useState<TargetForm>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof TargetForm, string>>>({});
 
   const validate = (): boolean => {
@@ -121,7 +114,7 @@ export default function KPITargetsPage() {
     };
     setTargets([newTarget, ...targets]);
     setModalOpen(false);
-    setForm(EMPTY_FORM);
+    setForm(emptyForm);
     setErrors({});
     toast.success(`Target KPI "${newTarget.name}" berhasil ditambahkan.`);
   };
@@ -188,14 +181,16 @@ export default function KPITargetsPage() {
       header: '',
       align: 'right',
       render: row => (
-        <button
-          onClick={() => handleDelete(row.id)}
-          className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer"
-          title="Hapus target"
-          aria-label={`Hapus target ${row.name}`}
-        >
-          <span className="material-symbols-outlined text-[18px]">delete</span>
-        </button>
+        can('kpi_manage') ? (
+          <button
+            onClick={() => handleDelete(row.id)}
+            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer"
+            title="Hapus target"
+            aria-label={`Hapus target ${row.name}`}
+          >
+            <span className="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        ) : null
       ),
     },
   ];
@@ -212,14 +207,16 @@ export default function KPITargetsPage() {
           <h2 className="font-display-title text-base font-extrabold text-slate-900">KPI Target Setting</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Atur dan kelola target KPI untuk setiap periode.</p>
         </div>
-        <Button
-          size="sm"
-          leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
-          onClick={() => { setForm(EMPTY_FORM); setErrors({}); setModalOpen(true); }}
-          aria-label="Tambah target baru"
-        >
-          Tambah Target Baru
-        </Button>
+        {can('kpi_manage') && (
+          <Button
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
+            onClick={() => { setForm(emptyForm); setErrors({}); setModalOpen(true); }}
+            aria-label="Tambah target baru"
+          >
+            Tambah Target Baru
+          </Button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
@@ -279,7 +276,7 @@ export default function KPITargetsPage() {
           <div>
             <Select
               label="Periode"
-              options={PERIOD_OPTIONS}
+              options={periodOptions}
               value={form.period}
               onChange={e => setForm(prev => ({ ...prev, period: e.target.value }))}
               aria-label="Periode target"

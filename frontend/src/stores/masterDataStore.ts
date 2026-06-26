@@ -258,6 +258,8 @@ const INITIAL_PERIODS: MasterPeriod[] = [
   { id: 'PER-03', name: '2025 Q3', start_date: '2025-07-01', end_date: '2025-09-30', is_active: true },
   { id: 'PER-04', name: '2025 FY', start_date: '2025-01-01', end_date: '2025-12-31', is_active: false },
   { id: 'PER-05', name: '2026 Q1', start_date: '2026-01-01', end_date: '2026-03-31', is_active: true },
+  { id: 'PER-06', name: '2026 Q2', start_date: '2026-04-01', end_date: '2026-06-30', is_active: true },
+  { id: 'PER-07', name: '2026 H1', start_date: '2026-01-01', end_date: '2026-06-30', is_active: false },
 ];
 
 const INITIAL_MASTER_CUSTOMERS: MasterCustomer[] = [

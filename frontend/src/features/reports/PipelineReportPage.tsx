@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useOrgBranches } from '@/hooks/useConfigData';
 
 interface PipelineRecord {
   id: string;
@@ -30,6 +31,8 @@ const funnelSteps = [
 
 export default function PipelineReportPage() {
   const navigate = useNavigate();
+  const branches = useOrgBranches();
+  const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
   const [viewMode, setViewMode] = useState<'count' | 'value'>('count');
   const [branchFilter, setBranchFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -140,11 +143,7 @@ export default function PipelineReportPage() {
             <div className="flex gap-3">
               <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border rounded-lg px-3 py-1.5 text-sm bg-white outline-none" aria-label="Filter cabang">
                 <option value="All">Semua Cabang</option>
-                <option value="Jakarta Pusat">Jakarta Pusat</option>
-                <option value="Surabaya Hub">Surabaya Hub</option>
-                <option value="Medan Regional">Medan Regional</option>
-                <option value="Balikpapan Base">Balikpapan Base</option>
-                <option value="Bandung Utara">Bandung Utara</option>
+                {branchOptions.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>

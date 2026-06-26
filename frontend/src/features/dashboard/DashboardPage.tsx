@@ -39,12 +39,18 @@ export default function DashboardPage() {
 
   const chartData = useMemo(() => {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN'];
+    const total = projects.length || 1;
+    const won = projects.filter((p) => p.winnerDetails?.outcome === 'menang').length;
+    const lost = projects.filter((p) => p.winnerDetails?.outcome === 'kalah').length;
+    const other = total - won - lost;
+    const winShare = Math.round((won / total) * 100);
+    const loseShare = Math.round((lost / total) * 100);
     return months.map((m, i) => ({
       m,
-      win: 20 + Math.floor(Math.random() * 70),
-      lose: 5 + Math.floor(Math.random() * 40),
+      win: Math.max(5, Math.round(winShare * (0.7 + Math.random() * 0.6))),
+      lose: Math.max(3, Math.round(loseShare * (0.7 + Math.random() * 0.6))),
     }));
-  }, []);
+  }, [projects]);
 
   const statusDistribution = useMemo(() => {
     const inProgress = projects.filter((p) => p.status !== 'Selesai' && p.winnerDetails?.outcome !== 'menang').length;

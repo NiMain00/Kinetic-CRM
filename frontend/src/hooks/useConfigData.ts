@@ -8,6 +8,7 @@ import type {
   WorkflowDefinition,
   Connector,
   UploadConfig,
+  ProjectPhase,
 } from '@/types/domain/config';
 
 // ── READ from masterDataStore ──
@@ -133,6 +134,36 @@ export function useOrgDepartments(): OrgUnit[] {
     () => orgUnits.filter((u) => u.unitType === 'department' && u.isActive),
     [orgUnits],
   );
+}
+
+// ── Project Lifecycle Phases ──
+
+export function useProjectPhases(): ProjectPhase[] {
+  return useConfigStore((s) => s.projectPhases);
+}
+
+export function useStatusStepMap(): Record<string, string> {
+  const phases = useConfigStore((s) => s.projectPhases);
+  return useMemo(() => {
+    const map: Record<string, string> = {};
+    phases.forEach((p) => { map[p.status] = p.phase; });
+    return map;
+  }, [phases]);
+}
+
+export function useNextPhaseMap(): Record<string, { status: string; phase: string; progress: number }> {
+  const phases = useConfigStore((s) => s.projectPhases);
+  const active = useMemo(() => phases.filter((p) => p.isActive).sort((a, b) => a.order - b.order), [phases]);
+  return useMemo(() => {
+    const map: Record<string, { status: string; phase: string; progress: number }> = {};
+    const total = active.length - 1;
+    const pct = (i: number) => Math.round(((i + 1) / total) * 100);
+    active.slice(0, -1).forEach((step, i) => {
+      const next = active[i + 1];
+      map[step.status] = { status: next.status, phase: next.phase, progress: pct(i) };
+    });
+    return map;
+  }, [active]);
 }
 
 // ── Computed / Helper Selectors ──

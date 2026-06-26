@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useOrgBranches } from '@/hooks/useConfigData';
 
 interface ReportsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -88,6 +89,8 @@ const INITIAL_PIPELINE_RECORDS: PipelineRecord[] = [
 type ReportTab = 'winloss' | 'pipeline';
 
 export default function ReportsView({ onShowNotification }: ReportsViewProps) {
+  const branches = useOrgBranches();
+  const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
   const [activeSubTab, setActiveTab] = useState<ReportTab>('winloss');
 
   // Win/Loss variables and states
@@ -259,9 +262,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                       className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-xs font-semibold bg-white text-slate-650 focus:outline-none"
                     >
                       <option>Semua Cabang (Indonesia)</option>
-                      <option>Jakarta Central</option>
-                      <option>Surabaya Hub</option>
-                      <option>Medan Office</option>
+                      {branchOptions.map(b => <option key={b}>{b}</option>)}
                     </select>
                   </div>
                 </div>
@@ -753,9 +754,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   className="w-full bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
                   <option>Semua Cabang Indonesia</option>
-                  <option>Jakarta Pusat</option>
-                  <option>Surabaya Hub</option>
-                  <option>Medan Regional</option>
+                  {branchOptions.map(b => <option key={b}>{b}</option>)}
                 </select>
               </div>
 

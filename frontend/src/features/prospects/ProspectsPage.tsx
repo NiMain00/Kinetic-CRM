@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useProjectStatuses } from '@/hooks/useConfigData';
+import { usePermission } from '@/hooks/usePermission';
 
 interface ProspectsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -20,6 +21,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const addProject = useProjectStore((s) => s.addProject);
   const projects = useProjectStore((s) => s.projects);
+  const { can } = usePermission();
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -59,6 +61,22 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   };
 
   // Filter prospects
+  const projectStatuses = useProjectStatuses();
+
+  const statusColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    projectStatuses.forEach((s) => {
+      const hex = s.color_hex;
+      map[s.code] = `bg-[${hex}15] text-[${hex}]`;
+    });
+    map['Non Potensial'] = 'bg-slate-200 text-slate-600';
+    map['Potensial'] = 'bg-emerald-100 text-emerald-700';
+    map['Waiting PM'] = 'bg-warning/10 text-warning';
+    map['Revision'] = 'bg-status-orange/10 text-status-orange';
+    map['Approved'] = 'bg-success/10 text-success';
+    return map;
+  }, [projectStatuses]);
+
   const filteredProspects = prospects.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.client.toLowerCase().includes(searchQuery.toLowerCase());
@@ -74,18 +92,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   });
 
   const statusColor = (status: string, prospect?: typeof prospects[0]) => {
-    // New customer needs verification badge
     if (prospect?.customerData?.needsVerification) {
       return 'bg-amber-100 text-amber-700';
     }
-    switch (status) {
-      case 'Non Potensial': return 'bg-slate-200 text-slate-600';
-      case 'Potensial': return 'bg-emerald-100 text-emerald-700';
-      case 'Waiting PM': return 'bg-warning/10 text-warning';
-      case 'Revision': return 'bg-status-orange/10 text-status-orange';
-      case 'Approved': return 'bg-success/10 text-success';
-      default: return 'bg-info/10 text-info';
-    }
+    return statusColorMap[status] || 'bg-info/10 text-info';
   };
 
   const FILTER_TABS: FilterTab[] = ['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved', 'Perlu Verifikasi'];
@@ -114,13 +124,15 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <span className="text-primary font-semibold">Daftar Prospek</span>
             </nav>
           </div>
-          <button
-            onClick={() => navigate('/prospects/new')}
-            className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold touch-min-h"
-          >
-            <span className="material-symbols-outlined text-[20px]">add</span>
-            Buat Prospek Baru
-          </button>
+          {can('prospek_create') && (
+            <button
+              onClick={() => navigate('/prospects/new')}
+              className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold touch-min-h"
+            >
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Buat Prospek Baru
+            </button>
+          )}
         </div>
 
         {/* Filter Bar */}
@@ -211,22 +223,26 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                             <span className="material-symbols-outlined text-[20px]">add_business</span>
                           </button>
                         )}
-                        <button
-                          onClick={() => navigate(`/prospects/${row.id}/edit`)}
-                          className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
-                          title="Sunting Prospek"
-                          aria-label="Sunting"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">edit</span>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(row.id)}
-                          className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
-                          title="Hapus Prospek"
-                          aria-label="Hapus"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">delete</span>
-                        </button>
+                        {can('prospek_edit') && (
+                          <button
+                            onClick={() => navigate(`/prospects/${row.id}/edit`)}
+                            className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
+                            title="Sunting Prospek"
+                            aria-label="Sunting"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">edit</span>
+                          </button>
+                        )}
+                        {can('prospek_delete') && (
+                          <button
+                            onClick={() => handleDelete(row.id)}
+                            className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
+                            title="Hapus Prospek"
+                            aria-label="Hapus"
+                          >
+                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -296,20 +312,24 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                                 <span className="material-symbols-outlined text-[20px]">add_business</span>
                               </button>
                             )}
-                            <button
-                              onClick={() => navigate(`/prospects/${row.id}/edit`)}
-                              className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
-                              title="Sunting Prospek"
-                            >
-                              <span className="material-symbols-outlined text-[20px]">edit</span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(row.id)}
-                              className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
-                              title="Hapus Prospek"
-                            >
-                              <span className="material-symbols-outlined text-[20px]">delete</span>
-                            </button>
+                            {can('prospek_edit') && (
+                              <button
+                                onClick={() => navigate(`/prospects/${row.id}/edit`)}
+                                className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
+                                title="Sunting Prospek"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">edit</span>
+                              </button>
+                            )}
+                            {can('prospek_delete') && (
+                              <button
+                                onClick={() => handleDelete(row.id)}
+                                className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
+                                title="Hapus Prospek"
+                              >
+                                <span className="material-symbols-outlined text-[20px]">delete</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

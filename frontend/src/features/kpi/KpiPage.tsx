@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import type { KpiTarget } from '../../types/domain/users';
+import { useMasterPeriods } from '@/hooks/useConfigData';
 
 const INITIAL_KPIS: KpiTarget[] = [
   { id: 'KPI-001', name: 'Win Rate', category: 'win_rate', targetValue: 70, actualValue: 65.5, unit: '%', period: '2026 Q2', status: 'at_risk' },
@@ -30,7 +31,10 @@ const DEPARTMENT_SCORES = [
 
 export default function KpiPage() {
   const [kpis] = useState<KpiTarget[]>(INITIAL_KPIS);
-  const [periodFilter, setPeriodFilter] = useState('2026 Q2');
+  const periods = useMasterPeriods();
+  const periodOptions = useMemo(() => periods.map(p => p.name), [periods]);
+  const defaultPeriod = periods.find(p => p.is_active)?.name || periods[0]?.name || '';
+  const [periodFilter, setPeriodFilter] = useState(defaultPeriod);
   const [activeTab, setActiveTab] = useState<'overview' | 'targets'>('overview');
 
   const statusConfig = {
@@ -80,10 +84,7 @@ export default function KpiPage() {
             <div className="flex items-center gap-3">
               <span className="text-xs font-semibold text-slate-500">Periode:</span>
               <select value={periodFilter} onChange={e => setPeriodFilter(e.target.value)} className="bg-white border border-border rounded-lg px-3 py-1.5 text-xs font-semibold focus:outline-none">
-                <option>2026 Q2</option>
-                <option>2026 Q1</option>
-                <option>2026 H1</option>
-                <option>2025 FY</option>
+                {periodOptions.map(p => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <button onClick={() => toast.success('Laporan KPI sedang diekspor.')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
@@ -94,7 +95,7 @@ export default function KpiPage() {
           {activeTab === 'overview' && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {kpis.filter(k => k.period === periodFilter || k.period === '2026 H1').map(kpi => (
+                {kpis.filter(k => k.period === periodFilter).map(kpi => (
                   <div key={kpi.id} className={`bg-white border border-border rounded-xl p-5 shadow-xs hover:shadow-md transition-shadow ${statusConfig[kpi.status].color.includes('danger') ? 'border-l-4 border-l-danger' : statusConfig[kpi.status].color.includes('warning') ? 'border-l-4 border-l-warning' : 'border-l-4 border-l-success'}`}>
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
