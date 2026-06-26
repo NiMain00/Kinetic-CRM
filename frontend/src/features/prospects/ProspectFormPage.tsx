@@ -7,6 +7,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useApprovalStore } from '@/stores/approvalStore';
 
 const questionnaireQuestions = [
   {
@@ -58,6 +59,7 @@ export default function ProspectFormPage() {
   const industries = useMasterDataStore((s) => s.industries);
   const competitors = useMasterDataStore((s) => s.competitors);
   const addMasterData = useMasterDataStore((s) => s.addData);
+  const addApproval = useApprovalStore((s) => s.addApproval);
 
   const existingProspect = isEdit ? prospects.find((p) => p.id === id) : null;
 
@@ -237,6 +239,23 @@ export default function ProspectFormPage() {
       updateProspect(existingProspect.id, payload);
     } else {
       addProspect(payload);
+    }
+
+    // Auto-create approval item when submitting to PM
+    if (status === 'Waiting PM') {
+      const prospectId = existingProspect?.id || payload.id;
+      addApproval({
+        id: `app-prospect-${prospectId}`,
+        ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
+        name: formName,
+        branch: userBranch,
+        waitingSince: 'Just now',
+        slaStatus: 'Normal',
+        type: 'Prospek',
+        client: clientName,
+        entityId: prospectId,
+        entityType: 'prospect',
+      });
     }
 
     toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');

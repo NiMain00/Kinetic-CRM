@@ -31,6 +31,22 @@ export default function LoginPage() {
       avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWDEhx9DDyQcza1Ly6ob2GvUr0RcKFg_ZWPWDX3R89h599PQ2OzX6K21-q2Bb6wr08y-sjWBdJ0UmyRJEjaEB7mRRTEILqTd1oApCKVAcFeJesIsCQ52_trToPbTyXHoo1Ed8D8c6Z0inMzS44qG749ofXtaBpSw-btx_MFUMYLzJsAg_aaXXLqufa_N2Jw2s6ca5NfTPTnJJf0CH5RFHVv38b591w568UukqO4CLBCdt0GAI6TWz8IG_d8Fg4dMoJ1zEMVwF3E3rs'
     },
     {
+      label: 'Bambang Permadi (PM)',
+      username: 'bambang.pm',
+      password: 'pm123',
+      fullName: 'Bambang Permadi',
+      roleName: 'PM',
+      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-2'
+    },
+    {
+      label: 'Siti Aminah (Dept Head)',
+      username: 'siti.dept',
+      password: 'dept123',
+      fullName: 'Siti Aminah',
+      roleName: 'Dept Head',
+      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/female-prof-1'
+    },
+    {
       label: 'Doni Wahyudi (Admin)',
       username: 'doni.admin',
       password: 'admin456',

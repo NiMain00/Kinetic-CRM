@@ -51,12 +51,34 @@ export interface RksData {
   answers?: Record<string, string>;
 }
 
-export interface LphsChecklistItem {
-  id: string;
-  name: string;
-  description: string;
-  status: 'passed' | 'failed' | 'na';
-  document?: string;
+export interface LphsDepartmentApproval {
+  departmentId: string;
+  departmentName: string;
+  status: 'pending' | 'reviewing' | 'approved' | 'revision';
+  approverName?: string;
+  reviewNotes?: string;
+  approvedAt?: string;
+  revisionNotes?: string;
+  revisionRound: number;
+  isTargetedRevision: boolean;
+}
+
+export interface LphsData {
+  lphsFileName?: string;
+  lphsFileSize?: string;
+  lphsExternalUrl?: string;
+  siosFileName?: string;
+  siosFileSize?: string;
+  selectedDepartments: string[];
+  departmentsLocked: boolean;
+  pmStatus: 'pending' | 'reviewing' | 'approved' | 'revision';
+  pmApprovedAt?: string;
+  mgmtStatus: 'pending' | 'approved' | 'revision';
+  mgmtApprovedAt?: string;
+  overallStatus: 'draft' | 'dept_review' | 'mgmt_review' | 'approved' | 'revision';
+  submittedAt?: string;
+  finalApprovedAt?: string;
+  departmentApprovals: LphsDepartmentApproval[];
 }
 
 export interface CompetitorEntry {
@@ -131,7 +153,7 @@ export interface Project {
     milestones?: MilestoneEntry[];
   };
   rks?: RksData;
-  lphsChecklist?: LphsChecklistItem[];
+  lphs?: LphsData;
   competitors?: CompetitorEntry[];
   documents?: DocGroup[];
   timeline?: TimelineEvent[];
@@ -146,6 +168,8 @@ export interface ApprovalItem {
   slaStatus: 'Overdue' | 'Near Deadline' | 'Normal';
   type: 'Prospek' | 'RKS' | 'LPHS';
   client?: string;
+  entityId?: string;
+  entityType?: 'prospect' | 'project';
 }
 
 export interface TimelineEvent {

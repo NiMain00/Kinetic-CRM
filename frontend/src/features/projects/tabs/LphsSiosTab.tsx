@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
-import type { Project, LphsChecklistItem, TimelineEvent } from '@/types/domain';
+import { useState, useEffect, useMemo } from 'react';
+import type { Project, LphsData, LphsDepartmentApproval, TimelineEvent, ApprovalItem } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useApprovalStore } from '@/stores/approvalStore';
 import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
@@ -8,196 +11,773 @@ interface TabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-type CheckStatus = 'passed' | 'failed' | 'na';
+const defaultLphsData: LphsData = {
+  selectedDepartments: [],
+  departmentsLocked: false,
+  pmStatus: 'pending',
+  mgmtStatus: 'pending',
+  overallStatus: 'draft',
+  departmentApprovals: [],
+};
 
-const defaultChecklist: LphsChecklistItem[] = [
-  { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'na', document: '' },
-  { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'na', document: '' },
-  { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'na', document: '' },
-  { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'na', document: '' },
-  { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'na', document: '' },
-  { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
-  { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'na', document: '' },
-  { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'na', document: '' },
-];
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'Pending',
+  reviewing: 'Reviewing',
+  approved: 'Disetujui',
+  revision: 'Revisi',
+  draft: 'Draft',
+  dept_review: 'Review Dept',
+  mgmt_review: 'Review Management',
+};
 
-export default function LphsSiosTab({ project }: TabProps) {
+const STATUS_BADGE: Record<string, 'default' | 'info' | 'success' | 'warning'> = {
+  pending: 'default',
+  reviewing: 'info',
+  approved: 'success',
+  revision: 'warning',
+};
+
+export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const updateProject = useProjectStore((s) => s.updateProject);
   const updateProjectLphs = useProjectStore((s) => s.updateProjectLphs);
+  const updateLphsDepartmentApproval = useProjectStore((s) => s.updateLphsDepartmentApproval);
+  const updateLphsStatus = useProjectStore((s) => s.updateLphsStatus);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
+  const departments = useMasterDataStore((s) => s.departments);
+  const authUser = useAuthStore((s) => s.user);
+  const addApproval = useApprovalStore((s) => s.addApproval);
+  const removeApproval = useApprovalStore((s) => s.removeApproval);
 
-  const [items, setItems] = useState<LphsChecklistItem[]>(project?.lphsChecklist || defaultChecklist);
+  const [lphs, setLphs] = useState<LphsData>(project?.lphs || defaultLphsData);
+  const [lphsFile, setLphsFile] = useState<File | null>(null);
+  const [siosFile, setSiosFile] = useState<File | null>(null);
+  const [lphsUrl, setLphsUrl] = useState(project?.lphs?.lphsExternalUrl || '');
+  const [selectedDepts, setSelectedDepts] = useState<string[]>(project?.lphs?.selectedDepartments || []);
+  const [revisionDialog, setRevisionDialog] = useState<{ open: boolean; targetDepts: string[]; notes: string; role: 'pm' | 'management' }>({ open: false, targetDepts: [], notes: '', role: 'pm' });
 
   useEffect(() => {
-    setItems(project?.lphsChecklist || defaultChecklist);
+    if (project?.lphs) {
+      setLphs(project.lphs);
+      setSelectedDepts(project.lphs.selectedDepartments);
+      setLphsUrl(project.lphs.lphsExternalUrl || '');
+    }
   }, [project?.id]);
 
-  const handleStatusChange = (id: string, newStatus: CheckStatus) => {
-    const updated = items.map(item => item.id === id ? { ...item, status: newStatus } : item);
-    setItems(updated);
-    if (project?.id) {
-      updateProjectLphs(project.id, updated);
-    }
-  };
+  // Determine user role capabilities
+  const userRole = authUser?.roleName || '';
+  const isSuperAdmin = userRole === 'Super Admin';
+  const isPM = userRole === 'PM' || isSuperAdmin;
+  const isCabang = userRole === 'Branch Manager' || userRole === 'Staff' || isSuperAdmin;
+  const isManagement = userRole === 'Admin' || userRole === 'Super Admin';
+  const isDeptHead = userRole === 'Dept Head';
 
-  const handleUpload = (id: string) => {
+  const activeDepartments = useMemo(() => departments.filter(d => d.status), [departments]);
+
+  // --- Document Upload Handlers ---
+  const handleUploadLphs = () => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.accept = '.pdf,.docx,.xlsx,.zip';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        const updated = items.map(item => item.id === id ? { ...item, document: file.name } : item);
-        setItems(updated);
-        if (project?.id) {
-          updateProjectLphs(project.id, updated);
-        }
+        setLphsFile(file);
+        onShowNotification?.('File LPHS dipilih: ' + file.name, 'success');
       }
     };
     input.click();
   };
 
-  const handleSubmit = () => {
+  const handleUploadSios = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.docx,.xlsx,.zip';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setSiosFile(file);
+        onShowNotification?.('File SIOS dipilih: ' + file.name, 'success');
+      }
+    };
+    input.click();
+  };
+
+  const handleRemoveLphsFile = () => {
+    setLphsFile(null);
+  };
+
+  const handleRemoveSiosFile = () => {
+    setSiosFile(null);
+  };
+
+  // --- Department Selection ---
+  const toggleDept = (deptId: string) => {
+    if (lphs.departmentsLocked) return;
+    setSelectedDepts(prev =>
+      prev.includes(deptId) ? prev.filter(d => d !== deptId) : [...prev, deptId]
+    );
+  };
+
+  // --- Submit Draft ---
+  const handleSubmitDraft = () => {
     if (!project?.id) return;
-    // Persist final state
-    updateProjectLphs(project.id, items);
-    // Add timeline event
+    if (selectedDepts.length === 0) {
+      onShowNotification?.('Minimal 1 departemen harus dipilih.', 'error');
+      return;
+    }
+    if (!lphsFile && !lphsUrl && !lphs.lphsFileName) {
+      onShowNotification?.('Dokumen LPHS wajib diupload atau URL wajib diisi.', 'error');
+      return;
+    }
+
+    const departmentApprovals: LphsDepartmentApproval[] = selectedDepts.map(deptId => {
+      const dept = departments.find(d => d.id === deptId);
+      const existing = lphs.departmentApprovals.find(a => a.departmentId === deptId);
+      return existing || {
+        departmentId: deptId,
+        departmentName: dept?.name || deptId,
+        status: 'pending',
+        revisionRound: 0,
+        isTargetedRevision: false,
+      };
+    });
+
+    const newLphs: LphsData = {
+      lphsFileName: lphsFile?.name || lphs.lphsFileName,
+      lphsFileSize: lphsFile ? `${(lphsFile.size / 1024 / 1024).toFixed(1)} MB` : lphs.lphsFileSize,
+      lphsExternalUrl: lphsUrl || undefined,
+      siosFileName: siosFile?.name || lphs.siosFileName,
+      siosFileSize: siosFile ? `${(siosFile.size / 1024 / 1024).toFixed(1)} MB` : lphs.siosFileSize,
+      selectedDepartments: selectedDepts,
+      departmentsLocked: true,
+      pmStatus: 'reviewing',
+      mgmtStatus: 'pending',
+      overallStatus: 'dept_review',
+      submittedAt: new Date().toISOString(),
+      departmentApprovals,
+    };
+
+    updateProjectLphs(project.id, newLphs);
+    updateProject(project.id, { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' });
+
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
-      title: 'LPHS/SIOS Selesai',
-      actor: project.author,
-      role: 'Project Manager',
+      title: 'Dokumen LPHS/SIOS Disubmit',
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: userRole,
       time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-      type: 'approve',
-      description: 'LPHS/SIOS checklist telah selesai direview.',
+      type: 'submit',
+      description: `Dokumen LPHS/SIOS disubmit dengan ${selectedDepts.length} departemen reviewer.`,
     };
     addTimelineEvent(project.id, event);
-    // Advance status
+    setLphs(newLphs);
+
+    // Create LPHS approval item in approval inbox
+    const approvalItem: ApprovalItem = {
+      id: `app-lphs-${Date.now()}`,
+      ref: `LPHS-${project.code}`,
+      name: project.name,
+      branch: project.location,
+      waitingSince: 'Baru',
+      slaStatus: 'Normal',
+      type: 'LPHS',
+      client: project.client,
+      entityId: project.id,
+      entityType: 'project',
+    };
+    addApproval(approvalItem);
+    onShowNotification?.('Dokumen LPHS/SIOS berhasil disubmit.', 'success');
+  };
+
+  // --- PM Approve ---
+  const handlePmApprove = () => {
+    if (!project?.id) return;
+    updateLphsStatus(project.id, { pmStatus: 'approved' });
+    updateProjectLphs(project.id, { ...lphs, pmStatus: 'approved', pmApprovedAt: new Date().toISOString() });
+    setLphs(prev => ({ ...prev, pmStatus: 'approved', pmApprovedAt: new Date().toISOString() }));
+
+    // Remove LPHS approval from inbox
+    const existingApproval = useApprovalStore.getState().approvals.find(a => a.entityId === project.id && a.type === 'LPHS');
+    if (existingApproval) removeApproval(existingApproval.id);
+
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'PM Menyetujui LPHS/SIOS',
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: 'PM',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+    };
+    addTimelineEvent(project.id, event);
+    onShowNotification?.('LPHS/SIOS disetujui oleh PM.', 'success');
+
+    // Check if all departments already approved → move to mgmt_review
+    checkAllApproved(project.id);
+  };
+
+  // --- PM Targeted Revision ---
+  const handlePmRevision = () => {
+    setRevisionDialog({ open: true, targetDepts: [], notes: '', role: 'pm' });
+  };
+
+  // --- Department Approve ---
+  const handleDeptApprove = (deptId: string) => {
+    if (!project?.id) return;
+    const dept = departments.find(d => d.id === deptId);
+    const approval: LphsDepartmentApproval = {
+      departmentId: deptId,
+      departmentName: dept?.name || deptId,
+      status: 'approved',
+      approverName: authUser?.fullName || authUser?.name || 'User',
+      approvedAt: new Date().toISOString(),
+      revisionRound: lphs.departmentApprovals.find(a => a.departmentId === deptId)?.revisionRound || 0,
+      isTargetedRevision: false,
+    };
+    updateLphsDepartmentApproval(project.id, approval);
+    const updated = lphs.departmentApprovals.map(a => a.departmentId === deptId ? approval : a);
+    updateProjectLphs(project.id, { ...lphs, departmentApprovals: updated });
+    setLphs(prev => ({ ...prev, departmentApprovals: updated }));
+
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: `Departemen ${approval.departmentName} Menyetujui`,
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: 'Dept Head',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+    };
+    addTimelineEvent(project.id, event);
+    onShowNotification?.(`Departemen ${approval.departmentName} menyetujui LPHS/SIOS.`, 'success');
+
+    // Check if all depts approved → mgmt_review
+    if (lphs.pmStatus === 'approved') {
+      checkAllApproved(project.id);
+    }
+  };
+
+  // --- Management Approve ---
+  const handleMgmtApprove = () => {
+    if (!project?.id) return;
+    updateLphsStatus(project.id, { mgmtStatus: 'approved', overallStatus: 'approved' });
+    updateProjectLphs(project.id, { ...lphs, mgmtStatus: 'approved', mgmtApprovedAt: new Date().toISOString(), overallStatus: 'approved', finalApprovedAt: new Date().toISOString() });
     updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
+    setLphs(prev => ({ ...prev, mgmtStatus: 'approved', mgmtApprovedAt: new Date().toISOString(), overallStatus: 'approved', finalApprovedAt: new Date().toISOString() }));
+
+    // Remove LPHS approval from inbox
+    const existingApproval = useApprovalStore.getState().approvals.find(a => a.entityId === project.id && a.type === 'LPHS');
+    if (existingApproval) removeApproval(existingApproval.id);
+
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Management Final Approve LPHS/SIOS',
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: 'Management',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+      description: 'LPHS/SIOS disetujui oleh Management. Proyek lanjut ke tahap Input Harga.',
+    };
+    addTimelineEvent(project.id, event);
+    onShowNotification?.('LPHS/SIOS final approved oleh Management.', 'success');
   };
 
-  const statusIcon = (status: CheckStatus) => {
-    switch (status) {
-      case 'passed': return <span className="material-symbols-outlined text-success">check_circle</span>;
-      case 'failed': return <span className="material-symbols-outlined text-danger">cancel</span>;
-      case 'na': return <span className="material-symbols-outlined text-outline">remove_circle</span>;
+  // --- Management Targeted Revision ---
+  const handleMgmtRevision = () => {
+    setRevisionDialog({ open: true, targetDepts: [], notes: '', role: 'management' });
+  };
+
+  // --- Send Targeted Revision ---
+  const handleSendRevision = () => {
+    if (!project?.id) return;
+    if (revisionDialog.targetDepts.length === 0) {
+      onShowNotification?.('Pilih minimal 1 departemen yang perlu revisi.', 'error');
+      return;
+    }
+
+    const updatedApprovals = lphs.departmentApprovals.map(a => {
+      if (revisionDialog.targetDepts.includes(a.departmentId)) {
+        return {
+          ...a,
+          status: 'revision' as const,
+          revisionNotes: revisionDialog.notes,
+          revisionRound: a.revisionRound + 1,
+          isTargetedRevision: true,
+        };
+      }
+      return a;
+    });
+
+    const updatedLphs = {
+      ...lphs,
+      departmentApprovals: updatedApprovals,
+      overallStatus: 'revision' as const,
+      ...(revisionDialog.role === 'pm' ? { pmStatus: 'approved' as const } : { mgmtStatus: 'pending' as const }),
+    };
+
+    updateProjectLphs(project.id, updatedLphs);
+    setLphs(updatedLphs);
+
+    // Remove LPHS approval from inbox (action taken)
+    const existingApproval = useApprovalStore.getState().approvals.find(a => a.entityId === project.id && a.type === 'LPHS');
+    if (existingApproval) removeApproval(existingApproval.id);
+
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: `${revisionDialog.role === 'pm' ? 'PM' : 'Management'} Kirim Targeted Revision`,
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: revisionDialog.role === 'pm' ? 'PM' : 'Management',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'revision',
+      description: `Revisi dikirim ke ${revisionDialog.targetDepts.length} departemen. Catatan: ${revisionDialog.notes}`,
+    };
+    addTimelineEvent(project.id, event);
+    setRevisionDialog({ open: false, targetDepts: [], notes: '', role: 'pm' });
+    onShowNotification?.('Targeted revision berhasil dikirim.', 'success');
+  };
+
+  // --- Re-upload after revision ---
+  const handleReuploadRevision = () => {
+    if (!project?.id) return;
+    const updatedApprovals = lphs.departmentApprovals.map(a => {
+      if (a.status === 'revision' && a.isTargetedRevision) {
+        return { ...a, status: 'reviewing' as const };
+      }
+      return a;
+    });
+    const updatedLphs = { ...lphs, departmentApprovals: updatedApprovals, overallStatus: 'dept_review' as const };
+    updateProjectLphs(project.id, updatedLphs);
+    setLphs(updatedLphs);
+
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Revisi LPHS/SIOS Diupload Ulang',
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: userRole,
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'upload',
+      description: 'Dokumen revisi LPHS/SIOS telah diupload.',
+    };
+    addTimelineEvent(project.id, event);
+
+    // Create new LPHS approval item for re-review
+    const approvalItem: ApprovalItem = {
+      id: `app-lphs-${Date.now()}`,
+      ref: `LPHS-${project.code}`,
+      name: project.name,
+      branch: project.location,
+      waitingSince: 'Baru',
+      slaStatus: 'Normal',
+      type: 'LPHS',
+      client: project.client,
+      entityId: project.id,
+      entityType: 'project',
+    };
+    addApproval(approvalItem);
+    onShowNotification?.('Revisi berhasil diupload ulang.', 'success');
+  };
+
+  // --- Check All Approved ---
+  const checkAllApproved = (projectId: string) => {
+    const currentLphs = lphs;
+    const pmOk = currentLphs.pmStatus === 'approved';
+    const allDeptsOk = currentLphs.departmentApprovals.length > 0 && currentLphs.departmentApprovals.every(a => a.status === 'approved');
+    if (pmOk && allDeptsOk) {
+      updateLphsStatus(projectId, { overallStatus: 'mgmt_review', mgmtStatus: 'pending' });
+      updateProjectLphs(projectId, { ...currentLphs, overallStatus: 'mgmt_review', mgmtStatus: 'pending' });
+      setLphs(prev => ({ ...prev, overallStatus: 'mgmt_review', mgmtStatus: 'pending' }));
+      onShowNotification?.('Semua approval terpenuhi. Management review dimulai.', 'success');
     }
   };
 
-  const statusLabel = (status: CheckStatus) => {
+  // --- UI helpers ---
+  const statusIcon = (status: string) => {
     switch (status) {
-      case 'passed': return 'Lolos';
-      case 'failed': return 'Gagal';
-      case 'na': return 'N/A';
+      case 'approved': return <span className="material-symbols-outlined text-success text-[18px]">check_circle</span>;
+      case 'reviewing': return <span className="material-symbols-outlined text-info text-[18px]">hourglass_top</span>;
+      case 'revision': return <span className="material-symbols-outlined text-warning text-[18px]">edit_note</span>;
+      default: return <span className="material-symbols-outlined text-slate-300 text-[18px]">radio_button_unchecked</span>;
     }
   };
 
-  const counts = { passed: items.filter(i => i.status === 'passed').length, failed: items.filter(i => i.status === 'failed').length, na: items.filter(i => i.status === 'na').length };
+  const isDeptApproved = (deptId: string) => lphs.departmentApprovals.find(a => a.departmentId === deptId);
+  const canDeptApprove = (deptId: string) => {
+    const approval = lphs.departmentApprovals.find(a => a.departmentId === deptId);
+    if (!approval) return false;
+    return approval.status === 'reviewing' || approval.status === 'revision';
+  };
+
+  const needsRevisionReupload = lphs.overallStatus === 'revision' && lphs.departmentApprovals.some(a => a.status === 'revision' && a.isTargetedRevision);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Left Panel */}
       <div className="lg:col-span-4 space-y-6">
+        {/* Dokumen LPHS */}
         <Card padding="lg">
-          <h3 className="font-heading-section text-heading-section mb-4">Status Checklist</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-success/5 rounded-lg border border-success/10">
-              <span className="text-sm font-semibold text-success flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">check_circle</span> Lolos
-              </span>
-              <span className="font-bold text-lg text-success">{counts.passed}</span>
+          <h3 className="font-heading-section text-heading-section mb-4">Dokumen LPHS</h3>
+          <p className="text-xs text-secondary mb-3">Lembar Permintaan Harga Satuan</p>
+
+          {lphs.lphsFileName && !lphsFile && (
+            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
+              <span className="material-symbols-outlined text-primary text-[20px]">description</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold truncate">{lphs.lphsFileName}</p>
+                {lphs.lphsFileSize && <p className="text-[10px] text-slate-400">{lphs.lphsFileSize}</p>}
+              </div>
+              {!lphs.departmentsLocked && (
+                <button onClick={() => { updateProjectLphs(project?.id || '', { ...lphs, lphsFileName: undefined, lphsFileSize: undefined }); setLphs(prev => ({ ...prev, lphsFileName: undefined, lphsFileSize: undefined })); }} className="text-slate-400 hover:text-danger cursor-pointer">
+                  <span className="material-symbols-outlined text-[16px]">close</span>
+                </button>
+              )}
             </div>
-            <div className="flex items-center justify-between p-3 bg-danger/5 rounded-lg border border-danger/10">
-              <span className="text-sm font-semibold text-danger flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">cancel</span> Gagal
-              </span>
-              <span className="font-bold text-lg text-danger">{counts.failed}</span>
+          )}
+
+          {lphsFile && (
+            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
+              <span className="material-symbols-outlined text-primary text-[20px]">description</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold truncate">{lphsFile.name}</p>
+                <p className="text-[10px] text-slate-400">{(lphsFile.size / 1024 / 1024).toFixed(1)} MB</p>
+              </div>
+              <button onClick={handleRemoveLphsFile} className="text-slate-400 hover:text-danger cursor-pointer">
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
             </div>
-            <div className="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-border">
-              <span className="text-sm font-semibold text-outline flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px]">remove_circle</span> N/A
-              </span>
-              <span className="font-bold text-lg text-outline">{counts.na}</span>
-            </div>
+          )}
+
+          {!lphs.departmentsLocked && isCabang && (
+            <>
+              <button onClick={handleUploadLphs} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer mb-3">
+                <span className="material-symbols-outlined text-primary text-2xl">upload_file</span>
+                <p className="text-xs font-semibold mt-1">Upload dokumen LPHS</p>
+                <p className="text-[10px] text-outline mt-0.5">PDF, DOCX, XLSX (Max 25MB)</p>
+              </button>
+
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                <div className="relative flex justify-center"><span className="bg-white px-2 text-[10px] text-slate-400">atau</span></div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-1.5">URL Eksternal (Google Docs, OneDrive, dll)</label>
+                <input type="url" value={lphsUrl} onChange={e => setLphsUrl(e.target.value)} placeholder="https://docs.google.com/..." className="w-full rounded-lg border border-border p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
+              </div>
+            </>
+          )}
+
+          <div className="mt-3">
+            <Badge variant={lphs.lphsFileName || lphsFile || lphsUrl ? 'success' : 'default'}>
+              {lphs.lphsFileName || lphsFile || lphsUrl ? 'Dokumen Tersedia' : 'Belum Ada Dokumen'}
+            </Badge>
           </div>
         </Card>
 
+        {/* Dokumen SIOS */}
         <Card padding="lg">
-          <h3 className="font-heading-section text-heading-section mb-4">Upload Dokumen</h3>
-          <div className="border-2 border-dashed border-outline-variant rounded-xl p-6 text-center cursor-pointer hover:bg-surface-container-low transition-all"
-            onClick={() => { const input = document.createElement('input'); input.type = 'file'; input.click(); }}>
-            <span className="material-symbols-outlined text-primary text-3xl mb-2">upload_file</span>
-            <p className="text-xs font-semibold">Klik untuk upload dokumen</p>
-            <p className="text-[10px] text-outline mt-1">PDF, DOCX (Max 25MB)</p>
+          <h3 className="font-heading-section text-heading-section mb-4">Dokumen SIOS</h3>
+          <p className="text-xs text-secondary mb-3">Surat Instruksi Operasional Site</p>
+
+          {lphs.siosFileName && !siosFile && (
+            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
+              <span className="material-symbols-outlined text-primary text-[20px]">description</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold truncate">{lphs.siosFileName}</p>
+                {lphs.siosFileSize && <p className="text-[10px] text-slate-400">{lphs.siosFileSize}</p>}
+              </div>
+            </div>
+          )}
+
+          {siosFile && (
+            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg border border-primary/10 mb-3">
+              <span className="material-symbols-outlined text-primary text-[20px]">description</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold truncate">{siosFile.name}</p>
+                <p className="text-[10px] text-slate-400">{(siosFile.size / 1024 / 1024).toFixed(1)} MB</p>
+              </div>
+              <button onClick={handleRemoveSiosFile} className="text-slate-400 hover:text-danger cursor-pointer">
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            </div>
+          )}
+
+          {!lphs.departmentsLocked && isCabang && (
+            <button onClick={handleUploadSios} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer">
+              <span className="material-symbols-outlined text-primary text-2xl">upload_file</span>
+              <p className="text-xs font-semibold mt-1">Upload dokumen SIOS</p>
+              <p className="text-[10px] text-outline mt-0.5">PDF, DOCX (Max 25MB)</p>
+            </button>
+          )}
+
+          <div className="mt-3">
+            <Badge variant={lphs.siosFileName || siosFile ? 'success' : 'default'}>
+              {lphs.siosFileName || siosFile ? 'Dokumen Tersedia' : 'Belum Ada Dokumen'}
+            </Badge>
           </div>
         </Card>
 
+        {/* Pilih Departemen Reviewer */}
+        <Card padding="lg">
+          <h3 className="font-heading-section text-heading-section mb-4">Departemen Reviewer</h3>
+          {lphs.departmentsLocked && (
+            <p className="text-[10px] text-warning mb-3 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">lock</span> Pilihan departemen sudah dikunci.
+            </p>
+          )}
+          <div className="space-y-2">
+            {activeDepartments.map(dept => {
+              const approval = lphs.departmentApprovals.find(a => a.departmentId === dept.id);
+              const isSelected = selectedDepts.includes(dept.id);
+              const isDisabled = lphs.departmentsLocked;
+              return (
+                <div key={dept.id} className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors ${
+                  isDisabled ? (isSelected ? 'bg-slate-50 border-border' : 'bg-white border-border opacity-50') : 'hover:bg-slate-50 cursor-pointer'
+                }`} onClick={() => !isDisabled && toggleDept(dept.id)}>
+                  <input type="checkbox" checked={isSelected} disabled={isDisabled} readOnly className="accent-primary cursor-pointer" />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold">{dept.name}</p>
+                    <p className="text-[10px] text-slate-400">{dept.division} • {dept.head}</p>
+                  </div>
+                  {approval && (
+                    <Badge variant={STATUS_BADGE[approval.status] || 'default'}>{STATUS_LABEL[approval.status]}</Badge>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Ringkasan */}
         <div className="bg-primary-container text-on-primary-container rounded-xl p-5 relative overflow-hidden">
           <h4 className="font-semibold text-sm mb-1">Ringkasan LPHS/SIOS</h4>
-          <p className="text-xs opacity-80">Proyek {project?.name} sedang dalam proses review checklist. {counts.passed} dari {items.length} item telah lolos verifikasi.</p>
+          <div className="text-xs opacity-80 space-y-1">
+            <p>Status: <strong>{STATUS_LABEL[lphs.overallStatus] || lphs.overallStatus}</strong></p>
+            <p>PM: <strong>{STATUS_LABEL[lphs.pmStatus]}</strong></p>
+            <p>Management: <strong>{STATUS_LABEL[lphs.mgmtStatus]}</strong></p>
+            <p>Departemen: <strong>{lphs.departmentApprovals.filter(a => a.status === 'approved').length}/{lphs.departmentApprovals.length}</strong> approve</p>
+          </div>
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button onClick={handleSubmit} rightIcon={<span className="material-symbols-outlined text-[18px]">send</span>}>
-            Selesaikan & Lanjutkan
-          </Button>
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          {/* Cabang: Submit Draft */}
+          {!lphs.departmentsLocked && isCabang && (
+            <Button onClick={handleSubmitDraft} className="w-full" rightIcon={<span className="material-symbols-outlined text-[18px]">send</span>}>
+              Submit LPHS/SIOS
+            </Button>
+          )}
+
+          {/* Re-upload after revision */}
+          {needsRevisionReupload && isCabang && (
+            <button onClick={handleReuploadRevision} className="w-full inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-500 text-white hover:brightness-110" type="button">
+              <span className="material-symbols-outlined text-[18px]">upload</span>
+              Upload Ulang Revisi
+            </button>
+          )}
+
+          {/* PM Actions */}
+          {(isPM && lphs.overallStatus === 'dept_review' && lphs.pmStatus !== 'approved') && (
+            <div className="flex gap-2">
+              <Button onClick={handlePmApprove} className="flex-1" rightIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>}>
+                Approve
+              </Button>
+              <button onClick={handlePmRevision} className="flex-1 inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-500 text-white hover:brightness-110" type="button">
+                <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                Kirim Revisi
+              </button>
+            </div>
+          )}
+
+          {/* Management Actions */}
+          {(isManagement && lphs.overallStatus === 'mgmt_review') && (
+            <div className="flex gap-2">
+              <Button onClick={handleMgmtApprove} className="flex-1" rightIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>}>
+                Final Approve
+              </Button>
+              <button onClick={handleMgmtRevision} className="flex-1 inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-500 text-white hover:brightness-110" type="button">
+                <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                Kirim Revisi
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Right Panel */}
       <div className="lg:col-span-8">
         <Card padding="none">
           <div className="flex items-center justify-between p-5 border-b border-border">
             <div>
-              <h3 className="font-heading-section text-heading-section">Daftar Checklist LPHS/SIOS</h3>
-              <p className="text-xs text-secondary mt-0.5">Kelola status kelayakan setiap item tender</p>
+              <h3 className="font-heading-section text-heading-section">Status Matrix LPHS/SIOS</h3>
+              <p className="text-xs text-secondary mt-0.5">Status approval dan review dokumen tender</p>
             </div>
-            <Badge variant="warning">In-Progress Review</Badge>
+            <Badge variant={lphs.overallStatus === 'approved' ? 'success' : lphs.overallStatus === 'revision' ? 'warning' : 'info'}>
+              {STATUS_LABEL[lphs.overallStatus] || lphs.overallStatus}
+            </Badge>
           </div>
-          <div className="divide-y divide-border">
-            {items.map((item) => (
-              <div key={item.id} className="p-5 hover:bg-surface-container-low transition-colors">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    {statusIcon(item.status)}
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm text-on-surface">{item.name}</p>
-                      <p className="text-xs text-secondary mt-0.5">{item.description}</p>
-                      {item.document && (
-                        <div className="flex items-center gap-2 mt-2 text-xs text-primary">
-                          <span className="material-symbols-outlined text-[14px]">description</span>
-                          <span>{item.document}</span>
-                        </div>
+
+          <div className="p-5">
+            {/* PM Row */}
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-border mb-3">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary">person</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-800">Project Manager</p>
+                <p className="text-xs text-slate-400">{STATUS_LABEL[lphs.pmStatus]}{lphs.pmApprovedAt ? ` • ${new Date(lphs.pmApprovedAt).toLocaleDateString('id-ID')}` : ''}</p>
+              </div>
+              <div>{statusIcon(lphs.pmStatus)}</div>
+            </div>
+
+            {/* Management Row */}
+            {lphs.overallStatus !== 'draft' && (
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200 mb-3">
+                <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-amber-700">verified</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-amber-800">Management</p>
+                  <p className="text-xs text-amber-600">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
+                </div>
+                <div>{statusIcon(lphs.mgmtStatus)}</div>
+              </div>
+            )}
+
+            {/* Department Table */}
+            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Departemen Reviewer</h4>
+            <div className="space-y-2">
+              {lphs.departmentApprovals.length === 0 && lphs.departmentsLocked === false && (
+                <p className="text-sm text-slate-400 italic text-center py-8">Belum ada departemen dipilih. Pilih departemen reviewer sebelum submit.</p>
+              )}
+              {lphs.departmentApprovals.length === 0 && lphs.departmentsLocked === true && (
+                <p className="text-sm text-slate-400 italic text-center py-8">Tidak ada data departemen.</p>
+              )}
+              {lphs.departmentApprovals.map(approval => {
+                const dept = departments.find(d => d.id === approval.departmentId);
+                return (
+                  <div key={approval.departmentId} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-border hover:shadow-xs transition-shadow">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-slate-500 text-[16px]">domain</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-800">{approval.departmentName}</p>
+                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                        <span>{STATUS_LABEL[approval.status]}</span>
+                        {approval.approverName && <span>• {approval.approverName}</span>}
+                        {approval.approvedAt && <span>• {new Date(approval.approvedAt).toLocaleDateString('id-ID')}</span>}
+                        {approval.revisionRound > 0 && <Badge variant="warning">Revisi ke-{approval.revisionRound}</Badge>}
+                      </div>
+                      {approval.reviewNotes && (
+                        <p className="text-[10px] text-slate-400 mt-1 italic">"{approval.reviewNotes}"</p>
+                      )}
+                      {approval.revisionNotes && (
+                        <p className="text-[10px] text-amber-600 mt-1 italic">Catatan revisi: {approval.revisionNotes}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {statusIcon(approval.status)}
+                      {/* Dept Head can approve after PM approved */}
+                      {canDeptApprove(approval.departmentId) && (isDeptHead || isSuperAdmin) && lphs.pmStatus === 'approved' && (
+                        <button onClick={() => handleDeptApprove(approval.departmentId)} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                          Setujui
+                        </button>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <div className="flex gap-1">
-                      {(['passed', 'failed', 'na'] as CheckStatus[]).map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => handleStatusChange(item.id, s)}
-                          className={`px-2.5 py-1 text-[10px] font-bold rounded transition-all ${
-                            item.status === s
-                              ? s === 'passed' ? 'bg-success text-white' : s === 'failed' ? 'bg-danger text-white' : 'bg-outline text-white'
-                              : 'bg-surface-container-low text-secondary hover:bg-surface-container-high'
-                          }`}
-                        >
-                          {statusLabel(s)}
-                        </button>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => handleUpload(item.id)}
-                      className="p-1.5 hover:bg-surface-container-high rounded-lg text-outline transition-colors"
-                      title="Upload dokumen"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">upload</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </Card>
+
+        {/* Dokumen Terupload */}
+        {(lphs.lphsFileName || lphs.lphsExternalUrl || lphs.siosFileName) && (
+          <Card padding="lg" className="mt-6">
+            <h3 className="font-heading-section text-heading-section mb-4">Dokumen Terupload</h3>
+            <div className="space-y-3">
+              {lphs.lphsFileName && (
+                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+                  <span className="material-symbols-outlined text-primary">description</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold">LPHS: {lphs.lphsFileName}</p>
+                    {lphs.lphsFileSize && <p className="text-[10px] text-slate-400">{lphs.lphsFileSize}</p>}
+                  </div>
+                  {lphs.lphsExternalUrl && (
+                    <a href={lphs.lphsExternalUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-xs flex items-center gap-1 hover:underline">
+                      <span className="material-symbols-outlined text-[16px]">open_in_new</span> Buka
+                    </a>
+                  )}
+                </div>
+              )}
+              {lphs.lphsExternalUrl && !lphs.lphsFileName && (
+                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+                  <span className="material-symbols-outlined text-primary">link</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold">URL LPHS Eksternal</p>
+                    <p className="text-[10px] text-slate-400 truncate">{lphs.lphsExternalUrl}</p>
+                  </div>
+                  <a href={lphs.lphsExternalUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-xs flex items-center gap-1 hover:underline">
+                    <span className="material-symbols-outlined text-[16px]">open_in_new</span> Buka
+                  </a>
+                </div>
+              )}
+              {lphs.siosFileName && (
+                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg">
+                  <span className="material-symbols-outlined text-primary">description</span>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold">SIOS: {lphs.siosFileName}</p>
+                    {lphs.siosFileSize && <p className="text-[10px] text-slate-400">{lphs.siosFileSize}</p>}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        )}
       </div>
+
+      {/* Targeted Revision Dialog */}
+      {revisionDialog.open && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-slate-800 mb-4">
+              {revisionDialog.role === 'pm' ? 'PM' : 'Management'} — Kirim Targeted Revision
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">Pilih departemen yang perlu melakukan review ulang:</p>
+
+            <div className="space-y-2 mb-4">
+              {lphs.departmentApprovals.map(a => (
+                <label key={a.departmentId} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-slate-50 cursor-pointer">
+                  <input type="checkbox" checked={revisionDialog.targetDepts.includes(a.departmentId)} onChange={() => {
+                    setRevisionDialog(prev => ({
+                      ...prev,
+                      targetDepts: prev.targetDepts.includes(a.departmentId)
+                        ? prev.targetDepts.filter(d => d !== a.departmentId)
+                        : [...prev.targetDepts, a.departmentId],
+                    }));
+                  }} className="accent-primary" />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold">{a.departmentName}</p>
+                    <p className="text-[10px] text-slate-400">Status: {STATUS_LABEL[a.status]}</p>
+                  </div>
+                  {a.status === 'approved' && <Badge variant="success">OK</Badge>}
+                </label>
+              ))}
+            </div>
+
+            <div className="mb-4">
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Catatan Revisi</label>
+              <textarea value={revisionDialog.notes} onChange={e => setRevisionDialog(prev => ({ ...prev, notes: e.target.value }))} rows={3} className="w-full rounded-lg border border-border p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Jelaskan apa yang perlu direvisi..." />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setRevisionDialog({ open: false, targetDepts: [], notes: '', role: 'pm' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+                Batal
+              </button>
+              <button onClick={handleSendRevision} className="px-4 py-2 bg-warning text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
+                Kirim Revisi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

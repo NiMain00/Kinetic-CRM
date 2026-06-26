@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware';
 import type {
   Project,
   RksData,
-  LphsChecklistItem,
+  LphsData,
+  LphsDepartmentApproval,
   CompetitorEntry,
   MilestoneEntry,
   DocGroup,
@@ -19,7 +20,9 @@ interface ProjectState {
   getProjectById: (id: string) => Project | undefined;
   // Tab-specific actions
   updateProjectRks: (id: string, rks: RksData) => void;
-  updateProjectLphs: (id: string, checklist: LphsChecklistItem[]) => void;
+  updateProjectLphs: (id: string, lphs: LphsData) => void;
+  updateLphsDepartmentApproval: (id: string, approval: LphsDepartmentApproval) => void;
+  updateLphsStatus: (id: string, status: Partial<Pick<LphsData, 'pmStatus' | 'mgmtStatus' | 'overallStatus'>>) => void;
   updateProjectPricing: (id: string, pricing: Partial<Project['pricing']>) => void;
   updateProjectCompetitors: (id: string, competitors: CompetitorEntry[]) => void;
   addProjectCompetitor: (id: string, competitor: CompetitorEntry) => void;
@@ -47,9 +50,27 @@ export const useProjectStore = create<ProjectState>()(
         set((s) => ({
           projects: s.projects.map((p) => (p.id === id ? { ...p, rks } : p)),
         })),
-      updateProjectLphs: (id, lphsChecklist) =>
+      updateProjectLphs: (id, lphs) =>
         set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, lphsChecklist } : p)),
+          projects: s.projects.map((p) => (p.id === id ? { ...p, lphs } : p)),
+        })),
+      updateLphsDepartmentApproval: (id, approval) =>
+        set((s) => ({
+          projects: s.projects.map((p) => {
+            if (p.id !== id || !p.lphs) return p;
+            const existing = p.lphs.departmentApprovals.findIndex(a => a.departmentId === approval.departmentId);
+            const newApprovals = existing >= 0
+              ? p.lphs.departmentApprovals.map((a, i) => i === existing ? approval : a)
+              : [...p.lphs.departmentApprovals, approval];
+            return { ...p, lphs: { ...p.lphs, departmentApprovals: newApprovals } };
+          }),
+        })),
+      updateLphsStatus: (id, status) =>
+        set((s) => ({
+          projects: s.projects.map((p) => {
+            if (p.id !== id || !p.lphs) return p;
+            return { ...p, lphs: { ...p.lphs, ...status } };
+          }),
         })),
       updateProjectPricing: (id, pricing) =>
         set((s) => ({

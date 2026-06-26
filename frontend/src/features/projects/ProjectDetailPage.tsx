@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import type { Project } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
+import { useApprovalStore } from '@/stores/approvalStore';
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -35,8 +36,10 @@ export default function ProjectDetailView({
   const getProjectById = useProjectStore((s) => s.getProjectById);
   const updateProject = useProjectStore((s) => s.updateProject);
   const deleteProject = useProjectStore((s) => s.deleteProject);
+  const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
   const getProspectById = useProspectStore((s) => s.getProspectById);
   const updateProspect = useProspectStore((s) => s.updateProspect);
+  const { approvals, approveItem } = useApprovalStore();
 
   const project = propProject || (projectId ? getProjectById(projectId) : undefined);
 
@@ -70,6 +73,9 @@ export default function ProjectDetailView({
     ];
     if (project.type === 'Tender') {
       items.splice(2, 0, { label: 'Review RKS', path: 'review-rks' });
+    } else {
+      // LPHS/SIOS only for Tender projects
+      items.splice(2, 1);
     }
     return items;
   }, [project.type]);
@@ -111,6 +117,46 @@ export default function ProjectDetailView({
 
   const handleTabChange = (path: string) => {
     navigate(`/project/${projectId}/${path}`);
+  };
+
+  const handleApproveProject = () => {
+    if (!projectId || !project) return;
+
+    // Remove any pending approval for this project
+    const pendingApproval = approvals.find(a => a.entityId === projectId && a.entityType === 'project');
+    if (pendingApproval) {
+      approveItem(pendingApproval.id);
+    }
+
+    // Advance project status
+    const nextPhaseMap: Record<string, { status: string; phase: string; progress: number }> = {
+      'Prospecting': { status: 'RKS', phase: 'RKS', progress: 10 },
+      'RKS': { status: 'Review RKS', phase: 'Review RKS', progress: 20 },
+      'Review RKS': { status: 'LPHS/SIOS', phase: 'LPHS/SIOS', progress: 35 },
+      'LPHS/SIOS': { status: 'Input Harga', phase: 'Harga', progress: 50 },
+      'Input Harga': { status: 'Kompetitor', phase: 'Kompetitor', progress: 60 },
+      'Kompetitor': { status: 'Pemenang', phase: 'Pemenang', progress: 70 },
+      'Pemenang': { status: 'Target Delivery', phase: 'Target Delivery', progress: 80 },
+      'Target Delivery': { status: 'Executing', phase: 'Executing', progress: 90 },
+      'Executing': { status: 'Completed', phase: 'Dokumen', progress: 100 },
+    };
+
+    const next = nextPhaseMap[project.status];
+    if (next) {
+      updateProject(projectId, next);
+      addTimelineEvent(projectId, {
+        id: `evt-${Date.now()}`,
+        title: 'Proyek Disetujui',
+        actor: 'System',
+        role: 'Approval System',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'approve',
+        description: `Proyek telah disetujui dan berpindah ke tahap ${next.phase}.`,
+      });
+      toast.success('Proyek berhasil disetujui!');
+    } else {
+      toast.success('Proyek sudah berada di tahap akhir.');
+    }
   };
 
   const handleShowNotification = (message: string, type: 'success' | 'warning' | 'error') => {
@@ -180,7 +226,7 @@ export default function ProjectDetailView({
               Revisi
             </button>
             <button
-              onClick={() => onShowNotification('Aksi persetujuan proyek berhasil dikirim!', 'success')}
+              onClick={handleApproveProject}
               className="px-5 py-1.5 bg-success text-white font-semibold text-xs rounded-lg hover:opacity-90 shadow-sm transition-all flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[16px]">check_circle</span>
@@ -196,11 +242,27 @@ export default function ProjectDetailView({
           <div className="min-w-[600px] flex items-center justify-between relative">
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
 
-            {tabs.map((step, index) => {
+            {(() => {
+              const statusStepMap: Record<string, string> = {
+                'Prospecting': 'RKS',
+                'RKS': 'RKS',
+                'Review RKS': 'Review RKS',
+                'LPHS/SIOS': 'LPHS/SIOS',
+                'Input Harga': 'Harga',
+                'Kompetitor': 'Kompetitor',
+                'Pemenang': 'Pemenang',
+                'Target Delivery': 'Target Delivery',
+                'Executing': 'Timeline',
+                'Completed': 'Dokumen',
+              };
+              const phaseLabel = statusStepMap[project.status] || '';
+              const activeStepIndex = tabs.findIndex(t => t.label === phaseLabel);
+              const currentStep = activeStepIndex >= 0 ? activeStepIndex : 0;
+
+              return tabs.map((step, index) => {
               const stepNum = index + 1;
-              const activeIndex = tabs.findIndex(t => t.label === activeTab);
-              const isCompleted = stepNum <= activeIndex;
-              const isActive = step.label === activeTab;
+              const isCompleted = index < currentStep;
+              const isActive = index === currentStep;
 
               return (
                 <div
@@ -226,7 +288,8 @@ export default function ProjectDetailView({
                 </span>
               </div>
             );
-            })}
+            });
+          })()}
           </div>
         </section>
       )}

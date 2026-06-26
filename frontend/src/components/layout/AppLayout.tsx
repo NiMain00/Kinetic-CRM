@@ -6,6 +6,7 @@ import Breadcrumb from './Breadcrumb';
 import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useApprovalStore } from '@/stores/approvalStore';
 
 export default function AppLayout() {
   const location = useLocation();
@@ -13,6 +14,8 @@ export default function AppLayout() {
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { unreadCount } = useNotificationStore();
+  const { getPendingCount } = useApprovalStore();
+  const pendingApprovalsCount = getPendingCount();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function AppLayout() {
           setActiveTab={handleNavigate}
           collapsed={false}
           setCollapsed={() => {}}
-          pendingApprovalsCount={3}
+          pendingApprovalsCount={pendingApprovalsCount}
           onLogout={handleLogout}
           userRole={userRole}
           mobile
@@ -56,7 +59,7 @@ export default function AppLayout() {
           setActiveTab={handleNavigate}
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
-          pendingApprovalsCount={3}
+          pendingApprovalsCount={pendingApprovalsCount}
           onLogout={handleLogout}
           userRole={userRole}
         />

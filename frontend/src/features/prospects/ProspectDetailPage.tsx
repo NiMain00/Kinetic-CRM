@@ -7,6 +7,7 @@ import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useApprovalStore } from '@/stores/approvalStore';
 
 const defaultAnswers: Record<string, string> = {
   upsCapacity: 'UPS 2x3KVA',
@@ -37,6 +38,7 @@ export default function ProspectDetailPage() {
   const addProject = useProjectStore((s) => s.addProject);
   const deleteProject = useProjectStore((s) => s.deleteProject);
   const projects = useProjectStore((s) => s.projects);
+  const { approvals, approveItem, addApproval } = useApprovalStore();
 
   const authUser = useAuthStore((s) => s.user);
   const industries = useMasterDataStore((s) => s.industries);
@@ -121,13 +123,40 @@ export default function ProspectDetailPage() {
   };
 
   const handleApprove = () => {
+    // Remove any pending approval for this prospect
+    const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
+    if (pendingApproval) {
+      approveItem(pendingApproval.id);
+    }
     updateProspect(prospect.id, { status: 'Approved' });
     toast.success('Prospek berhasil disetujui.');
   };
 
   const handleRequestRevision = () => {
+    // Remove any pending approval for this prospect
+    const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
+    if (pendingApproval) {
+      approveItem(pendingApproval.id);
+    }
     updateProspect(prospect.id, { status: 'Revision' });
     toast.success('Permintaan revisi telah dikirim.');
+  };
+
+  const handleResubmit = () => {
+    updateProspect(prospect.id, { status: 'Waiting PM' });
+    addApproval({
+      id: `app-prospect-${prospect.id}`,
+      ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
+      name: prospect.name,
+      branch: prospect.branch || 'Jakarta Pusat',
+      waitingSince: 'Just now',
+      slaStatus: 'Normal',
+      type: 'Prospek',
+      client: prospect.client,
+      entityId: prospect.id,
+      entityType: 'prospect',
+    });
+    toast.success('Prospek berhasil dikirim ke review.');
   };
 
   const handleDelete = () => {
@@ -238,6 +267,15 @@ export default function ProspectDetailPage() {
                 Edit
               </button>
 
+              {/* Tombol "Kirim ke Review" — ketika customer sudah diverifikasi & status masih draft (Potensial/Non Potensial) */}
+              {!needsVerification && customer?.verifiedAt && !isConverted &&
+               (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
+                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px]">send</span>
+                  Kirim ke Review
+                </button>
+              )}
+
               {/* Kondisional: "Buat Proyek" untuk Approved (Fase 3 item 2) */}
               {prospect.status === 'Approved' && !isConverted && (
                 <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
@@ -257,14 +295,26 @@ export default function ProspectDetailPage() {
                 </button>
               )}
 
-              <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                Setujui
-              </button>
-              <button onClick={handleRequestRevision} className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Minta revisi">
-                <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                Revisi
-              </button>
+              {prospect.status === 'Waiting PM' && (
+                <>
+                  <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
+                    <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                    Setujui
+                  </button>
+                  <button onClick={handleRequestRevision} className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Minta revisi">
+                    <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                    Revisi
+                  </button>
+                </>
+              )}
+
+              {prospect.status === 'Revision' && (
+                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5" aria-label="Kirim ulang ke PM">
+                  <span className="material-symbols-outlined text-[18px]">refresh</span>
+                  Kirim Ulang ke PM
+                </button>
+              )}
+
               <button onClick={handleDelete} className="px-4 py-2 border border-danger text-danger rounded-lg text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
                 <span className="material-symbols-outlined text-[18px]">delete</span>
               </button>

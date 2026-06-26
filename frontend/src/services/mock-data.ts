@@ -60,16 +60,24 @@ export const INITIAL_PROJECTS: Project[] = [
         { name: 'BOQ_Analysis_v3.xlsx', size: '1.8 MB', time: '1 day ago' },
       ]
     },
-    lphsChecklist: [
-      { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'adms_checklist.pdf' },
-      { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec_v2.pdf' },
-      { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'passed', document: 'ahs_analysis.xlsx' },
-      { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'na', document: '' },
-      { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule_bar.pdf' },
-      { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
-      { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
-      { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'failed', document: '' },
-    ],
+    lphs: {
+      lphsFileName: 'LPHS_Telkom_v2.pdf',
+      lphsFileSize: '3.4 MB',
+      lphsExternalUrl: 'https://docs.google.com/document/d/abc123',
+      siosFileName: 'SIOS_Infra_TahapII.pdf',
+      siosFileSize: '1.2 MB',
+      selectedDepartments: ['01', '02'],
+      departmentsLocked: true,
+      pmStatus: 'approved',
+      pmApprovedAt: '2025-03-10',
+      mgmtStatus: 'pending',
+      overallStatus: 'dept_review',
+      submittedAt: '2025-03-08',
+      departmentApprovals: [
+        { departmentId: '01', departmentName: 'IT Infrastructure', status: 'approved', approverName: 'Budi Santoso', approvedAt: '2025-03-12', reviewNotes: 'Spesifikasi teknis sesuai standar.', revisionRound: 0, isTargetedRevision: false },
+        { departmentId: '02', departmentName: 'Financial Audit', status: 'reviewing', approverName: undefined, revisionRound: 0, isTargetedRevision: false },
+      ],
+    },
     competitors: [
       { id: '1', name: 'Infrastructure Alpha', estPrice: 142500000000, advantages: ['Fast-track Delivery', 'Legacy Support'], notes: 'Strong political ties with the regional aviation authority.' },
       { id: '2', name: 'BuildCore Systems', estPrice: 138200000000, advantages: ['BIM Integration'], notes: 'Price leader but lacks heavy civil experience.' },
@@ -143,16 +151,25 @@ export const INITIAL_PROJECTS: Project[] = [
         { name: 'RKS_FTTH_Menteng_v2.pdf', size: '3.1 MB', time: '2 weeks ago' },
       ]
     },
-    lphsChecklist: [
-      { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'admin_checklist.pdf' },
-      { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec_v1.pdf' },
-      { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'passed', document: '' },
-      { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'passed', document: '' },
-      { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule_v2.pdf' },
-      { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'na', document: '' },
-      { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
-      { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'na', document: '' },
-    ],
+    lphs: {
+      lphsFileName: 'LPHS_FTTH_Menteng.pdf',
+      lphsFileSize: '2.8 MB',
+      siosFileName: 'SIOS_Menteng.pdf',
+      siosFileSize: '0.9 MB',
+      selectedDepartments: ['01', '02'],
+      departmentsLocked: true,
+      pmStatus: 'approved',
+      pmApprovedAt: '2024-08-28',
+      mgmtStatus: 'approved',
+      mgmtApprovedAt: '2024-09-03',
+      overallStatus: 'approved',
+      submittedAt: '2024-08-22',
+      finalApprovedAt: '2024-09-03',
+      departmentApprovals: [
+        { departmentId: '01', departmentName: 'IT Infrastructure', status: 'approved', approverName: 'Budi Santoso', approvedAt: '2024-08-30', reviewNotes: 'OK', revisionRound: 0, isTargetedRevision: false },
+        { departmentId: '02', departmentName: 'Financial Audit', status: 'approved', approverName: 'Siti Aminah', approvedAt: '2024-08-30', reviewNotes: 'Sesuai anggaran.', revisionRound: 0, isTargetedRevision: false },
+      ],
+    },
     competitors: [
       { id: '1', name: 'PT. Solusi Fiber Nusantara', estPrice: 1320000000, advantages: ['Harga kompetitif', 'Cakupan luas'], notes: 'Kompetitor utama, sudah memiliki infrastruktur di area sekitar.' },
       { id: '2', name: 'NetConnect Pro', estPrice: 1185000000, advantages: ['Teknologi terbaru'], notes: 'Pendatang baru dengan teknologi GPON terbaru.' },
@@ -223,16 +240,25 @@ export const INITIAL_PROJECTS: Project[] = [
         { name: 'RKS_Terminal3_Final.pdf', size: '8.5 MB', time: 'Jan 5, 2024' },
       ],
     },
-    lphsChecklist: [
-      { id: '1', name: 'Kelengkapan Administrasi', description: 'Dokumen administratif dan legalitas perusahaan', status: 'passed', document: 'admin.pdf' },
-      { id: '2', name: 'Spesifikasi Teknis', description: 'Kesesuaian spesifikasi teknis dengan RKS', status: 'passed', document: 'tech_spec.pdf' },
-      { id: '3', name: 'Analisa Harga Satuan', description: 'Perhitungan harga satuan pekerjaan', status: 'passed', document: '' },
-      { id: '4', name: 'Metode Pelaksanaan', description: 'Metode kerja dan pendekatan teknis', status: 'passed', document: '' },
-      { id: '5', name: 'Jadwal Pelaksanaan', description: 'Kurva S dan milestone proyek', status: 'passed', document: 'schedule.pdf' },
-      { id: '6', name: 'Daftar Peralatan', description: 'Inventaris alat berat dan pendukung', status: 'passed', document: '' },
-      { id: '7', name: 'Tenaga Ahli', description: 'Sertifikasi dan pengalaman tenaga ahli', status: 'passed', document: 'cv_team.pdf' },
-      { id: '8', name: 'Laporan Keuangan', description: 'Audit laporan keuangan 3 tahun terakhir', status: 'passed', document: '' },
-    ],
+    lphs: {
+      lphsFileName: 'LPHS_Terminal3.pdf',
+      lphsFileSize: '5.1 MB',
+      siosFileName: 'SIOS_Terminal3.pdf',
+      siosFileSize: '1.8 MB',
+      selectedDepartments: ['01', '02'],
+      departmentsLocked: true,
+      pmStatus: 'approved',
+      pmApprovedAt: '2024-01-19',
+      mgmtStatus: 'approved',
+      mgmtApprovedAt: '2024-01-21',
+      overallStatus: 'approved',
+      submittedAt: '2024-01-17',
+      finalApprovedAt: '2024-01-21',
+      departmentApprovals: [
+        { departmentId: '01', departmentName: 'IT Infrastructure', status: 'approved', approverName: 'Budi Santoso', approvedAt: '2024-01-20', reviewNotes: 'Spesifikasi sesuai.', revisionRound: 0, isTargetedRevision: false },
+        { departmentId: '02', departmentName: 'Financial Audit', status: 'approved', approverName: 'Siti Aminah', approvedAt: '2024-01-20', reviewNotes: 'Anggaran OK.', revisionRound: 0, isTargetedRevision: false },
+      ],
+    },
     competitors: [
       { id: '1', name: 'Infrastructure Alpha', estPrice: 142500000000, advantages: ['Fast-track Delivery', 'Legacy Support'], notes: 'Strong political ties.' },
       { id: '2', name: 'BuildCore Systems', estPrice: 138200000000, advantages: ['BIM Integration'], notes: 'Price leader.' },
@@ -303,16 +329,17 @@ export const INITIAL_PROJECTS: Project[] = [
 
 export const INITIAL_APPROVALS: ApprovalItem[] = [
   // Prospek Approvals
-  { id: 'app-1', ref: 'PR-2023-08-001', name: 'Budi Pratama', branch: 'Jakarta Central (HQ)', waitingSince: '3 days 4h ago', slaStatus: 'Overdue', type: 'Prospek', client: 'PT. Telekom Nusantara' },
-  { id: 'app-2', ref: 'PR-2023-08-005', name: 'Siti Mulyani', branch: 'Surabaya Timur', waitingSince: '18h 22m ago', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Energi Bangsa Corp' },
-  { id: 'app-3', ref: 'PR-2023-08-012', name: 'Dedi Arianto', branch: 'Bandung Utara', waitingSince: '2h 15m ago', slaStatus: 'Normal', type: 'Prospek', client: 'Secure City Group' },
+  { id: 'app-1', ref: 'PR-2023-08-001', name: 'Surveillance System Implementation Phase 2', branch: 'Jakarta Selatan', waitingSince: '3 days 4h ago', slaStatus: 'Overdue', type: 'Prospek', client: 'Secure City Group', entityId: '3', entityType: 'prospect' },
+  { id: 'app-2', ref: 'PR-2023-08-005', name: 'Network Optimization Project v3.0', branch: 'Makassar', waitingSince: '18h 22m ago', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Global Logistics Inc.', entityId: '7', entityType: 'prospect' },
 
   // RKS Approvals
-  { id: 'app-4', ref: 'RKS-88902-B', name: 'Maintenance Tower IX - Fase 2', branch: 'Medan Belawan', waitingSince: '4 days 12h ago', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia' },
-  { id: 'app-5', ref: 'RKS-89011-A', name: 'Pengadaan AC Central Lobby', branch: 'Makassar Center', waitingSince: '5h 30m ago', slaStatus: 'Normal', type: 'RKS', client: 'PT. Angkasa Pura' },
+  { id: 'app-4', ref: 'RKS-88902-B', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '4 days 12h ago', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
+  { id: 'app-5', ref: 'RKS-89011-A', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '5h 30m ago', slaStatus: 'Normal', type: 'RKS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' },
 
   // LPHS Approvals
-  { id: 'app-6', ref: 'SURV-902-B', name: 'Site K-902 Balikpapan', branch: 'Balikpapan Base', waitingSince: '1d 6h ago', slaStatus: 'Near Deadline', type: 'LPHS', client: 'Balikpapan Offsh.' }
+  { id: 'app-6', ref: 'LPHS-PR-2025-001', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '1d 6h ago', slaStatus: 'Near Deadline', type: 'LPHS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
+  { id: 'app-7', ref: 'LPHS-PRJ-2024-0089', name: 'Modernization of Terminal 3', branch: 'Cengkareng, Tangerang', waitingSince: '2d 3h ago', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Angkasa Pura II', entityId: 'PR-2025-003', entityType: 'project' },
+  { id: 'app-8', ref: 'LPHS-PRJ-2024-0892', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '5h 30m ago', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' }
 ];
 
 export const INITIAL_TIMELINE_EVENTS: TimelineEvent[] = [

@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
-import type { ApprovalItem } from '../../types/domain';
-import { INITIAL_APPROVALS } from '../../services/mock-data';
+import { useApprovalStore } from '@/stores/approvalStore';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [currentDateString, setCurrentDateString] = useState('');
+  const { approvals } = useApprovalStore();
 
   useEffect(() => {
     const today = new Date();
@@ -17,7 +17,7 @@ export default function DashboardPage() {
     }));
   }, []);
 
-  const pendingApprovals = INITIAL_APPROVALS.slice(0, 5);
+  const pendingApprovals = approvals.slice(0, 5);
 
   return (
     <div className="space-y-4 sm:space-y-6">

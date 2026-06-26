@@ -84,8 +84,13 @@ export default function MasterQuestionPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterQuestion | null>(null);
   const [form, setForm] = useState<Partial<MasterQuestion>>({});
+  const [contextFilter, setContextFilter] = useState<'all' | 'prospect' | 'rks' | 'both'>('all');
 
-  const filtered = questions.filter(q => q.question_text.toLowerCase().includes(search.toLowerCase()));
+  const filtered = questions.filter(q => {
+    const matchesSearch = q.question_text.toLowerCase().includes(search.toLowerCase());
+    const matchesContext = contextFilter === 'all' || q.context === contextFilter;
+    return matchesSearch && matchesContext;
+  });
 
   const openCreate = () => {
     setEditing(null);
@@ -162,9 +167,26 @@ console.log('selected', form.question_type_id);
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="md">
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-              <input type="text" placeholder="Cari pertanyaan..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary" aria-label="Cari pertanyaan" />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+              <div className="flex gap-2 p-1 bg-slate-100 rounded-lg border border-border overflow-x-auto w-full sm:w-auto">
+                {(['all', 'prospect', 'rks', 'both'] as const).map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setContextFilter(tab)}
+                    className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                      contextFilter === tab
+                        ? 'bg-white text-primary shadow-sm border border-border'
+                        : 'text-slate-500 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab === 'all' ? 'Semua' : tab === 'prospect' ? 'Prospek' : tab === 'rks' ? 'RKS' : 'Both'}
+                  </button>
+                ))}
+              </div>
+              <div className="relative w-full sm:w-64">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+                <input type="text" placeholder="Cari pertanyaan..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary" aria-label="Cari pertanyaan" />
+              </div>
             </div>
           </Card>
 
@@ -246,12 +268,25 @@ console.log('selected', form.question_type_id);
                 </div>
               </div>
 
-              {(['QT-03', 'QT-04', 'QT-05'].includes(form.question_type_id || '') || questionTypes.find(t => t.id === form.question_type_id)?.has_options) && (
-                <OptionsInput
-                  options={form.options || []}
-                  onChange={(options) => setForm({ ...form, options })}
-                />
-              )}
+              {(() => {
+                const selectedType = questionTypes.find(t => t.id === form.question_type_id);
+                const shouldShowOptions = Boolean(selectedType?.has_options);
+
+                if (typeof window !== 'undefined') {
+                  console.log('[MasterQuestionPage] question_type_id:', form.question_type_id);
+                  console.log('[MasterQuestionPage] selectedType:', selectedType);
+                  console.log('[MasterQuestionPage] shouldShowOptions:', shouldShowOptions);
+                }
+
+                return shouldShowOptions ? (
+                  <OptionsInput
+                    options={form.options || []}
+                    onChange={(options) => setForm({ ...form, options })}
+                  />
+                ) : null;
+              })()}
+
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Kategori</label>
