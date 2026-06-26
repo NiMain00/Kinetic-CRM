@@ -10,6 +10,7 @@ interface SidebarProps {
   unreadCount?: number;
   onLogout?: () => void;
   userRole?: string;
+  userPermissions?: string[];
   mobile?: boolean;
   onClose?: () => void;
 }
@@ -46,10 +47,11 @@ export default function Sidebar({
   unreadCount = 0,
   onLogout,
   userRole = 'Staff',
+  userPermissions = [],
   mobile = false,
   onClose,
 }: SidebarProps) {
-  const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole), [userRole]);
+  const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole, userPermissions), [userRole, userPermissions]);
   const swipeHandlers = useSwipe(onClose);
 
   useEffect(() => {

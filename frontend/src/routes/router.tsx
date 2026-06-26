@@ -42,41 +42,41 @@ const ForgotPasswordPage = LazyLoad(lazy(() => import('@/features/auth/ForgotPas
 const ResetPasswordPage = LazyLoad(lazy(() => import('@/features/auth/ResetPasswordPage')));
 
 // Dashboard
-const DashboardPage = LazyLoad(lazy(() => import('@/features/dashboard/DashboardPage')));
+const DashboardPage = LazyLoadPermission(lazy(() => import('@/features/dashboard/DashboardPage')), ['dashboard_view']);
 
 // Prospects
-const ProspectsPage = LazyLoad(lazy(() => import('@/features/prospects/ProspectsPage')));
-const ProspectFormPage = LazyLoad(lazy(() => import('@/features/prospects/ProspectFormPage')));
-const ProspectDetailPage = LazyLoad(lazy(() => import('@/features/prospects/ProspectDetailPage')));
+const ProspectsPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectsPage')), ['prospek_view']);
+const ProspectFormPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectFormPage')), ['prospek_view']);
+const ProspectDetailPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectDetailPage')), ['prospek_view']);
 
 // Projects
-const ProjectListPage = LazyLoad(lazy(() => import('@/features/projects/ProjectListPage')));
-const ProjectFormPage = LazyLoad(lazy(() => import('@/features/projects/ProjectFormPage')));
-const ProjectDetailPage = LazyLoad(lazy(() => import('@/features/projects/ProjectDetailPage')));
+const ProjectListPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectListPage')), ['proyek_view']);
+const ProjectFormPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectFormPage')), ['proyek_view']);
+const ProjectDetailPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectDetailPage')), ['proyek_view']);
 
 // Approvals
-const ApprovalInboxPage = LazyLoad(lazy(() => import('@/features/approvals/ApprovalInboxPage')));
+const ApprovalInboxPage = LazyLoadPermission(lazy(() => import('@/features/approvals/ApprovalInboxPage')), ['approval_view']);
 
 // KPI → moved under Reports
-const KPIDashboardPage = LazyLoad(lazy(() => import('@/features/kpi/KPIDashboardPage')));
-const KPIProgressPage = LazyLoad(lazy(() => import('@/features/kpi/KPIProgressPage')));
-const KPITargetsPage = LazyLoad(lazy(() => import('@/features/kpi/KPITargetsPage')));
+const KPIDashboardPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIDashboardPage')), ['laporan_view']);
+const KPIProgressPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIProgressPage')), ['laporan_view']);
+const KPITargetsPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPITargetsPage')), ['laporan_view']);
 
 // Reports
-const WinLossReportPage = LazyLoad(lazy(() => import('@/features/reports/WinLossReportPage')));
-const PipelineReportPage = LazyLoad(lazy(() => import('@/features/reports/PipelineReportPage')));
-const ReportsIndexPage = LazyLoad(lazy(() => import('@/features/reports/ReportsIndexPage')));
+const WinLossReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/WinLossReportPage')), ['laporan_view']);
+const PipelineReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/PipelineReportPage')), ['laporan_view']);
+const ReportsIndexPage = LazyLoadPermission(lazy(() => import('@/features/reports/ReportsIndexPage')), ['laporan_view']);
 
 // Master Data
-const MasterDataPage = LazyLoad(lazy(() => import('@/features/master-data/MasterDataPage')));
-const MasterCustomerPage = LazyLoad(lazy(() => import('@/features/master-data/MasterCustomerPage')));
-const MasterCompetitorPage = LazyLoad(lazy(() => import('@/features/master-data/MasterCompetitorPage')));
-const MasterCategoryPage = LazyLoad(lazy(() => import('@/features/master-data/MasterCategoryPage')));
-const MasterDocTypePage = LazyLoad(lazy(() => import('@/features/master-data/MasterDocTypePage')));
-const MasterQuestionPage = LazyLoad(lazy(() => import('@/features/master-data/MasterQuestionPage')));
-const MasterHolidayPage = LazyLoad(lazy(() => import('@/features/master-data/MasterHolidayPage')));
-const MasterLossReasonPage = LazyLoad(lazy(() => import('@/features/master-data/MasterLossReasonPage')));
-const MasterPeriodPage = LazyLoad(lazy(() => import('@/features/master-data/MasterPeriodPage')));
+const MasterDataPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDataPage')), ['master_data']);
+const MasterCustomerPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCustomerPage')), ['master_data']);
+const MasterCompetitorPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCompetitorPage')), ['master_data']);
+const MasterCategoryPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCategoryPage')), ['master_data']);
+const MasterDocTypePage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDocTypePage')), ['master_data']);
+const MasterQuestionPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterQuestionPage')), ['master_data']);
+const MasterHolidayPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterHolidayPage')), ['master_data']);
+const MasterLossReasonPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterLossReasonPage')), ['master_data']);
+const MasterPeriodPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterPeriodPage')), ['master_data']);
 
 // Users — hanya Super Admin
 const UsersPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UsersPage')), ['Super Admin']);

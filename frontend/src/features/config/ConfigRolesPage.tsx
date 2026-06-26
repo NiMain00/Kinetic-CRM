@@ -89,7 +89,6 @@ const ROLE_COLORS: Record<string, string> = {
 export default function ConfigRolesPage() {
   const roles = useMasterDataStore((s) => s.roles);
   const addData = useMasterDataStore((s) => s.addData);
-  const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -97,6 +96,8 @@ export default function ConfigRolesPage() {
   const [formDescription, setFormDescription] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [draftPermissions, setDraftPermissions] = useState<Record<string, string[]>>({});
+  const [saving, setSaving] = useState(false);
   const filteredRoles = useMemo(() => {
     if (!searchQuery.trim()) return roles;
     const q = searchQuery.toLowerCase();
@@ -130,28 +131,101 @@ export default function ConfigRolesPage() {
     setDeleteConfirm(null);
   };
 
+  /** Get current permissions for a role, checking draft first */
+  const getRolePerms = (roleId: string): string[] => {
+    if (roleId in draftPermissions) return draftPermissions[roleId];
+    return roles.find(r => r.id === roleId)?.permissions ?? [];
+  };
+
+  const hasDraftChanges = Object.keys(draftPermissions).length > 0;
+  const draftCount = Object.keys(draftPermissions).length;
+
   const handleTogglePermission = (roleId: string, permKey: string) => {
-    const role = roles.find(r => r.id === roleId);
-    if (!role) return;
-    const hasPerm = role.permissions.includes(permKey);
+    const currentPerms = getRolePerms(roleId);
+    const hasPerm = currentPerms.includes(permKey);
     const newPerms = hasPerm
-      ? role.permissions.filter(p => p !== permKey)
-      : [...role.permissions, permKey];
-    updateData<MasterRole>('roles', roleId, { permissions: newPerms });
+      ? currentPerms.filter(p => p !== permKey)
+      : [...currentPerms, permKey];
+
+    // Compare with original to decide if we need a draft entry
+    const original = roles.find(r => r.id === roleId)?.permissions ?? [];
+    const isSame = original.length === newPerms.length && original.every(p => newPerms.includes(p));
+
+    setDraftPermissions(prev => {
+      const next = { ...prev };
+      if (isSame) {
+        delete next[roleId];
+      } else {
+        next[roleId] = newPerms;
+      }
+      return next;
+    });
   };
 
   const handleSelectAll = (roleId: string) => {
-    const role = roles.find(r => r.id === roleId);
-    if (!role) return;
-    updateData<MasterRole>('roles', roleId, { permissions: ALL_PERM_KEYS });
-    toast.success(`Semua izin diberikan untuk ${role.name}`);
+    const original = roles.find(r => r.id === roleId)?.permissions ?? [];
+    const isSame = ALL_PERM_KEYS.length === original.length && original.every(p => ALL_PERM_KEYS.includes(p));
+
+    setDraftPermissions(prev => {
+      const next = { ...prev };
+      if (isSame) {
+        delete next[roleId];
+      } else {
+        next[roleId] = [...ALL_PERM_KEYS];
+      }
+      return next;
+    });
   };
 
   const handleClearAll = (roleId: string) => {
-    const role = roles.find(r => r.id === roleId);
-    if (!role) return;
-    updateData<MasterRole>('roles', roleId, { permissions: [] });
-    toast.success(`Semua izin dihapus dari ${role.name}`);
+    const original = roles.find(r => r.id === roleId)?.permissions ?? [];
+    setDraftPermissions(prev => {
+      const next = { ...prev };
+      if (original.length === 0) {
+        delete next[roleId];
+      } else {
+        next[roleId] = [];
+      }
+      return next;
+    });
+  };
+
+  const handleApplyChanges = async () => {
+    setSaving(true);
+    const entries = Object.entries(draftPermissions);
+
+    await new Promise(r => setTimeout(r, 300));
+
+    // Batch-update all roles at once via the store's setState
+    const currentRoles = useMasterDataStore.getState().roles;
+    const updatedRoles = currentRoles.map(role => {
+      if (role.id in draftPermissions) {
+        return { ...role, permissions: draftPermissions[role.id] };
+      }
+      return role;
+    });
+
+    useMasterDataStore.setState({ roles: updatedRoles });
+
+    // Also directly persist to localStorage as a fallback
+    try {
+      const fullState = useMasterDataStore.getState();
+      localStorage.setItem('kinetic-master-data', JSON.stringify({
+        state: fullState,
+        version: 1,
+      }));
+    } catch (e) {
+      console.error('Gagal menyimpan ke localStorage:', e);
+    }
+
+    setDraftPermissions({});
+    setSaving(false);
+    toast.success(`${entries.length} role berhasil diperbarui.`);
+  };
+
+  const handleCancelChanges = () => {
+    setDraftPermissions({});
+    toast('Perubahan dibatalkan.', { icon: 'ℹ️' });
   };
 
   return (
@@ -196,6 +270,26 @@ export default function ConfigRolesPage() {
             </div>
           </div>
 
+          {/* Update/Cancel Bar */}
+          {hasDraftChanges && (
+            <div className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 shadow-sm">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-amber-600 text-sm">edit_note</span>
+                <span className="text-xs font-semibold text-amber-800">
+                  {draftCount} role dengan perubahan yang belum disimpan
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="secondary" size="sm" onClick={handleCancelChanges} disabled={saving}>
+                  Batal
+                </Button>
+                <Button variant="primary" size="sm" onClick={handleApplyChanges} disabled={saving} leftIcon={saving ? <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span> : <span className="material-symbols-outlined text-sm">save</span>}>
+                  {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-left table-auto border-collapse">
@@ -222,7 +316,12 @@ export default function ConfigRolesPage() {
                       <tr key={r.id} className={`${rowBg} hover:bg-slate-100/60 transition-colors`}>
                         <td className={`px-3 py-2.5 sticky left-0 z-10 border-r border-border ${rowBg}`}>
                           <div className="flex flex-col">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
+                              {r.id in draftPermissions && (
+                                <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">Pending</span>
+                              )}
+                            </div>
                             <span className="text-[9px] text-slate-400 mt-0.5">{r.description}</span>
                           </div>
                         </td>
@@ -230,7 +329,7 @@ export default function ConfigRolesPage() {
                           <td key={p.key} className="px-1 py-2.5 text-center border-r border-border last:border-r-0">
                             <input
                               type="checkbox"
-                              checked={r.permissions.includes(p.key)}
+                              checked={getRolePerms(r.id).includes(p.key)}
                               onChange={() => handleTogglePermission(r.id, p.key)}
                               className="w-4 h-4 text-primary border-border rounded focus:ring-primary cursor-pointer"
                               aria-label={`${r.name} - ${p.label}`}
@@ -240,7 +339,7 @@ export default function ConfigRolesPage() {
                         ))}
                         <td className="px-3 py-2.5 text-right">
                           <div className="flex items-center gap-1.5 justify-end">
-                            <span className="text-[9px] text-slate-400 font-mono" title="Jumlah izin aktif">{r.permissions.length}/{ALL_PERM_KEYS.length}</span>
+                            <span className="text-[9px] text-slate-400 font-mono" title="Jumlah izin aktif">{getRolePerms(r.id).length}/{ALL_PERM_KEYS.length}</span>
                             <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer" title="Pilih semua izin">All</button>
                             <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer" title="Hapus semua izin">None</button>
                             <button onClick={() => setDeleteConfirm(r.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus Role">

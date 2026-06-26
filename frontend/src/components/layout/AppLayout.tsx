@@ -7,6 +7,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
 
 export default function AppLayout() {
   const location = useLocation();
@@ -24,6 +25,8 @@ export default function AppLayout() {
 
   const userRole = (user as { roleName?: string })?.roleName || 'Staff';
   const userName = (user as { name?: string })?.name || (user as { fullName?: string })?.fullName || 'Alexander Pierce';
+  const roleConfig = useMasterDataStore((s) => s.roles).find((r) => r.name === userRole);
+  const userPermissions = roleConfig?.permissions || [];
 
   const handleNavigate = (path: string) => {
     navigate(path);
@@ -48,6 +51,7 @@ export default function AppLayout() {
           unreadCount={unreadCount}
           onLogout={handleLogout}
           userRole={userRole}
+          userPermissions={userPermissions}
           mobile
           onClose={() => setMobileSidebarOpen(false)}
         />
@@ -64,6 +68,7 @@ export default function AppLayout() {
           unreadCount={unreadCount}
           onLogout={handleLogout}
           userRole={userRole}
+          userPermissions={userPermissions}
         />
       </div>
 
