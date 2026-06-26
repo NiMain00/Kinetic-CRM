@@ -11,10 +11,12 @@ export default function MasterCategoryPage() {
   const categories = useMasterDataStore((s) => s.categories);
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterCategory | null>(null);
   const [form, setForm] = useState<Partial<MasterCategory>>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase()));
 
@@ -42,6 +44,17 @@ export default function MasterCategoryPage() {
       toast.success('Kategori berhasil ditambahkan');
     }
     setDrawerOpen(false);
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirm) return;
+    deleteData('categories', deleteConfirm);
+    toast.success('Kategori berhasil dihapus');
+    setDeleteConfirm(null);
   };
 
   const toggleStatus = (id: string) => {
@@ -117,6 +130,7 @@ export default function MasterCategoryPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                          <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                         </td>
                       </tr>
                     ))
@@ -201,6 +215,28 @@ export default function MasterCategoryPage() {
             <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Batal</button>
               <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-slate-800 mb-2">Hapus Kategori?</h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Data yang dihapus tidak dapat dikembalikan.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+                Batal
+              </button>
+              <button onClick={confirmDelete}
+                className="px-4 py-2 bg-danger text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
+                Hapus
+              </button>
             </div>
           </div>
         </div>

@@ -7,6 +7,7 @@ interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   pendingApprovalsCount: number;
+  unreadCount?: number;
   onLogout?: () => void;
   userRole?: string;
   mobile?: boolean;
@@ -42,6 +43,7 @@ export default function Sidebar({
   collapsed,
   setCollapsed,
   pendingApprovalsCount,
+  unreadCount = 0,
   onLogout,
   userRole = 'Staff',
   mobile = false,
@@ -75,7 +77,7 @@ export default function Sidebar({
 
   const renderNavItem = (item: NavItem) => {
     const isActive = isPathActive(item.path);
-    const badge = item.label === 'Approval' ? pendingApprovalsCount : undefined;
+    const badge = item.label === 'Approval' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
 
     return (
       <button

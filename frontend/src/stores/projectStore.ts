@@ -11,6 +11,8 @@ import type {
   TimelineEvent,
 } from '@/types/domain';
 import { INITIAL_PROJECTS } from '@/services/mock-data';
+import { useApprovalStore } from './approvalStore';
+import { useNotificationStore } from './notificationStore';
 
 interface ProjectState {
   projects: Project[];
@@ -38,12 +40,31 @@ export const useProjectStore = create<ProjectState>()(
     (set, get) => ({
       projects: INITIAL_PROJECTS,
       addProject: (p) => set((s) => ({ projects: [...s.projects, p] })),
-      updateProject: (id, data) =>
+      updateProject: (id, data) => {
+        const current = get().projects.find((p) => p.id === id);
         set((s) => ({
           projects: s.projects.map((p) => (p.id === id ? { ...p, ...data } : p)),
-        })),
-      deleteProject: (id) =>
-        set((s) => ({ projects: s.projects.filter((p) => p.id !== id) })),
+        }));
+        // Add notification if status changed
+        if (data.status && current && current.status !== data.status) {
+          const addNotification = useNotificationStore.getState().addNotification;
+          addNotification({
+            title: 'Status Proyek Berubah',
+            message: `Proyek "${current.name}" berubah status dari "${current.status}" menjadi "${data.status}".`,
+            type: 'status_change',
+            entityId: id,
+            entityType: 'project',
+          });
+        }
+      },
+      deleteProject: (id) => {
+        // Hapus juga approval terkait
+        const approvalStore = useApprovalStore.getState();
+        approvalStore.approvals
+          .filter((a) => a.entityType === 'project' && a.entityId === id)
+          .forEach((a) => approvalStore.removeApproval(a.id));
+        return set((s) => ({ projects: s.projects.filter((p) => p.id !== id) }));
+      },
       getProjectById: (id) => get().projects.find((p) => p.id === id),
 
       updateProjectRks: (id, rks) =>

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { ApprovalItem } from '../../types/domain';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { useProspectStore } from '@/stores/prospectStore';
+import { useProjectStore } from '@/stores/projectStore';
 
 interface ApprovalInboxViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -16,12 +18,24 @@ export default function ApprovalInboxView({
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { approvals } = useApprovalStore();
+  const { prospects } = useProspectStore();
+  const { projects } = useProjectStore();
   const [filterType, setFilterType] = React.useState<FilterType>('Semua');
 
   const filteredApprovals = useMemo(() => {
-    if (filterType === 'Semua') return approvals;
-    return approvals.filter((a) => a.type === filterType);
-  }, [approvals, filterType]);
+    // Hanya tampilkan approval yang entity-nya masih ada
+    const validApprovals = approvals.filter((a) => {
+      if (a.entityType === 'prospect' && a.entityId) {
+        return prospects.some((p) => p.id === a.entityId);
+      }
+      if (a.entityType === 'project' && a.entityId) {
+        return projects.some((p) => p.id === a.entityId);
+      }
+      return true;
+    });
+    if (filterType === 'Semua') return validApprovals;
+    return validApprovals.filter((a) => a.type === filterType);
+  }, [approvals, filterType, prospects, projects]);
 
   const handleReview = (item: ApprovalItem) => {
     if (item.entityType === 'prospect' && item.entityId) {

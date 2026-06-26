@@ -45,6 +45,7 @@ export default function AppLayout() {
           collapsed={false}
           setCollapsed={() => {}}
           pendingApprovalsCount={pendingApprovalsCount}
+          unreadCount={unreadCount}
           onLogout={handleLogout}
           userRole={userRole}
           mobile
@@ -60,6 +61,7 @@ export default function AppLayout() {
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
           pendingApprovalsCount={pendingApprovalsCount}
+          unreadCount={unreadCount}
           onLogout={handleLogout}
           userRole={userRole}
         />

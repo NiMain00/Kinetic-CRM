@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
@@ -47,6 +48,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const authUser = useAuthStore((s) => s.user);
   const addApproval = useApprovalStore((s) => s.addApproval);
   const removeApproval = useApprovalStore((s) => s.removeApproval);
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const [lphs, setLphs] = useState<LphsData>(project?.lphs || defaultLphsData);
   const [lphsFile, setLphsFile] = useState<File | null>(null);
@@ -54,6 +56,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const [lphsUrl, setLphsUrl] = useState(project?.lphs?.lphsExternalUrl || '');
   const [selectedDepts, setSelectedDepts] = useState<string[]>(project?.lphs?.selectedDepartments || []);
   const [revisionDialog, setRevisionDialog] = useState<{ open: boolean; targetDepts: string[]; notes: string; role: 'pm' | 'management' }>({ open: false, targetDepts: [], notes: '', role: 'pm' });
+  const [deptRevisionDialog, setDeptRevisionDialog] = useState<{ open: boolean; departmentId: string; departmentName: string; notes: string }>({ open: false, departmentId: '', departmentName: '', notes: '' });
 
   useEffect(() => {
     if (project?.lphs) {
@@ -68,8 +71,8 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const isSuperAdmin = userRole === 'Super Admin';
   const isPM = userRole === 'PM' || isSuperAdmin;
   const isCabang = userRole === 'Branch Manager' || userRole === 'Staff' || isSuperAdmin;
-  const isManagement = userRole === 'Admin' || userRole === 'Super Admin';
-  const isDeptHead = userRole === 'Dept Head';
+  const isManagement = userRole === 'Admin' || userRole === 'Management' || isSuperAdmin;
+  const isDeptHead = userRole === 'Dept Head' || isSuperAdmin;
 
   const activeDepartments = useMemo(() => departments.filter(d => d.status), [departments]);
 
@@ -136,7 +139,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
       return existing || {
         departmentId: deptId,
         departmentName: dept?.name || deptId,
-        status: 'pending',
+        status: 'reviewing',
         revisionRound: 0,
         isTargetedRevision: false,
       };
@@ -187,6 +190,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     };
     addApproval(approvalItem);
     onShowNotification?.('Dokumen LPHS/SIOS berhasil disubmit.', 'success');
+    addNotification({
+      title: 'LPHS/SIOS Disubmit',
+      message: `Dokumen LPHS/SIOS proyek "${project.name}" telah disubmit dengan ${selectedDepts.length} departemen reviewer.`,
+      type: 'approval',
+      entityId: project.id,
+      entityType: 'project',
+    });
   };
 
   // --- PM Approve ---
@@ -210,6 +220,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     };
     addTimelineEvent(project.id, event);
     onShowNotification?.('LPHS/SIOS disetujui oleh PM.', 'success');
+    addNotification({
+      title: 'LPHS/SIOS Disetujui PM',
+      message: `LPHS/SIOS proyek "${project.name}" telah disetujui oleh PM.`,
+      type: 'approval',
+      entityId: project.id,
+      entityType: 'project',
+    });
 
     // Check if all departments already approved → move to mgmt_review
     checkAllApproved(project.id);
@@ -248,11 +265,59 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     };
     addTimelineEvent(project.id, event);
     onShowNotification?.(`Departemen ${approval.departmentName} menyetujui LPHS/SIOS.`, 'success');
+    addNotification({
+      title: `Departemen ${approval.departmentName} Menyetujui`,
+      message: `Departemen ${approval.departmentName} telah menyetujui LPHS/SIOS proyek "${project.name}".`,
+      type: 'approval',
+      entityId: project.id,
+      entityType: 'project',
+    });
 
     // Check if all depts approved → mgmt_review
     if (lphs.pmStatus === 'approved') {
       checkAllApproved(project.id);
     }
+  };
+
+  // --- Department Revision ---
+  const handleDeptRevisionClick = (deptId: string) => {
+    const dept = departments.find(d => d.id === deptId);
+    setDeptRevisionDialog({
+      open: true,
+      departmentId: deptId,
+      departmentName: dept?.name || deptId,
+      notes: '',
+    });
+  };
+
+  const handleDeptRevisionSend = () => {
+    if (!project?.id) return;
+    const { departmentId, notes } = deptRevisionDialog;
+
+    const updatedApprovals = lphs.departmentApprovals.map(a => {
+      if (a.departmentId === departmentId) {
+        return { ...a, status: 'revision' as const, reviewNotes: notes };
+      }
+      return a;
+    });
+
+    const updatedLphs = { ...lphs, departmentApprovals: updatedApprovals, overallStatus: 'revision' as const };
+    updateProjectLphs(project.id, updatedLphs);
+    setLphs(updatedLphs);
+
+    const dept = departments.find(d => d.id === departmentId);
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: `Departemen ${dept?.name || departmentId} Minta Revisi`,
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: 'Dept Head',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'revision',
+      description: `Revisi diminta oleh departemen ${dept?.name || departmentId}. Catatan: ${notes || '(tanpa catatan)'}`,
+    };
+    addTimelineEvent(project.id, event);
+    setDeptRevisionDialog({ open: false, departmentId: '', departmentName: '', notes: '' });
+    onShowNotification?.(`Revisi diminta oleh departemen ${dept?.name || departmentId}.`, 'warning');
   };
 
   // --- Management Approve ---
@@ -278,6 +343,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     };
     addTimelineEvent(project.id, event);
     onShowNotification?.('LPHS/SIOS final approved oleh Management.', 'success');
+    addNotification({
+      title: 'Management Final Approve LPHS/SIOS',
+      message: `LPHS/SIOS proyek "${project.name}" telah mendapat final approval dari Management. Proyek lanjut ke tahap Input Harga.`,
+      type: 'approval',
+      entityId: project.id,
+      entityType: 'project',
+    });
   };
 
   // --- Management Targeted Revision ---
@@ -402,7 +474,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const canDeptApprove = (deptId: string) => {
     const approval = lphs.departmentApprovals.find(a => a.departmentId === deptId);
     if (!approval) return false;
-    return approval.status === 'reviewing' || approval.status === 'revision';
+    return approval.status === 'pending' || approval.status === 'reviewing' || approval.status === 'revision';
   };
 
   const needsRevisionReupload = lphs.overallStatus === 'revision' && lphs.departmentApprovals.some(a => a.status === 'revision' && a.isTargetedRevision);
@@ -573,31 +645,6 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
             </button>
           )}
 
-          {/* PM Actions */}
-          {(isPM && lphs.overallStatus === 'dept_review' && lphs.pmStatus !== 'approved') && (
-            <div className="flex gap-2">
-              <Button onClick={handlePmApprove} className="flex-1" rightIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>}>
-                Approve
-              </Button>
-              <button onClick={handlePmRevision} className="flex-1 inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-500 text-white hover:brightness-110" type="button">
-                <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                Kirim Revisi
-              </button>
-            </div>
-          )}
-
-          {/* Management Actions */}
-          {(isManagement && lphs.overallStatus === 'mgmt_review') && (
-            <div className="flex gap-2">
-              <Button onClick={handleMgmtApprove} className="flex-1" rightIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>}>
-                Final Approve
-              </Button>
-              <button onClick={handleMgmtRevision} className="flex-1 inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-500 text-white hover:brightness-110" type="button">
-                <span className="material-symbols-outlined text-[18px]">edit_note</span>
-                Kirim Revisi
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -624,7 +671,20 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                 <p className="text-sm font-bold text-slate-800">Project Manager</p>
                 <p className="text-xs text-slate-400">{STATUS_LABEL[lphs.pmStatus]}{lphs.pmApprovedAt ? ` • ${new Date(lphs.pmApprovedAt).toLocaleDateString('id-ID')}` : ''}</p>
               </div>
-              <div>{statusIcon(lphs.pmStatus)}</div>
+              <div className="flex items-center gap-2">
+                {statusIcon(lphs.pmStatus)}
+                {(isPM && lphs.overallStatus === 'dept_review' && lphs.pmStatus !== 'approved') && (
+                  <>
+                    <button onClick={handlePmApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                      Setujui
+                    </button>
+                    <button onClick={handlePmRevision} className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                      Revisi
+                    </button>
+                  </>
+                )}
+                
+              </div>
             </div>
 
             {/* Management Row */}
@@ -637,7 +697,20 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                   <p className="text-sm font-bold text-amber-800">Management</p>
                   <p className="text-xs text-amber-600">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
                 </div>
-                <div>{statusIcon(lphs.mgmtStatus)}</div>
+                <div className="flex items-center gap-2">
+                  {statusIcon(lphs.mgmtStatus)}
+                  {(isManagement && lphs.pmStatus === 'approved' && lphs.overallStatus !== 'approved') && (
+                    <>
+                      <button onClick={handleMgmtApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                        Setujui
+                      </button>
+                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                        Revisi
+                      </button>
+                    </>
+                  )}
+                  
+                </div>
               </div>
             )}
 
@@ -674,11 +747,16 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                     </div>
                     <div className="flex items-center gap-2">
                       {statusIcon(approval.status)}
-                      {/* Dept Head can approve after PM approved */}
-                      {canDeptApprove(approval.departmentId) && (isDeptHead || isSuperAdmin) && lphs.pmStatus === 'approved' && (
-                        <button onClick={() => handleDeptApprove(approval.departmentId)} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
-                          Setujui
-                        </button>
+                      {/* Dept Head approve (bersamaan dengan PM) */}
+                      {canDeptApprove(approval.departmentId) && (isDeptHead || isSuperAdmin) && (
+                        <div className="flex gap-1">
+                          <button onClick={() => handleDeptApprove(approval.departmentId)} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                            Setujui
+                          </button>
+                          <button onClick={() => handleDeptRevisionClick(approval.departmentId)} className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                            Revisi
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -772,6 +850,32 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                 Batal
               </button>
               <button onClick={handleSendRevision} className="px-4 py-2 bg-warning text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
+                Kirim Revisi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Department Revision Dialog */}
+      {deptRevisionDialog.open && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-slate-800 mb-4">
+              Revisi — {deptRevisionDialog.departmentName}
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">Berikan catatan revisi untuk dokumen LPHS/SIOS:</p>
+
+            <div className="mb-4">
+              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Catatan Revisi</label>
+              <textarea value={deptRevisionDialog.notes} onChange={e => setDeptRevisionDialog(prev => ({ ...prev, notes: e.target.value }))} rows={3} className="w-full rounded-lg border border-border p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Jelaskan apa yang perlu direvisi..." />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setDeptRevisionDialog({ open: false, departmentId: '', departmentName: '', notes: '' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+                Batal
+              </button>
+              <button onClick={handleDeptRevisionSend} className="px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
                 Kirim Revisi
               </button>
             </div>

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useNavigate } from 'react-router-dom';
 import MasterQuestionPage from './MasterQuestionPage';
+import UsersView from '@/features/users/UsersPage';
 
 
 interface MasterDataViewProps {
@@ -421,7 +422,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           <span className="material-symbols-outlined text-sm">domain</span> Departemen
         </button>
         <button onClick={() => { setActiveTab('users'); setSearchQuery(''); }} className={tabClass('users')}>
-          <span className="material-symbols-outlined text-sm">manage_accounts</span> Hak Pengguna
+          <span className="material-symbols-outlined text-sm">manage_accounts</span> Pengguna
         </button>
         <button onClick={() => { setActiveTab('audit_logs'); setSearchQuery(''); }} className={tabClass('audit_logs')}>
           <span className="material-symbols-outlined text-sm">security</span> Audit Log
@@ -1012,49 +1013,9 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           </div>
         )}
 
-        {/* ==================== MANAJEMEN PENGGUNA ==================== */}
+        {/* ==================== USERS ==================== */}
         {activeTab === 'users' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
-              <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">manage_accounts</span>
-                  User Management
-                </h3>
-                <p className="text-secondary text-xs mt-0.5">Konfigurasi hak akses regional, pembatasan scoping cabang, dan enforcement multi-factor authentication (2FA).</p>
-              </div>
-              <button onClick={() => { setEditingUser(null); setUserDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">person_add</span> Tambah Pengguna
-              </button>
-            </div>
-
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden animate-fade-in">
-              <table className="w-full text-xs table-auto table-mobile-compact">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-border">
-                    <th className="p-4">Nama Lengkap</th>
-                    <th className="p-4">Username System</th>
-                    <th className="p-4">Email Perusahaan</th>
-                    <th className="p-4">Role Hak Akses</th>
-                    <th className="p-4 text-center">Status</th>
-                    <th className="p-4 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {users.filter(u => u.name.toLowerCase().includes(searchQuery.toLowerCase())).map((u, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4"><div className="flex items-center gap-3"><div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${u.avatarColor}`}>{u.name.split(' ').map(n=>n[0]).join('')}</div><div><p className="font-bold text-slate-850">{u.name}</p><p className="text-[10px] text-slate-400 font-semibold">{u.branch}</p></div></div></td>
-                      <td className="p-4 font-mono font-semibold text-slate-500">{u.username}</td>
-                      <td className="p-4">{u.email}</td>
-                      <td className="p-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${u.roleColor}`}>{u.role}</span></td>
-                      <td className="p-4 text-center"><span className={`inline-flex items-center gap-1 text-[10px] font-bold ${u.active ? 'text-success' : 'text-slate-400'}`}><span className={`w-1.5 h-1.5 rounded-full ${u.active ? 'bg-success' : 'bg-slate-400'}`} />{u.active ? 'Aktif' : 'Inaktif'}</span></td>
-                      <td className="p-4 text-right"><div className="flex gap-1 justify-end"><button onClick={() => { setEditingUser(u); setUserDrawerOpen(true); }} className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-primary cursor-pointer" title="Edit Scoping User"><span className="material-symbols-outlined text-base">edit</span></button><button onClick={() => { onShowNotification(`Reset sandi instan terkirim ke email: ${u.email}`, 'success'); }} className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-amber-600 cursor-pointer" title="Reset Password"><span className="material-symbols-outlined text-base">lock_reset</span></button></div></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <UsersView onShowNotification={onShowNotification} onNavigatePage={() => {}} />
         )}
 
         {/* ==================== SYSTEM AUDIT LOG ==================== */}

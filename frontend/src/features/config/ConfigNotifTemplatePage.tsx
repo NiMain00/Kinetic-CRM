@@ -73,6 +73,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
   const [activeCategoryTab, setActiveCategoryTab] = useState<'all' | 'project' | 'financial' | 'general'>('all');
   const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   // Form states for the Drawer
   const [editingTemplateText, setEditingTemplateText] = useState('');
@@ -127,6 +128,17 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
     onShowNotification(`Konfigurasi template ${selectedTemplate.id} berhasil disimpan!`, 'success');
     setDrawerOpen(false);
     setSelectedTemplate(null);
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteConfirm) return;
+    setTemplates(prev => prev.filter(t => t.id !== deleteConfirm));
+    onShowNotification(`Template ${deleteConfirm} berhasil dihapus.`, 'success');
+    setDeleteConfirm(null);
   };
 
   const handleResetFilters = () => {
@@ -403,6 +415,13 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                       >
                         <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                       </button>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
+                        title="Hapus Template"
+                      >
+                        <span className="material-symbols-outlined text-[18px] icon-compact">delete</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -585,6 +604,28 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-slate-800 mb-2">Hapus Template Notifikasi?</h3>
+            <p className="text-xs text-slate-500 mb-4">
+              Template yang dihapus tidak dapat dikembalikan.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+                Batal
+              </button>
+              <button onClick={confirmDelete}
+                className="px-4 py-2 bg-danger text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
+                Hapus
+              </button>
+            </div>
           </div>
         </div>
       )}

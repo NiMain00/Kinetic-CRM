@@ -55,6 +55,14 @@ export default function LoginPage() {
       avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-2'
     },
     {
+      label: 'Ratna Dewi (Management)',
+      username: 'ratna.mgmt',
+      password: 'mgmt123',
+      fullName: 'Ratna Dewi',
+      roleName: 'Management',
+      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/female-prof-2'
+    },
+    {
       label: 'Sarah Jenkins (Project Officer)',
       username: 'sjenkins_officer',
       password: 'adminSecured77',

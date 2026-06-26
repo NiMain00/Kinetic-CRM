@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 
 interface TabProps {
   project?: Project;
@@ -15,6 +17,11 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
   const questions = useMasterDataStore((s) => s.questions);
   const questionTypes = useMasterDataStore((s) => s.questionTypes);
+
+  const authUser = useAuthStore((s) => s.user);
+  const userRole = authUser?.roleName || '';
+  const canReview = userRole === 'PM' || userRole === 'Admin' || userRole === 'Super Admin';
+  const addNotification = useNotificationStore((s) => s.addNotification);
 
   const [reviewNotes, setReviewNotes] = useState('');
 
@@ -49,6 +56,13 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
     };
     addTimelineEvent(project.id, event);
     onShowNotification?.('Review RKS disetujui. Melanjutkan ke LPHS/SIOS.', 'success');
+    addNotification({
+      title: 'RKS Disetujui',
+      message: `RKS proyek "${project.name}" telah disetujui. Melanjutkan ke tahap LPHS/SIOS.`,
+      type: 'approval',
+      entityId: project.id,
+      entityType: 'project',
+    });
     navigate(`/project/${project.id}/lphs`);
   };
 
@@ -66,6 +80,13 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
     };
     addTimelineEvent(project.id, event);
     onShowNotification?.('RKS dikembalikan untuk revisi.', 'warning');
+    addNotification({
+      title: 'RKS Perlu Revisi',
+      message: `RKS proyek "${project.name}" dikembalikan untuk revisi. ${reviewNotes ? `Catatan: ${reviewNotes}` : ''}`,
+      type: 'revision',
+      entityId: project.id,
+      entityType: 'project',
+    });
     navigate(`/project/${project.id}/rks`);
   };
 
@@ -252,35 +273,44 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
 
       {/* Action Buttons */}
       <section className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-slate-500 text-xs text-center sm:text-left">
-          <span className="material-symbols-outlined text-[18px]">info</span>
-          <span>Pastikan semua data RKS dan jawaban sudah sesuai sebelum approve.</span>
-        </div>
-        <div className="flex gap-3 w-full sm:w-auto">
-          <button
-            onClick={handleRevisi}
-            type="button"
-            className="flex-1 sm:flex-initial px-6 py-2.5 border border-warning text-warning font-semibold text-sm rounded-lg hover:bg-warning/5 transition-all flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Revisi
-          </button>
-          <button
-            onClick={handleSaveReview}
-            type="button"
-            className="flex-1 sm:flex-initial px-6 py-2.5 bg-white border border-border text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-100 transition-all"
-          >
-            Simpan Review
-          </button>
-          <button
-            onClick={handleApprove}
-            type="button"
-            className="flex-1 sm:flex-initial px-6 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:opacity-90 shadow transition-all flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            Approve
-          </button>
-        </div>
+        {canReview ? (
+          <>
+            <div className="flex items-center gap-2 text-slate-500 text-xs text-center sm:text-left">
+              <span className="material-symbols-outlined text-[18px]">info</span>
+              <span>Pastikan semua data RKS dan jawaban sudah sesuai sebelum approve.</span>
+            </div>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <button
+                onClick={handleRevisi}
+                type="button"
+                className="flex-1 sm:flex-initial px-6 py-2.5 border border-warning text-warning font-semibold text-sm rounded-lg hover:bg-warning/5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">refresh</span>
+                Revisi
+              </button>
+              <button
+                onClick={handleSaveReview}
+                type="button"
+                className="flex-1 sm:flex-initial px-6 py-2.5 bg-white border border-border text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-100 transition-all cursor-pointer"
+              >
+                Simpan Review
+              </button>
+              <button
+                onClick={handleApprove}
+                type="button"
+                className="flex-1 sm:flex-initial px-6 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:opacity-90 shadow transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                Approve
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-slate-500 text-xs w-full">
+            <span className="material-symbols-outlined text-[18px]">lock</span>
+            <span>Hanya PM, Admin, atau Super Admin yang dapat melakukan review dan approve RKS.</span>
+          </div>
+        )}
       </section>
     </div>
   );

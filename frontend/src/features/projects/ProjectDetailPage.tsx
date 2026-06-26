@@ -83,6 +83,45 @@ export default function ProjectDetailView({
   const activeTab = tabs.find(t => t.path === (urlTab || 'overview'))?.label || 'Overview';
   const isOverview = activeTab === 'Overview';
 
+  // Tab restriction rules
+  const statusStepMap: Record<string, string> = {
+    'Prospecting': 'RKS',
+    'RKS': 'RKS',
+    'Review RKS': 'Review RKS',
+    'LPHS/SIOS': 'LPHS/SIOS',
+    'Input Harga': 'Harga',
+    'Kompetitor': 'Kompetitor',
+    'Pemenang': 'Pemenang',
+    'Target Delivery': 'Target Delivery',
+    'Executing': 'Timeline',
+    'Completed': 'Dokumen',
+  };
+
+  const phaseLabel = statusStepMap[project.status] || 'RKS';
+  const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
+  const accessibleUpToIndex = currentStepIndex >= 0 ? currentStepIndex : 0;
+  const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
+  const isMenang = project.winnerDetails?.outcome === 'menang';
+
+  const isTabLocked = (tabIndex: number) => {
+    const tab = tabs[tabIndex];
+    if (!tab) return true;
+
+    // Timeline & Dokumen: always unlocked
+    if (tab.label === 'Timeline' || tab.label === 'Dokumen') return false;
+
+    // Target Delivery: unlocked only when project outcome is menang
+    if (tab.label === 'Target Delivery') return !isMenang;
+
+    // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval
+    if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) return !lphsMgmtApproved;
+
+    // Default sequential locking (Overview, RKS, Review RKS, LPHS/SIOS)
+    return tabIndex > accessibleUpToIndex;
+  };
+
+  const activeTabIndex = tabs.findIndex(t => t.path === (urlTab || 'overview'));
+
   // Auto-sync prospect data ke project jika ada sourceProspect
   useEffect(() => {
     if (projectId && sourceProspect && project) {
@@ -258,17 +297,28 @@ export default function ProjectDetailView({
               const phaseLabel = statusStepMap[project.status] || '';
               const activeStepIndex = tabs.findIndex(t => t.label === phaseLabel);
               const currentStep = activeStepIndex >= 0 ? activeStepIndex : 0;
+              const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
+              const isMenang = project.winnerDetails?.outcome === 'menang';
 
               return tabs.map((step, index) => {
               const stepNum = index + 1;
               const isCompleted = index < currentStep;
               const isActive = index === currentStep;
+              // Unlock rules: Timeline/Dokumen always, Harga/Kompetitor/Pemenang after LPHS mgmt approval, Target Delivery after menang
+              const isSpecialUnlocked = (
+                step.label === 'Timeline' || step.label === 'Dokumen' ||
+                (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved) ||
+                (step.label === 'Target Delivery' && isMenang)
+              );
+              const isFuture = !isCompleted && !isActive && !isSpecialUnlocked;
 
               return (
                 <div
                   key={step.label}
-                  onClick={() => navigate(`/project/${projectId}/${step.path}`)}
-                  className="relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 cursor-pointer hover:scale-105 transition-transform"
+                  onClick={() => {
+                    if (!isFuture) navigate(`/project/${projectId}/${step.path}`);
+                  }}
+                  className={`relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 ${isFuture ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'} transition-transform`}
                 >
                 {isCompleted ? (
                   <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
@@ -297,19 +347,26 @@ export default function ProjectDetailView({
       {/* Tab Navigation Bar — visible on ALL tabs */}
       <nav className="bg-white border-b border-border px-8 overflow-x-auto shrink-0 select-none">
         <div className="flex items-center gap-8 min-w-max">
-          {tabs.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => handleTabChange(tab.path)}
-              className={`py-4 font-label-sm text-sm transition-all relative ${
-                activeTab === tab.label
-                  ? 'text-primary font-bold border-b-2 border-primary'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {tabs.map((tab, index) => {
+            const locked = isTabLocked(index);
+            return (
+              <button
+                key={tab.label}
+                onClick={() => { if (!locked) handleTabChange(tab.path); }}
+                title={locked ? `Selesaikan tahap "${tabs[Math.min(accessibleUpToIndex, tabs.length - 1)]?.label}" terlebih dahulu` : tab.label}
+                className={`py-4 font-label-sm text-sm transition-all relative flex items-center gap-1 ${
+                  activeTab === tab.label
+                    ? 'text-primary font-bold border-b-2 border-primary'
+                    : locked
+                      ? 'text-outline cursor-not-allowed opacity-50'
+                      : 'text-on-surface-variant hover:text-primary'
+                }`}
+              >
+                {locked && <span className="material-symbols-outlined text-[16px]">lock</span>}
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
       </nav>
 
@@ -322,6 +379,29 @@ export default function ProjectDetailView({
             <OverviewTab project={project} onShowNotification={handleShowNotification} />
           )}
 
+          {/* Locked tab restriction */}
+          {activeTab !== 'Overview' && isTabLocked(activeTabIndex) && (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <span className="material-symbols-outlined text-5xl text-outline">lock</span>
+              <h3 className="font-heading-section text-base text-on-surface mt-4">Tahap Terkunci</h3>
+              <p className="text-sm text-outline mt-2 max-w-md">
+                {(() => {
+                  const lockedTab = tabs[activeTabIndex];
+                  if (lockedTab?.label === 'Target Delivery') {
+                    return 'Tahap Target Delivery hanya dapat diakses setelah proyek dinyatakan MENANG. Silakan isi data Pemenang terlebih dahulu.';
+                  }
+                  if (['Harga', 'Kompetitor', 'Pemenang'].includes(lockedTab?.label || '')) {
+                    return 'Tahap ini dapat diakses setelah LPHS/SIOS mendapat final approval dari Management.';
+                  }
+                  return `Tahap ini belum dapat diakses. Selesaikan dan dapatkan persetujuan untuk tahap "${tabs[Math.min(accessibleUpToIndex, tabs.length - 1)]?.label}" terlebih dahulu.`;
+                })()}
+              </p>
+            </div>
+          )}
+
+          {/* Non-locked tabs wrapper */}
+          {(!isTabLocked(activeTabIndex) || activeTab === 'Overview') && (
+            <>
           {/* TAB 2: RKS */}
           {activeTab === 'RKS' && (
             <RksTab project={project} onShowNotification={handleShowNotification} />
@@ -365,6 +445,8 @@ export default function ProjectDetailView({
           {/* TAB 10: DOKUMEN */}
           {activeTab === 'Dokumen' && (
             <DokumenTab project={project} onShowNotification={handleShowNotification} />
+          )}
+            </>
           )}
 
         </div>

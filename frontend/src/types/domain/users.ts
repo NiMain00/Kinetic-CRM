@@ -13,7 +13,7 @@ export interface User {
   createdAt: string;
 }
 
-export type UserRole = 'Super Admin' | 'Admin' | 'PM' | 'Branch Manager' | 'Dept Head' | 'Reviewer' | 'Staff';
+export type UserRole = 'Super Admin' | 'Admin' | 'PM' | 'Branch Manager' | 'Dept Head' | 'Management' | 'Reviewer' | 'Staff';
 
 export interface AuditLogEntry {
   id: string;

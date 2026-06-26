@@ -1,17 +1,10 @@
-import React, { useState } from 'react';
-import { Badge, Button } from '@/components/ui';
+import React from 'react';
 import toast from 'react-hot-toast';
+import { useMasterDataStore, type MasterRole } from '@/stores/masterDataStore';
 
 interface Permission {
   key: string;
   label: string;
-}
-
-interface Role {
-  id: string;
-  name: string;
-  permissions: string[];
-  description: string;
 }
 
 const ALL_PERMISSIONS: Permission[] = [
@@ -35,48 +28,43 @@ const ALL_PERMISSIONS: Permission[] = [
   { key: 'audit_view', label: 'Audit - Lihat' },
 ];
 
-const INITIAL_ROLES: Role[] = [
-  { id: 'R-01', name: 'Super Admin', description: 'Akses penuh ke seluruh sistem', permissions: ALL_PERMISSIONS.map(p => p.key) },
-  { id: 'R-02', name: 'Admin', description: 'Kelola master data, pengguna, dan konfigurasi', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'prospek_delete', 'proyek_view', 'proyek_create', 'proyek_edit', 'proyek_delete', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view', 'master_data', 'users_manage', 'config_access', 'audit_view'] },
-  { id: 'R-03', name: 'PM', description: 'Kelola proyek dan prospek', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-04', name: 'Branch Manager', description: 'Kelola cabang dan approval', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-05', name: 'Dept Head', description: 'Oversight departemen', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-06', name: 'Reviewer', description: 'Review dan validasi', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_view', 'laporan_view'] },
-  { id: 'R-07', name: 'Staff', description: 'Akses dasar operasional', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view'] },
-];
-
 const ROLE_COLORS: Record<string, string> = {
   'Super Admin': 'bg-danger/10 text-danger',
   Admin: 'bg-status-purple/10 text-status-purple',
   PM: 'bg-primary/10 text-primary',
   'Branch Manager': 'bg-status-teal/10 text-status-teal',
   'Dept Head': 'bg-status-indigo/10 text-status-indigo',
+  Management: 'bg-amber-100 text-amber-700',
   Reviewer: 'bg-warning/10 text-warning',
   Staff: 'bg-secondary-container/50 text-on-secondary-container',
 };
 
 export default function ConfigRolesPage() {
-  const [roles, setRoles] = useState<Role[]>(INITIAL_ROLES);
+  const roles = useMasterDataStore((s) => s.roles);
+  const updateData = useMasterDataStore((s) => s.updateData);
 
   const handleTogglePermission = (roleId: string, permKey: string) => {
-    setRoles(roles.map(r => {
-      if (r.id !== roleId) return r;
-      const hasPerm = r.permissions.includes(permKey);
-      const newPerms = hasPerm ? r.permissions.filter(p => p !== permKey) : [...r.permissions, permKey];
-      return { ...r, permissions: newPerms };
-    }));
+    const role = roles.find(r => r.id === roleId);
+    if (!role) return;
+    const hasPerm = role.permissions.includes(permKey);
+    const newPerms = hasPerm
+      ? role.permissions.filter(p => p !== permKey)
+      : [...role.permissions, permKey];
+    updateData<MasterRole>('roles', roleId, { permissions: newPerms });
   };
 
   const handleSelectAll = (roleId: string) => {
-    setRoles(roles.map(r => r.id === roleId ? { ...r, permissions: ALL_PERMISSIONS.map(p => p.key) } : r));
-    const target = roles.find(r => r.id === roleId);
-    toast.success(`Semua izin diberikan untuk ${target?.name}`);
+    const role = roles.find(r => r.id === roleId);
+    if (!role) return;
+    updateData<MasterRole>('roles', roleId, { permissions: ALL_PERMISSIONS.map(p => p.key) });
+    toast.success(`Semua izin diberikan untuk ${role.name}`);
   };
 
   const handleClearAll = (roleId: string) => {
-    setRoles(roles.map(r => r.id === roleId ? { ...r, permissions: [] } : r));
-    const target = roles.find(r => r.id === roleId);
-    toast.success(`Semua izin dihapus dari ${target?.name}`);
+    const role = roles.find(r => r.id === roleId);
+    if (!role) return;
+    updateData<MasterRole>('roles', roleId, { permissions: [] });
+    toast.success(`Semua izin dihapus dari ${role.name}`);
   };
 
   return (

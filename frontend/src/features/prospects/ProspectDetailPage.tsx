@@ -8,6 +8,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 
 const defaultAnswers: Record<string, string> = {
   upsCapacity: 'UPS 2x3KVA',
@@ -46,6 +47,7 @@ export default function ProspectDetailPage() {
     () => Object.fromEntries(industries.map(i => [i.id, i.name])),
     [industries]
   );
+  const addNotification = useNotificationStore((s) => s.addNotification);
   const userRole = authUser?.roleName;
   const isSuperAdmin = userRole === 'Super Admin';
 
@@ -130,6 +132,13 @@ export default function ProspectDetailPage() {
     }
     updateProspect(prospect.id, { status: 'Approved' });
     toast.success('Prospek berhasil disetujui.');
+    addNotification({
+      title: 'Prospek Disetujui',
+      message: `Prospek "${prospect.name}" telah disetujui.`,
+      type: 'approval',
+      entityId: prospect.id,
+      entityType: 'prospect',
+    });
   };
 
   const handleRequestRevision = () => {
@@ -140,6 +149,13 @@ export default function ProspectDetailPage() {
     }
     updateProspect(prospect.id, { status: 'Revision' });
     toast.success('Permintaan revisi telah dikirim.');
+    addNotification({
+      title: 'Revisi Prospek',
+      message: `Revisi diminta untuk prospek "${prospect.name}". Silakan periksa dan perbaiki.`,
+      type: 'revision',
+      entityId: prospect.id,
+      entityType: 'prospect',
+    });
   };
 
   const handleResubmit = () => {
@@ -157,6 +173,13 @@ export default function ProspectDetailPage() {
       entityType: 'prospect',
     });
     toast.success('Prospek berhasil dikirim ke review.');
+    addNotification({
+      title: 'Prospek Disubmit',
+      message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh PM.`,
+      type: 'approval',
+      entityId: prospect.id,
+      entityType: 'prospect',
+    });
   };
 
   const handleDelete = () => {

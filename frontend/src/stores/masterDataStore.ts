@@ -191,6 +191,13 @@ export interface MasterNotifTemplate {
   is_system: boolean;
 }
 
+export interface MasterRole {
+  id: string;
+  name: string;
+  permissions: string[];
+  description: string;
+}
+
 // Initial data
 const INITIAL_CATEGORIES: MasterCategory[] = [
   { id: 'CAT-01', name: 'Konstruksi & Sipil', code: 'KONSTRUKSI', description: 'Pekerjaan konstruksi bangunan dan sipil', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#2563EB', sort_order: 1, is_active: true },
@@ -336,6 +343,38 @@ const INITIAL_APPROVAL_LEVELS: MasterApprovalLevel[] = [
   { id: 'AL-03', name: 'Persetujuan Management', code: 'L3', level_number: 3, escalates_to_level_id: null, description: 'Level akhir approval oleh Management', is_active: true },
 ];
 
+const ALL_PERMISSIONS = [
+  { key: 'dashboard_view', label: 'Dashboard' },
+  { key: 'prospek_view', label: 'Prospek - Lihat' },
+  { key: 'prospek_create', label: 'Prospek - Buat' },
+  { key: 'prospek_edit', label: 'Prospek - Edit' },
+  { key: 'prospek_delete', label: 'Prospek - Hapus' },
+  { key: 'proyek_view', label: 'Proyek - Lihat' },
+  { key: 'proyek_create', label: 'Proyek - Buat' },
+  { key: 'proyek_edit', label: 'Proyek - Edit' },
+  { key: 'proyek_delete', label: 'Proyek - Hapus' },
+  { key: 'approval_process', label: 'Approval - Proses' },
+  { key: 'approval_view', label: 'Approval - Lihat' },
+  { key: 'kpi_view', label: 'KPI - Lihat' },
+  { key: 'kpi_manage', label: 'KPI - Kelola' },
+  { key: 'laporan_view', label: 'Laporan - Lihat' },
+  { key: 'master_data', label: 'Master Data' },
+  { key: 'users_manage', label: 'Pengguna - Kelola' },
+  { key: 'config_access', label: 'Konfigurasi - Akses' },
+  { key: 'audit_view', label: 'Audit - Lihat' },
+];
+
+const INITIAL_ROLES: MasterRole[] = [
+  { id: 'R-01', name: 'Super Admin', description: 'Akses penuh ke seluruh sistem', permissions: ALL_PERMISSIONS.map(p => p.key) },
+  { id: 'R-02', name: 'Admin', description: 'Kelola master data, pengguna, dan konfigurasi', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'prospek_delete', 'proyek_view', 'proyek_create', 'proyek_edit', 'proyek_delete', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view', 'master_data', 'users_manage', 'config_access', 'audit_view'] },
+  { id: 'R-03', name: 'PM', description: 'Kelola proyek dan prospek', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
+  { id: 'R-04', name: 'Branch Manager', description: 'Kelola cabang dan approval', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
+  { id: 'R-05', name: 'Dept Head', description: 'Oversight departemen', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
+  { id: 'R-06', name: 'Management', description: 'Approval level management dan review', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view'] },
+  { id: 'R-07', name: 'Reviewer', description: 'Review dan validasi', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_view', 'laporan_view'] },
+  { id: 'R-08', name: 'Staff', description: 'Akses dasar operasional', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view'] },
+];
+
 const INITIAL_NOTIF_TEMPLATES: MasterNotifTemplate[] = [
   { id: 'NT-01', event_code: 'prospect.submitted', event_name: 'Prospek Disubmit ke PM', template_inapp: 'Prospek {{prospectName}} dari {{branchName}} menunggu review Anda.', recipient_roles: ['pm'], available_variables: ['prospectName', 'branchName'], is_active: true, is_system: true },
   { id: 'NT-02', event_code: 'prospect.revision_sent', event_name: 'Revisi Prospek Dikirim', template_inapp: 'PM meminta revisi untuk prospek {{prospectName}}. Silakan periksa pertanyaan review.', recipient_roles: ['cabang'], available_variables: ['prospectName'], is_active: true, is_system: true },
@@ -345,7 +384,7 @@ const INITIAL_NOTIF_TEMPLATES: MasterNotifTemplate[] = [
   { id: 'NT-06', event_code: 'project.cancelled', event_name: 'Proyek Dibatalkan', template_inapp: 'Proyek {{projectName}} telah dibatalkan. Alasan: {{cancelReason}}.', recipient_roles: ['cabang'], available_variables: ['projectName', 'cancelReason'], is_active: true, is_system: true },
 ];
 
-type EntityType = 'categories' | 'competitors' | 'docTypes' | 'questions' | 'holidays' | 'lossReasons' | 'periods' | 'customers' | 'industries' | 'projectStatuses' | 'documentTypes' | 'questionTypes' | 'departments' | 'users' | 'auditLogs' | 'approvalLevels' | 'notifTemplates';
+type EntityType = 'categories' | 'competitors' | 'docTypes' | 'questions' | 'holidays' | 'lossReasons' | 'periods' | 'customers' | 'industries' | 'projectStatuses' | 'documentTypes' | 'questionTypes' | 'departments' | 'users' | 'auditLogs' | 'approvalLevels' | 'notifTemplates' | 'roles';
 
 const INITIAL_DATA: Record<EntityType, any[]> = {
   categories: INITIAL_CATEGORIES,
@@ -365,6 +404,7 @@ const INITIAL_DATA: Record<EntityType, any[]> = {
   auditLogs: INITIAL_AUDIT_LOGS,
   approvalLevels: INITIAL_APPROVAL_LEVELS,
   notifTemplates: INITIAL_NOTIF_TEMPLATES,
+  roles: INITIAL_ROLES,
 };
 
 interface MasterDataState {
@@ -385,6 +425,7 @@ interface MasterDataState {
   auditLogs: MasterAuditLog[];
   approvalLevels: MasterApprovalLevel[];
   notifTemplates: MasterNotifTemplate[];
+  roles: MasterRole[];
   getData: <T>(entity: EntityType) => T[];
   addData: <T>(entity: EntityType, item: T) => void;
   updateData: <T extends { id: string }>(entity: EntityType, id: string, data: Partial<T>) => void;
@@ -411,6 +452,7 @@ export const useMasterDataStore = create<MasterDataState>()(
       auditLogs: INITIAL_AUDIT_LOGS,
       approvalLevels: INITIAL_APPROVAL_LEVELS,
       notifTemplates: INITIAL_NOTIF_TEMPLATES,
+      roles: INITIAL_ROLES,
 
       getData: <T>(entity: EntityType) => get()[entity] as unknown as T[],
       addData: <T>(entity: EntityType, item: T) =>
