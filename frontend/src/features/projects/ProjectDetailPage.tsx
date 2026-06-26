@@ -84,6 +84,14 @@ export default function ProjectDetailView({
 
   // Single source of truth for tabs & stepper
   const tabs = React.useMemo(() => {
+    // Non-potensial: hanya Overview, Timeline, Dokumen
+    if (isFromNonPotensial) {
+      return [
+        { label: 'Overview', path: 'overview' },
+        { label: 'Timeline', path: 'timeline' },
+        { label: 'Dokumen', path: 'dokumen' },
+      ];
+    }
     const items: Array<{ label: string; path: string }> = [
       { label: 'Overview', path: 'overview' },
       { label: 'RKS', path: 'rks' },
@@ -102,7 +110,7 @@ export default function ProjectDetailView({
       items.splice(2, 1);
     }
     return items;
-  }, [project.type]);
+  }, [project.type, isFromNonPotensial]);
 
   const activeTab = tabs.find(t => t.path === (urlTab || 'overview'))?.label || 'Overview';
   const isOverview = activeTab === 'Overview';

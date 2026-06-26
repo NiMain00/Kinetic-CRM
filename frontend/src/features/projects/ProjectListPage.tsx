@@ -4,7 +4,6 @@ import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { StatusBadge } from '@/components/shared';
 import { Button, Input, Card } from '@/components/ui';
-import { useProjectStatuses } from '@/hooks/useConfigData';
 
 const progressColor = (pct: number) => {
   if (pct >= 80) return 'bg-success';
@@ -18,13 +17,23 @@ export default function ProjectListPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   const projects = useProjectStore((s) => s.projects);
-  const projectStatuses = useProjectStatuses();
 
   const statusTabs = useMemo(() => {
-    const tabs = [{ id: 'all', label: 'Semua Proyek' }];
-    const statusLabels = projectStatuses.map((s) => ({ id: s.label, label: s.label }));
-    return [...tabs, ...statusLabels];
-  }, [projectStatuses]);
+    const PHASE_TABS = [
+      { id: 'all', label: 'Semua Proyek' },
+      { id: 'Prospecting', label: 'Prospecting' },
+      { id: 'RKS', label: 'RKS' },
+      { id: 'Review RKS', label: 'Review RKS' },
+      { id: 'LPHS/SIOS', label: 'LPHS/SIOS' },
+      { id: 'Harga', label: 'Harga' },
+      { id: 'Kompetitor', label: 'Kompetitor' },
+      { id: 'Pemenang', label: 'Pemenang' },
+      { id: 'Target Delivery', label: 'Target Delivery' },
+      { id: 'Executing', label: 'Executing' },
+      { id: 'Completed', label: 'Completed' },
+    ];
+    return PHASE_TABS;
+  }, []);
 
   const filtered = useMemo(() => {
     let list = projects;
