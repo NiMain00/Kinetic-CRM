@@ -94,7 +94,7 @@ export default function Sidebar({
 
   const renderNavItem = (item: NavItem) => {
     const isActive = isPathActive(item.path);
-    const badge = item.label === 'Approval' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
+    const badge = item.label === 'Persetujuan' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
 
     return (
       <button
