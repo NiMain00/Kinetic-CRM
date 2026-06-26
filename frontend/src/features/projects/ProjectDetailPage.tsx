@@ -275,87 +275,95 @@ export default function ProjectDetailView({
         </div>
       </section>
 
-      {/* Dynamic Stepper: hanya di Overview */}
-      {isOverview && !(project.type === 'Prospecting' && isFromNonPotensial) && (
-        <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto shrink-0 select-none">
-          <div className="min-w-[600px] flex items-center justify-between relative">
-            <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
-
-            {(() => {
-              const currentStep = accessibleUpToIndex;
-              return tabs.map((step, index) => {
-              const stepNum = index + 1;
-              const isCompleted = index < currentStep;
-              const isActive = index === currentStep;
-              // Unlock rules: Timeline/Dokumen always, Harga/Kompetitor/Pemenang after LPHS mgmt approval, Target Delivery after menang
-              const isSpecialUnlocked = (
-                step.label === 'Timeline' || step.label === 'Dokumen' ||
-                (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved) ||
-                (step.label === 'Target Delivery' && isMenang)
-              );
-              const isFuture = !isCompleted && !isActive && !isSpecialUnlocked;
-
-              return (
-                <div
-                  key={step.label}
-                  onClick={() => {
-                    if (!isFuture) navigate(`/project/${projectId}/${step.path}`);
-                  }}
-                  className={`relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 ${isFuture ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'} transition-transform`}
-                >
-                {isCompleted ? (
-                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                    <span className="material-symbols-outlined text-[16px]">check</span>
-                  </div>
-                ) : isActive ? (
-                  <div className="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
-                    {stepNum}
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-border text-on-surface-variant flex items-center justify-center font-bold text-sm">
-                    {stepNum}
-                  </div>
-                )}
-                <span className={`font-label-sm text-xs whitespace-nowrap ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
-                  {step.label}
-                </span>
-              </div>
-            );
-            });
-          })()}
-          </div>
-        </section>
-      )}
-
-      {/* Tab Navigation Bar — visible on ALL tabs */}
-      <nav className="bg-white border-b border-border px-8 overflow-x-auto shrink-0 select-none">
-        <div className="flex items-center gap-8 min-w-max">
-          {tabs.map((tab, index) => {
-            const locked = isTabLocked(index);
-            return (
-              <button
-                key={tab.label}
-                onClick={() => { if (!locked) handleTabChange(tab.path); }}
-                title={locked ? `Selesaikan tahap "${tabs[Math.min(accessibleUpToIndex, tabs.length - 1)]?.label}" terlebih dahulu` : tab.label}
-                className={`py-4 font-label-sm text-sm transition-all relative flex items-center gap-1 ${
-                  activeTab === tab.label
-                    ? 'text-primary font-bold border-b-2 border-primary'
-                    : locked
-                      ? 'text-outline cursor-not-allowed opacity-50'
-                      : 'text-on-surface-variant hover:text-primary'
-                }`}
-              >
-                {locked && <span className="material-symbols-outlined text-[16px]">lock</span>}
-                {tab.label}
-              </button>
-            );
-          })}
+      {/* Main scrollable area — stepper, tab nav, and tab content all scroll together */}
+      {isChatTab ? (
+        /* Chat tab: full-height, no scroll wrapper needed (chat has its own scroll) */
+        <div className="flex-1 overflow-hidden">
+          <ChatTab project={project} onShowNotification={handleShowNotification} />
         </div>
-      </nav>
+      ) : (
+        <div className="flex-1 overflow-y-auto">
+          {/* Dynamic Stepper: hanya di Overview */}
+          {isOverview && !(project.type === 'Prospecting' && isFromNonPotensial) && (
+            <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto select-none">
+              <div className="min-w-[600px] flex items-center justify-between relative">
+                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
 
-      {/* Main Tab Panel scroll area */}
-      <div className={`flex-1 ${activeTab === 'Diskusi' ? 'overflow-hidden' : 'overflow-y-auto p-8'}`}>
-        <div className={`${activeTab === 'Diskusi' ? 'h-full' : 'max-w-6xl mx-auto space-y-6'}`}>
+                {(() => {
+                  const currentStep = accessibleUpToIndex;
+                  return tabs.map((step, index) => {
+                  const stepNum = index + 1;
+                  const isCompleted = index < currentStep;
+                  const isActive = index === currentStep;
+                  // Unlock rules: Timeline/Dokumen always, Harga/Kompetitor/Pemenang after LPHS mgmt approval, Target Delivery after menang
+                  const isSpecialUnlocked = (
+                    step.label === 'Timeline' || step.label === 'Dokumen' ||
+                    (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved) ||
+                    (step.label === 'Target Delivery' && isMenang)
+                  );
+                  const isFuture = !isCompleted && !isActive && !isSpecialUnlocked;
+
+                  return (
+                    <div
+                      key={step.label}
+                      onClick={() => {
+                        if (!isFuture) navigate(`/project/${projectId}/${step.path}`);
+                      }}
+                      className={`relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 ${isFuture ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'} transition-transform`}
+                    >
+                    {isCompleted ? (
+                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
+                        <span className="material-symbols-outlined text-[16px]">check</span>
+                      </div>
+                    ) : isActive ? (
+                      <div className="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
+                        {stepNum}
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-border text-on-surface-variant flex items-center justify-center font-bold text-sm">
+                        {stepNum}
+                      </div>
+                    )}
+                    <span className={`font-label-sm text-xs whitespace-nowrap ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
+                      {step.label}
+                    </span>
+                  </div>
+                );
+                });
+              })()}
+              </div>
+            </section>
+          )}
+
+          {/* Tab Navigation Bar — visible on ALL tabs */}
+          <nav className="bg-white border-b border-border px-8 overflow-x-auto select-none">
+            <div className="flex items-center gap-8 min-w-max">
+              {tabs.map((tab, index) => {
+                const locked = isTabLocked(index);
+                return (
+                  <button
+                    key={tab.label}
+                    onClick={() => { if (!locked) handleTabChange(tab.path); }}
+                    title={locked ? `Selesaikan tahap "${tabs[Math.min(accessibleUpToIndex, tabs.length - 1)]?.label}" terlebih dahulu` : tab.label}
+                    className={`py-4 font-label-sm text-sm transition-all relative flex items-center gap-1 ${
+                      activeTab === tab.label
+                        ? 'text-primary font-bold border-b-2 border-primary'
+                        : locked
+                          ? 'text-outline cursor-not-allowed opacity-50'
+                          : 'text-on-surface-variant hover:text-primary'
+                    }`}
+                  >
+                    {locked && <span className="material-symbols-outlined text-[16px]">lock</span>}
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
+
+          {/* Tab Panel Content */}
+          <div className="p-8">
+            <div className="max-w-6xl mx-auto space-y-6">
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'Overview' && (
@@ -429,16 +437,13 @@ export default function ProjectDetailView({
           {activeTab === 'Dokumen' && (
             <DokumenTab project={project} onShowNotification={handleShowNotification} />
           )}
-
-          {/* TAB 11: DISKUSI (Chat) */}
-          {activeTab === 'Diskusi' && (
-            <ChatTab project={project} onShowNotification={handleShowNotification} />
-          )}
             </>
           )}
 
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
