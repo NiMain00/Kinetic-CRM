@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useThemeStore } from '@/stores/themeStore';
 
 interface TopbarProps {
   userName?: string;
@@ -19,6 +20,7 @@ export default function Topbar({
   onMenuClick,
   notificationCount = 3,
 }: TopbarProps) {
+  const { dark, toggle } = useThemeStore();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -45,9 +47,9 @@ export default function Topbar({
         <button
           onClick={onMenuClick}
           className="md:hidden flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
-          aria-label="Toggle sidebar menu"
+          aria-label="Buka/tutup menu sidebar"
         >
-          <span className="material-symbols-outlined text-on-surface">menu</span>
+          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">menu</span>
         </button>
 
         {/* Desktop search */}
@@ -56,10 +58,10 @@ export default function Topbar({
             <span className="material-symbols-outlined text-[20px]">search</span>
           </span>
           <input
-            className="bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 w-full focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-body-main text-sm outline-none"
+            className="bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-2 w-full focus:ring-2 focus:ring-primary/20 focus:bg-surface-container transition-all text-body-main text-sm outline-none"
             placeholder="Cari proyek, prospek, approval..."
             type="text"
-            aria-label="Search"
+            aria-label="Cari"
           />
         </div>
 
@@ -67,9 +69,9 @@ export default function Topbar({
         <button
           onClick={() => setMobileSearchOpen(true)}
           className="md:hidden flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer ml-auto"
-          aria-label="Open search"
+          aria-label="Buka pencarian"
         >
-          <span className="material-symbols-outlined text-on-surface">search</span>
+          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">search</span>
         </button>
       </div>
 
@@ -78,9 +80,9 @@ export default function Topbar({
         <button
           onClick={onNotificationsClick}
           className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all relative cursor-pointer"
-          aria-label={`Notifications${notificationCount > 0 ? `, ${notificationCount} unread` : ''}`}
+          aria-label={`Notifikasi${notificationCount > 0 ? `, ${notificationCount} belum dibaca` : ''}`}
         >
-          <span className="material-symbols-outlined text-on-surface">notifications</span>
+          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (
             <span className="absolute top-2 right-2 w-3 h-3 bg-danger rounded-full ring-2 ring-surface flex items-center justify-center text-[8px] text-white font-extrabold">
               {notificationCount}
@@ -91,9 +93,18 @@ export default function Topbar({
         {/* Global Settings Gear */}
         <button
           className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
-          aria-label="Settings"
+          aria-label="Pengaturan"
         >
-          <span className="material-symbols-outlined text-on-surface">settings</span>
+          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">settings</span>
+        </button>
+
+        {/* Dark Mode Toggle */}
+        <button
+          onClick={toggle}
+          className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
+          aria-label={dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
+        >
+          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
         </button>
 
         <div className="h-8 w-[1px] bg-border mx-1 lg:mx-2"></div>
@@ -102,8 +113,8 @@ export default function Topbar({
         <button
           type="button"
           onClick={onProfileClick}
-          className="flex items-center gap-3 hover:bg-slate-100 p-1.5 rounded-lg transition-all text-left cursor-pointer outline-none touch-min-h"
-          aria-label="User profile"
+          className="flex items-center gap-3 hover:bg-surface-variant p-1.5 rounded-lg transition-all text-left cursor-pointer outline-none touch-min-h"
+          aria-label="Profil pengguna"
         >
           <div className="text-right hidden sm:block">
             <p className="font-label-sm text-label-sm text-on-surface leading-none font-bold">{userName}</p>
@@ -111,7 +122,7 @@ export default function Topbar({
           </div>
           <img
             className="w-10 h-10 rounded-full border border-border object-cover"
-            alt="User profile photo"
+            alt="Foto profil pengguna"
             src={avatarUrl}
             referrerPolicy="no-referrer"
           />
@@ -128,9 +139,9 @@ export default function Topbar({
             <button
               onClick={() => setMobileSearchOpen(false)}
               className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
-              aria-label="Close search"
+              aria-label="Tutup pencarian"
             >
-              <span className="material-symbols-outlined">arrow_back</span>
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
             </button>
             <div className="relative flex-1">
               <span className="absolute inset-y-0 left-3 flex items-center text-outline">
@@ -139,9 +150,9 @@ export default function Topbar({
               <input
                 ref={searchInputRef}
                 className="bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-3 w-full focus:ring-2 focus:ring-primary/20 transition-all text-body-main text-sm outline-none"
-                placeholder="Cari proyek, prospek, approval..."
+                placeholder="Cari proyek, prospek, persetujuan..."
                 type="text"
-                aria-label="Search"
+                aria-label="Cari"
               />
             </div>
           </div>

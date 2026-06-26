@@ -95,13 +95,13 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <nav className="flex items-center gap-2 text-caption-xs font-caption-xs text-secondary text-xs mb-2">
-            <span>Configuration</span>
+            <span>Konfigurasi</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-semibold">Project Status Master</span>
           </nav>
           <h2 className="font-display-title text-display-title text-on-surface">Konfigurasi Status Proyek</h2>
           <p className="text-secondary text-body-main text-sm">
-            Manage the lifecycle states of enterprise projects (GAP-04 &amp; CFG-03).
+            Kelola status siklus hidup proyek perusahaan (GAP-04 &amp; CFG-03).
           </p>
         </div>
         <button
@@ -121,23 +121,23 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             <h3 className="font-display-title text-display-title text-primary text-2xl">{statuses.length}</h3>
             <div className="mt-4 flex items-center gap-2 text-success text-xs font-semibold">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              <span>System Synchronized</span>
+              <span>Tersinkronisasi Sistem</span>
             </div>
           </div>
 
           <div className="bg-surface-container-low p-6 rounded-xl border border-border text-sm">
             <p className="text-secondary font-label-sm font-semibold mb-4 text-xs uppercase tracking-widest text-[#727782]">
-              Lifecycle Overview
+              Ikhtisar Siklus Hidup
             </p>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-on-surface-variant font-medium">Active</span>
+                <span className="text-xs text-on-surface-variant font-medium">Aktif</span>
                 <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold text-success">
                   {activeCount}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-on-surface-variant font-medium">Inactive</span>
+                <span className="text-xs text-on-surface-variant font-medium">Tidak Aktif</span>
                 <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold text-danger">
                   {inactiveCount}
                 </span>
@@ -164,11 +164,11 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">
                   <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">No</th>
-                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Status Code</th>
-                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Display Label</th>
-                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Badge Color</th>
-                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs text-center">Active</th>
-                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs text-right">Actions</th>
+                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Kode Status</th>
+                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Label Tampilan</th>
+                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Warna Badge</th>
+                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs text-center">Aktif</th>
+                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -232,7 +232,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                 {editId ? 'edit' : 'add_box'}
               </span>
               <h3 className="font-heading-section text-heading-section text-on-surface">
-                {editId ? 'Edit Status Proyek' : 'Tambah Status Proyek'}
+                {editId ? 'Sunting Status Proyek' : 'Tambah Status Proyek'}
               </h3>
             </div>
             <button className="p-2 hover:bg-surface-container rounded-full text-outline transition-all" onClick={handleCloseDrawer}>
@@ -242,33 +242,33 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
 
           <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6 flex-grow overflow-y-auto">
             <div className="space-y-1.5 text-sm">
-              <label className="font-semibold text-on-surface-variant block">Status Code *</label>
+              <label className="font-semibold text-on-surface-variant block">Kode Status *</label>
               <input
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
                 required
                 className="w-full px-4 py-2 border border-border rounded-lg outline-none uppercase font-mono"
-                placeholder="E.g. PROJECT_HALTED"
+                placeholder="Contoh: PROJECT_HALTED"
                 type="text"
               />
-              <p className="font-caption-xs text-xs text-secondary italic">System-level identifier. Use underscores, no spaces.</p>
+              <p className="font-caption-xs text-xs text-secondary italic">Identifier tingkat sistem. Gunakan underscore, tanpa spasi.</p>
             </div>
 
             <div className="space-y-1.5 text-sm">
-              <label className="font-semibold text-on-surface-variant block">Display Label *</label>
+              <label className="font-semibold text-on-surface-variant block">Label Tampilan *</label>
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 required
                 className="w-full px-4 py-2 border border-border rounded-lg outline-none"
-                placeholder="E.g. On Hold"
+                placeholder="Contoh: On Hold"
                 type="text"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Sort Order</label>
+                <label className="font-semibold text-on-surface-variant block">Urutan</label>
                 <input
                   value={newOrder}
                   onChange={(e) => setNewOrder(e.target.value)}
@@ -277,17 +277,17 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Active State</label>
+                <label className="font-semibold text-on-surface-variant block">Status Aktif</label>
                 <div className="flex items-center gap-3 h-[40px]">
-                  <span className="text-xs text-on-surface font-semibold bg-success/10 text-success p-1 px-3 rounded-full border border-success/20">
-                    Enabled
+                    <span className="text-xs text-on-surface font-semibold bg-success/10 text-success p-1 px-3 rounded-full border border-success/20">
+                    Diaktifkan
                   </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
-              <label className="font-semibold text-on-surface-variant text-sm block">Badge Color (Visual Mapping)</label>
+              <label className="font-semibold text-on-surface-variant text-sm block">Warna Badge (Pemetaan Visual)</label>
               <div className="p-4 border border-border rounded-xl bg-surface-bright flex flex-col gap-4 text-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -303,7 +303,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                     className="px-4 py-1.5 rounded-full border text-xs font-semibold"
                     style={{ backgroundColor: `${newColor}15`, color: newColor, borderColor: `${newColor}35` }}
                   >
-                    Preview Badge
+                    Pratinjau Badge
                   </div>
                 </div>
               </div>
@@ -315,10 +315,10 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                 onClick={handleCloseDrawer}
                 className="flex-1 py-2.5 border border-border rounded-lg font-semibold text-secondary hover:bg-surface-container transition-all"
               >
-                Cancel
+                Batal
               </button>
               <button type="submit" className="flex-1 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary-container shadow-md transition-all">
-                {editId ? 'Update Status' : 'Save Status'}
+                {editId ? 'Perbarui Status' : 'Simpan Status'}
               </button>
             </div>
           </form>

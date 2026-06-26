@@ -186,23 +186,6 @@ export interface TimelineEvent {
   fileSize?: string;
 }
 
-export const BRANCHES = [
-  'Jakarta Pusat',
-  'Jakarta Selatan',
-  'Jakarta Barat',
-  'Jakarta Timur',
-  'Jakarta Utara',
-  'Bandung',
-  'Surabaya',
-  'Medan',
-  'Makassar',
-  'Balikpapan',
-  'Yogyakarta',
-  'Semarang',
-  'Palembang',
-  'Denpasar',
-];
-
 export const CUSTOMER_TYPES = [
   { value: 'swasta', label: 'Swasta' },
   { value: 'bumn', label: 'BUMN' },

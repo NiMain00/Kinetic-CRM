@@ -8,7 +8,7 @@ const QUESTION_CATEGORIES = ['Data Pribadi', 'Lokasi', 'Verifikasi Fisik', 'Keua
 const QUESTION_CONTEXTS = [
   { value: 'prospect', label: 'Prospek' },
   { value: 'rks', label: 'RKS' },
-  { value: 'both', label: 'Both' },
+  { value: 'both', label: 'Keduanya' },
 ];
 
 function OptionsInput({ options, onChange }: { options: string[]; onChange: (options: string[]) => void }) {
@@ -151,7 +151,7 @@ console.log('selected', form.question_type_id);
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <nav className="flex items-center gap-2 mb-1.5 font-caption-xs text-caption-xs text-secondary">
-            <span className="text-secondary font-semibold uppercase tracking-wider">Master Data</span>
+            <span className="text-secondary font-semibold uppercase tracking-wider">Data Master</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-bold uppercase tracking-wider">Pertanyaan</span>
           </nav>
@@ -179,7 +179,7 @@ console.log('selected', form.question_type_id);
                         : 'text-slate-500 hover:bg-slate-200'
                     }`}
                   >
-                    {tab === 'all' ? 'Semua' : tab === 'prospect' ? 'Prospek' : tab === 'rks' ? 'RKS' : 'Both'}
+                    {tab === 'all' ? 'Semua' : tab === 'prospect' ? 'Prospek' : tab === 'rks' ? 'RKS' : 'Keduanya'}
                   </button>
                 ))}
               </div>
@@ -218,13 +218,13 @@ console.log('selected', form.question_type_id);
                         <td className="px-6 py-4 text-center"><Badge variant={q.is_required ? 'success' : 'default'}>{q.is_required ? 'Ya' : 'Tidak'}</Badge></td>
                         <td className="px-6 py-4 text-center text-slate-500">{q.sort_order}</td>
                         <td className="px-6 py-4 text-center">
-                          <button onClick={() => toggleStatus(q.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${q.is_active ? 'bg-success' : 'bg-slate-300'}`} aria-label={`Toggle status ${q.id}`}>
+                          <button onClick={() => toggleStatus(q.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${q.is_active ? 'bg-success' : 'bg-slate-300'}`} aria-label={`Alihkan status ${q.id}`}>
                             <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${q.is_active ? 'translate-x-2' : '-translate-x-2'}`} />
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
-                            <button onClick={() => openEdit(q)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
+                            <button onClick={() => openEdit(q)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer" title="Sunting"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
                             <button onClick={() => handleDelete(q.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                           </div>
                         </td>
@@ -243,7 +243,7 @@ console.log('selected', form.question_type_id);
           <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col">
             <div className="p-6 border-b border-border bg-slate-50 flex items-center justify-between">
               <div>
-                <h3 className="font-display-title text-sm font-extrabold text-slate-800">{editing ? 'Edit Pertanyaan' : 'Tambah Pertanyaan Baru'}</h3>
+                <h3 className="font-display-title text-sm font-extrabold text-slate-800">{editing ? 'Sunting Pertanyaan' : 'Tambah Pertanyaan Baru'}</h3>
                 <p className="text-[10px] text-slate-400 mt-1">{editing ? `ID: ${editing.id}` : 'Buat pertanyaan untuk kuesioner prospek'}</p>
               </div>
               <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"><span className="material-symbols-outlined">close</span></button>
@@ -301,11 +301,11 @@ console.log('selected', form.question_type_id);
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-slate-700 block">Placeholder</label>
+                  <label className="font-semibold text-slate-700 block">Teks Petunjuk</label>
                   <input type="text" value={form.placeholder_text || ''} onChange={e => setForm({ ...form, placeholder_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks petunjuk input" />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-slate-700 block">Help Text</label>
+                  <label className="font-semibold text-slate-700 block">Teks Bantuan</label>
                   <input type="text" value={form.help_text || ''} onChange={e => setForm({ ...form, help_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks bantuan" />
                 </div>
               </div>

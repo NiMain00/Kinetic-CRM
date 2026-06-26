@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useUserStore } from '@/stores/userStore';
 import type { User, UserRole } from '@/types/domain/users';
 import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
+import { userSchema } from '@/utils/validators';
 
 export default function UserFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,13 +32,18 @@ export default function UserFormPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
-    const errs: Record<string, string> = {};
-    if (!fullName.trim()) errs.fullName = 'Nama lengkap wajib diisi.';
-    if (!email.trim()) errs.email = 'Email wajib diisi.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Format email tidak valid.';
-    if (!username.trim()) errs.username = 'Username wajib diisi.';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+    const result = userSchema.safeParse({ fullName, email, username, role, branch, department, phone, status });
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleSave = (e: React.FormEvent) => {

@@ -44,13 +44,13 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
   const [timelineEvents] = useState<TimelineEvent[]>(INITIAL_TIMELINE_EVENTS);
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Approval review drawer">
+    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Panel review persetujuan">
       <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
         {/* Header */}
         <div className="p-6 border-b border-border flex justify-between items-center bg-surface-container-lowest shrink-0">
           <div>
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Approval Review</span>
-            <h4 className="text-lg font-extrabold text-on-surface mt-0.5">Review Approval Request</h4>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Review Persetujuan</span>
+            <h4 className="text-lg font-extrabold text-on-surface mt-0.5">Review Permintaan Persetujuan</h4>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center border border-border" aria-label="Tutup drawer">
             <span className="material-symbols-outlined text-sm">close</span>
@@ -154,7 +154,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
             aria-label="Tolak revisi"
           >
             <span className="material-symbols-outlined text-[18px] align-middle mr-1">close</span>
-            Reject / Revise
+            Tolak / Revisi
           </button>
           <button
             onClick={() => onApprove(item, comment)}
@@ -162,7 +162,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
             aria-label="Setujui"
           >
             <span className="material-symbols-outlined text-[18px] align-middle mr-1">check</span>
-            Approve
+Setujui
           </button>
         </div>
       </div>

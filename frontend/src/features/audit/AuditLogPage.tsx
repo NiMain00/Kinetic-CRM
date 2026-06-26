@@ -51,7 +51,7 @@ export default function AuditLogPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-display-title text-display-title text-on-surface">Audit Log</h2>
+          <h2 className="font-display-title text-display-title text-on-surface">Log Audit</h2>
           <p className="text-secondary font-body-main mt-1">Melacak semua aktivitas dan perubahan dalam sistem</p>
         </div>
         <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">file_download</span>}>
@@ -73,15 +73,15 @@ export default function AuditLogPage() {
             onChange={(e) => setActionFilter(e.target.value)}
             options={[
               { value: 'all', label: 'Semua Aksi' },
-              { value: 'CREATE', label: 'Create' },
-              { value: 'UPDATE', label: 'Update' },
-              { value: 'DELETE', label: 'Delete' },
-              { value: 'APPROVE', label: 'Approve' },
-              { value: 'REJECT', label: 'Reject' },
-              { value: 'REVISE', label: 'Revise' },
-              { value: 'UPLOAD', label: 'Upload' },
-              { value: 'LOGIN', label: 'Login' },
-              { value: 'LOGOUT', label: 'Logout' },
+              { value: 'CREATE', label: 'Buat' },
+              { value: 'UPDATE', label: 'Perbarui' },
+              { value: 'DELETE', label: 'Hapus' },
+              { value: 'APPROVE', label: 'Setujui' },
+              { value: 'REJECT', label: 'Tolak' },
+              { value: 'REVISE', label: 'Revisi' },
+              { value: 'UPLOAD', label: 'Unggah' },
+              { value: 'LOGIN', label: 'Masuk' },
+              { value: 'LOGOUT', label: 'Keluar' },
             ]}
           />
           <Select
@@ -90,9 +90,9 @@ export default function AuditLogPage() {
             onChange={(e) => setImpactFilter(e.target.value)}
             options={[
               { value: 'all', label: 'Semua Dampak' },
-              { value: 'Low', label: 'Low' },
-              { value: 'Medium', label: 'Medium' },
-              { value: 'High', label: 'High' },
+              { value: 'Low', label: 'Rendah' },
+              { value: 'Medium', label: 'Sedang' },
+              { value: 'High', label: 'Tinggi' },
             ]}
           />
         </div>

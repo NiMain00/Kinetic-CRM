@@ -121,9 +121,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
         <div>
           <h2 className="font-display-title text-display-title text-on-surface">Konfigurasi Organisasi</h2>
           <nav className="flex gap-2 text-caption-xs text-secondary text-xs mt-1">
-            <span>Configuration</span>
+            <span>Konfigurasi</span>
             <span>/</span>
-            <span className="text-primary font-semibold">Organization Structure</span>
+            <span className="text-primary font-semibold">Struktur Organisasi</span>
           </nav>
         </div>
         <div className="flex gap-3 text-xs md:text-sm">
@@ -177,7 +177,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
             </div>
             <div className="flex items-center gap-3">
               <span className={`px-3 py-1 rounded-full text-xs font-semibold ${formActive ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
-                {formActive ? 'Active' : 'Non-Active'}
+                {formActive ? 'Aktif' : 'Non-Aktif'}
               </span>
               <button
                 onClick={() => onShowNotification('Aksi hapus unit organisasi ditangguhkan.', 'warning')}
@@ -233,7 +233,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
             </div>
 
             <div className="space-y-2">
-              <label className="font-semibold text-sm text-secondary uppercase tracking-widest text-xs">Status</label>
+                <label className="font-semibold text-sm text-secondary uppercase tracking-widest text-xs">Status Unit</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="orgStatus" checked={formActive} onChange={() => setFormActive(true)} className="text-primary" />
@@ -254,7 +254,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               className="flex items-center gap-1.5 text-primary text-sm font-semibold hover:underline outline-none"
             >
               <span className="material-symbols-outlined">add_circle</span>
-              Tambah Sub-Unit (Child Node)
+              Tambah Sub-Unit (Node Anak)
             </button>
             <div className="flex gap-2">
               <button
@@ -265,7 +265,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
                 }}
                 className="px-4 py-1.5 border border-border bg-white text-secondary rounded hover:bg-slate-50 text-sm font-semibold"
               >
-                Reset
+                Atur Ulang
               </button>
               <button
                 type="button"

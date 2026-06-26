@@ -17,16 +17,17 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
 
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-surface-container-lowest border-t border-border">
-      <span className="text-xs text-outline">Page {currentPage} of {totalPages}</span>
+      <span className="text-xs text-outline">Halaman {currentPage} dari {totalPages}</span>
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          leftIcon={<span className="material-symbols-outlined text-sm">chevron_left</span>}
+          leftIcon={<span className="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>}
+          aria-label="Halaman sebelumnya"
         >
-          Previous
+          Sebelumnya
         </Button>
         {pages.map((page) => (
           <button
@@ -37,6 +38,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
                 ? 'bg-primary text-on-primary'
                 : 'text-secondary hover:bg-surface-container-high'
             }`}
+            aria-label={`Halaman ${page}`}
+            aria-current={page === currentPage ? 'page' : undefined}
           >
             {page}
           </button>
@@ -46,9 +49,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          rightIcon={<span className="material-symbols-outlined text-sm">chevron_right</span>}
+          rightIcon={<span className="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>}
+          aria-label="Halaman selanjutnya"
         >
-          Next
+          Selanjutnya
         </Button>
       </div>
     </div>

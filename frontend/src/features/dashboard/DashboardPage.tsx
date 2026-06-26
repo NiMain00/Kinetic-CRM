@@ -132,8 +132,8 @@ export default function DashboardPage() {
             <span className="text-status-orange font-label-sm text-xs">Prioritas Tinggi</span>
           </div>
           <div>
-            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Approval Pending</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.pendingApprovals} Items</h3>
+            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Persetujuan Tertunda</p>
+            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.pendingApprovals} Item</h3>
           </div>
         </Card>
 
@@ -158,7 +158,7 @@ export default function DashboardPage() {
             <span className="text-status-indigo font-label-sm text-xs">Kinerja YTD</span>
           </div>
           <div>
-            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Win Rate</p>
+            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Rasio Kemenangan</p>
             <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.winRate}%</h3>
           </div>
         </Card>
@@ -174,11 +174,11 @@ export default function DashboardPage() {
             <div className="flex gap-3 sm:gap-4">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-primary"></span>
-                <span className="text-secondary font-caption-xs text-xs">Win</span>
+                <span className="text-secondary font-caption-xs text-xs">Menang</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-outline-variant"></span>
-                <span className="text-secondary font-caption-xs text-xs">Loss</span>
+                <span className="text-secondary font-caption-xs text-xs">Kalah</span>
               </div>
             </div>
           </div>
@@ -189,12 +189,12 @@ export default function DashboardPage() {
                   <div
                     className="flex-1 bg-primary rounded-t-sm transition-all duration-1000 group-hover:brightness-110"
                     style={{ height: `${d.win}%` }}
-                    title={`Win: ${d.win}`}
+                    title={`Menang: ${d.win}`}
                   ></div>
                   <div
                     className="flex-1 bg-outline-variant rounded-t-sm transition-all duration-1000 group-hover:brightness-95"
                     style={{ height: `${d.lose}%` }}
-                    title={`Loss: ${d.lose}`}
+                    title={`Kalah: ${d.lose}`}
                   ></div>
                 </div>
                 <span className="font-caption-xs text-secondary text-xs">{d.m}</span>
@@ -207,7 +207,7 @@ export default function DashboardPage() {
           <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Proyek per Status</h4>
 
           <div className="relative flex justify-center items-center py-6 sm:py-8">
-            <svg className={`${isMobile ? 'w-40 h-40' : 'w-48 h-48'} -rotate-90`} viewBox="0 0 160 160" aria-label="Project status distribution">
+            <svg className={`${isMobile ? 'w-40 h-40' : 'w-48 h-48'} -rotate-90`} viewBox="0 0 160 160" aria-label="Distribusi status proyek">
               <circle cx="80" cy="80" r="68" fill="transparent" stroke="currentColor" strokeWidth="14" className="text-secondary-container" />
               <circle cx="80" cy="80" r="68" fill="transparent" stroke="currentColor" strokeWidth="14" strokeLinecap="round" className="text-success"
                 strokeDasharray="427.2" strokeDashoffset={427.2 - (427.2 * (statusDistribution.completed / Math.max(statusDistribution.total, 1)))} />
@@ -249,7 +249,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         <div className="col-span-12 lg:col-span-7 bg-surface-container-lowest rounded-xl border border-border shadow-sm overflow-hidden">
           <div className="p-4 sm:p-6 border-b border-border flex justify-between items-center bg-surface-container-low">
-            <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Approval Pending</h4>
+            <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Persetujuan Tertunda</h4>
             <button
               onClick={() => navigate('/approvals')}
               className="text-primary font-label-sm hover:underline text-xs sm:text-sm font-semibold touch-min-h flex items-center"
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-secondary">{item.branch}</span>
-                    <span className="text-primary touch-min flex items-center justify-center" aria-label="Open review">
+                    <span className="text-primary touch-min flex items-center justify-center" aria-label="Buka review">
                       <span className="material-symbols-outlined text-xl">fact_check</span>
                     </span>
                   </div>
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => navigate('/approvals')} className="text-primary p-2 hover:bg-primary-fixed rounded-lg transition-colors inline-flex items-center touch-min" title="Buka Lembar Review" aria-label="Open review">
+                        <button onClick={() => navigate('/approvals')} className="text-primary p-2 hover:bg-primary-fixed rounded-lg transition-colors inline-flex items-center touch-min" title="Buka Lembar Review" aria-label="Buka review">
                           <span className="material-symbols-outlined text-xl">fact_check</span>
                         </button>
                       </td>
@@ -322,7 +322,7 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-5 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-4 sm:p-6 flex flex-col justify-between">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Deadline Kritis</h4>
-            <span className="material-symbols-outlined text-danger text-xl sm:text-2xl" aria-label="Warning">warning</span>
+            <span className="material-symbols-outlined text-danger text-xl sm:text-2xl" aria-label="Peringatan">warning</span>
           </div>
           {criticalDeadlines.length === 0 ? (
             <p className="text-secondary text-sm text-center py-4">Tidak ada deadline kritis dalam 7 hari ke depan.</p>

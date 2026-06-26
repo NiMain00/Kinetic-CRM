@@ -10,20 +10,20 @@ interface SearchResult {
 }
 
 const searchIndex: SearchResult[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', category: 'Pages' },
-  { label: 'Prospects', path: '/prospects', icon: 'person_search', category: 'CRM' },
-  { label: 'Projects', path: '/projects', icon: 'assignment', category: 'CRM' },
-  { label: 'Approvals', path: '/approvals', icon: 'approval', category: 'Workflow' },
-  { label: 'Timeline', path: '/timeline', icon: 'timeline', category: 'CRM' },
-  { label: 'Calendar', path: '/calendar', icon: 'calendar_month', category: 'Tools' },
-  { label: 'Reports', path: '/reports', icon: 'bar_chart', category: 'Analytics' },
-  { label: 'KPIs', path: '/kpis', icon: 'target', category: 'Analytics' },
-  { label: 'Audit Log', path: '/audit-log', icon: 'history', category: 'Admin' },
-  { label: 'Configuration', path: '/configuration', icon: 'settings', category: 'Admin' },
-  { label: 'Master Data', path: '/master-data', icon: 'database', category: 'Admin' },
-  { label: 'Users', path: '/users', icon: 'people', category: 'Admin' },
-  { label: 'Login', path: '/login', icon: 'login', category: 'Auth' },
-  { label: 'Notifications', path: '/notifications', icon: 'notifications', category: 'Admin' },
+  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', category: 'Halaman' },
+  { label: 'Prospek', path: '/prospects', icon: 'person_search', category: 'CRM' },
+  { label: 'Proyek', path: '/projects', icon: 'assignment', category: 'CRM' },
+  { label: 'Persetujuan', path: '/approvals', icon: 'approval', category: 'Alur Kerja' },
+  { label: 'Jadwal', path: '/timeline', icon: 'timeline', category: 'CRM' },
+  { label: 'Kalender', path: '/calendar', icon: 'calendar_month', category: 'Peralatan' },
+  { label: 'Laporan', path: '/reports', icon: 'bar_chart', category: 'Analitik' },
+  { label: 'KPI', path: '/kpis', icon: 'target', category: 'Analitik' },
+  { label: 'Log Audit', path: '/audit-log', icon: 'history', category: 'Admin' },
+  { label: 'Konfigurasi', path: '/configuration', icon: 'settings', category: 'Admin' },
+  { label: 'Data Master', path: '/master-data', icon: 'database', category: 'Admin' },
+  { label: 'Pengguna', path: '/users', icon: 'people', category: 'Admin' },
+  { label: 'Masuk', path: '/login', icon: 'login', category: 'Autentikasi' },
+  { label: 'Notifikasi', path: '/notifications', icon: 'notifications', category: 'Admin' },
 ];
 
 export default function GlobalSearch() {
@@ -60,21 +60,23 @@ export default function GlobalSearch() {
   return (
     <div ref={ref} className="relative w-full max-w-xs">
       <Input
-        placeholder="Search anything..."
+        placeholder="Cari apa saja..."
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
         onFocus={() => { if (results.length) setIsOpen(true); }}
-        leftIcon={<span className="material-symbols-outlined">search</span>}
+        leftIcon={<span className="material-symbols-outlined" aria-hidden="true">search</span>}
       />
       {isOpen && results.length > 0 && (
-        <div className="absolute top-full mt-2 left-0 right-0 bg-surface-container-lowest border border-border rounded-xl shadow-xl z-50 overflow-hidden">
+        <div className="absolute top-full mt-2 left-0 right-0 bg-surface-container-lowest border border-border rounded-xl shadow-xl z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
           {results.map((r, i) => (
             <button
               key={i}
               onClick={() => handleSelect(r)}
               className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container-high transition-colors"
+              role="option"
+              aria-selected={false}
             >
-              <span className="material-symbols-outlined text-outline text-base">{r.icon || 'search'}</span>
+              <span className="material-symbols-outlined text-outline text-base" aria-hidden="true">{r.icon || 'search'}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-on-surface truncate">{r.label}</p>
                 <p className="text-[10px] text-outline">{r.category}</p>

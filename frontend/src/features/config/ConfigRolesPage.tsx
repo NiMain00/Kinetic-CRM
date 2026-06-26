@@ -17,59 +17,59 @@ interface ModuleGroup {
 const MODULE_GROUPS: ModuleGroup[] = [
   {
     name: 'Dashboard',
-    perms: [{ key: 'dashboard_view', label: 'Lihat Dashboard', shortLabel: 'View' }],
+    perms: [{ key: 'dashboard_view', label: 'Lihat Dashboard', shortLabel: 'Lihat' }],
   },
   {
     name: 'Prospek',
     perms: [
-      { key: 'prospek_view', label: 'Lihat Prospek', shortLabel: 'View' },
-      { key: 'prospek_create', label: 'Buat Prospek', shortLabel: 'Create' },
-      { key: 'prospek_edit', label: 'Edit Prospek', shortLabel: 'Edit' },
-      { key: 'prospek_delete', label: 'Hapus Prospek', shortLabel: 'Delete' },
+      { key: 'prospek_view', label: 'Lihat Prospek', shortLabel: 'Lihat' },
+      { key: 'prospek_create', label: 'Buat Prospek', shortLabel: 'Buat' },
+      { key: 'prospek_edit', label: 'Edit Prospek', shortLabel: 'Sunting' },
+      { key: 'prospek_delete', label: 'Hapus Prospek', shortLabel: 'Hapus' },
     ],
   },
   {
     name: 'Proyek',
     perms: [
-      { key: 'proyek_view', label: 'Lihat Proyek', shortLabel: 'View' },
-      { key: 'proyek_create', label: 'Buat Proyek', shortLabel: 'Create' },
-      { key: 'proyek_edit', label: 'Edit Proyek', shortLabel: 'Edit' },
-      { key: 'proyek_delete', label: 'Hapus Proyek', shortLabel: 'Delete' },
+      { key: 'proyek_view', label: 'Lihat Proyek', shortLabel: 'Lihat' },
+      { key: 'proyek_create', label: 'Buat Proyek', shortLabel: 'Buat' },
+      { key: 'proyek_edit', label: 'Edit Proyek', shortLabel: 'Sunting' },
+      { key: 'proyek_delete', label: 'Hapus Proyek', shortLabel: 'Hapus' },
     ],
   },
   {
-    name: 'Approval',
+    name: 'Persetujuan',
     perms: [
-      { key: 'approval_process', label: 'Proses Approval', shortLabel: 'Process' },
-      { key: 'approval_view', label: 'Lihat Approval', shortLabel: 'View' },
+      { key: 'approval_process', label: 'Proses Persetujuan', shortLabel: 'Proses' },
+      { key: 'approval_view', label: 'Lihat Persetujuan', shortLabel: 'Lihat' },
     ],
   },
   {
     name: 'KPI',
     perms: [
-      { key: 'kpi_view', label: 'Lihat KPI', shortLabel: 'View' },
-      { key: 'kpi_manage', label: 'Kelola KPI', shortLabel: 'Manage' },
+      { key: 'kpi_view', label: 'Lihat KPI', shortLabel: 'Lihat' },
+      { key: 'kpi_manage', label: 'Kelola KPI', shortLabel: 'Kelola' },
     ],
   },
   {
     name: 'Laporan',
-    perms: [{ key: 'laporan_view', label: 'Lihat Laporan', shortLabel: 'View' }],
+    perms: [      { key: 'laporan_view', label: 'Lihat Laporan', shortLabel: 'Lihat' }],
   },
   {
-    name: 'Master Data',
-    perms: [{ key: 'master_data', label: 'Akses Master Data', shortLabel: 'Access' }],
+    name: 'Data Master',
+    perms: [      { key: 'master_data', label: 'Akses Data Master', shortLabel: 'Akses' }],
   },
   {
     name: 'Pengguna',
-    perms: [{ key: 'users_manage', label: 'Kelola Pengguna', shortLabel: 'Manage' }],
+    perms: [      { key: 'users_manage', label: 'Kelola Pengguna', shortLabel: 'Kelola' }],
   },
   {
     name: 'Konfigurasi',
-    perms: [{ key: 'config_access', label: 'Akses Konfigurasi', shortLabel: 'Access' }],
+    perms: [      { key: 'config_access', label: 'Akses Konfigurasi', shortLabel: 'Akses' }],
   },
   {
     name: 'Audit',
-    perms: [{ key: 'audit_view', label: 'Lihat Audit', shortLabel: 'View' }],
+    perms: [      { key: 'audit_view', label: 'Lihat Audit', shortLabel: 'Lihat' }],
   },
 ];
 
@@ -233,11 +233,11 @@ export default function ConfigRolesPage() {
       <div className="bg-white border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <nav className="flex items-center gap-2 mb-1.5 text-xs text-secondary">
-            <span className="font-semibold uppercase tracking-wider">Configuration</span>
+            <span className="font-semibold uppercase tracking-wider">Konfigurasi</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold uppercase tracking-wider">Role & Permission</span>
+            <span className="text-primary font-bold uppercase tracking-wider">Role & Izin</span>
           </nav>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">Manajemen Role & Permission</h2>
+          <h2 className="font-display-title text-base font-extrabold text-slate-900">Manajemen Role & Izin</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Atur hak akses setiap peran pengguna dalam sistem.</p>
         </div>
         <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>} onClick={() => setModalOpen(true)}>
@@ -261,7 +261,7 @@ export default function ConfigRolesPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Role</p>
+              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Peran</p>
               <p className="text-xl font-extrabold text-slate-800 mt-1">{roles.length}</p>
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
@@ -296,7 +296,7 @@ export default function ConfigRolesPage() {
                 <thead>
                   {/* Row 1: Module group headers */}
                   <tr className="bg-slate-50 border-b border-border">
-                    <th className="px-3 py-2.5 sticky left-0 bg-slate-50 z-10 border-r border-border text-[10px] uppercase font-mono tracking-wider text-slate-450" rowSpan={2}>Role</th>
+                    <th className="px-3 py-2.5 sticky left-0 bg-slate-50 z-10 border-r border-border text-[10px] uppercase font-mono tracking-wider text-slate-450" rowSpan={2}>Peran</th>
                     {MODULE_GROUPS.map(mg => (
                       <th key={mg.name} colSpan={mg.perms.length} className="px-1 py-2.5 text-center text-[10px] uppercase font-mono tracking-wider text-slate-450 border-r border-border last:border-r-0">{mg.name}</th>
                     ))}
@@ -319,7 +319,7 @@ export default function ConfigRolesPage() {
                             <div className="flex items-center gap-2">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
                               {r.id in draftPermissions && (
-                                <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">Pending</span>
+                                <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200/60">Tertunda</span>
                               )}
                             </div>
                             <span className="text-[9px] text-slate-400 mt-0.5">{r.description}</span>
@@ -340,8 +340,8 @@ export default function ConfigRolesPage() {
                         <td className="px-3 py-2.5 text-right">
                           <div className="flex items-center gap-1.5 justify-end">
                             <span className="text-[9px] text-slate-400 font-mono" title="Jumlah izin aktif">{getRolePerms(r.id).length}/{ALL_PERM_KEYS.length}</span>
-                            <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer" title="Pilih semua izin">All</button>
-                            <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer" title="Hapus semua izin">None</button>
+                            <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer" title="Pilih semua izin">Semua</button>
+                            <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer" title="Hapus semua izin">Tidak Ada</button>
                             <button onClick={() => setDeleteConfirm(r.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus Role">
                               <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
@@ -355,7 +355,7 @@ export default function ConfigRolesPage() {
             </div>
             {filteredRoles.length === 0 && (
               <div className="p-8 text-center text-xs text-slate-400">
-                {searchQuery ? `Tidak ada role yang cocok dengan "${searchQuery}".` : 'Belum ada role. Klik "Tambah Role" untuk membuat role baru.'}
+                {searchQuery ? `Tidak ada peran yang cocok dengan "${searchQuery}".` : 'Belum ada peran. Klik "Tambah Role" untuk membuat peran baru.'}
               </div>
             )}
           </div>
@@ -382,7 +382,7 @@ export default function ConfigRolesPage() {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Tambah Role Baru" size="md">
         <form onSubmit={handleCreate} className="space-y-5 text-xs">
           <div className="space-y-2">
-            <label className="font-semibold text-slate-700 block">Nama Role *</label>
+                <label className="font-semibold text-slate-700 block">Nama Peran *</label>
             <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Finance Manager" required />
           </div>
           <div className="space-y-2">

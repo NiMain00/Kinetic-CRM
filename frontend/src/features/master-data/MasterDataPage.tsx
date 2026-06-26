@@ -360,13 +360,13 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <span className="font-bold text-primary">GAP-03 & Security Bound:</span> Seluruh pilar konfigurasi disinkronisasikan ke master database terpusat untuk integritas regional.
           </p>
         </div>
-        <span className="text-[9px] uppercase font-mono tracking-widest bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Database Synced</span>
+        <span className="text-[9px] uppercase font-mono tracking-widest bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Database Tersinkronisasi</span>
       </div>
 
       {/* 2. Top Header and Super Tabs list */}
       <div className="bg-white border-b border-border shrink-0 px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-sm">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-800">Workspace Master Data</h2>
+          <h2 className="font-display-title text-base font-extrabold text-slate-800">Ruang Kerja Data Master</h2>
           <p className="text-slate-400 text-[11px]">Konsol operasi pusat untuk memelihara normalisasi, kuesioner, kompetitor, dan hak departemen regional.</p>
         </div>
         
@@ -386,7 +386,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
       {/* Under-header Navigation Bar Tabs */}
       <div className="bg-white px-8 flex overflow-x-auto border-b border-border shrink-0 custom-scrollbar scrollbar-hide">
         <button onClick={() => { setActiveTab('customers'); setSearchQuery(''); }} className={tabClass('customers')}>
-          <span className="material-symbols-outlined text-sm">groups</span> Customer
+          <span className="material-symbols-outlined text-sm">groups</span> Pelanggan
         </button>
         <button onClick={() => { setActiveTab('industries'); setSearchQuery(''); }} className={tabClass('industries')}>
           <span className="material-symbols-outlined text-sm">category</span> Industri
@@ -425,7 +425,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           <span className="material-symbols-outlined text-sm">manage_accounts</span> Pengguna
         </button>
         <button onClick={() => { setActiveTab('audit_logs'); setSearchQuery(''); }} className={tabClass('audit_logs')}>
-          <span className="material-symbols-outlined text-sm">security</span> Audit Log
+          <span className="material-symbols-outlined text-sm">security</span> Log Audit
         </button>
       </div>
 
@@ -439,12 +439,12 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <div>
                 <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary">groups</span>
-                  Master Customer
+                  Master Pelanggan
                 </h3>
                 <p className="text-secondary text-xs mt-0.5">Referensi customer terpusat untuk prospek dan proyek. Doc 021 §1.</p>
               </div>
               <button onClick={() => { setNewCust({}); setCustomerModalOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Customer
+                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Pelanggan
               </button>
             </div>
 
@@ -488,7 +488,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                         </span>
                       </td>
                       <td className="p-3 text-right">
-                        <button onClick={() => { deleteData('customers', c.id); onShowNotification('Customer dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-650 rounded cursor-pointer">
+                        <button onClick={() => { deleteData('customers', c.id); onShowNotification('Pelanggan dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-650 rounded cursor-pointer">
                           <span className="material-symbols-outlined text-base">delete</span>
                         </button>
                       </td>
@@ -776,8 +776,8 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                   <tr className="bg-slate-50 border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
-                    <th className="p-3">Has Options</th>
-                    <th className="p-3">Validation Config</th>
+                    <th className="p-3">Memiliki Opsi</th>
+                    <th className="p-3">Konfigurasi Validasi</th>
                     <th className="p-3 text-center">System</th>
                     <th className="p-3 text-center">Aktif</th>
                   </tr>
@@ -994,7 +994,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-1">
-                          <button onClick={() => { setEditingDepartment(d); setDeptDrawerOpen(true); }} className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-primary cursor-pointer" title="Tuning Departemen">
+                          <button onClick={() => { setEditingDepartment(d); setDeptDrawerOpen(true); }} className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-primary cursor-pointer" title="Atur Departemen">
                             <span className="material-symbols-outlined text-base">edit_note</span>
                           </button>
                         </div>
@@ -1025,16 +1025,16 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <div>
                 <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary">security_update_warning</span>
-                  System Audit Trail & Log Keamanan
+                  Jejak Audit Sistem & Log Keamanan
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Metadata operasional, perubahan status RKS komparatif, trace login administrator, dan trace data mutation.</p>
+                <p className="text-secondary text-xs mt-0.5">Metadata operasional, perubahan status RKS komparatif, jejak login administrator, dan jejak mutasi data.</p>
               </div>
               <div className="flex gap-2">
                 <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3.5 py-1.5 bg-white border border-border hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">download</span> Export CSV
+                  <span className="material-symbols-outlined text-[16px]">download</span> Ekspor CSV
                 </button>
                 <button onClick={() => { onShowNotification('Log audit terupdate secara synchronous.', 'success'); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">refresh</span> Refresh Records
+                  <span className="material-symbols-outlined text-[16px]">refresh</span> Perbarui Data
                 </button>
               </div>
             </div>
@@ -1043,22 +1043,22 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
                   <tr className="bg-slate-50 border-b border-border font-bold">
-                    <th className="p-4">Timestamp Log</th>
+                    <th className="p-4">Waktu Log</th>
                     <th className="p-4">Pelaku Operator</th>
                     <th className="p-4">Tipe Mutasi</th>
                     <th className="p-4">Entitas Referensi</th>
-                    <th className="p-4 text-center">Impact Risiko</th>
+                    <th className="p-4 text-center">Dampak Risiko</th>
                     <th className="p-4 text-right">Periksa JSON</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {auditLogs.filter(log => log.user.toLowerCase().includes(searchQuery.toLowerCase()) || log.entity.toLowerCase().includes(searchQuery.toLowerCase())).map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="p-4 font-mono font-medium text-slate-600"><p>{log.time}</p><p className="text-[9px] text-slate-400">Local Standard Server Time</p></td>
+                      <td className="p-4 font-mono font-medium text-slate-600"><p>{log.time}</p><p className="text-[9px] text-slate-400">Waktu Standar Server Lokal</p></td>
                       <td className="p-4"><div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-black">{log.userInitials}</span><span className="font-bold text-slate-750">{log.user}</span></div></td>
                       <td className="p-4"><span className={`px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase ${log.actionColor}`}>{log.action}</span></td>
                       <td className="p-4"><span className="font-bold text-slate-800">{log.entity}</span><span className="text-[10px] text-slate-400 block font-medium">({log.entityName})</span></td>
-                      <td className="p-4 text-center"><span className={`inline-flex items-center gap-1 text-[10px] font-bold ${log.impact === 'High' ? 'text-red-500' : log.impact === 'Medium' ? 'text-amber-500' : 'text-slate-400'}`}><span className={`w-1.5 h-1.5 rounded-full ${log.impact === 'High' ? 'bg-red-500' : log.impact === 'Medium' ? 'bg-amber-500' : 'bg-slate-400'}`} />{log.impact} Access</span></td>
+                      <td className="p-4 text-center"><span className={`inline-flex items-center gap-1 text-[10px] font-bold ${log.impact === 'High' ? 'text-red-500' : log.impact === 'Medium' ? 'text-amber-500' : 'text-slate-400'}`}><span className={`w-1.5 h-1.5 rounded-full ${log.impact === 'High' ? 'bg-red-500' : log.impact === 'Medium' ? 'bg-amber-500' : 'bg-slate-400'}`} />Akses {log.impact}</span></td>
                       <td className="p-4 text-right"><button onClick={() => { setSelectedAuditLog(log); setAuditDetailOpen(true); }} className="px-3 py-1 bg-white border border-border text-primary hover:bg-primary/5 rounded font-bold transition-all text-[10px] cursor-pointer">Bandingkan Diff</button></td>
                     </tr>
                   ))}
@@ -1142,7 +1142,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="p-5 border-b border-border bg-slate-50 flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl">groups</span>
-                <span className="text-xs font-bold text-slate-800">Tambah Customer Baru</span>
+                <span className="text-xs font-bold text-slate-800">Tambah Pelanggan Baru</span>
               </div>
               <button onClick={() => setCustomerModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 bg-slate-100 hover:bg-slate-200 text-xs">
                 <span className="material-symbols-outlined text-xs">close</span>
@@ -1150,17 +1150,17 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
             <div className="p-5 space-y-4 text-xs max-h-[60vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Nama Customer *</label><input type="text" placeholder="Nama customer" value={newCust.name || ''} onChange={(e) => setNewCust({...newCust, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-slate-500 mb-1 block">Nama Pelanggan *</label><input type="text" placeholder="Nama pelanggan" value={newCust.name || ''} onChange={(e) => setNewCust({...newCust, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
                 <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newCust.code || ''} onChange={(e) => setNewCust({...newCust, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="font-bold text-slate-500 mb-1 block">Jenis</label><select value={newCust.type || 'swasta'} onChange={(e) => setNewCust({...newCust, type: e.target.value as any})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="swasta">Swasta</option><option value="bumn">BUMN</option><option value="pemerintah">Pemerintah</option><option value="asing">Asing</option></select></div>
                 <div><label className="font-bold text-slate-500 mb-1 block">Industri</label><select value={newCust.industry_id || ''} onChange={(e) => setNewCust({...newCust, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">PIC Name</label><input type="text" placeholder="Nama PIC" value={newCust.pic_name || ''} onChange={(e) => setNewCust({...newCust, pic_name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-slate-500 mb-1 block">Nama PIC</label><input type="text" placeholder="Nama PIC" value={newCust.pic_name || ''} onChange={(e) => setNewCust({...newCust, pic_name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="font-bold text-slate-500 mb-1 block">Email PIC</label><input type="email" placeholder="email@domain.com" value={newCust.pic_email || ''} onChange={(e) => setNewCust({...newCust, pic_email: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Phone PIC</label><input type="text" placeholder="021-12345678" value={newCust.pic_phone || ''} onChange={(e) => setNewCust({...newCust, pic_phone: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-slate-500 mb-1 block">Telepon PIC</label><input type="text" placeholder="021-12345678" value={newCust.pic_phone || ''} onChange={(e) => setNewCust({...newCust, pic_phone: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
               <div><label className="font-bold text-slate-500 mb-1 block">Alamat</label><textarea rows={2} placeholder="Alamat lengkap" value={newCust.address || ''} onChange={(e) => setNewCust({...newCust, address: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
               <div className="grid grid-cols-2 gap-3">
@@ -1170,17 +1170,17 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="font-bold text-slate-500 mb-1 block">NPWP</label><input type="text" placeholder="XX.XXX.XXX.X-XXX.XXX" value={newCust.npwp || ''} onChange={(e) => setNewCust({...newCust, npwp: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Notes</label><textarea rows={2} placeholder="Catatan" value={newCust.notes || ''} onChange={(e) => setNewCust({...newCust, notes: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
+              <div><label className="font-bold text-slate-500 mb-1 block">Catatan</label><textarea rows={2} placeholder="Catatan" value={newCust.notes || ''} onChange={(e) => setNewCust({...newCust, notes: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
             </div>
             <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
               <button onClick={() => setCustomerModalOpen(false)} className="px-4 py-1.5 border border-border bg-white rounded text-xs text-slate-600 hover:bg-slate-100">Batal</button>
               <button onClick={() => {
-                if (!newCust.name) { onShowNotification('Nama customer wajib dimasukkan.', 'error'); return; }
+                if (!newCust.name) { onShowNotification('Nama pelanggan wajib dimasukkan.', 'error'); return; }
                 const added: Customer = { id: String(customers.length + 1), name: newCust.name, code: newCust.code || `CST-${Math.floor(100 + Math.random() * 899)}`, type: newCust.type || 'swasta', industry_id: newCust.industry_id || null, pic_name: newCust.pic_name || '', pic_email: newCust.pic_email || '', pic_phone: newCust.pic_phone || '', address: newCust.address || '', city: newCust.city || '', province: newCust.province || '', npwp: newCust.npwp || '', notes: newCust.notes || '', is_active: true };
                 addData('customers', added);
-                onShowNotification(`Customer ${newCust.name} berhasil ditambahkan.`, 'success');
+                onShowNotification(`Pelanggan ${newCust.name} berhasil ditambahkan.`, 'success');
                 setCustomerModalOpen(false);
-              }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan Customer</button>
+              }} className="px-5 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:brightness-110">Simpan Pelanggan</button>
             </div>
           </div>
         </div>
@@ -1266,7 +1266,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 <label className="font-bold text-slate-500 mb-1 block">Penempatan Regional / Kantor Pusat</label>
                 <input
                   type="text"
-                  placeholder="e.g. Cabang Jakarta Pusat"
+                  placeholder="Misal: Cabang Jakarta Pusat"
                   value={editingUser ? editingUser.branch : ''}
                   onChange={(e) => {
                     if (editingUser) setEditingUser({ ...editingUser, branch: e.target.value });
@@ -1356,7 +1356,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 <select id="new-q-context" className="w-full p-2 border border-border rounded-lg text-xs bg-white">
                   <option value="prospect">Prospek</option>
                   <option value="rks">RKS</option>
-                  <option value="both">Both</option>
+                  <option value="both">Keduanya</option>
                 </select>
               </div>
               <div>
@@ -1543,7 +1543,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 <div><label className="font-bold text-slate-500 mb-1 block">Warna Badge</label><input type="text" placeholder="#RRGGBB" value={editingStatus?.color_hex || '#6B7280'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
                 <div><label className="font-bold text-slate-500 mb-1 block">Warna Teks</label><input type="text" placeholder="#FFFFFF" value={editingStatus?.text_color_hex || '#FFFFFF'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, text_color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Berlaku Untuk</label><select value={editingStatus?.applicable_to || 'both'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Both</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+              <div><label className="font-bold text-slate-500 mb-1 block">Berlaku Untuk</label><select value={editingStatus?.applicable_to || 'both'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
             </div>
             <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
               <button onClick={() => setStatusDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
@@ -1573,7 +1573,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <div><label className="font-bold text-slate-500 mb-1 block">Kode *</label><input type="text" placeholder="KODE" value={editingDocType?.code || ''} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               <div><label className="font-bold text-slate-500 mb-1 block">Ekstensi (pisahkan koma)</label><input type="text" placeholder="pdf, docx, xlsx" value={editingDocType?.allowed_extensions?.join(', ') || 'pdf'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, allowed_extensions: e.target.value.split(',').map(s => s.trim()) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               <div><label className="font-bold text-slate-500 mb-1 block">Max Size (MB)</label><input type="number" placeholder="25" value={editingDocType?.max_size_mb || 25} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, max_size_mb: parseInt(e.target.value) || 25 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Berlaku Untuk</label><select value={editingDocType?.applicable_to || 'both'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Both</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+              <div><label className="font-bold text-slate-500 mb-1 block">Berlaku Untuk</label><select value={editingDocType?.applicable_to || 'both'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
             </div>
             <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
               <button onClick={() => setDocTypeDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
@@ -1601,7 +1601,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               <div><label className="font-bold text-slate-500 mb-1 block">Nama *</label><input type="text" placeholder="Q1 2026" value={editingPeriod?.name || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="2026-Q1" value={editingPeriod?.code || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Tipe</label><select value={editingPeriod?.type || 'quarterly'} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="semester">Semester</option><option value="annual">Annual</option></select></div>
+                <div><label className="font-bold text-slate-500 mb-1 block">Tipe</label><select value={editingPeriod?.type || 'quarterly'} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="monthly">Bulanan</option><option value="quarterly">Kuartalan</option><option value="semester">Semester</option><option value="annual">Tahunan</option></select></div>
                 <div><label className="font-bold text-slate-500 mb-1 block">Tahun</label><input type="number" placeholder="2026" value={editingPeriod?.year || 2026} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, year: parseInt(e.target.value) || 2026 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1634,7 +1634,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
               <div><label className="font-bold text-slate-500 mb-1 block">Nama Hari Libur *</label><input type="text" placeholder="Nama libur" value={editingHoliday?.name || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               <div><label className="font-bold text-slate-500 mb-1 block">Tanggal *</label><input type="date" value={editingHoliday?.date || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, date: e.target.value, year: parseInt(e.target.value.slice(0, 4)) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Tipe</label><select value={editingHoliday?.type || 'national'} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="national">National</option><option value="company_specific">Company Specific</option><option value="optional">Optional</option></select></div>
+              <div><label className="font-bold text-slate-500 mb-1 block">Tipe</label><select value={editingHoliday?.type || 'national'} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="national">Nasional</option><option value="company_specific">Spesifik Perusahaan</option><option value="optional">Opsional</option></select></div>
             </div>
             <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
               <button onClick={() => setHolidayDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>

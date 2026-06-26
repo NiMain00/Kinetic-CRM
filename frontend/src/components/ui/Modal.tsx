@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ModalProps {
   isOpen: boolean;
@@ -16,7 +17,7 @@ const sizes = {
 };
 
 export default function Modal({ isOpen, onClose, title, children, footer, size = 'md' }: ModalProps) {
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const focusTrapRef = useFocusTrap(isOpen);
 
   useEffect(() => {
     if (isOpen) {
@@ -34,18 +35,17 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
 
   return (
     <div
-      ref={overlayRef}
       className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
+      aria-label={title || 'Dialog'}
     >
-      <div className={`bg-surface-container-lowest rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] flex flex-col`}>
+      <div ref={focusTrapRef} className={`bg-surface-container-lowest rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] flex flex-col`}>
         {title && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-            <h3 id="modal-title" className="font-heading-section text-base text-on-surface">{title}</h3>
-            <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors" aria-label="Close modal">
+            <h3 className="font-heading-section text-base text-on-surface">{title}</h3>
+            <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors" aria-label="Tutup dialog">
               <span className="material-symbols-outlined text-lg">close</span>
             </button>
           </div>

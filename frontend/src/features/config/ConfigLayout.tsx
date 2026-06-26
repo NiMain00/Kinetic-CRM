@@ -56,7 +56,7 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
           </button>
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <span className="material-symbols-outlined text-[14px]">settings</span>
-            <span>Configuration</span>
+            <span>Konfigurasi</span>
             <span className="material-symbols-outlined text-[12px]">chevron_right</span>
             <span className="text-primary font-semibold">
               {visibleItems.find(i => i.path === location.pathname)?.label || 'Dashboard'}

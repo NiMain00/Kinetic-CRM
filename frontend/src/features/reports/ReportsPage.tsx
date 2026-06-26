@@ -91,17 +91,17 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
   const [activeSubTab, setActiveTab] = useState<ReportTab>('winloss');
 
   // Win/Loss variables and states
-  const [winLossFilterDate, setWinLossFilterDate] = useState('Current Month (Oct 2023)');
-  const [winLossFilterBranch, setWinLossFilterBranch] = useState('All Branches (Indonesia)');
-  const [winLossFilterCategory, setWinLossFilterCategory] = useState('All Categories');
-  const [winLossFilterType, setWinLossFilterType] = useState('All Types');
+  const [winLossFilterDate, setWinLossFilterDate] = useState('Bulan Saat Ini (Okt 2023)');
+  const [winLossFilterBranch, setWinLossFilterBranch] = useState('Semua Cabang (Indonesia)');
+  const [winLossFilterCategory, setWinLossFilterCategory] = useState('Semua Kategori');
+  const [winLossFilterType, setWinLossFilterType] = useState('Semua Tipe');
   const [winLossSearch, setWinLossSearch] = useState('');
   const [selectedWinLoss, setSelectedWinLoss] = useState<WinLossRecord | null>(null);
 
   // Pipeline variables and states
-  const [pipelineFilterBranch, setPipelineFilterBranch] = useState('All Indonesia Branches');
-  const [pipelineFilterDivision, setPipelineFilterDivision] = useState('All Divisions');
-  const [pipelineFilterCategory, setPipelineFilterCategory] = useState('All Categories');
+  const [pipelineFilterBranch, setPipelineFilterBranch] = useState('Semua Cabang Indonesia');
+  const [pipelineFilterDivision, setPipelineFilterDivision] = useState('Semua Divisi');
+  const [pipelineFilterCategory, setPipelineFilterCategory] = useState('Semua Kategori');
   const [pipelineFilterClose, setPipelineFilterClose] = useState('Q4 2024');
   const [pipelineViewMode, setPipelineViewMode] = useState<'count' | 'value'>('count');
   const [pipelineSearch, setPipelineSearch] = useState('');
@@ -122,26 +122,26 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
   // Pipeline funnel steps dataset
   const funnelSteps = [
-    { id: '01', name: 'RKS / Prospek', count: '482 Projects', value: 'Rp 1.84T', metric: '482 Projects', val: 'Rp 1.84T', scale: 'w-full', color: 'bg-primary' },
-    { id: '02', name: 'Penyusunan LPHS', count: '315 Projects', value: 'Rp 1.12T', metric: '315 Projects', val: 'Rp 1.12T', scale: 'w-[90%]', color: 'bg-[#1e5494]' },
-    { id: '03', name: 'Negosiasi Harga', count: '224 Projects', value: 'Rp 840.5B', metric: '224 Projects', val: 'Rp 840.5B', scale: 'w-[80%]', color: 'bg-[#3c6ca3]' },
-    { id: '04', name: 'Approval Management', count: '186 Projects', value: 'Rp 425.2B', metric: '186 Projects', val: 'Rp 425.2B', scale: 'w-[70%]', color: 'bg-[#5a84b3]' },
-    { id: '05', name: 'Final Kontrak', count: '41 Projects', value: 'Rp 54.1B', metric: '41 Projects', val: 'Rp 54.1B', scale: 'w-[60%]', color: 'bg-[#789cc2]' }
+    { id: '01', name: 'RKS / Prospek', count: '482 Proyek', value: 'Rp 1.84T', metric: '482 Proyek', val: 'Rp 1.84T', scale: 'w-full', color: 'bg-primary' },
+    { id: '02', name: 'Penyusunan LPHS', count: '315 Proyek', value: 'Rp 1.12T', metric: '315 Proyek', val: 'Rp 1.12T', scale: 'w-[90%]', color: 'bg-[#1e5494]' },
+    { id: '03', name: 'Negosiasi Harga', count: '224 Proyek', value: 'Rp 840.5B', metric: '224 Proyek', val: 'Rp 840.5B', scale: 'w-[80%]', color: 'bg-[#3c6ca3]' },
+    { id: '04', name: 'Approval Management', count: '186 Proyek', value: 'Rp 425.2B', metric: '186 Proyek', val: 'Rp 425.2B', scale: 'w-[70%]', color: 'bg-[#5a84b3]' },
+    { id: '05', name: 'Final Kontrak', count: '41 Proyek', value: 'Rp 54.1B', metric: '41 Proyek', val: 'Rp 54.1B', scale: 'w-[60%]', color: 'bg-[#789cc2]' }
   ];
 
   const handleResetWinLossFilters = () => {
-    setWinLossFilterDate('Current Month (Oct 2023)');
-    setWinLossFilterBranch('All Branches (Indonesia)');
-    setWinLossFilterCategory('All Categories');
-    setWinLossFilterType('All Types');
+    setWinLossFilterDate('Bulan Saat Ini (Okt 2023)');
+    setWinLossFilterBranch('Semua Cabang (Indonesia)');
+    setWinLossFilterCategory('Semua Kategori');
+    setWinLossFilterType('Semua Tipe');
     setWinLossSearch('');
     onShowNotification('Filter Laporan Win/Loss telah dikembalikan ke draf semula.', 'success');
   };
 
   const handleResetPipelineFilters = () => {
-    setPipelineFilterBranch('All Indonesia Branches');
-    setPipelineFilterDivision('All Divisions');
-    setPipelineFilterCategory('All Categories');
+    setPipelineFilterBranch('Semua Cabang Indonesia');
+    setPipelineFilterDivision('Semua Divisi');
+    setPipelineFilterCategory('Semua Kategori');
     setPipelineFilterClose('Q4 2024');
     setPipelineSearch('');
     onShowNotification('Filter Laporan Pipeline telah direset.', 'success');
@@ -154,14 +154,14 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <nav className="flex items-center gap-2 mb-1.5 font-caption-xs text-caption-xs text-secondary">
-            <span className="text-secondary font-semibold uppercase tracking-wider">Reports Studio</span>
+            <span className="text-secondary font-semibold uppercase tracking-wider">Studio Laporan</span>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-bold uppercase tracking-wider">
               {activeSubTab === 'winloss' ? 'REPT-01' : 'REPT-02'}
             </span>
           </nav>
           <h2 className="font-display-title text-base font-extrabold text-slate-900">
-            {activeSubTab === 'winloss' ? 'Laporan Win/Loss Performance' : 'Laporan Pipeline Lifecycle'}
+            {activeSubTab === 'winloss' ? 'Laporan Performa Menang/Kalah' : 'Laporan Siklus Pipeline'}
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Analisis performa real-time, saringan tender nasional, serta visualisasi funnel regional.</p>
         </div>
@@ -174,7 +174,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               activeSubTab === 'winloss' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Win/Loss Report
+            Laporan Menang/Kalah
           </button>
           <button
             onClick={() => {
@@ -185,7 +185,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               activeSubTab === 'pipeline' ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Pipeline Report
+            Laporan Pipeline
           </button>
         </div>
       </div>
@@ -204,9 +204,9 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               <div>
                 <h3 className="font-heading-section text-sm font-bold text-slate-800 flex items-center">
                   <span className="material-symbols-outlined mr-2 text-primary font-bold">query_stats</span>
-                  Laporan Performa Tender (Win / Loss Analysis)
+                  Laporan Performa Tender (Analisis Menang/Kalah)
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Detailed performance analysis of tender wins and project losses across branches.</p>
+                <p className="text-secondary text-xs mt-0.5">Analisis performa detail kemenangan tender dan kerugian proyek di seluruh cabang.</p>
               </div>
               <div className="flex gap-2">
                 <button
@@ -215,7 +215,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs"
                 >
                   <span className="material-symbols-outlined text-[16px] text-red-500">picture_as_pdf</span>
-                  Export PDF
+                  Ekspor PDF
                 </button>
                 <button
                   type="button"
@@ -223,7 +223,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-white hover:brightness-110 transition-all font-bold text-xs cursor-pointer shadow-xs"
                 >
                   <span className="material-symbols-outlined text-[16px]">table_view</span>
-                  Export Excel
+                  Ekspor Excel
                 </button>
               </div>
             </div>
@@ -233,7 +233,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Date Range</label>
+                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Rentang Tanggal</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">calendar_today</span>
                     <select
@@ -241,16 +241,16 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                       onChange={(e) => setWinLossFilterDate(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-xs font-semibold bg-white text-slate-650 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
                     >
-                      <option>Current Month (Oct 2023)</option>
-                      <option>Last 3 Months</option>
-                      <option>Year to Date</option>
-                      <option>Custom Range</option>
+                      <option>Bulan Saat Ini (Okt 2023)</option>
+                      <option>3 Bulan Terakhir</option>
+                      <option>Tahun Berjalan</option>
+                      <option>Kustom</option>
                     </select>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Branch</label>
+                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Cabang</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">location_on</span>
                     <select
@@ -258,7 +258,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                       onChange={(e) => setWinLossFilterBranch(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-xs font-semibold bg-white text-slate-650 focus:outline-none"
                     >
-                      <option>All Branches (Indonesia)</option>
+                      <option>Semua Cabang (Indonesia)</option>
                       <option>Jakarta Central</option>
                       <option>Surabaya Hub</option>
                       <option>Medan Office</option>
@@ -267,7 +267,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Project Category</label>
+                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Kategori Proyek</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">category</span>
                     <select
@@ -275,7 +275,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                       onChange={(e) => setWinLossFilterCategory(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-xs font-semibold bg-white text-slate-650 focus:outline-none"
                     >
-                      <option>All Categories</option>
+                      <option>Semua Kategori</option>
                       <option>Infrastructure</option>
                       <option>Public Sector</option>
                       <option>Commercial</option>
@@ -284,7 +284,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Type</label>
+                  <label className="text-slate-500 font-semibold text-[11px] uppercase tracking-wider">Tipe</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">account_tree</span>
                     <select
@@ -292,7 +292,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                       onChange={(e) => setWinLossFilterType(e.target.value)}
                       className="w-full pl-9 pr-4 py-2 border border-border rounded-lg text-xs font-semibold bg-white text-slate-650 focus:outline-none"
                     >
-                      <option>All Types</option>
+                      <option>Semua Tipe</option>
                       <option>Tender</option>
                       <option>Prospecting</option>
                     </select>
@@ -308,14 +308,14 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   onClick={handleResetWinLossFilters}
                   className="text-primary hover:underline hover:text-primary-container text-xs font-semibold cursor-pointer"
                 >
-                  Reset Filters
+                  Atur Ulang Filter
                 </button>
                 <button
                   type="button"
                   onClick={() => onShowNotification('Fitur filter kriteria win loss diterapkan.', 'success')}
                   className="px-5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition-colors cursor-pointer"
                 >
-                  Apply Filters
+                  Terapkan Filter
                 </button>
               </div>
             </div>
@@ -368,7 +368,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                     <div className="bg-primary h-full rounded-full" style={{ width: '65%' }}></div>
                   </div>
                 </div>
-                <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Win Rate %</p>
+                <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Tingkat Kemenangan %</p>
                 <h3 className="font-extrabold text-slate-755 text-xl mt-1">65.5%</h3>
                 <p className="text-[10px] text-slate-400 mt-1 italic">Komparasi rata-rata kontrak</p>
               </div>
@@ -382,17 +382,17 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               <div className="lg:col-span-8 bg-white border border-border rounded-xl p-6 shadow-xs">
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-6">
                   <div>
-                    <h4 className="text-sm font-bold text-slate-800">Monthly Win vs Loss Trends</h4>
-                    <p className="text-[11px] text-slate-400">Comparison of project outcomes over the last 10 months</p>
+                    <h4 className="text-sm font-bold text-slate-800">Tren Bulanan Menang vs Kalah</h4>
+                    <p className="text-[11px] text-slate-400">Perbandingan hasil proyek selama 10 bulan terakhir</p>
                   </div>
                   <div className="flex gap-4 items-center">
                     <div className="flex items-center gap-1.5 text-xs text-slate-500">
                       <span className="w-3 h-3 bg-primary rounded-xs"></span>
-                      <span>Win</span>
+                      <span>Menang</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-slate-500">
                       <span className="w-3 h-3 bg-red-500 rounded-xs"></span>
-                      <span>Loss</span>
+                      <span>Kalah</span>
                     </div>
                   </div>
                 </div>
@@ -406,13 +406,13 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                         <div
                           className="w-1/2 bg-primary rounded-t-xs hover:brightness-115 transition-all cursor-pointer"
                           style={{ height: `${d.win}%` }}
-                          title={`Wins: ${d.win}`}
+                          title={`Menang: ${d.win}`}
                         ></div>
                         {/* Loss Bar */}
                         <div
                           className="w-1/2 bg-red-500 rounded-t-xs hover:brightness-115 transition-all cursor-pointer"
                           style={{ height: `${d.loss}%` }}
-                          title={`Losses: ${d.loss}`}
+                          title={`Kalah: ${d.loss}`}
                         ></div>
                       </div>
                       <span className="mt-2 text-[10px] font-bold text-slate-400">{d.label}</span>
@@ -424,13 +424,13 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               {/* Factors panel */}
               <div className="lg:col-span-4 bg-white border border-border rounded-xl p-6 shadow-xs flex flex-col justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-800">Top Win Factors Distribution</h4>
+                  <h4 className="text-sm font-bold text-slate-800">Distribusi Faktor Kemenangan Utama</h4>
                   <p className="text-[11px] text-slate-400 mb-6">Faktor krusial yang mempengaruhi hasil tender akhir.</p>
                   
                   <div className="space-y-4">
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-slate-700">Competitive Pricing</span>
+                        <span className="text-slate-700">Harga Kompetitif</span>
                         <span className="font-bold text-slate-800">42%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -440,7 +440,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-slate-700">Technical Specification</span>
+                        <span className="text-slate-700">Spesifikasi Teknis</span>
                         <span className="font-bold text-slate-800">28%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -450,7 +450,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-slate-700">Timeline Performance</span>
+                        <span className="text-slate-700">Performa Jadwal</span>
                         <span className="font-bold text-slate-800">18%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -460,7 +460,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-slate-700">Strategic Partnership</span>
+                        <span className="text-slate-700">Kemitraan Strategis</span>
                         <span className="font-bold text-slate-800">12%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -478,7 +478,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                     onClick={() => onShowNotification('Detil matrik faktor performa tender dimuat.', 'success')}
                     className="text-primary font-bold hover:underline cursor-pointer"
                   >
-                    View Analysis
+                    Lihat Analisis
                   </button>
                 </div>
               </div>
@@ -488,7 +488,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
             {/* Drilldown Detailed Project Records */}
             <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
               <div className="p-4 px-6 border-b border-border bg-slate-50 flex flex-col sm:flex-row justified-between sm:items-center gap-3">
-                <h4 className="text-xs font-bold text-slate-750">Detailed Project Records</h4>
+                <h4 className="text-xs font-bold text-slate-750">Catatan Proyek Detail</h4>
                 
                 <div className="relative w-full sm:w-64 size-sm shrink-0 ml-auto">
                   <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
@@ -507,12 +507,12 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                 <table className="w-full text-xs table-auto">
                   <thead>
                     <tr className="bg-slate-50 border-b border-border">
-                      <th className="p-4">Project Name</th>
-                      <th className="p-4">Customer</th>
-                      <th className="p-4">Value</th>
-                      <th className="p-4 text-center">Result</th>
-                      <th className="p-4">Winner Competitor</th>
-                      <th className="p-4">Tender Date</th>
+                      <th className="p-4">Nama Proyek</th>
+                      <th className="p-4">Pelanggan</th>
+                      <th className="p-4">Nilai</th>
+                      <th className="p-4 text-center">Hasil</th>
+                      <th className="p-4">Pemenang/Pesaing</th>
+                      <th className="p-4">Tanggal Tender</th>
                       <th className="p-4 text-right">Aksi</th>
                     </tr>
                   </thead>
@@ -558,7 +558,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               
               {/* Pagination footer */}
               <div className="p-4 bg-slate-50 flex items-center justify-between border-t border-border text-[11px] text-slate-400">
-                <p>Showing 1-5 of 1,284 records</p>
+                <p>Menampilkan 1-5 dari 1.284 catatan</p>
                 <div className="flex gap-1.5">
                   <button type="button" className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer font-bold">1</button>
                   <button type="button" onClick={() => onShowNotification('Fungsi paginasi disimulasikan.', 'success')} className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer">2</button>
@@ -576,7 +576,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                     <div>
                       <h4 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
                         <span className="material-symbols-outlined text-primary text-[20px]">assignment</span>
-                        Project Analytics Detail
+                        Detail Analisis Proyek
                       </h4>
                       <p className="text-[10px] text-slate-400 mt-1">Review detail data penawaran draf {selectedWinLoss.id}</p>
                     </div>
@@ -592,7 +592,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   <div className="p-6 flex-1 overflow-y-auto space-y-6 text-left text-xs">
                     
                     <div className="p-4 rounded-lg bg-slate-50 border border-border border-l-4 border-primary">
-                      <p className="text-slate-400 uppercase font-mono tracking-wider text-[9px] mb-1">Status Analysis Results</p>
+                      <p className="text-slate-400 uppercase font-mono tracking-wider text-[9px] mb-1">Hasil Analisis Status</p>
                       <div className="flex items-center gap-2">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                           selectedWinLoss.result === 'WIN' ? 'bg-success/15 text-success' : 'bg-red-50 text-red-650'
@@ -607,29 +607,29 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-slate-50 rounded-lg border border-border">
-                        <p className="text-slate-400 uppercase font-mono tracking-wider text-[9px]">Contract Value</p>
+                        <p className="text-slate-400 uppercase font-mono tracking-wider text-[9px]">Nilai Kontrak</p>
                         <p className="font-extrabold text-slate-800 text-sm mt-1">{selectedWinLoss.value}</p>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-lg border border-border">
-                        <p className="text-slate-400 uppercase font-mono tracking-wider text-[9px]">Tender Date</p>
+                        <p className="text-slate-400 uppercase font-mono tracking-wider text-[9px]">Tanggal Tender</p>
                         <p className="font-bold text-slate-800 text-sm mt-1">{selectedWinLoss.date}</p>
                       </div>
                     </div>
 
                     <div>
-                      <h4 className="font-bold text-slate-800 mb-2">Project Description Overview</h4>
+                      <h4 className="font-bold text-slate-800 mb-2">Gambaran Deskripsi Proyek</h4>
                       <p className="text-slate-550 leading-relaxed text-xs">{selectedWinLoss.description}</p>
                     </div>
 
                     <div className="p-4 rounded-xl border border-border space-y-2.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Affiliated Owner</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Pemilik Terafiliasi</span>
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center">
                           {selectedWinLoss.client.slice(0,2).toUpperCase()}
                         </div>
                         <div>
                           <p className="font-bold text-slate-750">{selectedWinLoss.client}</p>
-                          <p className="text-[10px] text-slate-400">Main Bid Client Representative</p>
+                          <p className="text-[10px] text-slate-400">Perwakilan Klien Tender Utama</p>
                         </div>
                       </div>
                     </div>
@@ -642,7 +642,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                       onClick={() => setSelectedWinLoss(null)}
                       className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors"
                     >
-                      Close Details
+                      Tutup Detail
                     </button>
                     <button
                       type="button"
@@ -674,7 +674,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               <div>
                 <h3 className="font-heading-section text-sm font-bold text-slate-800 flex items-center">
                   <span className="material-symbols-outlined mr-2 text-primary font-bold">filter_center_focus</span>
-                  Laporan Tahapan Operasional (Pipeline Lifecycle Stage)
+                  Laporan Tahapan Operasional (Tahapan Siklus Pipeline)
                 </h3>
                 <p className="text-secondary text-xs mt-0.5">Analisis distribusi kuesioner dan tender aktif rujukan wilayah operasional.</p>
               </div>
@@ -685,7 +685,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs"
                 >
                   <span className="material-symbols-outlined text-[16px] text-red-500">picture_as_pdf</span>
-                  Export PDF
+                  Ekspor PDF
                 </button>
                 <button
                   type="button"
@@ -693,7 +693,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-white hover:brightness-110 transition-all font-bold text-xs cursor-pointer shadow-xs"
                 >
                   <span className="material-symbols-outlined text-[16px]">table_chart</span>
-                  Export Excel
+                  Ekspor Excel
                 </button>
               </div>
             </div>
@@ -706,7 +706,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   <span className="material-symbols-outlined text-2xl">account_balance_wallet</span>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Total Pipeline Value</p>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Total Nilai Pipeline</p>
                   <p className="font-extrabold text-primary text-base">Rp 4.28T</p>
                 </div>
               </div>
@@ -716,7 +716,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   <span className="material-symbols-outlined text-2xl">assignment</span>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Total Active Projects</p>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Total Proyek Aktif</p>
                   <p className="font-extrabold text-slate-750 text-base">1,248</p>
                 </div>
               </div>
@@ -726,7 +726,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   <span className="material-symbols-outlined text-2xl">trending_up</span>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Growth Forecast (Q4)</p>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Prakiraan Pertumbuhan (Q4)</p>
                   <p className="font-extrabold text-indigo-650 text-base">+12.4%</p>
                 </div>
               </div>
@@ -736,7 +736,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   <span className="material-symbols-outlined text-2xl">event_available</span>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Average Aging</p>
+                  <p className="text-[10px] text-slate-400 font-mono uppercase tracking-wider font-semibold">Rata-rata Usia</p>
                   <p className="font-extrabold text-slate-750 text-base font-mono">42 Days</p>
                 </div>
               </div>
@@ -746,13 +746,13 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
             {/* Pipeline Filter Bar */}
             <div className="bg-slate-50 p-5 rounded-xl border border-border flex flex-wrap items-center gap-4">
               <div className="flex-1 min-w-[180px]">
-                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Branch</label>
+                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Cabang</label>
                 <select
                   value={pipelineFilterBranch}
                   onChange={(e) => setPipelineFilterBranch(e.target.value)}
                   className="w-full bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
-                  <option>All Indonesia Branches</option>
+                  <option>Semua Cabang Indonesia</option>
                   <option>Jakarta Pusat</option>
                   <option>Surabaya Hub</option>
                   <option>Medan Regional</option>
@@ -760,13 +760,13 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               </div>
 
               <div className="flex-1 min-w-[150px]">
-                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Division</label>
+                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Divisi</label>
                 <select
                   value={pipelineFilterDivision}
                   onChange={(e) => setPipelineFilterDivision(e.target.value)}
                   className="w-full bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
-                  <option>All Divisions</option>
+                  <option>Semua Divisi</option>
                   <option>Infrastructure</option>
                   <option>Commercial</option>
                   <option>Digital Solutions</option>
@@ -774,20 +774,20 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               </div>
 
               <div className="flex-1 min-w-[150px]">
-                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Category</label>
+                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Kategori</label>
                 <select
                   value={pipelineFilterCategory}
                   onChange={(e) => setPipelineFilterCategory(e.target.value)}
                   className="w-full bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
-                  <option>All Categories</option>
+                  <option>Semua Kategori</option>
                   <option>Strategic Projects</option>
                   <option>Maintenance</option>
                 </select>
               </div>
 
               <div className="flex-1 min-w-[150px]">
-                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Estimated Close</label>
+                <label className="block text-[11px] font-bold text-slate-450 uppercase mb-1.5 ml-1">Estimasi Tutup</label>
                 <select
                   value={pipelineFilterClose}
                   onChange={(e) => setPipelineFilterClose(e.target.value)}
@@ -805,7 +805,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                   onClick={handleResetPipelineFilters}
                   className="bg-white border border-border block px-3.5 py-2.5 rounded-lg text-secondary hover:text-primary hover:bg-slate-100 font-semibold text-xs cursor-pointer shadow-xs"
                 >
-                  Reset
+                  Atur Ulang
                 </button>
               </div>
             </div>
@@ -819,7 +819,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                 <div className="p-5 border-b border-border flex flex-col sm:flex-row justify-between sm:items-center gap-3">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-primary text-[20px]">filter_center_focus</span>
-                    <h3 className="text-xs font-bold text-slate-800">Pipeline Lifecycle Stages</h3>
+                    <h3 className="text-xs font-bold text-slate-800">Tahapan Siklus Pipeline</h3>
                   </div>
 
                   {/* Switch button style count vs value */}
@@ -834,7 +834,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                         pipelineViewMode === 'count' ? 'bg-white shadow-xs text-primary' : 'text-slate-500'
                       }`}
                     >
-                      View by Count
+                      Lihat per Jumlah
                     </button>
                     <button
                       type="button"
@@ -846,7 +846,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                         pipelineViewMode === 'value' ? 'bg-white shadow-xs text-primary' : 'text-slate-500'
                       }`}
                     >
-                      View by Value
+                      Lihat per Nilai
                     </button>
                   </div>
                 </div>
@@ -865,7 +865,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                             {pipelineViewMode === 'count' ? step.count : step.value}
                           </p>
                           <p className="text-[9px] opacity-80 uppercase tracking-wider">
-                            {pipelineViewMode === 'count' ? `Value: ${step.value}` : `Count: ${step.count}`}
+                            {pipelineViewMode === 'count' ? `Nilai: ${step.value}` : `Jumlah: ${step.count}`}
                           </p>
                         </div>
                       </div>
@@ -880,13 +880,13 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                 <div>
                   <h3 className="text-xs font-bold text-slate-800 mb-6 flex items-center gap-2">
                     <span className="material-symbols-outlined text-info">query_stats</span>
-                    Stage Analytics Velocity
+                    Kecepatan Analitik Tahap
                   </h3>
                   
                   <div className="space-y-6">
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-[11px] font-bold uppercase text-slate-455">
-                        <span>Avg. Conversion Rate</span>
+                        <span>Rata-rata Tingkat Konversi</span>
                         <span className="text-success">28.4%</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -896,7 +896,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-[11px] font-bold uppercase text-slate-455">
-                        <span>Velocity (Days/Stage)</span>
+                        <span>Kecepatan (Hari/Tahap)</span>
                         <span className="text-warning">12 Days</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -905,7 +905,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                     </div>
 
                     <div className="pt-4 border-t border-border mt-3">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Top Divisions by Value</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Divisi Teratas per Nilai</p>
                       <ul className="space-y-3">
                         <li className="flex items-center justify-between text-xs font-semibold">
                           <div className="flex items-center gap-1.5">
@@ -936,11 +936,11 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-xs mt-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-bold text-primary flex items-center gap-1">
-                      <span className="material-symbols-outlined text-xs">verified_user</span> Pipeline Health
+                      <span className="material-symbols-outlined text-xs">verified_user</span> Kesehatan Pipeline
                     </span>
                     <span className="font-mono font-bold text-primary">94.2%</span>
                   </div>
-                  <p className="text-[10px] text-slate-500">Pipeline is currently within safety parameters for executive approval.</p>
+                  <p className="text-[10px] text-slate-500">Pipeline saat ini dalam parameter aman untuk persetujuan eksekutif.</p>
                 </div>
               </div>
 
@@ -949,7 +949,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
             {/* Drilldown pipeline items list */}
             <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
               <div className="p-4 px-6 border-b border-border bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
-                <h4 className="text-xs font-bold text-slate-750">Project Detail Drill-down</h4>
+                <h4 className="text-xs font-bold text-slate-750">Rincian Proyek</h4>
                 
                 <div className="relative w-full sm:w-64 size-sm shrink-0 ml-auto">
                   <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
@@ -967,13 +967,13 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               <div className="overflow-x-auto table-mobile-compact">
                 <table className="w-full text-xs table-auto">
                   <thead>
-                    <tr className="bg-slate-50 border-b border-border">
-                      <th className="p-4">Project Name</th>
-                      <th className="p-4">Branch</th>
-                      <th className="p-4">Stage</th>
-                      <th className="p-4">Estimated Value</th>
-                      <th className="p-4">Est. Close Date</th>
-                      <th className="p-4 text-center">Actions</th>
+<tr className="bg-slate-50 border-b border-border">
+                      <th className="p-4">Nama Proyek</th>
+                      <th className="p-4">Cabang</th>
+                      <th className="p-4">Tahap</th>
+                      <th className="p-4">Estimasi Nilai</th>
+                      <th className="p-4">Estimasi Tanggal Tutup</th>
+                      <th className="p-4 text-center">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -1009,7 +1009,7 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
               </div>
 
               <div className="p-4 bg-slate-50 flex items-center justify-between border-t border-border text-[11px] text-slate-400">
-                <p>Showing 1-4 of 1,248 entries</p>
+                <p>Menampilkan 1-4 dari 1.248 entri</p>
                 <div className="flex gap-1.5">
                   <button type="button" className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer font-bold">1</button>
                   <button type="button" onClick={() => onShowNotification('Penyaringan drill-down pipeline dimuat.', 'success')} className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 border border-border text-slate-500 shadow-xs cursor-pointer">2</button>
@@ -1024,10 +1024,10 @@ export default function ReportsView({ onShowNotification }: ReportsViewProps) {
 
       {/* Tech Footer system info */}
       <div className="bg-slate-50 px-8 py-2 border-t border-border text-[10px] text-slate-400 flex items-center justify-between shrink-0">
-        <span>v2.4.0 Kinetic CRM Enterprise | System Stable</span>
+        <span>v2.4.0 Kinetic CRM Enterprise | Sistem Stabil</span>
         <div className="flex gap-4">
-          <span className="hover:underline cursor-pointer">Support Help Desk</span>
-          <span className="hover:underline cursor-pointer">Security Compliance</span>
+          <span className="hover:underline cursor-pointer">Bantuan Help Desk</span>
+          <span className="hover:underline cursor-pointer">Kepatuhan Keamanan</span>
         </div>
       </div>
 

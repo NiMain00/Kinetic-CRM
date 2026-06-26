@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { prospectSchema } from '@/utils/validators';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Prospect, Customer } from '@/types/domain';
@@ -154,16 +155,22 @@ export default function ProspectFormPage() {
 
   const saveProspect = (status: 'Non Potensial' | 'Potensial' | 'Waiting PM') => {
     const clientName = getClientName();
-    if (!formName) {
-      toast.error('Nama Prospek harus diisi!');
-      return false;
-    }
-    if (!clientName && customerMode === 'existing' && !selectedCustomerId) {
-      toast.error('Pilih Customer terlebih dahulu!');
-      return false;
-    }
-    if (!clientName && customerMode === 'new' && !newCustName) {
-      toast.error('Nama Customer harus diisi!');
+
+    const result = prospectSchema.safeParse({
+      name: formName,
+      client: clientName,
+      customerId: customerMode === 'existing' ? selectedCustomerId : undefined,
+      customerType: customerMode,
+      estimatedValue: formValue ? Number(formValue) : undefined,
+      description: formDesc,
+      branch: existingProspect?.branch || '',
+      potensiUnit: Number(potensiUnit) || 0,
+      projectType,
+    });
+
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message).join(', ');
+      toast.error(messages);
       return false;
     }
 

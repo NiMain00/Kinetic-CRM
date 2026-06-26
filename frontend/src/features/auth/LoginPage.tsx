@@ -67,35 +67,40 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username atau Email</label>
+              <label htmlFor="login-username" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username atau Email</label>
               <input
+                id="login-username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Masukkan username"
                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 autoFocus
+                aria-required="true"
               />
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
+                <label htmlFor="login-password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
                 <Link to="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
                   Lupa password?
                 </Link>
               </div>
               <div className="relative">
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
+                  aria-required="true"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm material-symbols-outlined"
                 >
                   {showPassword ? 'visibility_off' : 'visibility'}
@@ -110,6 +115,7 @@ export default function LoginPage() {
                   checked={rememberMe}
                   onChange={() => setRememberMe(!rememberMe)}
                   className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4"
+                  aria-label="Ingat saya"
                 />
                 <span className="text-xs text-slate-500">Ingat saya</span>
               </label>
@@ -118,6 +124,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
+              aria-label="Masuk"
               className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2"
             >
               {isLoading ? (

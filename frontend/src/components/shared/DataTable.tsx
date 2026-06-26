@@ -11,6 +11,8 @@ interface DataTableProps<T> {
   onAdd?: () => void;
   addLabel?: string;
   mobileCardRenderer?: (row: T) => React.ReactNode;
+  pageSize?: number;
+  showPagination?: boolean;
 }
 
 export default function DataTable<T extends Record<string, unknown>>({
@@ -21,8 +23,10 @@ export default function DataTable<T extends Record<string, unknown>>({
   emptyState,
   isLoading,
   onAdd,
-  addLabel = 'Add',
+  addLabel = 'Tambah',
   mobileCardRenderer,
+  pageSize = 0,
+  showPagination = false,
 }: DataTableProps<T>) {
   return (
     <div className="space-y-4">
@@ -41,6 +45,8 @@ export default function DataTable<T extends Record<string, unknown>>({
         emptyState={emptyState}
         isLoading={isLoading}
         mobileCardRenderer={mobileCardRenderer}
+        pageSize={pageSize}
+        showPagination={showPagination}
       />
     </div>
   );

@@ -4,19 +4,9 @@ import toast from 'react-hot-toast';
 import { Button, Input, Card } from '@/components/ui';
 import type { Project } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
-
-const CLIENTS = [
-  'PT. Telkom Indonesia Tbk.',
-  'PT. Telekom Nusantara',
-  'Energi Bangsa Corp',
-  'Secure City Group',
-  'Bank Artha Graha',
-  'Lestari Eco Farms',
-  'PT. Angkasa Pura II',
-  'Global Logistics Inc.',
-  'Express Delivery Hub',
-  'Defense Tech Solutions',
-];
+import { useAuthStore } from '@/stores/authStore';
+import { useCustomerStore } from '@/stores/customerStore';
+import { projectSchema } from '@/utils/validators';
 
 const PROJECT_TYPES = ['Tender', 'Prospecting'] as const;
 
@@ -24,27 +14,40 @@ export default function ProjectFormPage() {
   const navigate = useNavigate();
   const addProject = useProjectStore((s) => s.addProject);
   const projectCount = useProjectStore((s) => s.projects.length);
+  const user = useAuthStore((s) => s.user);
+  const customers = useCustomerStore((s) => s.customers);
 
   const [name, setName] = useState('');
-  const [client, setClient] = useState(CLIENTS[0]);
+  const [client, setClient] = useState('');
   const [type, setType] = useState<string>('Tender');
   const [location, setLocation] = useState('');
   const [estimatedValue, setEstimatedValue] = useState('');
   const [deadlineTender, setDeadlineTender] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validate = () => {
-    const errs: Record<string, string> = {};
-    if (!name.trim()) errs.name = 'Nama proyek wajib diisi.';
-    if (!location.trim()) errs.location = 'Lokasi proyek wajib diisi.';
-    if (!estimatedValue || Number(estimatedValue) <= 0) errs.estimatedValue = 'Nilai estimasi harus diisi dan > 0.';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+
+    const result = projectSchema.safeParse({
+      name,
+      client,
+      type,
+      location,
+      estimatedValue: Number(estimatedValue),
+      deadlineTender: deadlineTender || undefined,
+    });
+
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] as string;
+        if (!fieldErrors[field]) fieldErrors[field] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setErrors({});
 
     const newProject: Project = {
       id: `PR-${Date.now()}`,
@@ -54,7 +57,7 @@ export default function ProjectFormPage() {
       status: 'RKS',
       phase: 'Overview',
       location: location.trim(),
-      author: 'Admin',
+      author: user?.fullName || user?.name || 'Admin',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       progress: 0,
       estimatedValue: Number(estimatedValue),
@@ -109,8 +112,10 @@ export default function ProjectFormPage() {
                 className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
                 aria-label="Client"
               >
-                {CLIENTS.map((c) => <option key={c} value={c}>{c}</option>)}
+                <option value="">Pilih client...</option>
+                {customers.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
               </select>
+              {errors.client && <p className="text-xs text-danger">{errors.client}</p>}
             </div>
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>

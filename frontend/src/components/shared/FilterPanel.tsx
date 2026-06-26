@@ -28,14 +28,14 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
     <div className="bg-surface-container-low rounded-xl border border-border p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-outline text-sm">filter_alt</span>
-          <span className="font-label-sm text-sm text-on-surface font-semibold">Filters</span>
+          <span className="material-symbols-outlined text-outline text-sm" aria-hidden="true">filter_alt</span>
+          <span className="font-label-sm text-sm text-on-surface font-semibold">Filter</span>
           {activeCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-xs font-bold text-primary">{activeCount} active</span>
+            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-xs font-bold text-primary">{activeCount} aktif</span>
           )}
         </div>
         <Button variant="ghost" size="sm" onClick={onReset}>
-          Reset
+          Atur Ulang
         </Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -47,7 +47,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
               options={field.options || []}
               value={values[field.key] || ''}
               onChange={(e) => onChange(field.key, e.target.value)}
-              placeholder={field.placeholder || 'All'}
+              placeholder={field.placeholder || 'Semua'}
             />
           ) : (
             <Input
@@ -56,7 +56,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
               type={field.type === 'date' ? 'date' : 'text'}
               value={values[field.key] || ''}
               onChange={(e) => onChange(field.key, e.target.value)}
-              placeholder={field.placeholder || `Search ${field.label.toLowerCase()}...`}
+              placeholder={field.placeholder || `Cari ${field.label.toLowerCase()}...`}
             />
           )
         )}
@@ -64,7 +64,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
       {onApply && (
         <div className="flex justify-end pt-2">
           <Button variant="primary" size="md" onClick={onApply}>
-            Apply
+            Terapkan
           </Button>
         </div>
       )}

@@ -9,7 +9,7 @@ interface NavLink {
 }
 
 const NAV_LINKS: NavLink[] = [
-  { label: 'Customer', path: '/master-data/customers', icon: 'groups' },
+  { label: 'Pelanggan', path: '/master-data/customers', icon: 'groups' },
   { label: 'Kompetitor', path: '/master-data/competitors', icon: 'factory' },
   { label: 'Kategori Proyek', path: '/master-data/categories', icon: 'folder' },
   { label: 'Tipe Dokumen', path: '/master-data/document-types', icon: 'description' },
@@ -30,7 +30,7 @@ export default function MasterDataLayout() {
           <div>
             <h2 className="font-display-title text-base font-extrabold text-slate-900 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">database</span>
-              Master Data
+              Data Master
             </h2>
             <p className="text-[11px] text-slate-400 mt-0.5">Pengelolaan data referensi terpusat untuk seluruh sistem.</p>
           </div>
@@ -38,7 +38,7 @@ export default function MasterDataLayout() {
       </div>
 
       <div className="bg-white border-b border-border shrink-0">
-        <nav className="flex overflow-x-auto custom-scrollbar scrollbar-hide px-8" aria-label="Master Data Navigation">
+        <nav className="flex overflow-x-auto custom-scrollbar scrollbar-hide px-8" aria-label="Navigasi Data Master">
           {NAV_LINKS.map(link => {
             const isActive = location.pathname === link.path;
             return (

@@ -93,9 +93,9 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     All: 'Semua',
     'Non Potensial': 'Non Potensial',
     Potensial: 'Potensial',
-    'Waiting PM': 'Waiting PM',
-    Revision: 'Revision',
-    Approved: 'Approved',
+    'Waiting PM': 'Menunggu PM',
+    Revision: 'Revisi',
+    Approved: 'Disetujui',
     'Perlu Verifikasi': 'Perlu Verifikasi',
   };
 
@@ -214,8 +214,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         <button
                           onClick={() => navigate(`/prospects/${row.id}/edit`)}
                           className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
-                          title="Edit Prospek"
-                          aria-label="Edit"
+                          title="Sunting Prospek"
+                          aria-label="Sunting"
                         >
                           <span className="material-symbols-outlined text-[20px]">edit</span>
                         </button>
@@ -223,7 +223,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           onClick={() => handleDelete(row.id)}
                           className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
                           title="Hapus Prospek"
-                          aria-label="Delete"
+                          aria-label="Hapus"
                         >
                           <span className="material-symbols-outlined text-[20px]">delete</span>
                         </button>
@@ -299,7 +299,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                             <button
                               onClick={() => navigate(`/prospects/${row.id}/edit`)}
                               className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
-                              title="Edit Prospek"
+                              title="Sunting Prospek"
                             >
                               <span className="material-symbols-outlined text-[20px]">edit</span>
                             </button>

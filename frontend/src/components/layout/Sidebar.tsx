@@ -77,6 +77,21 @@ export default function Sidebar({
     return false;
   };
 
+  const navListRef = useRef<HTMLDivElement>(null);
+
+  const onNavKeyDown = (e: React.KeyboardEvent) => {
+    const buttons = navListRef.current?.querySelectorAll<HTMLButtonElement>('button');
+    if (!buttons || buttons.length === 0) return;
+    const idx = Array.from(buttons).indexOf(document.activeElement as HTMLButtonElement);
+    if (idx === -1) return;
+    let next: number;
+    if (e.key === 'ArrowDown') next = (idx + 1) % buttons.length;
+    else if (e.key === 'ArrowUp') next = (idx - 1 + buttons.length) % buttons.length;
+    else return;
+    e.preventDefault();
+    buttons[next].focus();
+  };
+
   const renderNavItem = (item: NavItem) => {
     const isActive = isPathActive(item.path);
     const badge = item.label === 'Approval' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
@@ -92,12 +107,12 @@ export default function Sidebar({
         }`}
         aria-label={item.label}
       >
-        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-secondary'}`}>
+        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-secondary'}`} aria-hidden="true">
           {item.icon}
         </span>
         {!collapsed && <span className="truncate">{item.label}</span>}
         {!collapsed && badge !== undefined && badge > 0 && (
-          <span className="ml-auto bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          <span className="ml-auto bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full" aria-label={`${badge} notifikasi`}>
             {badge}
           </span>
         )}
@@ -131,13 +146,13 @@ export default function Sidebar({
           </h1>
           {!collapsed && (
             <p className="font-caption-xs text-caption-xs text-secondary-fixed-variant uppercase tracking-widest mt-1">
-              Enterprise Operations
+              Operasi Perusahaan
             </p>
           )}
         </div>
 
         {/* Navigation list */}
-        <nav className="flex-1 px-4 space-y-1 overflow-y-auto" aria-label="Sidebar navigation">
+        <nav ref={navListRef} className="flex-1 px-4 space-y-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
           {allowedNavItems.map(renderNavItem)}
         </nav>
 
@@ -164,7 +179,7 @@ export default function Sidebar({
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="w-full flex items-center justify-center gap-2 py-2.5 text-secondary font-label-sm text-label-sm border border-border rounded-lg hover:bg-surface-container-low transition-all touch-min-h"
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             >
               <span className="material-symbols-outlined text-lg transition-transform duration-300">
                 {collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}

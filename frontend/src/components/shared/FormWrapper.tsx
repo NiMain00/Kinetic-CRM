@@ -16,7 +16,7 @@ export default function FormWrapper({
   subtitle,
   onSubmit,
   children,
-  submitLabel = 'Save',
+  submitLabel = 'Simpan',
   isSubmitting = false,
   onCancel,
 }: FormWrapperProps) {
@@ -32,7 +32,7 @@ export default function FormWrapper({
       <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
         {onCancel && (
           <Button variant="secondary" size="md" type="button" onClick={onCancel}>
-            Cancel
+            Batal
           </Button>
         )}
         <Button variant="primary" size="md" type="submit" isLoading={isSubmitting}>

@@ -5,25 +5,25 @@ const labelMap: Record<string, string> = {
   dashboard: 'Dashboard',
   prospects: 'Prospek',
   projects: 'Proyek',
-  approvals: 'Approval',
+  approvals: 'Persetujuan',
   kpi: 'KPI Dashboard',
   reports: 'Laporan',
-  'master-data': 'Master Data',
+  'master-data': 'Data Master',
   users: 'Pengguna',
-  'audit-log': 'Audit Log',
+  'audit-log': 'Log Audit',
   notifications: 'Notifikasi',
   config: 'Konfigurasi',
   profile: 'Profil',
   new: 'Baru',
-  edit: 'Edit',
+  edit: 'Sunting',
   org: 'Struktur Organisasi',
   status: 'Status Proyek',
   sla: 'Konfigurasi SLA',
-  roles: 'Manajemen Role',
+  roles: 'Manajemen Peran',
   targets: 'Target',
-  workflow: 'Workflow',
+  workflow: 'Alur Kerja',
   integration: 'Integrasi',
-  upload: 'Upload',
+  upload: 'Unggah',
   period: 'Periode',
   'question-types': 'Tipe Pertanyaan',
   customers: 'Pelanggan',
@@ -36,8 +36,8 @@ const labelMap: Record<string, string> = {
   periods: 'Periode',
   list: 'Daftar',
   log: 'Log',
-  progress: 'Progress',
-  'win-loss': 'Win/Loss',
+  progress: 'Kemajuan',
+  'win-loss': 'Menang/Kalah',
   pipeline: 'Pipeline',
   index: 'Indeks',
   403: 'Akses Ditolak',
@@ -52,9 +52,9 @@ export default function Breadcrumb() {
   if (segments.length === 0) return null;
 
   return (
-    <nav className="px-4 lg:px-8 py-2 bg-surface border-b border-border flex items-center gap-1 text-xs" aria-label="Breadcrumb">
-      <Link to="/dashboard" className="text-outline hover:text-primary transition-colors" aria-label="Home">
-        <span className="material-symbols-outlined text-sm">home</span>
+    <nav className="px-4 lg:px-8 py-2 bg-surface border-b border-border flex items-center gap-1 text-xs" aria-label="Navigasi halaman">
+      <Link to="/dashboard" className="text-outline hover:text-primary transition-colors" aria-label="Beranda">
+        <span className="material-symbols-outlined text-sm" aria-hidden="true">home</span>
       </Link>
       {segments.map((seg, i) => {
         const path = '/' + segments.slice(0, i + 1).join('/');
