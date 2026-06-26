@@ -71,7 +71,6 @@ const MasterPeriodPage = LazyLoad(lazy(() => import('@/features/master-data/Mast
 const UsersPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UsersPage')), ['Super Admin']);
 const UserFormPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UserFormPage')), ['Super Admin']);
 const UserDetailPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UserDetailPage')), ['Super Admin']);
-const UserListPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UserListPage')), ['Super Admin']);
 
 // Audit — hanya Super Admin
 const AuditPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/audit/AuditPage')), ['Super Admin']);
@@ -158,14 +157,14 @@ export default function AppRouter() {
         <Route path="master-data/holidays" element={<MasterHolidayPage />} />
         <Route path="master-data/loss-reasons" element={<MasterLossReasonPage />} />
         <Route path="master-data/periods" element={<MasterPeriodPage />} />
-        <Route path="master-data/users" element={<UserListPageSuperAdmin />} />
+        <Route path="master-data/users" element={<Navigate to="/master-data" replace />} />
 
-        {/* Users — hanya Super Admin */}
-        <Route path="users" element={<UsersPageSuperAdmin />} />
-        <Route path="users/list" element={<Navigate to="/master-data/users" replace />} />
-        <Route path="users/new" element={<UserFormPageSuperAdmin />} />
-        <Route path="users/:id" element={<UserDetailPageSuperAdmin />} />
-        <Route path="users/:id/edit" element={<UserFormPageSuperAdmin />} />
+        {/* Users - pindah ke dalam Master Data sebagai tab */}
+        <Route path="users" element={<Navigate to="/master-data" replace />} />
+        <Route path="users/list" element={<Navigate to="/master-data" replace />} />
+        <Route path="users/new" element={<Navigate to="/master-data" replace />} />
+        <Route path="users/:id" element={<Navigate to="/master-data" replace />} />
+        <Route path="users/:id/edit" element={<Navigate to="/master-data" replace />} />
 
         {/* Audit — hanya Super Admin */}
         <Route path="audit" element={<AuditPageSuperAdmin />} />
