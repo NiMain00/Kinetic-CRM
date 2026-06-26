@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useUserStore } from '@/stores/userStore';
 import type { User, UserRole } from '@/types/domain/users';
-
-const ALL_ROLES: UserRole[] = ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'];
-const ALL_BRANCHES = ['Head Office', 'Jakarta Pusat', 'Jakarta Selatan', 'Surabaya', 'Bandung', 'Medan', 'Makassar', 'Balikpapan'];
-const ALL_DEPARTMENTS = ['Operations', 'Project Management Office', 'IT', 'Quality Assurance', 'Field Operations', 'Finance', 'Legal', 'Marketing'];
+import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
 
 export default function UserFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +12,13 @@ export default function UserFormPage() {
 
   const { addUser, updateUser, getUserById, users } = useUserStore();
   const existing = isEdit ? getUserById(id || '') : null;
+
+  const masterRoles = useMasterRoles();
+  const branches = useOrgBranches();
+  const departments = useOrgDepartments();
+  const roleOptions = useMemo(() => masterRoles.map(r => r.name), [masterRoles]);
+  const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
+  const deptOptions = useMemo(() => departments.map(d => d.name), [departments]);
 
   const [fullName, setFullName] = useState(existing?.fullName || '');
   const [email, setEmail] = useState(existing?.email || '');
@@ -106,14 +110,14 @@ export default function UserFormPage() {
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Role *</label>
               <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white" aria-label="Role">
-                {ALL_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                {roleOptions.map((r) => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Cabang</label>
               <select value={branch} onChange={(e) => setBranch(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-sm bg-white" aria-label="Cabang">
                 <option value="">Pilih Cabang</option>
-                {ALL_BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
+                {branchOptions.map((b) => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
           </div>
@@ -123,7 +127,7 @@ export default function UserFormPage() {
               <label className="font-semibold text-sm text-on-surface-variant">Departemen</label>
               <select value={department} onChange={(e) => setDepartment(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-sm bg-white" aria-label="Departemen">
                 <option value="">Pilih Departemen</option>
-                {ALL_DEPARTMENTS.map((d) => <option key={d} value={d}>{d}</option>)}
+                {deptOptions.map((d) => <option key={d} value={d}>{d}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">

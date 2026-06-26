@@ -1,26 +1,12 @@
 import React, { useState } from 'react';
 import { Button, Badge, Modal } from '@/components/ui';
 import toast from 'react-hot-toast';
-
-interface FiscalPeriod {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  status: 'active' | 'inactive';
-  year: number;
-}
-
-const INITIAL_PERIODS: FiscalPeriod[] = [
-  { id: 'PRD-001', name: 'Januari - Maret 2026', startDate: '2026-01-01', endDate: '2026-03-31', status: 'inactive', year: 2026 },
-  { id: 'PRD-002', name: 'April - Juni 2026', startDate: '2026-04-01', endDate: '2026-06-30', status: 'active', year: 2026 },
-  { id: 'PRD-003', name: 'Juli - September 2026', startDate: '2026-07-01', endDate: '2026-09-30', status: 'inactive', year: 2026 },
-  { id: 'PRD-004', name: 'Oktober - Desember 2026', startDate: '2026-10-01', endDate: '2026-12-31', status: 'inactive', year: 2026 },
-  { id: 'PRD-005', name: 'Q1 2027', startDate: '2027-01-01', endDate: '2027-03-31', status: 'inactive', year: 2027 },
-];
+import { useMasterDataStore, type MasterPeriod } from '@/stores/masterDataStore';
 
 export default function ConfigPeriodPage() {
-  const [periods, setPeriods] = useState<FiscalPeriod[]>(INITIAL_PERIODS);
+  const periods = useMasterDataStore((s) => s.periods);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
   const [modalOpen, setModalOpen] = useState(false);
   const [formName, setFormName] = useState('');
   const [formStartDate, setFormStartDate] = useState('');
@@ -33,15 +19,14 @@ export default function ConfigPeriodPage() {
       toast.error('Nama, tanggal mulai, dan tanggal akhir wajib diisi.');
       return;
     }
-    const newPeriod: FiscalPeriod = {
-      id: `PRD-${String(periods.length + 1).padStart(3, '0')}`,
+    const newPeriod: MasterPeriod = {
+      id: `PER-${String(periods.length + 1).padStart(2, '0')}`,
       name: formName,
-      startDate: formStartDate,
-      endDate: formEndDate,
-      status: 'inactive',
-      year: Number(formYear) || new Date().getFullYear(),
+      start_date: formStartDate,
+      end_date: formEndDate,
+      is_active: false,
     };
-    setPeriods([...periods, newPeriod]);
+    addData('periods', newPeriod);
     toast.success(`Periode ${formName} berhasil ditambahkan.`);
     setModalOpen(false);
     setFormName('');
@@ -50,21 +35,21 @@ export default function ConfigPeriodPage() {
   };
 
   const handleToggleStatus = (id: string) => {
-    setPeriods(periods.map(p => {
-      if (p.id === id) {
-        const newStatus = p.status === 'active' ? 'inactive' : 'active';
-        return { ...p, status: newStatus as 'active' | 'inactive' };
-      }
-      if (p.id !== id && p.status === 'active') {
-        return { ...p, status: 'inactive' as const };
-      }
-      return p;
-    }));
     const target = periods.find(p => p.id === id);
-    toast.success(`Periode ${target?.name} sekarang ${target?.status === 'active' ? 'NON-AKTIF' : 'AKTIF'}`);
+    if (!target) return;
+    const newActive = !target.is_active;
+    updateData('periods', id, { is_active: newActive });
+    if (newActive) {
+      periods.forEach(p => {
+        if (p.id !== id && p.is_active) {
+          updateData('periods', p.id, { is_active: false });
+        }
+      });
+    }
+    toast.success(`Periode ${target.name} sekarang ${target.is_active ? 'NON-AKTIF' : 'AKTIF'}`);
   };
 
-  const activePeriod = periods.find(p => p.status === 'active');
+  const activePeriod = periods.find(p => p.is_active);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
@@ -92,11 +77,11 @@ export default function ConfigPeriodPage() {
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Periode Aktif</p>
-              <p className="text-xl font-extrabold text-success mt-1">{periods.filter(p => p.status === 'active').length}</p>
+              <p className="text-xl font-extrabold text-success mt-1">{periods.filter(p => p.is_active).length}</p>
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Tahun</p>
-              <p className="text-xl font-extrabold text-primary mt-1">{new Set(periods.map(p => p.year)).size} Tahun</p>
+              <p className="text-xl font-extrabold text-primary mt-1">{new Set(periods.map(p => new Date(p.start_date).getFullYear())).size} Tahun</p>
             </div>
           </div>
 
@@ -104,7 +89,7 @@ export default function ConfigPeriodPage() {
             <div className="bg-success/5 border border-success/20 rounded-xl p-4 flex items-center gap-3">
               <span className="material-symbols-outlined text-success text-lg">check_circle</span>
               <p className="text-xs font-semibold text-slate-700">
-                Periode aktif saat ini: <span className="text-success">{activePeriod.name}</span> ({activePeriod.startDate} - {activePeriod.endDate})
+                Periode aktif saat ini: <span className="text-success">{activePeriod.name}</span> ({activePeriod.start_date} - {activePeriod.end_date})
               </p>
             </div>
           )}
@@ -126,14 +111,14 @@ export default function ConfigPeriodPage() {
                   {periods.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50/65 transition-colors">
                       <td className="px-6 py-4 font-bold text-slate-800">{p.name}</td>
-                      <td className="px-6 py-4 text-slate-600">{p.startDate}</td>
-                      <td className="px-6 py-4 text-slate-600">{p.endDate}</td>
+                      <td className="px-6 py-4 text-slate-600">{p.start_date}</td>
+                      <td className="px-6 py-4 text-slate-600">{p.end_date}</td>
                       <td className="px-6 py-4">
-                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold badge-compact">{p.year}</span>
+                        <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-semibold badge-compact">{new Date(p.start_date).getFullYear()}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <button onClick={() => handleToggleStatus(p.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${p.status === 'active' ? 'bg-success' : 'bg-slate-300'}`}>
-                          <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${p.status === 'active' ? 'translate-x-2' : '-translate-x-2'}`}></span>
+                        <button onClick={() => handleToggleStatus(p.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${p.is_active ? 'bg-success' : 'bg-slate-300'}`}>
+                          <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${p.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">

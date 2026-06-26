@@ -1,10 +1,34 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Project } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+
+// ── Approval workflow sequence ──
+const WORKFLOW: Array<{ status: string; phase: string }> = [
+  { status: 'Prospecting', phase: 'RKS' },
+  { status: 'RKS', phase: 'RKS' },
+  { status: 'Review RKS', phase: 'Review RKS' },
+  { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' },
+  { status: 'Input Harga', phase: 'Harga' },
+  { status: 'Kompetitor', phase: 'Kompetitor' },
+  { status: 'Pemenang', phase: 'Pemenang' },
+  { status: 'Target Delivery', phase: 'Target Delivery' },
+  { status: 'Executing', phase: 'Timeline' },
+  { status: 'Completed', phase: 'Dokumen' },
+];
+
+const STATUS_STEP_MAP = Object.fromEntries(WORKFLOW.map(s => [s.status, s.phase])) as Record<string, string>;
+
+const pct = (i: number, total: number) => Math.round(((i + 1) / total) * 100);
+const NEXT_PHASE_MAP = Object.fromEntries(
+  WORKFLOW.slice(0, -1).map((step, i) => {
+    const next = WORKFLOW[i + 1];
+    return [step.status, { status: next.status, phase: next.phase, progress: pct(i, WORKFLOW.length - 1) }];
+  })
+) as Record<string, { status: string; phase: string; progress: number }>;
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -84,20 +108,8 @@ export default function ProjectDetailView({
   const isOverview = activeTab === 'Overview';
 
   // Tab restriction rules
-  const statusStepMap: Record<string, string> = {
-    'Prospecting': 'RKS',
-    'RKS': 'RKS',
-    'Review RKS': 'Review RKS',
-    'LPHS/SIOS': 'LPHS/SIOS',
-    'Input Harga': 'Harga',
-    'Kompetitor': 'Kompetitor',
-    'Pemenang': 'Pemenang',
-    'Target Delivery': 'Target Delivery',
-    'Executing': 'Timeline',
-    'Completed': 'Dokumen',
-  };
 
-  const phaseLabel = statusStepMap[project.status] || 'RKS';
+  const phaseLabel = STATUS_STEP_MAP[project.status] || 'RKS';
   const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
   const accessibleUpToIndex = currentStepIndex >= 0 ? currentStepIndex : 0;
   const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
@@ -167,20 +179,9 @@ export default function ProjectDetailView({
       approveItem(pendingApproval.id);
     }
 
-    // Advance project status
-    const nextPhaseMap: Record<string, { status: string; phase: string; progress: number }> = {
-      'Prospecting': { status: 'RKS', phase: 'RKS', progress: 10 },
-      'RKS': { status: 'Review RKS', phase: 'Review RKS', progress: 20 },
-      'Review RKS': { status: 'LPHS/SIOS', phase: 'LPHS/SIOS', progress: 35 },
-      'LPHS/SIOS': { status: 'Input Harga', phase: 'Harga', progress: 50 },
-      'Input Harga': { status: 'Kompetitor', phase: 'Kompetitor', progress: 60 },
-      'Kompetitor': { status: 'Pemenang', phase: 'Pemenang', progress: 70 },
-      'Pemenang': { status: 'Target Delivery', phase: 'Target Delivery', progress: 80 },
-      'Target Delivery': { status: 'Executing', phase: 'Executing', progress: 90 },
-      'Executing': { status: 'Completed', phase: 'Dokumen', progress: 100 },
-    };
+    // Advance project status — derives from WORKFLOW constant
 
-    const next = nextPhaseMap[project.status];
+    const next = NEXT_PHASE_MAP[project.status];
     if (next) {
       updateProject(projectId, next);
       addTimelineEvent(projectId, {
@@ -282,24 +283,7 @@ export default function ProjectDetailView({
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
 
             {(() => {
-              const statusStepMap: Record<string, string> = {
-                'Prospecting': 'RKS',
-                'RKS': 'RKS',
-                'Review RKS': 'Review RKS',
-                'LPHS/SIOS': 'LPHS/SIOS',
-                'Input Harga': 'Harga',
-                'Kompetitor': 'Kompetitor',
-                'Pemenang': 'Pemenang',
-                'Target Delivery': 'Target Delivery',
-                'Executing': 'Timeline',
-                'Completed': 'Dokumen',
-              };
-              const phaseLabel = statusStepMap[project.status] || '';
-              const activeStepIndex = tabs.findIndex(t => t.label === phaseLabel);
-              const currentStep = activeStepIndex >= 0 ? activeStepIndex : 0;
-              const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
-              const isMenang = project.winnerDetails?.outcome === 'menang';
-
+              const currentStep = accessibleUpToIndex;
               return tabs.map((step, index) => {
               const stepNum = index + 1;
               const isCompleted = index < currentStep;

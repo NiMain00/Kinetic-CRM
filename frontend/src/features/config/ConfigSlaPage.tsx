@@ -1,21 +1,18 @@
 import React, { useState } from 'react';
-import type { SlaConfig } from '../../types/domain/users';
+import type { SlaConfig } from '@/types/domain/config';
+import { useConfigStore } from '@/stores/configStore';
 
 interface ConfigSlaViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-const INITIAL_SLA_CONFIGS: SlaConfig[] = [
-  { id: 'SLA-001', name: 'Prospek Review SLA', entityType: 'prospek', warningThreshold: 24, criticalThreshold: 48, unit: 'hours', escalationRole: 'Branch Manager', active: true },
-  { id: 'SLA-002', name: 'RKS Approval SLA', entityType: 'rks', warningThreshold: 48, criticalThreshold: 72, unit: 'hours', escalationRole: 'PM', active: true },
-  { id: 'SLA-003', name: 'LPHS Review SLA', entityType: 'lphs', warningThreshold: 3, criticalThreshold: 5, unit: 'days', escalationRole: 'Dept Head', active: true },
-  { id: 'SLA-004', name: 'General Approval SLA', entityType: 'approval', warningThreshold: 24, criticalThreshold: 48, unit: 'hours', escalationRole: 'Admin', active: false },
-];
-
 const ENTITY_LABELS: Record<string, string> = { prospek: 'Prospek Review', rks: 'RKS Approval', lphs: 'LPHS Review', approval: 'General Approval' };
 
 export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps) {
-  const [configs, setConfigs] = useState<SlaConfig[]>(INITIAL_SLA_CONFIGS);
+  const configs = useConfigStore((s) => s.slaConfigs);
+  const addConfigData = useConfigStore((s) => s.addConfigData);
+  const updateConfigData = useConfigStore((s) => s.updateConfigData);
+  const deleteConfigData = useConfigStore((s) => s.deleteConfigData);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<SlaConfig | null>(null);
 
@@ -46,20 +43,22 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
       return;
     }
     if (editingConfig) {
-      setConfigs(configs.map(c => c.id === editingConfig.id ? { ...c, name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive } : c));
+      updateConfigData('slaConfigs', editingConfig.id, { name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive });
       onShowNotification(`SLA ${formName} berhasil diperbarui.`, 'success');
     } else {
       const newConfig: SlaConfig = { id: `SLA-${String(configs.length + 1).padStart(3, '0')}`, name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive };
-      setConfigs([...configs, newConfig]);
+      addConfigData('slaConfigs', newConfig);
       onShowNotification(`SLA ${formName} berhasil ditambahkan.`, 'success');
     }
     setDrawerOpen(false);
   };
 
   const handleToggle = (id: string) => {
-    setConfigs(configs.map(c => c.id === id ? { ...c, active: !c.active } : c));
     const target = configs.find(c => c.id === id);
-    onShowNotification(`SLA ${target?.name} sekarang ${target?.active ? 'NON-AKTIF' : 'AKTIF'}.`, 'success');
+    if (target) {
+      updateConfigData('slaConfigs', id, { active: !target.active });
+      onShowNotification(`SLA ${target.name} sekarang ${target.active ? 'NON-AKTIF' : 'AKTIF'}.`, 'success');
+    }
   };
 
   return (

@@ -1,35 +1,18 @@
 import React, { useState } from 'react';
-import { Button, Badge, Card, Input, Select } from '@/components/ui';
+import { Button, Card, Input, Select } from '@/components/ui';
 import toast from 'react-hot-toast';
-
-interface TargetConfig {
-  id: string;
-  name: string;
-  category: string;
-  targetValue: number;
-  actualValue: number;
-  unit: string;
-  period: string;
-  description: string;
-}
-
-const INITIAL_TARGETS: TargetConfig[] = [
-  { id: 'TGT-001', name: 'Win Rate', category: 'KPI', targetValue: 75, actualValue: 68.4, unit: '%', period: 'Q2 2026', description: 'Persentase prospek menjadi proyek' },
-  { id: 'TGT-002', name: 'Revenue Target', category: 'KPI', targetValue: 50000000000, actualValue: 42800000000, unit: 'Rp', period: 'Q2 2026', description: 'Target pendapatan triwulan' },
-  { id: 'TGT-003', name: 'Jumlah Proyek', category: 'KPI', targetValue: 25, actualValue: 18, unit: 'unit', period: 'Q2 2026', description: 'Jumlah proyek baru' },
-  { id: 'TGT-004', name: 'Avg Margin', category: 'KPI', targetValue: 18, actualValue: 15.5, unit: '%', period: 'Q2 2026', description: 'Rata-rata margin proyek' },
-  { id: 'TGT-005', name: 'SLA Compliance', category: 'KPI', targetValue: 95, actualValue: 92, unit: '%', period: 'Q2 2026', description: 'Kepatuhan terhadap SLA' },
-  { id: 'TGT-006', name: 'Approval Time', category: 'Approval', targetValue: 24, actualValue: 36, unit: 'jam', period: 'Q2 2026', description: 'Waktu penyelesaian approval' },
-  { id: 'TGT-007', name: 'Customer Satisfaction', category: 'KPI', targetValue: 4.5, actualValue: 4.2, unit: 'skor', period: 'Q2 2026', description: 'Skor kepuasan pelanggan' },
-];
+import type { KpiTarget } from '@/types/domain/config';
+import { useConfigStore } from '@/stores/configStore';
 
 const PERIODS = ['Q1 2026', 'Q2 2026', 'Q3 2026', 'Q4 2026', 'Q1 2027'];
 
 export default function ConfigTargetsPage() {
-  const [targets, setTargets] = useState<TargetConfig[]>(INITIAL_TARGETS);
+  const targets = useConfigStore((s) => s.kpiTargets);
+  const addConfigData = useConfigStore((s) => s.addConfigData);
+  const updateConfigData = useConfigStore((s) => s.updateConfigData);
   const [selectedPeriod, setSelectedPeriod] = useState('Q2 2026');
   const [showForm, setShowForm] = useState(false);
-  const [editingTarget, setEditingTarget] = useState<TargetConfig | null>(null);
+  const [editingTarget, setEditingTarget] = useState<KpiTarget | null>(null);
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState('KPI');
   const [formTargetValue, setFormTargetValue] = useState('');
@@ -48,7 +31,7 @@ export default function ConfigTargetsPage() {
     setShowForm(true);
   };
 
-  const handleOpenEdit = (t: TargetConfig) => {
+  const handleOpenEdit = (t: KpiTarget) => {
     setEditingTarget(t);
     setFormName(t.name);
     setFormCategory(t.category);
@@ -65,33 +48,33 @@ export default function ConfigTargetsPage() {
       return;
     }
     if (editingTarget) {
-      setTargets(targets.map(t => t.id === editingTarget.id ? { ...t, name: formName, category: formCategory, targetValue: Number(formTargetValue), unit: formUnit, description: formDescription } : t));
+      updateConfigData('kpiTargets', editingTarget.id, { name: formName, category: formCategory as KpiTarget['category'], targetValue: Number(formTargetValue), unit: formUnit, description: formDescription });
       toast.success(`Target ${formName} berhasil diperbarui.`);
     } else {
-      const newTarget: TargetConfig = {
+      const newTarget: KpiTarget = {
         id: `TGT-${String(targets.length + 1).padStart(3, '0')}`,
         name: formName,
-        category: formCategory,
+        category: formCategory as KpiTarget['category'],
         targetValue: Number(formTargetValue),
         actualValue: 0,
         unit: formUnit,
         period: selectedPeriod,
         description: formDescription,
       };
-      setTargets([...targets, newTarget]);
+      addConfigData('kpiTargets', newTarget);
       toast.success(`Target ${formName} berhasil ditambahkan.`);
     }
     setShowForm(false);
   };
 
-  const formatValue = (t: TargetConfig) => {
+  const formatValue = (t: KpiTarget) => {
     if (t.unit === 'Rp') return `Rp ${(t.targetValue / 1e9).toFixed(1)}B`;
     if (t.unit === '%') return `${t.targetValue}%`;
     if (t.unit === 'skor') return t.targetValue.toFixed(1);
     return `${t.targetValue} ${t.unit}`;
   };
 
-  const formatActual = (t: TargetConfig) => {
+  const formatActual = (t: KpiTarget) => {
     if (t.unit === 'Rp') return `Rp ${(t.actualValue / 1e9).toFixed(1)}B`;
     if (t.unit === '%') return `${t.actualValue}%`;
     if (t.unit === 'skor') return t.actualValue.toFixed(1);

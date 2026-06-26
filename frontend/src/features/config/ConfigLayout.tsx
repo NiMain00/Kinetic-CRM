@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { configNavItems } from '@/routes/nav-items';
+import { configNavItems, filterNavItems } from '@/routes/nav-items';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function ConfigLayout({ children }: { children?: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const user = useAuthStore((s) => s.user);
+  const userRole = (user as { roleName?: string })?.roleName || '';
+  const visibleItems = filterNavItems(configNavItems, userRole);
 
   return (
     <div className="flex-1 flex h-full bg-background overflow-hidden">
@@ -15,7 +19,7 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
           <p className="text-[10px] text-slate-400 mt-0.5">Pusat pengaturan sistem</p>
         </div>
         <nav className="p-2 space-y-0.5 overflow-y-auto" aria-label="Konfigurasi navigasi">
-          {configNavItems.map((item) => {
+          {visibleItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <button
@@ -51,7 +55,7 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
             <span>Configuration</span>
             <span className="material-symbols-outlined text-[12px]">chevron_right</span>
             <span className="text-primary font-semibold">
-              {configNavItems.find(i => i.path === location.pathname)?.label || 'Dashboard'}
+              {visibleItems.find(i => i.path === location.pathname)?.label || 'Dashboard'}
             </span>
           </div>
         </div>

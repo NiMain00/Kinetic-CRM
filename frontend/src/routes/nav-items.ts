@@ -3,6 +3,7 @@ export interface NavItem {
   path: string;
   icon: string;
   roles?: string[];
+  permissions?: string[];
   children?: NavItem[];
 }
 
@@ -18,17 +19,17 @@ export const navItems: NavItem[] = [
 ];
 
 export const configNavItems: NavItem[] = [
-  { label: 'Organisasi', path: '/config/org', icon: 'account_tree', roles: ['Super Admin'] },
-  { label: 'Status Proyek', path: '/config/status', icon: 'settings', roles: ['Super Admin'] },
-  { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', roles: ['Super Admin'] },
-  { label: 'SLA', path: '/config/sla', icon: 'alarm', roles: ['Super Admin'] },
-  { label: 'Role', path: '/config/roles', icon: 'badge', roles: ['Super Admin'] },
-  { label: 'Target', path: '/config/targets', icon: 'track_changes', roles: ['Super Admin'] },
-  { label: 'Workflow', path: '/config/workflow', icon: 'alt_route', roles: ['Super Admin'] },
-  { label: 'Integrasi', path: '/config/integration', icon: 'api', roles: ['Super Admin'] },
-  { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', roles: ['Super Admin'] },
-  { label: 'Periode', path: '/config/period', icon: 'calendar_month', roles: ['Super Admin'] },
-  { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', roles: ['Super Admin'] },
+  { label: 'Organisasi', path: '/config/org', icon: 'account_tree', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Status Proyek', path: '/config/status', icon: 'settings', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'SLA', path: '/config/sla', icon: 'alarm', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Role', path: '/config/roles', icon: 'badge', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Target', path: '/config/targets', icon: 'track_changes', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Workflow', path: '/config/workflow', icon: 'alt_route', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Integrasi', path: '/config/integration', icon: 'api', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Periode', path: '/config/period', icon: 'calendar_month', roles: ['Super Admin'], permissions: ['config_access'] },
+  { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', roles: ['Super Admin'], permissions: ['config_access'] },
 ];
 
 export function filterNavItems(items: NavItem[], role: string): NavItem[] {

@@ -1,26 +1,117 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useConfigStore } from '@/stores/configStore';
+import type { OrgUnit } from '@/types/domain/config';
+
+interface TreeNode {
+  unit: OrgUnit;
+  children: TreeNode[];
+  depth: number;
+}
 
 interface ConfigOrgViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
+const UNIT_TYPE_ICONS: Record<string, string> = {
+  company: 'corporate_fare',
+  division: 'account_tree',
+  branch: 'location_on',
+  department: 'group',
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  company: 'text-primary',
+  division: 'text-status-purple',
+  branch: 'text-primary',
+  department: 'text-secondary',
+};
+
 export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps) {
-  const [selectedNode, setSelectedNode] = useState('Jakarta Branch');
-  const [unitName, setUnitName] = useState('Jakarta Branch');
-  const [unitCode, setUnitCode] = useState('BR-JKT-001');
-  const [city, setCity] = useState('Jakarta Selatan');
-  const [province, setProvince] = useState('DKI Jakarta');
+  const orgUnits = useConfigStore((s) => s.orgUnits);
+  const addConfigData = useConfigStore((s) => s.addConfigData);
+  const updateConfigData = useConfigStore((s) => s.updateConfigData);
 
-  const [departments, setDepartments] = useState([
-    { id: '1', name: 'Engineering & Tech', code: 'DEPT-ENG', parent: 'Operations Division' },
-    { id: '2', name: 'Legal & Compliance', code: 'DEPT-LGL', parent: 'Operations Division' },
-    { id: '3', name: 'Finance & Tax', code: 'DEPT-FIN', parent: 'Operations Division' },
-  ]);
+  const [selectedId, setSelectedId] = useState<string>('br-jkt');
+  const [formName, setFormName] = useState('');
+  const [formCode, setFormCode] = useState('');
+  const [formCity, setFormCity] = useState('');
+  const [formProvince, setFormProvince] = useState('');
+  const [formActive, setFormActive] = useState(true);
 
-  const [activeUnit, setActiveUnit] = useState(true);
+  const selectedUnit = useMemo(
+    () => orgUnits.find((u) => u.id === selectedId),
+    [orgUnits, selectedId],
+  );
+
+  // Build tree from flat list
+  const tree = useMemo(() => {
+    const buildTree = (parentId: string | null, depth = 0): TreeNode[] => {
+      return orgUnits
+        .filter((u) => u.parentId === parentId)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((u) => ({
+          unit: u,
+          children: buildTree(u.id, depth + 1),
+          depth,
+        }));
+    };
+    return buildTree(null);
+  }, [orgUnits]);
+
+  // Select a unit and populate form
+  const handleSelectUnit = (unit: OrgUnit) => {
+    setSelectedId(unit.id);
+    setFormName(unit.name);
+    setFormCode(unit.code);
+    setFormCity(unit.city || '');
+    setFormProvince(unit.province || '');
+    setFormActive(unit.isActive);
+  };
 
   const handleSaveChanges = () => {
-    onShowNotification(`Konfigurasi unit ${unitName} berhasil disimpan dengan aman ke database!`, 'success');
+    if (!selectedUnit) return;
+    updateConfigData('orgUnits', selectedUnit.id, {
+      name: formName,
+      code: formCode,
+      city: formCity || undefined,
+      province: formProvince || undefined,
+      isActive: formActive,
+    });
+    onShowNotification(`Konfigurasi unit ${formName} berhasil disimpan!`, 'success');
+  };
+
+  const renderTreeNode = (
+    nodes: TreeNode[],
+  ): React.ReactNode => {
+    return nodes.map(({ unit, children, depth }) => (
+      <div key={unit.id}>
+        <div
+          onClick={() => handleSelectUnit(unit)}
+          className={`flex items-center gap-2 py-1.5 px-2 rounded-lg cursor-pointer text-sm transition-all ${
+            selectedId === unit.id
+              ? depth > 0
+                ? 'bg-primary-fixed text-primary border border-primary'
+                : 'bg-primary/10 text-primary font-bold'
+              : 'hover:bg-slate-50'
+          } ${depth > 0 ? 'ml-6 mt-1' : 'mt-2'}`}
+        >
+          <span
+            className={`material-symbols-outlined text-[${depth === 0 ? '20px' : '18px'}] ${TYPE_COLORS[unit.unitType] || 'text-secondary'}`}
+          >
+            {unit.unitType === 'branch' ? 'location_on' : UNIT_TYPE_ICONS[unit.unitType] || 'corporate_fare'}
+          </span>
+          <span className="font-medium">{unit.name}</span>
+          {!unit.isActive && (
+            <span className="text-[10px] text-slate-400 ml-auto">Non-Aktif</span>
+          )}
+        </div>
+        {children.length > 0 && (
+          <div className="border-l border-border ml-4 pl-2">
+            {renderTreeNode(children)}
+          </div>
+        )}
+      </div>
+    ));
   };
 
   return (
@@ -36,10 +127,6 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           </nav>
         </div>
         <div className="flex gap-3 text-xs md:text-sm">
-          <button className="flex items-center gap-2 px-4 py-2 border border-border bg-white rounded-lg font-label-sm hover:bg-surface-container transition-colors font-semibold">
-            <span className="material-symbols-outlined text-[20px]">cloud_download</span>
-            Export Structure
-          </button>
           <button
             onClick={() => onShowNotification('Berhasil membuka form tambah unit organisasi.', 'success')}
             className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-label-sm hover:opacity-90 active:scale-95 transition-all font-semibold"
@@ -62,91 +149,12 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
             </div>
           </div>
 
-          <div className="flex-grow overflow-y-auto p-4 space-y-3">
-            {/* Master Company Level */}
-            <div className="relative">
-              <div
-                onClick={() => {
-                  setSelectedNode('Kinetic Enterprise Group');
-                  setUnitName('Kinetic Enterprise Group');
-                  setUnitCode('CORP-01');
-                }}
-                className={`flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer group ${
-                  selectedNode === 'Kinetic Enterprise Group' ? 'bg-primary/10 text-primary font-bold' : ''
-                }`}
-              >
-                <span className="material-symbols-outlined text-primary text-[20px]">corporate_fare</span>
-                <span className="text-sm">Kinetic Enterprise Group</span>
-              </div>
-
-              {/* Division Level */}
-              <div className="ml-6 mt-2 space-y-2 relative border-l border-border pl-4">
-                <div
-                  onClick={() => {
-                    setSelectedNode('Operations Division');
-                    setUnitName('Operations Division');
-                    setUnitCode('DIV-OPS-01');
-                  }}
-                  className={`flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer group ${
-                    selectedNode === 'Operations Division' ? 'bg-primary/10 text-primary font-bold' : ''
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-secondary text-[18px]">expand_more</span>
-                  <span className="material-symbols-outlined text-status-purple text-[18px]">account_tree</span>
-                  <span className="text-sm">Operations Division</span>
-                </div>
-
-                {/* Sub levels */}
-                <div className="ml-6 space-y-2 border-l border-border pl-4">
-                  <div
-                    onClick={() => {
-                      setSelectedNode('Jakarta Branch');
-                      setUnitCode('BR-JKT-001');
-                      setUnitName('Jakarta Branch');
-                      setCity('Jakarta Selatan');
-                    }}
-                    className={`flex items-center gap-2 py-1.5 px-3 rounded-lg border text-sm font-semibold transition-all shadow-sm ${
-                      selectedNode === 'Jakarta Branch'
-                        ? 'bg-primary-fixed text-primary border-primary'
-                        : 'bg-white border-border text-on-surface hover:border-primary'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">location_on</span>
-                    <span>Jakarta Branch</span>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setSelectedNode('Surabaya Branch');
-                      setUnitCode('BR-SUB-002');
-                      setUnitName('Surabaya Branch');
-                      setCity('Surabaya Timur');
-                    }}
-                    className={`flex items-center gap-2 py-1.5 px-3 rounded-lg border text-sm transition-all hover:bg-slate-50 cursor-pointer ${
-                      selectedNode === 'Surabaya Branch' ? 'bg-primary/10 border-primary font-bold' : 'border-border'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-secondary">location_on</span>
-                    <span>Surabaya Branch</span>
-                  </div>
-
-                  <div
-                    onClick={() => {
-                      setSelectedNode('Medan Branch');
-                      setUnitCode('BR-MDN-003');
-                      setUnitName('Medan Branch');
-                      setCity('Medan Belawan');
-                    }}
-                    className={`flex items-center gap-2 py-1.5 px-3 rounded-lg border text-sm transition-all hover:bg-slate-50 cursor-pointer ${
-                      selectedNode === 'Medan Branch' ? 'bg-primary/10 border-primary font-bold' : 'border-border'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-secondary">location_on</span>
-                    <span>Medan Branch</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="flex-grow overflow-y-auto p-4">
+            {tree.length === 0 ? (
+              <p className="text-xs text-slate-400 text-center py-8">Belum ada unit organisasi.</p>
+            ) : (
+              renderTreeNode(tree)
+            )}
           </div>
         </div>
 
@@ -156,16 +164,20 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           <div className="p-6 border-b border-border bg-white flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-fixed text-primary rounded-lg flex items-center justify-center">
-                <span className="material-symbols-outlined text-[28px]">location_on</span>
+                <span className="material-symbols-outlined text-[28px]">
+                  {selectedUnit ? UNIT_TYPE_ICONS[selectedUnit.unitType] || 'location_on' : 'location_on'}
+                </span>
               </div>
               <div>
-                <h3 className="font-subheading-entity text-md font-bold">{unitName}</h3>
-                <p className="font-caption-xs text-secondary text-xs">ID: {unitCode} • Last Modified: Oct 2023</p>
+                <h3 className="font-subheading-entity text-md font-bold">{formName || 'Pilih Unit'}</h3>
+                <p className="font-caption-xs text-secondary text-xs">
+                  {selectedUnit ? `ID: ${selectedUnit.code} • Tipe: ${selectedUnit.unitType}` : 'Pilih unit dari hierarki'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${activeUnit ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
-                {activeUnit ? 'Active' : 'Non-Active'}
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${formActive ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                {formActive ? 'Active' : 'Non-Active'}
               </span>
               <button
                 onClick={() => onShowNotification('Aksi hapus unit organisasi ditangguhkan.', 'warning')}
@@ -182,8 +194,8 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               <div className="space-y-1.5">
                 <label className="font-semibold text-on-surface-variant block">Nama Unit</label>
                 <input
-                  value={unitName}
-                  onChange={(e) => setUnitName(e.target.value)}
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                   type="text"
                 />
@@ -192,8 +204,8 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               <div className="space-y-1.5">
                 <label className="font-semibold text-on-surface-variant block">Kode Unit</label>
                 <input
-                  value={unitCode}
-                  onChange={(e) => setUnitCode(e.target.value)}
+                  value={formCode}
+                  onChange={(e) => setFormCode(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono"
                   type="text"
                 />
@@ -202,8 +214,8 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               <div className="space-y-1.5">
                 <label className="font-semibold text-on-surface-variant block">Kota</label>
                 <input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  value={formCity}
+                  onChange={(e) => setFormCity(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                   type="text"
                 />
@@ -212,33 +224,25 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               <div className="space-y-1.5">
                 <label className="font-semibold text-on-surface-variant block">Provinsi</label>
                 <input
-                  value={province}
-                  onChange={(e) => setProvince(e.target.value)}
+                  value={formProvince}
+                  onChange={(e) => setFormProvince(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
                   type="text"
                 />
               </div>
             </div>
 
-            {/* Geographical Map Preview (Matches HTML design coordinates map card) */}
             <div className="space-y-2">
-              <h4 className="font-semibold text-sm text-secondary uppercase tracking-widest text-xs">Lokasi Geografis</h4>
-              <div className="w-full h-36 rounded-xl border border-border overflow-hidden bg-surface-variant relative select-none">
-                <div
-                  className="absolute inset-0 z-0 bg-cover bg-center grayscale opacity-60 flex items-center justify-center text-secondary text-xs"
-                  style={{
-                    backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuDg0ZgWOquKg5N1cBrdEKFwoySE-q1nKgHJokD6IENB-3otYWPKB0geo1ZMNeJjCrIV39vSCFZfeoc_XwDyeF-wpA1_C7COPXavSsmRoCEUNIRTxbY30ecUUdyv2DsiFjn0Rtbp2uHnqxA8qkLDKt8LwWvQYmISVIHOxhslimB9R4YWLFwQ5Ey1Q_wDuy_5JO8-f6-e4o8jK0Rq8B4lo9jbilBeoe0Fy-slpn3zAC-ngwfKKivBFY7d_r1UQYENmtyJjLl0Sx57Hcgf')`,
-                  }}
-                >
-                  [South Jakarta Map coordinates view]
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="material-symbols-outlined text-primary text-3xl font-bold">location_on</span>
-                </div>
-                <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm p-2.5 rounded-lg shadow-sm border border-border text-xs">
-                  <p className="font-semibold text-primary">Jl. Sudirman Kav 52-53</p>
-                  <p className="text-secondary">-6.2234, 106.8115</p>
-                </div>
+              <label className="font-semibold text-sm text-secondary uppercase tracking-widest text-xs">Status</label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="orgStatus" checked={formActive} onChange={() => setFormActive(true)} className="text-primary" />
+                  <span className="text-xs font-medium">Aktif</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="orgStatus" checked={!formActive} onChange={() => setFormActive(false)} className="text-primary" />
+                  <span className="text-xs font-medium">Non-Aktif</span>
+                </label>
               </div>
             </div>
           </div>
@@ -256,7 +260,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               <button
                 type="button"
                 onClick={() => {
-                  setUnitName(selectedNode);
+                  if (selectedUnit) handleSelectUnit(selectedUnit);
                   onShowNotification('Form reset ke nilai awal.', 'success');
                 }}
                 className="px-4 py-1.5 border border-border bg-white text-secondary rounded hover:bg-slate-50 text-sm font-semibold"

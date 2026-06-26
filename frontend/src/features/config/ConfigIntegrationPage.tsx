@@ -1,25 +1,8 @@
 import React, { useState } from 'react';
 import { Badge, Button } from '@/components/ui';
 import toast from 'react-hot-toast';
-
-interface Connector {
-  id: string;
-  name: string;
-  type: 'API' | 'Webhook' | 'Email' | 'Database' | 'Cloud Storage' | 'LDAP';
-  description: string;
-  status: 'connected' | 'disconnected' | 'error';
-  active: boolean;
-  lastTested?: string;
-}
-
-const INITIAL_CONNECTORS: Connector[] = [
-  { id: 'CONN-001', name: 'REST API Gateway', type: 'API', description: 'Integrasi REST API dengan sistem eksternal', status: 'connected', active: true, lastTested: '2026-06-22 08:15' },
-  { id: 'CONN-002', name: 'Webhook Notifikasi', type: 'Webhook', description: 'Webhook untuk notifikasi ke pihak ketiga', status: 'connected', active: true, lastTested: '2026-06-22 07:30' },
-  { id: 'CONN-003', name: 'SMTP Email Service', type: 'Email', description: 'Layanan pengiriman email notifikasi', status: 'connected', active: true, lastTested: '2026-06-21 16:45' },
-  { id: 'CONN-004', name: 'Database Replication', type: 'Database', description: 'Replikasi data ke data warehouse', status: 'disconnected', active: false, lastTested: '2026-06-15 10:00' },
-  { id: 'CONN-005', name: 'Google Cloud Storage', type: 'Cloud Storage', description: 'Penyimpanan dokumen di cloud', status: 'connected', active: true, lastTested: '2026-06-22 06:00' },
-  { id: 'CONN-006', name: 'LDAP Authentication', type: 'LDAP', description: 'Autentikasi pengguna via LDAP/AD', status: 'error', active: false, lastTested: '2026-06-20 09:30' },
-];
+import type { Connector } from '@/types/domain/config';
+import { useConfigStore } from '@/stores/configStore';
 
 const STATUS_BADGE: Record<string, 'success' | 'warning' | 'danger'> = {
   connected: 'success',
@@ -37,18 +20,21 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 export default function ConfigIntegrationPage() {
-  const [connectors, setConnectors] = useState<Connector[]>(INITIAL_CONNECTORS);
+  const connectors = useConfigStore((s) => s.connectors);
+  const updateConfigData = useConfigStore((s) => s.updateConfigData);
 
   const handleToggle = (id: string) => {
-    setConnectors(connectors.map(c => c.id === id ? { ...c, active: !c.active } : c));
     const target = connectors.find(c => c.id === id);
-    toast.success(`Konektor ${target?.name} sekarang ${target?.active ? 'NON-AKTIF' : 'AKTIF'}`);
+    if (target) {
+      updateConfigData('connectors', id, { active: !target.active });
+      toast.success(`Konektor ${target.name} sekarang ${target.active ? 'NON-AKTIF' : 'AKTIF'}`);
+    }
   };
 
   const handleTestConnection = (id: string) => {
     const target = connectors.find(c => c.id === id);
     if (!target) return;
-    setConnectors(connectors.map(c => c.id === id ? { ...c, status: 'connected', lastTested: new Date().toLocaleString('id-ID') } : c));
+    updateConfigData('connectors', id, { status: 'connected', lastTested: new Date().toLocaleString('id-ID') });
     toast.success(`Test koneksi ${target.name} berhasil!`);
   };
 

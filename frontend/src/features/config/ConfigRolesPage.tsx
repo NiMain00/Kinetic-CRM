@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { Button, Modal } from '@/components/ui';
 import { useMasterDataStore, type MasterRole } from '@/stores/masterDataStore';
 
 interface Permission {
@@ -41,7 +42,41 @@ const ROLE_COLORS: Record<string, string> = {
 
 export default function ConfigRolesPage() {
   const roles = useMasterDataStore((s) => s.roles);
+  const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formName, setFormName] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formName) {
+      toast.error('Nama role wajib diisi.');
+      return;
+    }
+    const newRole: MasterRole = {
+      id: `R-${String(roles.length + 1).padStart(2, '0')}`,
+      name: formName,
+      description: formDescription || formName,
+      permissions: [],
+    };
+    addData('roles', newRole);
+    toast.success(`Role ${formName} berhasil ditambahkan.`);
+    setModalOpen(false);
+    setFormName('');
+    setFormDescription('');
+  };
+
+  const handleDelete = (id: string) => {
+    const target = roles.find((r) => r.id === id);
+    if (!target) return;
+    deleteData('roles', id);
+    toast.success(`Role ${target.name} berhasil dihapus.`);
+    setDeleteConfirm(null);
+  };
 
   const handleTogglePermission = (roleId: string, permKey: string) => {
     const role = roles.find(r => r.id === roleId);
@@ -69,14 +104,19 @@ export default function ConfigRolesPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="bg-white border-b border-border px-8 py-5 shrink-0 shadow-sm z-10">
-        <nav className="flex items-center gap-2 mb-1.5 text-xs text-secondary">
-          <span className="font-semibold uppercase tracking-wider">Configuration</span>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-bold uppercase tracking-wider">Role & Permission</span>
-        </nav>
-        <h2 className="font-display-title text-base font-extrabold text-slate-900">Manajemen Role & Permission</h2>
-        <p className="text-[11px] text-slate-400 mt-0.5">Atur hak akses setiap peran pengguna dalam sistem.</p>
+      <div className="bg-white border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+        <div>
+          <nav className="flex items-center gap-2 mb-1.5 text-xs text-secondary">
+            <span className="font-semibold uppercase tracking-wider">Configuration</span>
+            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span className="text-primary font-bold uppercase tracking-wider">Role & Permission</span>
+          </nav>
+          <h2 className="font-display-title text-base font-extrabold text-slate-900">Manajemen Role & Permission</h2>
+          <p className="text-[11px] text-slate-400 mt-0.5">Atur hak akses setiap peran pengguna dalam sistem.</p>
+        </div>
+        <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>} onClick={() => setModalOpen(true)}>
+          Tambah Role
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8">
@@ -128,6 +168,9 @@ export default function ConfigRolesPage() {
                         <div className="flex gap-1 justify-end">
                           <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer btn-compact">All</button>
                           <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer btn-compact">None</button>
+                          <button onClick={() => setDeleteConfirm(r.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer btn-compact" title="Hapus Role">
+                            <span className="material-symbols-outlined text-[16px] icon-compact">delete</span>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -150,6 +193,38 @@ export default function ConfigRolesPage() {
           </div>
         </div>
       </div>
+
+      {/* Create Role Modal */}
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Tambah Role Baru" size="md">
+        <form onSubmit={handleCreate} className="space-y-5 text-xs">
+          <div className="space-y-2">
+            <label className="font-semibold text-slate-700 block">Nama Role *</label>
+            <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Finance Manager" required />
+          </div>
+          <div className="space-y-2">
+            <label className="font-semibold text-slate-700 block">Deskripsi</label>
+            <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi role" />
+          </div>
+        </form>
+        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+          <Button variant="secondary" size="sm" onClick={() => setModalOpen(false)}>Batal</Button>
+          <Button variant="primary" size="sm" onClick={handleCreate}>Buat Role</Button>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-slate-800 mb-2">Hapus Role?</h3>
+            <p className="text-xs text-slate-500 mb-4">Role yang dihapus tidak dapat dikembalikan.</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setDeleteConfirm(null)} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Batal</button>
+              <button onClick={() => handleDelete(deleteConfirm)} className="px-4 py-2 bg-danger text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">Hapus</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

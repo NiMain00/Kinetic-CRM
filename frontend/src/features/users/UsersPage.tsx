@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { User, UserRole } from '../../types/domain/users';
+import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
 
 interface UsersViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -18,12 +19,14 @@ const INITIAL_USERS: User[] = [
   { id: 'USR-009', username: 'ratna.mgmt', fullName: 'Ratna Dewi', email: 'ratna.dewi@kinetic.co.id', role: 'Management', branch: 'Head Office', department: 'Management', phone: '0812-3456-7898', status: 'active', lastLogin: '2026-06-22 09:00:00', createdAt: '2024-06-01' },
 ];
 
-const ALL_ROLES: UserRole[] = ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'];
-const ALL_BRANCHES = ['Head Office', 'Jakarta Pusat', 'Jakarta Selatan', 'Surabaya', 'Bandung', 'Medan', 'Makassar', 'Balikpapan'];
-const ALL_DEPARTMENTS = ['Operations', 'Project Management Office', 'IT', 'Quality Assurance', 'Field Operations', 'Finance', 'Legal', 'Marketing'];
-
 export default function UsersView({ onShowNotification, onNavigatePage }: UsersViewProps) {
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+  const masterRoles = useMasterRoles();
+  const branches = useOrgBranches();
+  const departments = useOrgDepartments();
+  const roleOptions = useMemo(() => masterRoles.map(r => r.name as UserRole), [masterRoles]);
+  const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
+  const deptOptions = useMemo(() => departments.map(d => d.name), [departments]);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -137,7 +140,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               </div>
               <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as UserRole | 'all')} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none">
                 <option value="all">Semua Role</option>
-                {ALL_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
               <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none">
                 <option value="all">Semua Status</option>
@@ -234,20 +237,20 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               <div className="space-y-2">
                 <label className="font-semibold text-slate-700 block">Role *</label>
                 <select value={formRole} onChange={e => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs bg-white">
-                  {ALL_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                  {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Cabang</label>
                   <select value={formBranch} onChange={e => setFormBranch(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
-                    {ALL_BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
+                    {branchOptions.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="font-semibold text-slate-700 block">Departemen</label>
                   <select value={formDepartment} onChange={e => setFormDepartment(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
-                    {ALL_DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                    {deptOptions.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
               </div>

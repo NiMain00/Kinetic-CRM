@@ -427,8 +427,8 @@ interface MasterDataState {
   notifTemplates: MasterNotifTemplate[];
   roles: MasterRole[];
   getData: <T>(entity: EntityType) => T[];
-  addData: <T>(entity: EntityType, item: T) => void;
-  updateData: <T extends { id: string }>(entity: EntityType, id: string, data: Partial<T>) => void;
+  addData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, item: T) => void;
+  updateData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, id: string, data: Partial<T>) => void;
   deleteData: (entity: EntityType, id: string) => void;
 }
 

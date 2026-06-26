@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
+import { useMasterDataStore } from '@/stores/masterDataStore';
+import type { MasterProjectStatus } from '@/stores/masterDataStore';
 
 interface ConfigStatusViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
 export default function ConfigStatusView({ onShowNotification }: ConfigStatusViewProps) {
-  const [statuses, setStatuses] = useState([
-    { id: '1', code: 'INIT_DRAFT', label: 'Drafting', color: '#585F6C', order: 10, enabled: true },
-    { id: '2', code: 'PENDING_APR', label: 'Waiting Approval', color: '#D97706', order: 20, enabled: true },
-    { id: '3', code: 'IN_PROGRESS', label: 'Executing', color: '#004B8B', order: 30, enabled: true },
-    { id: '4', code: 'COMPLETED', label: 'Closed - Won', color: '#16A34A', order: 100, enabled: true },
-  ]);
+  const statuses = useMasterDataStore((s) => s.projectStatuses);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newCode, setNewCode] = useState('');
   const [newLabel, setNewLabel] = useState('');
   const [newColor, setNewColor] = useState('#7C3AED');
   const [newOrder, setNewOrder] = useState('40');
+  const [editId, setEditId] = useState<string | null>(null);
 
   const handleOpenDrawer = () => {
+    setEditId(null);
     setNewCode('');
     setNewLabel('');
     setNewColor('#7C3AED');
@@ -26,28 +27,67 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
     setDrawerOpen(true);
   };
 
+  const handleOpenEdit = (status: MasterProjectStatus) => {
+    setEditId(status.id);
+    setNewCode(status.code);
+    setNewLabel(status.label);
+    setNewColor(status.color_hex);
+    setNewOrder(String(status.sort_order));
+    setDrawerOpen(true);
+  };
+
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
   };
 
-  const handleCreateStatus = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCode || !newLabel) {
       onShowNotification('Kode status dan label wajib diisi.', 'error');
       return;
     }
-    const newItem = {
-      id: String(statuses.length + 1),
-      code: newCode.toUpperCase().replace(/\s+/g, '_'),
-      label: newLabel,
-      color: newColor,
-      order: Number(newOrder) || 10,
-      enabled: true,
-    };
-    setStatuses([...statuses, newItem]);
-    onShowNotification(`Status baru ${newItem.code} berhasil ditambahkan!`, 'success');
+
+    if (editId) {
+      updateData('projectStatuses', editId, {
+        code: newCode.toUpperCase().replace(/\s+/g, '_'),
+        label: newLabel,
+        color_hex: newColor,
+        sort_order: Number(newOrder) || 10,
+      });
+      onShowNotification(`Status ${newCode} berhasil diperbarui!`, 'success');
+    } else {
+      const newItem: MasterProjectStatus = {
+        id: `PS-${String(statuses.length + 1).padStart(2, '0')}`,
+        code: newCode.toUpperCase().replace(/\s+/g, '_'),
+        label: newLabel,
+        description: newLabel,
+        color_hex: newColor,
+        text_color_hex: '#FFFFFF',
+        sort_order: Number(newOrder) || 10,
+        is_system: false,
+        is_terminal: false,
+        is_active: true,
+        applicable_to: 'both',
+      };
+      addData('projectStatuses', newItem);
+      onShowNotification(`Status baru ${newItem.code} berhasil ditambahkan!`, 'success');
+    }
     handleCloseDrawer();
   };
+
+  const handleToggle = (id: string) => {
+    const target = statuses.find((s) => s.id === id);
+    if (target) {
+      updateData('projectStatuses', id, { is_active: !target.is_active });
+      onShowNotification(
+        `Status ${target.code} sekarang ${target.is_active ? 'NON-AKTIF' : 'AKTIF'}.`,
+        'success',
+      );
+    }
+  };
+
+  const activeCount = statuses.filter((s) => s.is_active).length;
+  const inactiveCount = statuses.filter((s) => !s.is_active).length;
 
   return (
     <div className="p-8 space-y-6 flex-1 overflow-y-auto relative">
@@ -91,14 +131,23 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             </p>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-on-surface-variant font-medium">Active Pipelines</span>
-                <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold">
-                  {statuses.length}
+                <span className="text-xs text-on-surface-variant font-medium">Active</span>
+                <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold text-success">
+                  {activeCount}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-on-surface-variant font-medium">Inactive</span>
+                <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold text-danger">
+                  {inactiveCount}
                 </span>
               </div>
               <div className="w-full bg-border h-2 rounded-full mt-4 overflow-hidden flex">
-                <div className="bg-primary w-3/4 h-full"></div>
-                <div className="bg-secondary w-1/4 h-full opacity-50"></div>
+                <div
+                  className="bg-success h-full transition-all"
+                  style={{ width: statuses.length > 0 ? `${(activeCount / statuses.length) * 100}%` : '0%' }}
+                ></div>
+                <div className="bg-slate-300 h-full" style={{ width: statuses.length > 0 ? `${(inactiveCount / statuses.length) * 100}%` : '0%' }}></div>
               </div>
             </div>
           </div>
@@ -118,6 +167,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                   <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Status Code</th>
                   <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Display Label</th>
                   <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs">Badge Color</th>
+                  <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs text-center">Active</th>
                   <th className="px-6 py-4 font-label-sm text-secondary uppercase tracking-wider text-xs text-right">Actions</th>
                 </tr>
               </thead>
@@ -129,26 +179,32 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                     <td className="px-6 py-4">
                       <span
                         className="px-3 py-1 rounded-full text-xs font-semibold border badge-compact"
-                        style={{ backgroundColor: `${row.color}15`, color: row.color, borderColor: `${row.color}35` }}
+                        style={{ backgroundColor: `${row.color_hex}15`, color: row.color_hex, borderColor: `${row.color_hex}35` }}
                       >
                         {row.label}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-xs text-secondary font-mono">
-                        <div className="w-4 h-4 rounded-full border border-black/10" style={{ backgroundColor: row.color }}></div>
-                        <span>{row.color}</span>
+                        <div className="w-4 h-4 rounded-full border border-black/10" style={{ backgroundColor: row.color_hex }}></div>
+                        <span>{row.color_hex}</span>
                       </div>
                     </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleToggle(row.id)}
+                        className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${row.is_active ? 'bg-success' : 'bg-slate-300'}`}
+                      >
+                        <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${row.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
+                      </button>
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2 text-xs">
-                        <button
-                          onClick={() => onShowNotification('Aksi modifikasi status ini ditangguhkan.', 'success')}
-                          className="p-1 text-primary hover:bg-slate-100 rounded-lg text-lg btn-compact"
-                        >
-                          <span className="material-symbols-outlined icon-compact">edit</span>
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleOpenEdit(row)}
+                        className="p-1 text-primary hover:bg-slate-100 rounded-lg text-lg btn-compact"
+                      >
+                        <span className="material-symbols-outlined icon-compact">edit</span>
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -158,7 +214,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
         </div>
       </div>
 
-      {/* Drawer Overlay for Add Status screen */}
+      {/* Drawer Overlay for Add/Edit Status */}
       <div
         className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
           drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
@@ -172,15 +228,19 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
         >
           <div className="p-6 border-b border-border flex items-center justify-between bg-surface-container-lowest">
             <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary">add_box</span>
-              <h3 className="font-heading-section text-heading-section text-on-surface">Tambah Status Proyek</h3>
+              <span className="material-symbols-outlined text-primary">
+                {editId ? 'edit' : 'add_box'}
+              </span>
+              <h3 className="font-heading-section text-heading-section text-on-surface">
+                {editId ? 'Edit Status Proyek' : 'Tambah Status Proyek'}
+              </h3>
             </div>
             <button className="p-2 hover:bg-surface-container rounded-full text-outline transition-all" onClick={handleCloseDrawer}>
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
 
-          <form onSubmit={handleCreateStatus} className="p-8 flex flex-col gap-6 flex-grow overflow-y-auto">
+          <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6 flex-grow overflow-y-auto">
             <div className="space-y-1.5 text-sm">
               <label className="font-semibold text-on-surface-variant block">Status Code *</label>
               <input
@@ -258,7 +318,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                 Cancel
               </button>
               <button type="submit" className="flex-1 py-2.5 bg-primary text-white rounded-lg font-semibold hover:bg-primary-container shadow-md transition-all">
-                Save Status
+                {editId ? 'Update Status' : 'Save Status'}
               </button>
             </div>
           </form>

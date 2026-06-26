@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
-import { Button, Badge, Input, Card } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import toast from 'react-hot-toast';
-
-interface UploadSetting {
-  maxFileSize: number;
-  allowedExtensions: string[];
-  storagePath: string;
-  maxFilesPerUpload: number;
-  enableCompression: boolean;
-  allowedMimeTypes: string[];
-}
+import { useConfigStore } from '@/stores/configStore';
 
 const ALL_EXTENSIONS = [
   { value: 'pdf', label: 'PDF' },
@@ -21,25 +13,18 @@ const ALL_EXTENSIONS = [
 ];
 
 export default function ConfigUploadPage() {
-  const [settings, setSettings] = useState<UploadSetting>({
-    maxFileSize: 10,
-    allowedExtensions: ['pdf', 'doc,docx', 'xls,xlsx', 'jpg,jpeg,png,gif'],
-    storagePath: '/uploads/documents/',
-    maxFilesPerUpload: 5,
-    enableCompression: true,
-    allowedMimeTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword'],
-  });
+  const uploadConfig = useConfigStore((s) => s.uploadConfig);
+  const updateUploadConfig = useConfigStore((s) => s.updateUploadConfig);
 
-  const [formMaxSize, setFormMaxSize] = useState(String(settings.maxFileSize));
-  const [formMaxFiles, setFormMaxFiles] = useState(String(settings.maxFilesPerUpload));
-  const [formStoragePath, setFormStoragePath] = useState(settings.storagePath);
-  const [formCompression, setFormCompression] = useState(settings.enableCompression);
-  const [selectedExtensions, setSelectedExtensions] = useState<string[]>(settings.allowedExtensions);
+  const [formMaxSize, setFormMaxSize] = useState(String(uploadConfig.maxFileSizeMb));
+  const [formMaxFiles, setFormMaxFiles] = useState(String(uploadConfig.maxFilesPerUpload));
+  const [formStoragePath, setFormStoragePath] = useState(uploadConfig.storagePath);
+  const [formCompression, setFormCompression] = useState(uploadConfig.enableCompression);
+  const [selectedExtensions, setSelectedExtensions] = useState<string[]>(uploadConfig.allowedExtensions);
 
   const handleSave = () => {
-    setSettings({
-      ...settings,
-      maxFileSize: Number(formMaxSize),
+    updateUploadConfig({
+      maxFileSizeMb: Number(formMaxSize),
       maxFilesPerUpload: Number(formMaxFiles),
       storagePath: formStoragePath,
       enableCompression: formCompression,
@@ -82,15 +67,15 @@ export default function ConfigUploadPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Max File Size</p>
-              <p className="text-xl font-extrabold text-primary mt-1">{settings.maxFileSize} MB</p>
+              <p className="text-xl font-extrabold text-primary mt-1">{uploadConfig.maxFileSizeMb} MB</p>
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Extensions</p>
-              <p className="text-xl font-extrabold text-success mt-1">{settings.allowedExtensions.length} jenis</p>
+              <p className="text-xl font-extrabold text-success mt-1">{uploadConfig.allowedExtensions.length} jenis</p>
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Max Files/Upload</p>
-              <p className="text-xl font-extrabold text-warning mt-1">{settings.maxFilesPerUpload} file</p>
+              <p className="text-xl font-extrabold text-warning mt-1">{uploadConfig.maxFilesPerUpload} file</p>
             </div>
           </div>
 

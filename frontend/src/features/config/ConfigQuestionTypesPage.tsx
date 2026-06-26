@@ -1,45 +1,31 @@
 import React, { useState } from 'react';
 import { Button, Badge, Modal } from '@/components/ui';
 import toast from 'react-hot-toast';
-
-interface QuestionType {
-  id: string;
-  name: string;
-  description: string;
-  status: 'active' | 'inactive';
-}
-
-const INITIAL_TYPES: QuestionType[] = [
-  { id: 'QT-001', name: 'Pilihan Ganda', description: 'Satu jawaban benar dari beberapa opsi', status: 'active' },
-  { id: 'QT-002', name: 'Checklist', description: 'Beberapa jawaban dapat dipilih', status: 'active' },
-  { id: 'QT-003', name: 'Esai Singkat', description: 'Jawaban teks pendek maksimal 500 karakter', status: 'active' },
-  { id: 'QT-004', name: 'Skala Likert', description: 'Penilaian skala 1-5 atau 1-10', status: 'active' },
-  { id: 'QT-005', name: 'Tanggal', description: 'Input tanggal', status: 'inactive' },
-  { id: 'QT-006', name: 'Upload File', description: 'Lampiran file pendukung', status: 'active' },
-  { id: 'QT-007', name: 'Dropdown', description: 'Pilihan dari menu dropdown', status: 'active' },
-];
+import { useMasterDataStore, type MasterQuestionType } from '@/stores/masterDataStore';
 
 export default function ConfigQuestionTypesPage() {
-  const [types, setTypes] = useState<QuestionType[]>(INITIAL_TYPES);
+  const types = useMasterDataStore((s) => s.questionTypes);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingType, setEditingType] = useState<QuestionType | null>(null);
+  const [editingType, setEditingType] = useState<MasterQuestionType | null>(null);
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
-  const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('active');
+  const [formStatus, setFormStatus] = useState(true);
 
   const handleOpenCreate = () => {
     setEditingType(null);
     setFormName('');
     setFormDescription('');
-    setFormStatus('active');
+    setFormStatus(true);
     setModalOpen(true);
   };
 
-  const handleOpenEdit = (qt: QuestionType) => {
+  const handleOpenEdit = (qt: MasterQuestionType) => {
     setEditingType(qt);
     setFormName(qt.name);
     setFormDescription(qt.description);
-    setFormStatus(qt.status);
+    setFormStatus(qt.is_active);
     setModalOpen(true);
   };
 
@@ -50,25 +36,31 @@ export default function ConfigQuestionTypesPage() {
       return;
     }
     if (editingType) {
-      setTypes(types.map(t => t.id === editingType.id ? { ...t, name: formName, description: formDescription, status: formStatus } : t));
+      updateData('questionTypes', editingType.id, { name: formName, description: formDescription, is_active: formStatus });
       toast.success(`Tipe pertanyaan ${formName} berhasil diperbarui.`);
     } else {
-      const newType: QuestionType = {
-        id: `QT-${String(types.length + 1).padStart(3, '0')}`,
+      const newType: MasterQuestionType = {
+        id: `QT-${String(types.length + 1).padStart(2, '0')}`,
         name: formName,
+        code: formName.toLowerCase().replace(/\s+/g, '_'),
         description: formDescription,
-        status: formStatus,
+        has_options: false,
+        validation_config: '{}',
+        is_system: false,
+        is_active: formStatus,
       };
-      setTypes([newType, ...types]);
+      addData('questionTypes', newType);
       toast.success(`Tipe pertanyaan ${formName} berhasil ditambahkan.`);
     }
     setModalOpen(false);
   };
 
   const handleToggleStatus = (id: string) => {
-    setTypes(types.map(t => t.id === id ? { ...t, status: t.status === 'active' ? 'inactive' : 'active' } : t));
     const target = types.find(t => t.id === id);
-    toast.success(`Tipe pertanyaan ${target?.name} sekarang ${target?.status === 'active' ? 'NON-AKTIF' : 'AKTIF'}`);
+    if (target) {
+      updateData('questionTypes', id, { is_active: !target.is_active });
+      toast.success(`Tipe pertanyaan ${target.name} sekarang ${target.is_active ? 'NON-AKTIF' : 'AKTIF'}`);
+    }
   };
 
   return (
@@ -97,11 +89,11 @@ export default function ConfigQuestionTypesPage() {
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Aktif</p>
-              <p className="text-xl font-extrabold text-success mt-1">{types.filter(t => t.status === 'active').length}</p>
+              <p className="text-xl font-extrabold text-success mt-1">{types.filter(t => t.is_active).length}</p>
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Non-Aktif</p>
-              <p className="text-xl font-extrabold text-warning mt-1">{types.filter(t => t.status === 'inactive').length}</p>
+              <p className="text-xl font-extrabold text-warning mt-1">{types.filter(t => !t.is_active).length}</p>
             </div>
           </div>
 
@@ -127,8 +119,8 @@ export default function ConfigQuestionTypesPage() {
                       </td>
                       <td className="px-6 py-4 text-slate-500">{t.description}</td>
                       <td className="px-6 py-4 text-center">
-                        <button onClick={() => handleToggleStatus(t.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${t.status === 'active' ? 'bg-success' : 'bg-slate-300'}`}>
-                          <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${t.status === 'active' ? 'translate-x-2' : '-translate-x-2'}`}></span>
+                        <button onClick={() => handleToggleStatus(t.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${t.is_active ? 'bg-success' : 'bg-slate-300'}`}>
+                          <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${t.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -159,11 +151,11 @@ export default function ConfigQuestionTypesPage() {
             <label className="font-semibold text-slate-700 block">Status</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="qtStatus" checked={formStatus === 'active'} onChange={() => setFormStatus('active')} className="text-primary" />
+                <input type="radio" name="qtStatus" checked={formStatus === true} onChange={() => setFormStatus(true)} className="text-primary" />
                 <span className="text-xs font-medium">Aktif</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="qtStatus" checked={formStatus === 'inactive'} onChange={() => setFormStatus('inactive')} className="text-primary" />
+                <input type="radio" name="qtStatus" checked={formStatus === false} onChange={() => setFormStatus(false)} className="text-primary" />
                 <span className="text-xs font-medium">Non-Aktif</span>
               </label>
             </div>

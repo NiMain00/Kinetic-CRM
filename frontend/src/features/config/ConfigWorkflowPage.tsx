@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Badge, Button, Tabs, Card } from '@/components/ui';
 import type { Tab } from '@/components/ui/Tabs';
 import toast from 'react-hot-toast';
+import { useConfigStore } from '@/stores/configStore';
+import type { WorkflowStep as ConfigWorkflowStep } from '@/types/domain/config';
 
-interface WorkflowStep {
-  id: string;
-  name: string;
-  order: number;
+interface WorkflowStepDisplay extends ConfigWorkflowStep {
   status: 'completed' | 'current' | 'pending' | 'rejected';
-  description: string;
-  assignee?: string;
+  assignee: string;
 }
 
 const ENTITY_TABS: Tab[] = [
@@ -17,29 +15,6 @@ const ENTITY_TABS: Tab[] = [
   { id: 'rks', label: 'RKS', icon: 'description' },
   { id: 'lphs', label: 'LPHS', icon: 'assessment' },
 ];
-
-const WORKFLOW_DATA: Record<string, WorkflowStep[]> = {
-  prospek: [
-    { id: 'P1', name: 'Registrasi Prospek', order: 1, status: 'completed', description: 'Staff mencatat data prospek baru', assignee: 'Staff' },
-    { id: 'P2', name: 'Review Marketing', order: 2, status: 'completed', description: 'Tim marketing memverifikasi prospek', assignee: 'Marketing' },
-    { id: 'P3', name: 'Penilaian Kualifikasi', order: 3, status: 'current', description: 'Penilaian kelayakan prospek', assignee: 'Branch Manager' },
-    { id: 'P4', name: 'Approval BM', order: 4, status: 'pending', description: 'Persetujuan Branch Manager', assignee: 'Branch Manager' },
-    { id: 'P5', name: 'Konversi ke Proyek', order: 5, status: 'pending', description: 'Prospek siap dikonversi', assignee: 'PM' },
-  ],
-  rks: [
-    { id: 'R1', name: 'Draft RKS', order: 1, status: 'completed', description: 'Pembuatan dokumen RKS', assignee: 'PM' },
-    { id: 'R2', name: 'Review RKS', order: 2, status: 'current', description: 'Review oleh Dept Head', assignee: 'Dept Head' },
-    { id: 'R3', name: 'Approval RKS', order: 3, status: 'pending', description: 'Persetujuan final RKS', assignee: 'Branch Manager' },
-    { id: 'R4', name: 'Publikasi RKS', order: 4, status: 'pending', description: 'RKS siap dipublikasikan', assignee: 'Admin' },
-  ],
-  lphs: [
-    { id: 'L1', name: 'Draft LPHS', order: 1, status: 'completed', description: 'Pembuatan LPHS oleh PM', assignee: 'PM' },
-    { id: 'L2', name: 'Review Teknis', order: 2, status: 'completed', description: 'Review aspek teknis', assignee: 'Dept Head' },
-    { id: 'L3', name: 'Review Harga', order: 3, status: 'current', description: 'Review dan validasi harga', assignee: 'Finance' },
-    { id: 'L4', name: 'Approval LPHS', order: 4, status: 'pending', description: 'Persetujuan final LPHS', assignee: 'Direktur' },
-    { id: 'L5', name: 'Finalisasi LPHS', order: 5, status: 'pending', description: 'LPHS siap digunakan', assignee: 'Admin' },
-  ],
-};
 
 const STATUS_CONFIG: Record<string, { color: string; icon: string; label: string }> = {
   completed: { color: 'bg-success text-white', icon: 'check_circle', label: 'Selesai' },
@@ -50,8 +25,18 @@ const STATUS_CONFIG: Record<string, { color: string; icon: string; label: string
 
 export default function ConfigWorkflowPage() {
   const [activeEntity, setActiveEntity] = useState('prospek');
+  const workflows = useConfigStore((s) => s.workflows);
 
-  const steps = WORKFLOW_DATA[activeEntity] || [];
+  const steps: WorkflowStepDisplay[] = useMemo(() => {
+    const definition = workflows.find((w) => w.entityType === activeEntity);
+    if (!definition) return [];
+    return definition.steps.map((s, idx, arr) => ({
+      ...s,
+      assignee: s.assigneeRole,
+      status: idx === 3 ? 'current' : idx < 3 ? 'completed' : 'pending',
+    } as WorkflowStepDisplay));
+  }, [workflows, activeEntity]);
+
   const currentIndex = steps.findIndex(s => s.status === 'current');
 
   return (

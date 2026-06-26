@@ -1,131 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useMasterDataStore, type MasterNotifTemplate } from '@/stores/masterDataStore';
 
 interface ConfigNotificationsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-interface NotificationTemplate {
-  id: string;
-  eventName: string;
-  description: string;
-  messageTemplate: string;
-  recipients: string[];
-  channel: string;
-  status: boolean;
-  category: 'project' | 'financial' | 'general';
-}
+const getCategoryFromEventCode = (code: string): 'project' | 'financial' | 'general' => {
+  if (code.startsWith('prospect.') || code.startsWith('project.')) return 'project';
+  if (code.includes('margin') || code.includes('pricing') || code.includes('financial')) return 'financial';
+  return 'general';
+};
+
+const ROLE_TO_DISPLAY: Record<string, string> = {
+  pm: 'PM',
+  cabang: 'CREATOR',
+  admin: 'ADMIN',
+  executive: 'EXECUTIVE',
+  all: 'ALL',
+};
+
+const DISPLAY_TO_ROLE: Record<string, string> = {
+  PM: 'pm',
+  CREATOR: 'cabang',
+  ADMIN: 'admin',
+  EXECUTIVE: 'executive',
+  ALL: 'all',
+};
 
 export default function ConfigNotificationsView({ onShowNotification }: ConfigNotificationsViewProps) {
-  // State for templates
-  const [templates, setTemplates] = useState<NotificationTemplate[]>([
-    {
-      id: 'EVT-091',
-      eventName: 'Project Submitted',
-      description: 'Submitted for initial PM verification',
-      messageTemplate: 'New project {{projectName}} has been submitted by {{userName}}.',
-      recipients: ['ADMIN', 'PM'],
-      channel: 'In-App',
-      status: true,
-      category: 'project',
-    },
-    {
-      id: 'EVT-102',
-      eventName: 'Revision Requested',
-      description: 'Commented with correction markup',
-      messageTemplate: 'A revision is required for {{projectName}}. Feedback: {{comment}}.',
-      recipients: ['CREATOR'],
-      channel: 'In-App + Email',
-      status: true,
-      category: 'project',
-    },
-    {
-      id: 'EVT-044',
-      eventName: 'Approval Granted',
-      description: 'Final execution clearance approval event',
-      messageTemplate: 'Final approval for {{projectName}} has been granted by {{approver}}.',
-      recipients: ['ALL'],
-      channel: 'In-App',
-      status: true,
-      category: 'project',
-    },
-    {
-      id: 'EVT-204',
-      eventName: 'Pricing Margin Violation',
-      description: 'Tender margin falls below safe threshold limit',
-      messageTemplate: 'Margin alert: {{projectName}} has a calculated margin of {{margin}}% which is below threshold.',
-      recipients: ['ADMIN', 'EXECUTIVE'],
-      channel: 'In-App + Email',
-      status: true,
-      category: 'financial',
-    },
-    {
-      id: 'EVT-301',
-      eventName: 'System Backup Complete',
-      description: 'Weekly automated system backup event',
-      messageTemplate: 'Weekly database preservation task completed with status: {{status}}.',
-      recipients: ['ADMIN'],
-      channel: 'In-App',
-      status: false,
-      category: 'general',
-    }
-  ]);
+  const templates = useMasterDataStore((s) => s.notifTemplates);
+  const addData = useMasterDataStore((s) => s.addData);
+  const updateData = useMasterDataStore((s) => s.updateData);
+  const deleteData = useMasterDataStore((s) => s.deleteData);
 
   const [activeCategoryTab, setActiveCategoryTab] = useState<'all' | 'project' | 'financial' | 'general'>('all');
-  const [selectedTemplate, setSelectedTemplate] = useState<NotificationTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<MasterNotifTemplate | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  // UI-only overrides (not persisted in store — channel/category are display concepts)
+  const [channelOverrides, setChannelOverrides] = useState<Record<string, string>>({});
+  const [categoryOverrides, setCategoryOverrides] = useState<Record<string, 'project' | 'financial' | 'general'>>({});
 
   // Form states for the Drawer
   const [editingTemplateText, setEditingTemplateText] = useState('');
   const [editingRecipients, setEditingRecipients] = useState<string[]>([]);
   const [editingChannels, setEditingChannels] = useState<string[]>([]);
 
-  // Toggle single template status active/inactive
+  // Build display model from store data merged with UI-only overrides
+  const displayTemplates = useMemo(() => {
+    return templates.map((t) => ({
+      id: t.id,
+      eventName: t.event_name,
+      description: t.event_code,
+      messageTemplate: t.template_inapp,
+      recipients: t.recipient_roles.map((r) => ROLE_TO_DISPLAY[r] || r.toUpperCase()),
+      channel: channelOverrides[t.id] || 'In-App',
+      status: t.is_active,
+      category: categoryOverrides[t.id] || getCategoryFromEventCode(t.event_code),
+    }));
+  }, [templates, channelOverrides, categoryOverrides]);
+
   const handleToggleStatus = (id: string) => {
-    setTemplates(prev =>
-      prev.map(t => {
-        if (t.id === id) {
-          const nextStatus = !t.status;
-          onShowNotification(
-            `Template ${t.id} (${t.eventName}) sekarang ${nextStatus ? 'AKTIF' : 'NON-AKTIF'}.`,
-            'success'
-          );
-          return { ...t, status: nextStatus };
-        }
-        return t;
-      })
+    const target = templates.find((t) => t.id === id);
+    if (!target) return;
+    updateData('notifTemplates', id, { is_active: !target.is_active });
+    onShowNotification(
+      `Template ${target.event_name} sekarang ${target.is_active ? 'NON-AKTIF' : 'AKTIF'}.`,
+      'success',
     );
   };
 
-  const handleOpenEditDrawer = (template: NotificationTemplate) => {
+  const handleOpenEditDrawer = (template: MasterNotifTemplate) => {
     setSelectedTemplate(template);
-    setEditingTemplateText(template.messageTemplate);
-    setEditingRecipients([...template.recipients]);
-    
-    const channels = template.channel.split(' + ');
-    setEditingChannels(channels);
-
+    setEditingTemplateText(template.template_inapp);
+    setEditingRecipients(template.recipient_roles.map((r) => ROLE_TO_DISPLAY[r] || r.toUpperCase()));
+    const savedChannel = channelOverrides[template.id];
+    setEditingChannels(savedChannel ? savedChannel.split(' + ') : ['In-App']);
     setDrawerOpen(true);
   };
 
   const handleSaveDrawer = () => {
     if (!selectedTemplate) return;
 
-    setTemplates(prev =>
-      prev.map(t => {
-        if (t.id === selectedTemplate.id) {
-          return {
-            ...t,
-            messageTemplate: editingTemplateText,
-            recipients: editingRecipients,
-            channel: editingChannels.join(' + ') || 'In-App'
-          };
-        }
-        return t;
-      })
-    );
+    updateData('notifTemplates', selectedTemplate.id, {
+      template_inapp: editingTemplateText,
+      recipient_roles: editingRecipients.map((r) => DISPLAY_TO_ROLE[r] || r.toLowerCase()),
+    });
 
-    onShowNotification(`Konfigurasi template ${selectedTemplate.id} berhasil disimpan!`, 'success');
+    setChannelOverrides((prev) => ({
+      ...prev,
+      [selectedTemplate.id]: editingChannels.join(' + ') || 'In-App',
+    }));
+
+    onShowNotification(`Konfigurasi template ${selectedTemplate.event_name} berhasil disimpan!`, 'success');
     setDrawerOpen(false);
     setSelectedTemplate(null);
   };
@@ -136,7 +104,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
   const confirmDelete = () => {
     if (!deleteConfirm) return;
-    setTemplates(prev => prev.filter(t => t.id !== deleteConfirm));
+    deleteData('notifTemplates', deleteConfirm);
     onShowNotification(`Template ${deleteConfirm} berhasil dihapus.`, 'success');
     setDeleteConfirm(null);
   };
@@ -146,17 +114,30 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
     onShowNotification('Filter event berhasil direset ke All Events', 'success');
   };
 
+  const handleCreateNew = () => {
+    const newId = `NT-${String(templates.length + 1).padStart(2, '0')}`;
+    addData('notifTemplates', {
+      id: newId,
+      event_code: `custom.${newId.toLowerCase()}`,
+      event_name: 'Custom Milestone Alert',
+      template_inapp: 'Milestone target {{projectName}} has been reached.',
+      recipient_roles: ['pm'],
+      available_variables: ['projectName'],
+      is_active: true,
+      is_system: false,
+    });
+    onShowNotification(`Templat notifikasi baru ${newId} berhasil ditambahkan!`, 'success');
+  };
+
   // Filtered list
-  const filteredTemplates = templates.filter(t => {
+  const filteredTemplates = displayTemplates.filter((t) => {
     if (activeCategoryTab === 'all') return true;
     return t.category === activeCategoryTab;
   });
 
-  // Simple statistics
-  const totalActive = templates.filter(t => t.status).length;
+  const totalActive = displayTemplates.filter((t) => t.status).length;
   const deliveryRate = '99.8%';
 
-  // Helper placeholder replace for preview
   const getPreviewText = (rawText: string) => {
     return rawText
       .replace('{{projectName}}', 'Bridge Renovation P4')
@@ -167,23 +148,20 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
       .replace('{{status}}', 'SUCCESS');
   };
 
-  // Toggle recipient role in drawer
   const handleToggleRecipientRole = (role: string) => {
-    setEditingRecipients(prev => 
-      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
+    setEditingRecipients((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
   };
 
-  // Toggle channel in drawer
   const handleToggleChannel = (chan: string) => {
-    setEditingChannels(prev =>
-      prev.includes(chan) ? prev.filter(c => c !== chan) : [...prev, chan]
+    setEditingChannels((prev) =>
+      prev.includes(chan) ? prev.filter((c) => c !== chan) : [...prev, chan],
     );
   };
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
-      
       {/* Header bar */}
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
@@ -207,21 +185,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
             Audit Logs
           </button>
           <button
-            onClick={() => {
-              const newId = `EVT-${Math.floor(100 + Math.random() * 900)}`;
-              const newT: NotificationTemplate = {
-                id: newId,
-                eventName: 'Custom Milestone Alert',
-                description: 'Triggered upon custom project milestone target completion',
-                messageTemplate: 'Milestone target {{projectName}} has been reached.',
-                recipients: ['PM'],
-                channel: 'In-App',
-                status: true,
-                category: 'project'
-              };
-              setTemplates(prev => [...prev, newT]);
-              onShowNotification(`Templat notifikasi baru ${newId} berhasil ditambahkan!`, 'success');
-            }}
+            onClick={handleCreateNew}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-white hover:brightness-110 transition-all font-bold text-xs cursor-pointer shadow-xs"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
@@ -232,14 +196,14 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
       {/* Bento Grid Analytics Row & Main Content */}
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar space-y-8 text-left">
-        
+
         {/* Statistics Widgets */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
+
           <div className="bg-white border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
             <div>
               <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Active Templates</p>
-              <h3 className="font-extrabold text-primary text-2xl mt-1">{totalActive} <span className="text-xs text-slate-400 font-normal">/ {templates.length}</span></h3>
+              <h3 className="font-extrabold text-primary text-2xl mt-1">{totalActive} <span className="text-xs text-slate-400 font-normal">/ {displayTemplates.length}</span></h3>
               <p className="text-[10px] text-success mt-1 italic font-semibold">Ready to route in-app & mailing</p>
             </div>
             <div className="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -273,7 +237,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
         {/* Configuration Table with Filtering */}
         <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
-          
+
           {/* Header & Tab Selector bar */}
           <div className="p-4 px-6 border-b border-border bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <div className="flex flex-wrap gap-1.5">
@@ -327,10 +291,9 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               >
                 Reset
               </button>
-              
+
               <div className="h-6 w-[1px] bg-slate-300"></div>
 
-              {/* Utility shortcuts */}
               <button
                 onClick={() => onShowNotification('Template list exported as CSV.', 'success')}
                 className="p-1 px-2 hover:bg-slate-200 rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-xs flex items-center gap-1"
@@ -355,76 +318,79 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredTemplates.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800">{t.eventName}</div>
-                      <div className="text-[10px] text-slate-450 font-mono mt-0.5">ID: {t.id} • {t.description}</div>
-                    </td>
-                    <td className="px-6 py-4 max-w-sm">
-                      <p className="text-secondary line-clamp-2 leading-relaxed">
-                        {t.messageTemplate}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {t.recipients.map((rec, i) => (
-                          <span
-                            key={i}
-                            className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest badge-compact ${
-                              rec === 'ADMIN'
-                                ? 'bg-danger/10 text-danger'
-                                : rec === 'ALL'
-                                ? 'bg-emerald-50 text-emerald-700'
-                                : 'bg-primary/10 text-primary'
-                            }`}
-                          >
-                            {rec}
+                {filteredTemplates.map((t) => {
+                  const storeTemplate = templates.find((st) => st.id === t.id);
+                  return (
+                    <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-800">{t.eventName}</div>
+                        <div className="text-[10px] text-slate-450 font-mono mt-0.5">ID: {t.id} • {t.description}</div>
+                      </td>
+                      <td className="px-6 py-4 max-w-sm">
+                        <p className="text-secondary line-clamp-2 leading-relaxed">
+                          {t.messageTemplate}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {t.recipients.map((rec, i) => (
+                            <span
+                              key={i}
+                              className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest badge-compact ${
+                                rec === 'ADMIN'
+                                  ? 'bg-danger/10 text-danger'
+                                  : rec === 'ALL'
+                                  ? 'bg-emerald-50 text-emerald-700'
+                                  : 'bg-primary/10 text-primary'
+                              }`}
+                            >
+                              {rec}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-600 font-semibold whitespace-nowrap">
+                        <span className="flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px] text-primary icon-compact">
+                            {t.channel.includes('Email') ? 'alternate_email' : 'notifications'}
                           </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-slate-600 font-semibold whitespace-nowrap">
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[16px] text-primary icon-compact">
-                          {t.channel.includes('Email') ? 'alternate_email' : 'notifications'}
+                          {t.channel}
                         </span>
-                        {t.channel}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleStatus(t.id)}
-                        className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${
-                          t.status ? 'bg-success' : 'bg-slate-350'
-                        }`}
-                      >
-                        <span
-                          className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${
-                            t.status ? 'translate-x-2' : '-translate-x-2'
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleStatus(t.id)}
+                          className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${
+                            t.status ? 'bg-success' : 'bg-slate-350'
                           }`}
-                        ></span>
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleOpenEditDrawer(t)}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
-                        title="Edit Template"
-                      >
-                        <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(t.id)}
-                        className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
-                        title="Hapus Template"
-                      >
-                        <span className="material-symbols-outlined text-[18px] icon-compact">delete</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        >
+                          <span
+                            className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${
+                              t.status ? 'translate-x-2' : '-translate-x-2'
+                            }`}
+                          ></span>
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={() => storeTemplate && handleOpenEditDrawer(storeTemplate)}
+                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
+                          title="Edit Template"
+                        >
+                          <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
+                          title="Hapus Template"
+                        >
+                          <span className="material-symbols-outlined text-[18px] icon-compact">delete</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
 
                 {filteredTemplates.length === 0 && (
                   <tr>
@@ -438,7 +404,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           </div>
 
           <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
-            <span>Showing {filteredTemplates.length} of {templates.length} notification models</span>
+            <span>Showing {filteredTemplates.length} of {displayTemplates.length} notification models</span>
             <span>Static environment sandbox</span>
           </div>
 
@@ -446,11 +412,11 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
       </div>
 
-      {/* Notification Template Edit Drawer (As requested in HTML specification) */}
+      {/* Notification Template Edit Drawer */}
       {drawerOpen && selectedTemplate && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
           <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
-            
+
             {/* Drawer Header */}
             <div className="p-6 border-b border-border bg-slate-50 flex items-center justify-between">
               <div>
@@ -458,7 +424,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                   Edit Notification Template
                 </h3>
                 <p className="text-[10px] text-slate-400 mt-1">
-                  Event ID: {selectedTemplate.id} • {selectedTemplate.eventName}
+                  Event ID: {selectedTemplate.id} • {selectedTemplate.event_name}
                 </p>
               </div>
               <button
@@ -472,7 +438,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
             {/* General Form Fields */}
             <div className="p-6 flex-1 overflow-y-auto space-y-6 text-left text-xs">
-              
+
               {/* Message Template TextArea */}
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
@@ -486,7 +452,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                   onChange={(e) => setEditingTemplateText(e.target.value)}
                 />
                 <p className="text-[10px] text-slate-400 mt-1">
-                  Tag didukung: <code className="bg-slate-100 font-bold px-1 rounded">{"{{projectName}}"}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{"{{userName}}"}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{"{{comment}}"}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{"{{approver}}"}</code>
+                  Tag didukung: <code className="bg-slate-100 font-bold px-1 rounded">{'{{projectName}}'}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{'{{userName}}'}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{'{{comment}}'}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{'{{approver}}'}</code>
                 </p>
               </div>
 
@@ -574,7 +540,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                   </div>
                   <div className="flex-grow text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-800">{selectedTemplate.eventName}</span>
+                      <span className="font-bold text-slate-800">{selectedTemplate.event_name}</span>
                       <span className="text-[9px] text-slate-450 font-mono-data">Just now</span>
                     </div>
                     <p className="text-slate-650 leading-relaxed mt-1">

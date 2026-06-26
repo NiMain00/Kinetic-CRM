@@ -4,15 +4,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { StatusBadge } from '@/components/shared';
 import { Button, Input, Card } from '@/components/ui';
-
-const statusTabs = [
-  { id: 'all', label: 'Semua Proyek' },
-  { id: 'RKS', label: 'RKS' },
-  { id: 'LPHS/SIOS', label: 'LPHS/SIOS' },
-  { id: 'Input Harga', label: 'Input Harga' },
-  { id: 'Executing', label: 'Eksekusi' },
-  { id: 'Target Delivery', label: 'Target Delivery' },
-];
+import { useProjectStatuses } from '@/hooks/useConfigData';
 
 const progressColor = (pct: number) => {
   if (pct >= 80) return 'bg-success';
@@ -26,6 +18,13 @@ export default function ProjectListPage() {
   const [activeTab, setActiveTab] = useState('all');
 
   const projects = useProjectStore((s) => s.projects);
+  const projectStatuses = useProjectStatuses();
+
+  const statusTabs = useMemo(() => {
+    const tabs = [{ id: 'all', label: 'Semua Proyek' }];
+    const statusLabels = projectStatuses.map((s) => ({ id: s.label, label: s.label }));
+    return [...tabs, ...statusLabels];
+  }, [projectStatuses]);
 
   const filtered = useMemo(() => {
     let list = projects;

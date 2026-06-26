@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { configNavItems } from '@/routes/nav-items';
+import { configNavItems, filterNavItems } from '@/routes/nav-items';
+import { useAuthStore } from '@/stores/authStore';
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   Organisasi: 'Atur struktur hierarki organisasi dan cabang',
@@ -32,6 +33,9 @@ const ICON_MAP: Record<string, string> = {
 
 export default function ConfigDashboardPage() {
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const userRole = (user as { roleName?: string })?.roleName || '';
+  const visibleItems = filterNavItems(configNavItems, userRole);
 
   return (
     <div className="space-y-6">
@@ -41,7 +45,7 @@ export default function ConfigDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {configNavItems.map((item) => (
+        {visibleItems.map((item) => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
