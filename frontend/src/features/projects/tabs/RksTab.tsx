@@ -147,22 +147,38 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       uploadedFiles,
       answers,
     });
-    // Update project status & phase
-    updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
-    // Add timeline event
-    const event: TimelineEvent = {
-      id: `evt-${Date.now()}`,
-      title: 'RKS Disubmit ke Review',
-      actor: project.author,
-      role: 'Project Manager',
-      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-      type: 'submit',
-      description: 'RKS dan pertanyaan telah disubmit untuk direview.',
-    };
-    addTimelineEvent(project.id, event);
-    onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
-    // Auto-navigate to Review RKS tab
-    navigate(`/project/${project.id}/review-rks`);
+
+    if (project.type === 'Prospecting') {
+      // Prospecting: skip Review RKS & LPHS/SIOS, langsung ke Harga
+      updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
+      const event: TimelineEvent = {
+        id: `evt-${Date.now()}`,
+        title: 'RKS Disubmit (Prospecting)',
+        actor: project.author,
+        role: 'Project Manager',
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        type: 'submit',
+        description: 'RKS dan pertanyaan telah disubmit. Proyek Prospecting melanjutkan ke tahap Harga.',
+      };
+      addTimelineEvent(project.id, event);
+      onShowNotification?.('RKS berhasil dikirim. Melanjutkan ke tahap Harga...', 'success');
+      navigate(`/project/${project.id}/harga`);
+    } else {
+      // Tender: tetap ke Review RKS
+      updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
+      const event: TimelineEvent = {
+        id: `evt-${Date.now()}`,
+        title: 'RKS Disubmit ke Review',
+        actor: project.author,
+        role: 'Project Manager',
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        type: 'submit',
+        description: 'RKS dan pertanyaan telah disubmit untuk direview.',
+      };
+      addTimelineEvent(project.id, event);
+      onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
+      navigate(`/project/${project.id}/review-rks`);
+    }
   };
 
   return (
@@ -494,7 +510,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 Kembali
               </button>
               <button onClick={handlePertanyaanSubmit} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-container shadow transition-all flex items-center justify-center gap-2">
-                Kirim Jawaban
+                {project?.type === 'Prospecting' ? 'Kirim & Lanjut ke Harga' : 'Kirim Jawaban'}
                 <span className="material-symbols-outlined text-[18px]">send</span>
               </button>
             </div>

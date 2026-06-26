@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { Project, CompetitorEntry } from '@/types/domain';
+import { useNavigate } from 'react-router-dom';
+import type { Project, CompetitorEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 
 interface TabProps {
@@ -8,7 +9,9 @@ interface TabProps {
 }
 
 export default function KompetitorTab({ project, onShowNotification }: TabProps) {
+  const navigate = useNavigate();
   const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
+  const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
   const [competitors, setCompetitors] = useState<CompetitorEntry[]>(project?.competitors || []);
   const [newCompName, setNewCompName] = useState('');
   const [newCompPrice, setNewCompPrice] = useState('');
@@ -39,6 +42,22 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
     setNewCompAdv('');
     setNewCompNote('');
     onShowNotification?.(`Kompetitor ${newItem.name} berhasil ditambahkan ke proyek.`, 'success');
+  };
+
+  const handleConfirmCompetitor = () => {
+    if (!project?.id) return;
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Analisis Kompetitor Selesai',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'submit',
+      description: `${competitors.length} kompetitor tercatat dalam analisis.`,
+    };
+    addTimelineEvent(project.id, event);
+    navigate(`/project/${project.id}/pemenang`);
+    onShowNotification?.('Analisis kompetitor selesai. Lanjut ke penentuan hasil tender.', 'success');
   };
 
   return (
@@ -122,6 +141,19 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
           </table>
         </div>
       </div>
+
+      {/* Confirm Button */}
+      {competitors.length > 0 && (
+        <div className="flex justify-end">
+          <button
+            onClick={handleConfirmCompetitor}
+            className="px-5 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:brightness-110 transition-all flex items-center gap-2 shadow-sm"
+          >
+            Konfirmasi & Lanjut ke Pemenang
+            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }

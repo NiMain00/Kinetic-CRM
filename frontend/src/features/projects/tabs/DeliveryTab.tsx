@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Project, MilestoneEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { Card, Button, Input } from '@/components/ui';
+import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
   project?: Project;
@@ -56,18 +56,51 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
       role: 'Project Manager',
       time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
       type: 'approve',
-      description: 'Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi.',
+      description: 'Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi. Proyek berpindah ke tahap Eksekusi.',
     };
     addTimelineEvent(project.id, event);
-    // Advance status
+    // Advance status to Executing
     updateProject(project.id, { status: 'Executing', phase: 'Executing' });
-    onShowNotification?.('Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi', 'success');
+    onShowNotification?.('Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi. Proyek memasuki tahap Eksekusi.', 'success');
+  };
+
+  const handleMarkComplete = () => {
+    if (!project?.id) return;
+    // Persist delivery data
+    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote, progress: 100, milestones });
+    // Add timeline event
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Proyek Selesai',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+      description: 'Proyek telah selesai dan ditutup.',
+    };
+    addTimelineEvent(project.id, event);
+    // Mark as completed
+    updateProject(project.id, { status: 'Selesai', phase: 'Selesai', progress: 100 });
+    onShowNotification?.('Proyek berhasil ditandai selesai!', 'success');
   };
 
   const completedCount = milestones.filter(m => m.completed).length;
+  const isCompleted = project?.status === 'Selesai';
+  const isExecuting = project?.status === 'Executing';
 
   return (
     <div className="space-y-8 animate-fade-in text-slate-800">
+      {/* Completion banner */}
+      {isCompleted && (
+        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+          <span className="material-symbols-outlined text-success text-[24px]">check_circle</span>
+          <div>
+            <p className="text-sm font-bold text-emerald-800">Proyek Telah Selesai</p>
+            <p className="text-xs text-emerald-600">Semua tahapan proyek telah diselesaikan.</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-12 gap-8">
         <div className="col-span-12 lg:col-span-8 bg-white border border-border rounded-xl shadow-sm p-8 space-y-8">
           <div>
@@ -142,12 +175,25 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
           </div>
 
           <div className="flex justify-end gap-3 border-t pt-6 border-border">
-            <Button variant="secondary" onClick={handleSave} leftIcon={<span className="material-symbols-outlined text-[18px]">drafts</span>}>
-              Simpan Draft
-            </Button>
-            <Button onClick={handleConfirm} rightIcon={<span className="material-symbols-outlined text-[18px]">send</span>}>
-              Konfirmasi & Selesaikan
-            </Button>
+            {!isCompleted && (
+              <Button variant="secondary" onClick={handleSave} leftIcon={<span className="material-symbols-outlined text-[18px]">drafts</span>}>
+                Simpan Draft
+              </Button>
+            )}
+            {!isCompleted && !isExecuting && (
+              <Button onClick={handleConfirm} rightIcon={<span className="material-symbols-outlined text-[18px]">send</span>}>
+                Konfirmasi & Mulai Eksekusi
+              </Button>
+            )}
+            {isExecuting && (
+              <button
+                onClick={handleMarkComplete}
+                className="px-5 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:brightness-110 transition-all flex items-center gap-2 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                Selesaikan Proyek
+              </button>
+            )}
           </div>
         </div>
 

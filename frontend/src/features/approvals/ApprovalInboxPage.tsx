@@ -44,7 +44,7 @@ export default function ApprovalInboxView({
     const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
     const config = slaConfigs.find(s => s.entityType === entityMap[type] && s.active);
     if (!config) return 'Normal';
-    const elapsedHours = (Date.now() - new Date(waitingSince).getTime()) / 3_600_000;
+    const elapsedHours = parseRelativeTime(waitingSince) / 3_600_000;
     const critH = config.unit === 'days' ? config.criticalThreshold * 24 : config.criticalThreshold;
     const warnH = config.unit === 'days' ? config.warningThreshold * 24 : config.warningThreshold;
     if (elapsedHours >= critH) return 'Overdue';
@@ -216,7 +216,7 @@ export default function ApprovalInboxView({
         <div className="bg-white border border-border p-3 sm:p-4 rounded-lg shadow-sm flex flex-col justify-between h-24 sm:h-28">
           <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Avg. Completion Time</span>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{approvals.length > 0 ? (approvals.reduce((s, a) => s + (Date.now() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / approvals.length).toFixed(1) : '0.0'}h</span>
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{approvals.length > 0 ? (approvals.reduce((s, a) => s + parseRelativeTime(a.waitingSince) / 3_600_000, 0) / approvals.length).toFixed(1) : '0.0'}h</span>
             <span className="text-success font-label-sm text-sm font-semibold">Rata-rata</span>
           </div>
         </div>

@@ -28,6 +28,9 @@ export default function AppLayout() {
   const roleConfig = useMasterDataStore((s) => s.roles).find((r) => r.name === userRole);
   const userPermissions = roleConfig?.permissions || [];
 
+  // Full-bleed detection: chat pages fill entire content area without padding
+  const isFullBleed = location.pathname.includes('/diskusi');
+
   const handleNavigate = (path: string) => {
     navigate(path);
     setMobileSidebarOpen(false);
@@ -82,10 +85,14 @@ export default function AppLayout() {
           onMenuClick={() => setMobileSidebarOpen(true)}
         />
         <Breadcrumb />
-        <main className="flex-1 overflow-y-auto bg-surface-container-low">
-          <div className="p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 flex flex-col min-h-0 bg-surface-container-low">
+          {isFullBleed ? (
             <Outlet />
-          </div>
+          ) : (
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
+              <Outlet />
+            </div>
+          )}
         </main>
       </div>
     </div>

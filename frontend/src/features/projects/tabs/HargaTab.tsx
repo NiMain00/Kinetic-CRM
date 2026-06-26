@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { Project, CompetitorEntry } from '@/types/domain';
+import { useNavigate } from 'react-router-dom';
+import type { Project, CompetitorEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency } from '@/utils/formatters';
 import { Card, Button, Input, Table } from '@/components/ui';
@@ -10,10 +11,12 @@ interface TabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-export default function HargaTab({ project }: TabProps) {
+export default function HargaTab({ project, onShowNotification }: TabProps) {
+  const navigate = useNavigate();
   const updateProjectPricing = useProjectStore((s) => s.updateProjectPricing);
   const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
   const updateProjectCompetitors = useProjectStore((s) => s.updateProjectCompetitors);
+  const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
 
   const [hargaPenawaran, setHargaPenawaran] = useState(project?.pricing?.value || 0);
   const [marginPercentage, setMarginPercentage] = useState(project?.pricing?.margin || 0);
@@ -39,6 +42,30 @@ export default function HargaTab({ project }: TabProps) {
       margin: marginPercentage,
       note: pricingNotes,
     });
+  };
+
+  const handleConfirmPricing = () => {
+    if (!project?.id) return;
+    // Save pricing data first
+    updateProjectPricing(project.id, {
+      value: hargaPenawaran,
+      margin: marginPercentage,
+      note: pricingNotes,
+    });
+    // Add timeline event
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Harga Penawaran Dikonfirmasi',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+      description: `Harga penawaran ${formatCurrency(hargaPenawaran)} dengan margin ${marginPercentage}% telah dikonfirmasi.`,
+    };
+    addTimelineEvent(project.id, event);
+    // Navigate to kompetitor tab
+    navigate(`/project/${project.id}/kompetitor`);
+    onShowNotification?.('Harga berhasil dikonfirmasi. Lanjut ke analisis kompetitor.', 'success');
   };
 
   const handleAddCompetitor = () => {
@@ -109,10 +136,17 @@ export default function HargaTab({ project }: TabProps) {
               />
             </div>
           </div>
-          <div className="border-t border-border pt-4 flex justify-end">
-            <Button onClick={handleSavePricing} leftIcon={<span className="material-symbols-outlined text-sm">save</span>}>
-              Simpan Perubahan
+          <div className="border-t border-border pt-4 flex justify-end gap-3">
+            <Button variant="secondary" onClick={handleSavePricing} leftIcon={<span className="material-symbols-outlined text-sm">save</span>}>
+              Simpan Draft
             </Button>
+            <button
+              onClick={handleConfirmPricing}
+              className="px-5 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:brightness-110 transition-all flex items-center gap-2 shadow-sm"
+            >
+              Konfirmasi Harga & Lanjut
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            </button>
           </div>
         </div>
 

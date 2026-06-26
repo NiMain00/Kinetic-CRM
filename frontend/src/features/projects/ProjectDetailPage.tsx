@@ -18,6 +18,7 @@ import PemenangTab from './tabs/PemenangTab';
 import DeliveryTab from './tabs/DeliveryTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
+import ChatTab from './tabs/ChatTab';
 
 interface ProjectDetailViewProps {
   key?: string;
@@ -63,12 +64,13 @@ export default function ProjectDetailView({
 
   // Single source of truth for tabs & stepper
   const tabs = React.useMemo(() => {
-    // Non-potensial: hanya Overview, Timeline, Dokumen
+    // Non-potensial: hanya Overview, Timeline, Dokumen, Diskusi
     if (isFromNonPotensial) {
       return [
         { label: 'Overview', path: 'overview' },
         { label: 'Timeline', path: 'timeline' },
         { label: 'Dokumen', path: 'dokumen' },
+        { label: 'Diskusi', path: 'diskusi' },
       ];
     }
     const items: Array<{ label: string; path: string }> = [
@@ -81,6 +83,7 @@ export default function ProjectDetailView({
       { label: 'Target Delivery', path: 'target-delivery' },
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
+      { label: 'Diskusi', path: 'diskusi' },
     ];
     if (project.type === 'Tender') {
       items.splice(2, 0, { label: 'Review RKS', path: 'review-rks' });
@@ -106,14 +109,21 @@ export default function ProjectDetailView({
     const tab = tabs[tabIndex];
     if (!tab) return true;
 
-    // Timeline & Dokumen: always unlocked
-    if (tab.label === 'Timeline' || tab.label === 'Dokumen') return false;
+    // Terminal states (Selesai, Kalah, Completed): all tabs unlocked
+    if (project.status === 'Selesai' || project.status === 'Kalah' || project.status === 'Completed') return false;
+
+    // Timeline, Dokumen & Diskusi: always unlocked
+    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi') return false;
 
     // Target Delivery: unlocked only when project outcome is menang
     if (tab.label === 'Target Delivery') return !isMenang;
 
-    // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval
-    if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) return !lphsMgmtApproved;
+    // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval (Tender)
+    // atau langsung unlocked untuk Prospecting (tidak perlu LPHS)
+    if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
+      if (project.type === 'Prospecting') return false; // always unlocked for Prospecting
+      return !lphsMgmtApproved;
+    }
 
     // Default sequential locking (Overview, RKS, Review RKS, LPHS/SIOS)
     return tabIndex > accessibleUpToIndex;
@@ -189,6 +199,8 @@ export default function ProjectDetailView({
   const handleShowNotification = (message: string, type: 'success' | 'warning' | 'error') => {
     onShowNotification(message, type);
   };
+
+  const isChatTab = activeTab === 'Diskusi';
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
@@ -342,8 +354,8 @@ export default function ProjectDetailView({
       </nav>
 
       {/* Main Tab Panel scroll area */}
-      <div className="flex-1 overflow-y-auto p-8">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <div className={`flex-1 ${activeTab === 'Diskusi' ? 'overflow-hidden' : 'overflow-y-auto p-8'}`}>
+        <div className={`${activeTab === 'Diskusi' ? 'h-full' : 'max-w-6xl mx-auto space-y-6'}`}>
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'Overview' && (
@@ -416,6 +428,11 @@ export default function ProjectDetailView({
           {/* TAB 10: DOKUMEN */}
           {activeTab === 'Dokumen' && (
             <DokumenTab project={project} onShowNotification={handleShowNotification} />
+          )}
+
+          {/* TAB 11: DISKUSI (Chat) */}
+          {activeTab === 'Diskusi' && (
+            <ChatTab project={project} onShowNotification={handleShowNotification} />
           )}
             </>
           )}

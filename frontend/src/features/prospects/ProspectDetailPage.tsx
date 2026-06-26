@@ -299,12 +299,20 @@ export default function ProspectDetailPage() {
                 </button>
               )}
 
-              {/* Kondisional: "Buat Proyek" untuk Approved (Fase 3 item 2) */}
-              {prospect.status === 'Approved' && !isConverted && (
+              {/* Kondisional: "Buat Proyek" untuk Approved + Potensial saja */}
+              {prospect.status === 'Approved' && !isConverted && isPotensial && (
                 <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">add_business</span>
                   Buat Proyek
                 </button>
+              )}
+
+              {/* Non-potensial approved: info bahwa tidak bisa convert */}
+              {prospect.status === 'Approved' && !isConverted && isNonPotensial && (
+                <div className="px-4 py-2 bg-surface-container-low border border-border rounded-lg text-xs text-secondary flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[16px]">info</span>
+                  Prospek non-potensial tidak dapat dikonversi ke proyek
+                </div>
               )}
 
               {/* Sudah dikonversi → "Lihat Proyek" (Fase 3 item 3.4) */}
