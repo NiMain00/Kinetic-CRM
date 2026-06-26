@@ -165,7 +165,7 @@ export default function ProspectDetailPage() {
       ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
       name: prospect.name,
       branch: prospect.branch || 'Jakarta Pusat',
-      waitingSince: 'Just now',
+      waitingSince: new Date().toISOString(),
       slaStatus: 'Normal',
       type: 'Prospek',
       client: prospect.client,

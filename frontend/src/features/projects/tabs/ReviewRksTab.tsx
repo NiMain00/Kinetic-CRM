@@ -5,6 +5,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useApprovalStore } from '@/stores/approvalStore';
 
 interface TabProps {
   project?: Project;
@@ -22,6 +23,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const userRole = authUser?.roleName || '';
   const canReview = userRole === 'PM' || userRole === 'Admin' || userRole === 'Super Admin';
   const addNotification = useNotificationStore((s) => s.addNotification);
+  const addApproval = useApprovalStore((s) => s.addApproval);
 
   const [reviewNotes, setReviewNotes] = useState('');
 
@@ -45,6 +47,18 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const handleApprove = () => {
     if (!project?.id) return;
     updateProject(project.id, { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' });
+    addApproval({
+      id: `app-rks-${project.id}-${Date.now()}`,
+      ref: `RKS-${project.code}`,
+      name: project.name,
+      branch: project.location,
+      waitingSince: new Date().toISOString(),
+      slaStatus: 'Normal',
+      type: 'RKS' as const,
+      client: project.client,
+      entityId: project.id,
+      entityType: 'project',
+    });
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
       title: 'RKS Direview & Disetujui',

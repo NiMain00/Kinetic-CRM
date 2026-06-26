@@ -81,6 +81,9 @@ const INITIAL_PHASES: ProjectPhase[] = [
   { id: 'PH-08', status: 'Target Delivery', phase: 'Target Delivery', order: 8, isActive: true },
   { id: 'PH-09', status: 'Executing', phase: 'Timeline', order: 9, isActive: true },
   { id: 'PH-10', status: 'Completed', phase: 'Dokumen', order: 10, isActive: true },
+  { id: 'PH-11', status: 'Kalah', phase: 'Selesai', order: 11, isActive: true },
+  { id: 'PH-12', status: 'Revisi', phase: 'Revisi', order: 12, isActive: true },
+  { id: 'PH-13', status: 'Selesai', phase: 'Selesai', order: 13, isActive: true },
 ];
 
 const INITIAL_UPLOAD: UploadConfig = {
@@ -105,6 +108,12 @@ const INITIAL_ORG: OrgUnit[] = [
   { id: 'br-mks', name: 'Makassar', code: 'BR-MKS-006', parentId: 'div-ops', unitType: 'branch', city: 'Makassar', province: 'Sulawesi Selatan', isActive: true, sortOrder: 26 },
   { id: 'br-bpn', name: 'Balikpapan', code: 'BR-BPN-007', parentId: 'div-ops', unitType: 'branch', city: 'Balikpapan', province: 'Kalimantan Timur', isActive: true, sortOrder: 27 },
   { id: 'br-pm', name: 'Project Management', code: 'BR-PM-001', parentId: 'div-ops', unitType: 'branch', isActive: true, sortOrder: 28 },
+  { id: 'br-sub-hub', name: 'Surabaya Hub', code: 'BR-SUB-HUB', parentId: 'div-ops', unitType: 'branch', city: 'Surabaya', province: 'Jawa Timur', isActive: true, sortOrder: 29 },
+  { id: 'br-mdn-reg', name: 'Medan Regional', code: 'BR-MDN-REG', parentId: 'div-ops', unitType: 'branch', city: 'Medan', province: 'Sumatera Utara', isActive: true, sortOrder: 30 },
+  { id: 'br-bpn-base', name: 'Balikpapan Base', code: 'BR-BPN-BASE', parentId: 'div-ops', unitType: 'branch', city: 'Balikpapan', province: 'Kalimantan Timur', isActive: true, sortOrder: 31 },
+  { id: 'br-bdg-utara', name: 'Bandung Utara', code: 'BR-BDG-UTARA', parentId: 'div-ops', unitType: 'branch', city: 'Bandung', province: 'Jawa Barat', isActive: true, sortOrder: 32 },
+  { id: 'br-jkt-central', name: 'Jakarta Central', code: 'BR-JKT-CENTRAL', parentId: 'div-ops', unitType: 'branch', city: 'Jakarta Pusat', province: 'DKI Jakarta', isActive: true, sortOrder: 33 },
+  { id: 'br-mdn-office', name: 'Medan Office', code: 'BR-MDN-OFFICE', parentId: 'div-ops', unitType: 'branch', city: 'Medan', province: 'Sumatera Utara', isActive: true, sortOrder: 34 },
   // Departments
   { id: 'dept-ops', name: 'Operations', code: 'DEPT-OPS', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 30 },
   { id: 'dept-pmo', name: 'Project Management Office', code: 'DEPT-PMO', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 31 },

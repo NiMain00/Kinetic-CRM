@@ -329,17 +329,17 @@ export const INITIAL_PROJECTS: Project[] = [
 
 export const INITIAL_APPROVALS: ApprovalItem[] = [
   // Prospek Approvals
-  { id: 'app-1', ref: 'PR-2023-08-001', name: 'Surveillance System Implementation Phase 2', branch: 'Jakarta Selatan', waitingSince: '3 days 4h ago', slaStatus: 'Overdue', type: 'Prospek', client: 'Secure City Group', entityId: '3', entityType: 'prospect' },
-  { id: 'app-2', ref: 'PR-2023-08-005', name: 'Network Optimization Project v3.0', branch: 'Makassar', waitingSince: '18h 22m ago', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Global Logistics Inc.', entityId: '7', entityType: 'prospect' },
+  { id: 'app-1', ref: 'PR-2023-08-001', name: 'Surveillance System Implementation Phase 2', branch: 'Jakarta Selatan', waitingSince: '2026-06-23T08:00:00.000Z', slaStatus: 'Overdue', type: 'Prospek', client: 'Secure City Group', entityId: '3', entityType: 'prospect' },
+  { id: 'app-2', ref: 'PR-2023-08-005', name: 'Network Optimization Project v3.0', branch: 'Makassar', waitingSince: '2026-06-25T06:00:00.000Z', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Global Logistics Inc.', entityId: '7', entityType: 'prospect' },
 
   // RKS Approvals
-  { id: 'app-4', ref: 'RKS-88902-B', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '4 days 12h ago', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
-  { id: 'app-5', ref: 'RKS-89011-A', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '5h 30m ago', slaStatus: 'Normal', type: 'RKS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' },
+  { id: 'app-4', ref: 'RKS-88902-B', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '2026-06-22T12:00:00.000Z', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
+  { id: 'app-5', ref: 'RKS-89011-A', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '2026-06-25T12:00:00.000Z', slaStatus: 'Normal', type: 'RKS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' },
 
   // LPHS Approvals
-  { id: 'app-6', ref: 'LPHS-PR-2025-001', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '1d 6h ago', slaStatus: 'Near Deadline', type: 'LPHS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
-  { id: 'app-7', ref: 'LPHS-PRJ-2024-0089', name: 'Modernization of Terminal 3', branch: 'Cengkareng, Tangerang', waitingSince: '2d 3h ago', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Angkasa Pura II', entityId: 'PR-2025-003', entityType: 'project' },
-  { id: 'app-8', ref: 'LPHS-PRJ-2024-0892', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '5h 30m ago', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' }
+  { id: 'app-6', ref: 'LPHS-PR-2025-001', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '2026-06-22T12:00:00.000Z', slaStatus: 'Near Deadline', type: 'LPHS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
+  { id: 'app-7', ref: 'LPHS-PRJ-2024-0089', name: 'Modernization of Terminal 3', branch: 'Cengkareng, Tangerang', waitingSince: '2026-06-25T12:00:00.000Z', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Angkasa Pura II', entityId: 'PR-2025-003', entityType: 'project' },
+  { id: 'app-8', ref: 'LPHS-PRJ-2024-0892', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '2026-06-26T00:00:00.000Z', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' }
 ];
 
 export const INITIAL_TIMELINE_EVENTS: TimelineEvent[] = [

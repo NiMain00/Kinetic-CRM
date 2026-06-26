@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { ApprovalItem, TimelineEvent, SlaConfig } from '@/types/domain';
 import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 import { useSlaConfigs } from '@/hooks/useConfigData';
+import { formatRelativeTime } from '@/utils/formatters';
 
 interface ApprovalReviewDrawerProps {
   item: ApprovalItem;
@@ -100,7 +101,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
               )}
               <div>
                 <span className="text-[10px] text-outline uppercase font-bold block">Waiting Since</span>
-                <p className="font-semibold text-on-surface">{item.waitingSince}</p>
+                <p className="font-semibold text-on-surface">{formatRelativeTime(item.waitingSince)}</p>
               </div>
               <div>
                 <span className="text-[10px] text-outline uppercase font-bold block">Tipe</span>

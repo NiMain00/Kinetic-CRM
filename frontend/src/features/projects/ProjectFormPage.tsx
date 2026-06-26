@@ -55,7 +55,7 @@ export default function ProjectFormPage() {
       name: name.trim(),
       client,
       status: 'RKS',
-      phase: 'Overview',
+      phase: 'RKS',
       location: location.trim(),
       author: user?.fullName || user?.name || 'Admin',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),

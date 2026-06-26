@@ -256,7 +256,7 @@ export default function ProspectFormPage() {
         ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
         name: formName,
         branch: userBranch,
-        waitingSince: 'Just now',
+        waitingSince: new Date().toISOString(),
         slaStatus: 'Normal',
         type: 'Prospek',
         client: clientName,

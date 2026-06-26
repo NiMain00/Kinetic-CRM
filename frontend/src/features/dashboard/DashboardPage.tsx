@@ -5,7 +5,9 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
-import { formatCurrency } from '@/utils/formatters';
+import { useSlaConfigs } from '@/hooks/useConfigData';
+import { formatCurrency, formatRelativeTime } from '@/utils/formatters';
+import type { SlaConfig } from '@/types/domain';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -21,6 +23,20 @@ export default function DashboardPage() {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     }));
   }, []);
+
+  const slaConfigs = useSlaConfigs();
+
+  const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
+    const entityMap: Record<string, string> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
+    const config = slaConfigs.find(s => s.entityType === entityMap[type] && s.active);
+    if (!config) return 'Normal';
+    const elapsedHours = (Date.now() - new Date(waitingSince).getTime()) / 3_600_000;
+    const critH = config.unit === 'days' ? config.criticalThreshold * 24 : config.criticalThreshold;
+    const warnH = config.unit === 'days' ? config.warningThreshold * 24 : config.warningThreshold;
+    if (elapsedHours >= critH) return 'Overdue';
+    if (elapsedHours >= warnH) return 'Near Deadline';
+    return 'Normal';
+  };
 
   const pendingApprovals = approvals.slice(0, 5);
 
@@ -275,8 +291,8 @@ export default function DashboardPage() {
                       <p className="font-label-sm text-on-surface text-sm font-medium">{item.name}</p>
                       <p className="text-xs text-secondary font-mono">{item.ref}</p>
                     </div>
-                    <span className={`shrink-0 px-2 py-0.5 rounded font-mono-data text-xs ${item.slaStatus === 'Overdue' ? 'bg-error-container text-error' : 'bg-secondary-container text-on-secondary-container'}`}>
-                      {item.waitingSince}
+                    <span className={`shrink-0 px-2 py-0.5 rounded font-mono-data text-xs ${computeSlaStatus(item.waitingSince, item.type) === 'Overdue' ? 'bg-error-container text-error' : 'bg-secondary-container text-on-secondary-container'}`}>
+                      {formatRelativeTime(item.waitingSince)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -308,8 +324,8 @@ export default function DashboardPage() {
                       </td>
                       <td className="px-6 py-4 text-secondary text-xs">{item.branch}</td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded font-mono-data text-xs ${item.slaStatus === 'Overdue' ? 'bg-error-container text-error' : 'bg-secondary-container text-on-secondary-container'}`}>
-                          {item.waitingSince}
+                        <span className={`px-2 py-0.5 rounded font-mono-data text-xs ${computeSlaStatus(item.waitingSince, item.type) === 'Overdue' ? 'bg-error-container text-error' : 'bg-secondary-container text-on-secondary-container'}`}>
+                          {formatRelativeTime(item.waitingSince)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
