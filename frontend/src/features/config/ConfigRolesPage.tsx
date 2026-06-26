@@ -1,33 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { Button, Modal } from '@/components/ui';
 import { useMasterDataStore, type MasterRole } from '@/stores/masterDataStore';
 
-interface Permission {
+interface ModulePerm {
   key: string;
   label: string;
+  shortLabel: string;
 }
 
-const ALL_PERMISSIONS: Permission[] = [
-  { key: 'dashboard_view', label: 'Dashboard' },
-  { key: 'prospek_view', label: 'Prospek - Lihat' },
-  { key: 'prospek_create', label: 'Prospek - Buat' },
-  { key: 'prospek_edit', label: 'Prospek - Edit' },
-  { key: 'prospek_delete', label: 'Prospek - Hapus' },
-  { key: 'proyek_view', label: 'Proyek - Lihat' },
-  { key: 'proyek_create', label: 'Proyek - Buat' },
-  { key: 'proyek_edit', label: 'Proyek - Edit' },
-  { key: 'proyek_delete', label: 'Proyek - Hapus' },
-  { key: 'approval_process', label: 'Approval - Proses' },
-  { key: 'approval_view', label: 'Approval - Lihat' },
-  { key: 'kpi_view', label: 'KPI - Lihat' },
-  { key: 'kpi_manage', label: 'KPI - Kelola' },
-  { key: 'laporan_view', label: 'Laporan - Lihat' },
-  { key: 'master_data', label: 'Master Data' },
-  { key: 'users_manage', label: 'Pengguna - Kelola' },
-  { key: 'config_access', label: 'Konfigurasi - Akses' },
-  { key: 'audit_view', label: 'Audit - Lihat' },
+interface ModuleGroup {
+  name: string;
+  perms: ModulePerm[];
+}
+
+const MODULE_GROUPS: ModuleGroup[] = [
+  {
+    name: 'Dashboard',
+    perms: [{ key: 'dashboard_view', label: 'Lihat Dashboard', shortLabel: 'View' }],
+  },
+  {
+    name: 'Prospek',
+    perms: [
+      { key: 'prospek_view', label: 'Lihat Prospek', shortLabel: 'View' },
+      { key: 'prospek_create', label: 'Buat Prospek', shortLabel: 'Create' },
+      { key: 'prospek_edit', label: 'Edit Prospek', shortLabel: 'Edit' },
+      { key: 'prospek_delete', label: 'Hapus Prospek', shortLabel: 'Delete' },
+    ],
+  },
+  {
+    name: 'Proyek',
+    perms: [
+      { key: 'proyek_view', label: 'Lihat Proyek', shortLabel: 'View' },
+      { key: 'proyek_create', label: 'Buat Proyek', shortLabel: 'Create' },
+      { key: 'proyek_edit', label: 'Edit Proyek', shortLabel: 'Edit' },
+      { key: 'proyek_delete', label: 'Hapus Proyek', shortLabel: 'Delete' },
+    ],
+  },
+  {
+    name: 'Approval',
+    perms: [
+      { key: 'approval_process', label: 'Proses Approval', shortLabel: 'Process' },
+      { key: 'approval_view', label: 'Lihat Approval', shortLabel: 'View' },
+    ],
+  },
+  {
+    name: 'KPI',
+    perms: [
+      { key: 'kpi_view', label: 'Lihat KPI', shortLabel: 'View' },
+      { key: 'kpi_manage', label: 'Kelola KPI', shortLabel: 'Manage' },
+    ],
+  },
+  {
+    name: 'Laporan',
+    perms: [{ key: 'laporan_view', label: 'Lihat Laporan', shortLabel: 'View' }],
+  },
+  {
+    name: 'Master Data',
+    perms: [{ key: 'master_data', label: 'Akses Master Data', shortLabel: 'Access' }],
+  },
+  {
+    name: 'Pengguna',
+    perms: [{ key: 'users_manage', label: 'Kelola Pengguna', shortLabel: 'Manage' }],
+  },
+  {
+    name: 'Konfigurasi',
+    perms: [{ key: 'config_access', label: 'Akses Konfigurasi', shortLabel: 'Access' }],
+  },
+  {
+    name: 'Audit',
+    perms: [{ key: 'audit_view', label: 'Lihat Audit', shortLabel: 'View' }],
+  },
 ];
+
+const ALL_PERM_KEYS = MODULE_GROUPS.flatMap(m => m.perms.map(p => p.key));
 
 const ROLE_COLORS: Record<string, string> = {
   'Super Admin': 'bg-danger/10 text-danger',
@@ -50,6 +96,12 @@ export default function ConfigRolesPage() {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredRoles = useMemo(() => {
+    if (!searchQuery.trim()) return roles;
+    const q = searchQuery.toLowerCase();
+    return roles.filter(r => r.name.toLowerCase().includes(q) || (r.description && r.description.toLowerCase().includes(q)));
+  }, [roles, searchQuery]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +143,7 @@ export default function ConfigRolesPage() {
   const handleSelectAll = (roleId: string) => {
     const role = roles.find(r => r.id === roleId);
     if (!role) return;
-    updateData<MasterRole>('roles', roleId, { permissions: ALL_PERMISSIONS.map(p => p.key) });
+    updateData<MasterRole>('roles', roleId, { permissions: ALL_PERM_KEYS });
     toast.success(`Semua izin diberikan untuk ${role.name}`);
   };
 
@@ -121,6 +173,18 @@ export default function ConfigRolesPage() {
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
+          {/* Search */}
+          <div className="relative max-w-xs">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari role..."
+              className="w-full pl-9 pr-3 py-2 bg-white border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Role</p>
@@ -128,65 +192,86 @@ export default function ConfigRolesPage() {
             </div>
             <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
               <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Modul</p>
-              <p className="text-xl font-extrabold text-primary mt-1">{ALL_PERMISSIONS.length}</p>
+              <p className="text-xl font-extrabold text-primary mt-1">{MODULE_GROUPS.length}</p>
             </div>
           </div>
 
           <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto table-mobile-compact">
-            <table className="w-full text-xs text-left table-auto">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left table-auto border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
-                    <th className="px-4 py-3.5 sticky left-0 bg-slate-50 z-10">Role</th>
-                    {ALL_PERMISSIONS.map(p => (
-                      <th key={p.key} className="px-2 py-3.5 text-center text-[9px] whitespace-nowrap" title={p.label}>{p.label.split(' - ')[0]}</th>
+                  {/* Row 1: Module group headers */}
+                  <tr className="bg-slate-50 border-b border-border">
+                    <th className="px-3 py-2.5 sticky left-0 bg-slate-50 z-10 border-r border-border text-[10px] uppercase font-mono tracking-wider text-slate-450" rowSpan={2}>Role</th>
+                    {MODULE_GROUPS.map(mg => (
+                      <th key={mg.name} colSpan={mg.perms.length} className="px-1 py-2.5 text-center text-[10px] uppercase font-mono tracking-wider text-slate-450 border-r border-border last:border-r-0">{mg.name}</th>
                     ))}
-                    <th className="px-4 py-3.5 text-right">Aksi</th>
+                    <th className="px-3 py-2.5 text-right text-[10px] uppercase font-mono tracking-wider text-slate-450" rowSpan={2}>Aksi</th>
+                  </tr>
+                  {/* Row 2: Permission sub-headers */}
+                  <tr className="bg-slate-50/50 border-b border-border">
+                    {MODULE_GROUPS.flatMap(mg => mg.perms).map(p => (
+                      <th key={p.key} className="px-1 py-2 text-center text-[9px] font-mono text-slate-400 border-r border-border last:border-r-0 whitespace-nowrap" title={p.label}>{p.shortLabel}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {roles.map(r => (
-                    <tr key={r.id} className="hover:bg-slate-50/65 transition-colors">
-                      <td className="px-4 py-3 sticky left-0 bg-white z-10">
-                        <div className="flex flex-col">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit badge-compact ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
-                          <span className="text-[9px] text-slate-400 mt-0.5">{r.description}</span>
-                        </div>
-                      </td>
-                      {ALL_PERMISSIONS.map(p => (
-                        <td key={p.key} className="px-2 py-3 text-center">
-                          <input
-                            type="checkbox"
-                            checked={r.permissions.includes(p.key)}
-                            onChange={() => handleTogglePermission(r.id, p.key)}
-                            className="w-4 h-4 text-primary border-border rounded focus:ring-primary cursor-pointer"
-                            aria-label={`${r.name} - ${p.label}`}
-                          />
+                  {filteredRoles.map((r, idx) => {
+                    const rowBg = idx % 2 === 1 ? 'bg-slate-50/40' : 'bg-white';
+                    return (
+                      <tr key={r.id} className={`${rowBg} hover:bg-slate-100/60 transition-colors`}>
+                        <td className={`px-3 py-2.5 sticky left-0 z-10 border-r border-border ${rowBg}`}>
+                          <div className="flex flex-col">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block w-fit ${ROLE_COLORS[r.name] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{r.name}</span>
+                            <span className="text-[9px] text-slate-400 mt-0.5">{r.description}</span>
+                          </div>
                         </td>
-                      ))}
-                      <td className="px-4 py-3 text-right">
-                        <div className="flex gap-1 justify-end">
-                          <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer btn-compact">All</button>
-                          <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer btn-compact">None</button>
-                          <button onClick={() => setDeleteConfirm(r.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer btn-compact" title="Hapus Role">
-                            <span className="material-symbols-outlined text-[16px] icon-compact">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        {MODULE_GROUPS.flatMap(mg => mg.perms).map(p => (
+                          <td key={p.key} className="px-1 py-2.5 text-center border-r border-border last:border-r-0">
+                            <input
+                              type="checkbox"
+                              checked={r.permissions.includes(p.key)}
+                              onChange={() => handleTogglePermission(r.id, p.key)}
+                              className="w-4 h-4 text-primary border-border rounded focus:ring-primary cursor-pointer"
+                              aria-label={`${r.name} - ${p.label}`}
+                              title={`${r.name}: ${p.label}`}
+                            />
+                          </td>
+                        ))}
+                        <td className="px-3 py-2.5 text-right">
+                          <div className="flex items-center gap-1.5 justify-end">
+                            <span className="text-[9px] text-slate-400 font-mono" title="Jumlah izin aktif">{r.permissions.length}/{ALL_PERM_KEYS.length}</span>
+                            <button onClick={() => handleSelectAll(r.id)} className="px-2 py-1 bg-primary/10 text-primary rounded text-[9px] font-bold hover:bg-primary/20 transition-colors cursor-pointer" title="Pilih semua izin">All</button>
+                            <button onClick={() => handleClearAll(r.id)} className="px-2 py-1 bg-danger/10 text-danger rounded text-[9px] font-bold hover:bg-danger/20 transition-colors cursor-pointer" title="Hapus semua izin">None</button>
+                            <button onClick={() => setDeleteConfirm(r.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer" title="Hapus Role">
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+            {filteredRoles.length === 0 && (
+              <div className="p-8 text-center text-xs text-slate-400">
+                {searchQuery ? `Tidak ada role yang cocok dengan "${searchQuery}".` : 'Belum ada role. Klik "Tambah Role" untuk membuat role baru.'}
+              </div>
+            )}
           </div>
 
           <div className="bg-surface-container-low border border-border rounded-xl p-5">
             <h4 className="font-bold text-xs text-slate-700 mb-3">Keterangan Modul</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              {ALL_PERMISSIONS.map(p => (
-                <div key={p.key} className="flex items-center gap-2 text-[10px] text-slate-500">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                  {p.label}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {MODULE_GROUPS.map(mg => (
+                <div key={mg.name} className="space-y-1">
+                  <p className="text-[10px] font-bold text-slate-600">{mg.name}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {mg.perms.map(p => (
+                      <span key={p.key} className="text-[9px] text-slate-400 bg-white px-1.5 py-0.5 rounded border border-border">{p.shortLabel}</span>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

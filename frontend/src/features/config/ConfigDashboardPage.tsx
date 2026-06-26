@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { configNavItems, filterNavItems } from '@/routes/nav-items';
 import { useAuthStore } from '@/stores/authStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
 
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   Organisasi: 'Atur struktur hierarki organisasi dan cabang',
@@ -35,7 +36,10 @@ export default function ConfigDashboardPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const userRole = (user as { roleName?: string })?.roleName || '';
-  const visibleItems = filterNavItems(configNavItems, userRole);
+  const roles = useMasterDataStore((s) => s.roles);
+  const roleConfig = roles.find((r) => r.name === userRole);
+  const userPermissions = roleConfig?.permissions || [];
+  const visibleItems = filterNavItems(configNavItems, userRole, userPermissions);
 
   return (
     <div className="space-y-6">

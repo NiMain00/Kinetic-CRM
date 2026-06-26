@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { configNavItems, filterNavItems } from '@/routes/nav-items';
 import { useAuthStore } from '@/stores/authStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
 
 export default function ConfigLayout({ children }: { children?: React.ReactNode }) {
   const navigate = useNavigate();
@@ -9,7 +10,10 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const user = useAuthStore((s) => s.user);
   const userRole = (user as { roleName?: string })?.roleName || '';
-  const visibleItems = filterNavItems(configNavItems, userRole);
+  const roles = useMasterDataStore((s) => s.roles);
+  const roleConfig = roles.find((r) => r.name === userRole);
+  const userPermissions = roleConfig?.permissions || [];
+  const visibleItems = filterNavItems(configNavItems, userRole, userPermissions);
 
   return (
     <div className="flex-1 flex h-full bg-background overflow-hidden">

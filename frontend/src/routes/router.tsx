@@ -1,6 +1,6 @@
 import React, { Suspense, lazy, type ComponentType } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute, GuestRoute, RoleRoute } from './guards';
+import { ProtectedRoute, GuestRoute, RoleRoute, PermissionRoute } from './guards';
 import { AppLayout } from '@/components/layout';
 import { PageLoader } from '@/components/layout';
 import { withPageProps } from './page-adapter';
@@ -21,6 +21,17 @@ const LazyLoadRole = (Component: ComponentType<any>, roles: string[]) => {
       <RoleRoute roles={roles}>
         <Wrapped {...props} />
       </RoleRoute>
+    </Suspense>
+  );
+};
+
+const LazyLoadPermission = (Component: ComponentType<any>, permissions: string[]) => {
+  const Wrapped = withPageProps(Component);
+  return (props: Record<string, unknown>) => (
+    <Suspense fallback={<PageLoader />}>
+      <PermissionRoute permissions={permissions}>
+        <Wrapped {...props} />
+      </PermissionRoute>
     </Suspense>
   );
 };
@@ -83,18 +94,18 @@ const NotificationsPage = LazyLoad(lazy(() => import('@/features/notifications/N
 const ProfilePage = LazyLoad(lazy(() => import('@/features/profile/ProfilePage')));
 
 // Config — hanya Super Admin
-const ConfigDashboardPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigDashboardPage')), ['Super Admin']);
-const ConfigOrgPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigOrgPage')), ['Super Admin']);
-const ConfigStatusPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigStatusPage')), ['Super Admin']);
-const ConfigNotifTemplatePageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigNotifTemplatePage')), ['Super Admin']);
-const ConfigSlaPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigSlaPage')), ['Super Admin']);
-const ConfigRolesPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigRolesPage')), ['Super Admin']);
-const ConfigTargetsPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigTargetsPage')), ['Super Admin']);
-const ConfigWorkflowPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigWorkflowPage')), ['Super Admin']);
-const ConfigIntegrationPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigIntegrationPage')), ['Super Admin']);
-const ConfigUploadPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigUploadPage')), ['Super Admin']);
-const ConfigPeriodPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigPeriodPage')), ['Super Admin']);
-const ConfigQuestionTypesPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/config/ConfigQuestionTypesPage')), ['Super Admin']);
+const ConfigDashboardPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigDashboardPage')), ['config_access']);
+const ConfigOrgPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigOrgPage')), ['config_access']);
+const ConfigStatusPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigStatusPage')), ['config_access']);
+const ConfigNotifTemplatePage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigNotifTemplatePage')), ['config_access']);
+const ConfigSlaPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigSlaPage')), ['config_access']);
+const ConfigRolesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigRolesPage')), ['config_access']);
+const ConfigTargetsPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigTargetsPage')), ['config_access']);
+const ConfigWorkflowPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigWorkflowPage')), ['config_access']);
+const ConfigIntegrationPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigIntegrationPage')), ['config_access']);
+const ConfigUploadPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigUploadPage')), ['config_access']);
+const ConfigPeriodPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigPeriodPage')), ['config_access']);
+const ConfigQuestionTypesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigQuestionTypesPage')), ['config_access']);
 
 // Error pages
 const ForbiddenPage = LazyLoad(lazy(() => import('@/features/errors/ForbiddenPage')));
@@ -173,19 +184,19 @@ export default function AppRouter() {
         {/* Notifications */}
         <Route path="notifications" element={<NotificationsPage />} />
 
-        {/* Configuration — hanya Super Admin */}
-        <Route path="config" element={<ConfigDashboardPageSuperAdmin />} />
-        <Route path="config/org" element={<ConfigOrgPageSuperAdmin />} />
-        <Route path="config/status" element={<ConfigStatusPageSuperAdmin />} />
-        <Route path="config/notifications" element={<ConfigNotifTemplatePageSuperAdmin />} />
-        <Route path="config/sla" element={<ConfigSlaPageSuperAdmin />} />
-        <Route path="config/roles" element={<ConfigRolesPageSuperAdmin />} />
-        <Route path="config/targets" element={<ConfigTargetsPageSuperAdmin />} />
-        <Route path="config/workflow" element={<ConfigWorkflowPageSuperAdmin />} />
-        <Route path="config/integration" element={<ConfigIntegrationPageSuperAdmin />} />
-        <Route path="config/upload" element={<ConfigUploadPageSuperAdmin />} />
-        <Route path="config/period" element={<ConfigPeriodPageSuperAdmin />} />
-        <Route path="config/question-types" element={<ConfigQuestionTypesPageSuperAdmin />} />
+        {/* Configuration — berdasarkan permission config_access */}
+        <Route path="config" element={<ConfigDashboardPage />} />
+        <Route path="config/org" element={<ConfigOrgPage />} />
+        <Route path="config/status" element={<ConfigStatusPage />} />
+        <Route path="config/notifications" element={<ConfigNotifTemplatePage />} />
+        <Route path="config/sla" element={<ConfigSlaPage />} />
+        <Route path="config/roles" element={<ConfigRolesPage />} />
+        <Route path="config/targets" element={<ConfigTargetsPage />} />
+        <Route path="config/workflow" element={<ConfigWorkflowPage />} />
+        <Route path="config/integration" element={<ConfigIntegrationPage />} />
+        <Route path="config/upload" element={<ConfigUploadPage />} />
+        <Route path="config/period" element={<ConfigPeriodPage />} />
+        <Route path="config/question-types" element={<ConfigQuestionTypesPage />} />
 
         {/* Error pages */}
         <Route path="403" element={<ForbiddenPage />} />

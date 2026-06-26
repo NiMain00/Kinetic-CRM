@@ -32,6 +32,13 @@ export const configNavItems: NavItem[] = [
   { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', roles: ['Super Admin'], permissions: ['config_access'] },
 ];
 
-export function filterNavItems(items: NavItem[], role: string): NavItem[] {
-  return items.filter((item) => !item.roles || item.roles.includes(role));
+export function filterNavItems(items: NavItem[], role: string, userPermissions?: string[]): NavItem[] {
+  return items.filter((item) => {
+    if (item.roles && !item.roles.includes(role)) return false;
+    if (item.permissions && item.permissions.length > 0) {
+      if (!userPermissions) return false;
+      return item.permissions.some(p => userPermissions.includes(p));
+    }
+    return true;
+  });
 }
