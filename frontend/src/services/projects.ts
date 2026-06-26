@@ -5,4 +5,5 @@ export const projectService = {
   get: (id: string) => apiClient.get(`/projects/${id}`),
   create: (data: unknown) => apiClient.post('/projects', data),
   update: (id: string, data: unknown) => apiClient.put(`/projects/${id}`, data),
+  delete: (id: string) => apiClient.delete(`/projects/${id}`),
 };

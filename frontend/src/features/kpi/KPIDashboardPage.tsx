@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Card, Badge, Button, Select } from '@/components/ui';
+import EmptyState from '@/components/shared/EmptyState';
 import type { KpiTarget } from '@/types/domain/users';
 
 const INITIAL_KPIS: KpiTarget[] = [
@@ -112,6 +113,9 @@ export default function KPIDashboardPage() {
             />
           </div>
 
+          {filteredKpis.length === 0 ? (
+            <EmptyState icon="monitoring" title="Tidak ada KPI" description="Tidak ada data KPI untuk periode yang dipilih." />
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" role="list" aria-label="Daftar KPI">
             {filteredKpis.map(kpi => {
               const progress = getProgress(kpi);
@@ -137,7 +141,7 @@ export default function KPIDashboardPage() {
                 </div>
               );
             })}
-          </div>
+          </div>)}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 bg-white border border-border rounded-xl p-6 shadow-xs">

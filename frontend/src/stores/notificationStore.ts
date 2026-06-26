@@ -31,9 +31,17 @@ const TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
   system: { icon: 'dns', color: 'border-slate-500 text-slate-500 bg-slate-50' },
 };
 
+const INITIAL_NOTIFICATIONS: Notification[] = [
+  { id: 'n1', title: 'Prospek Baru: Surveillance System', message: 'Prospek baru dari Secure City Group memerlukan review.', type: 'approval', read: false, createdAt: new Date(Date.now() - 3600000).toISOString(), entityType: 'prospect', entityId: '3', icon: 'fact_check' },
+  { id: 'n2', title: 'RKS Direview: Data Center Jakarta', message: 'Dokumen RKS untuk Pembangunan Infrastruktur Data Center - Tahap II sedang direview.', type: 'status_change', read: false, createdAt: new Date(Date.now() - 7200000).toISOString(), entityType: 'project', entityId: 'PR-2025-001', icon: 'swap_horiz' },
+  { id: 'n3', title: 'Revisi LPHS: FTTH Menteng', message: 'Department Financial Audit meminta revisi pada dokumen LPHS.', type: 'revision', read: true, createdAt: new Date(Date.now() - 86400000).toISOString(), entityType: 'project', entityId: 'PR-2025-002', icon: 'edit_document' },
+  { id: 'n4', title: 'Penugasan Baru', message: 'Anda ditugaskan sebagai reviewer untuk proyek Modernization of Terminal 3.', type: 'assignment', read: false, createdAt: new Date(Date.now() - 172800000).toISOString(), entityType: 'project', entityId: 'PR-2025-003', icon: 'person_add' },
+  { id: 'n5', title: 'Sistem: Backup Selesai', message: 'Backup data harian berhasil dilakukan pada pukul 02:00 WIB.', type: 'system', read: true, createdAt: new Date(Date.now() - 259200000).toISOString(), icon: 'dns' },
+];
+
 export const useNotificationStore = create<NotificationState>((set) => ({
-  notifications: [],
-  unreadCount: 0,
+  notifications: INITIAL_NOTIFICATIONS,
+  unreadCount: INITIAL_NOTIFICATIONS.filter((n) => !n.read).length,
 
   addNotification: (n) => {
     const config = TYPE_CONFIG[n.type] || TYPE_CONFIG.system;
