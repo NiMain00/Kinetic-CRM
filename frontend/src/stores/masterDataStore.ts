@@ -493,11 +493,42 @@ export const useMasterDataStore = create<MasterDataState>()(
       name: 'kinetic-master-data',
       version: 2,
       migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
         if (version === 0 || version === 1) {
-          // Re-initialize with latest defaults to pick up new fields
-          return { ...INITIAL_DATA as any };
+          // Merge: tambah item baru dari INITIAL_* tanpa hapus data user
+          const mergeById = <T extends { id: string }>(persistedArr: T[] | undefined, initial: T[]): T[] => {
+            if (!persistedArr) return initial;
+            const map = new Map(persistedArr.map((item) => [item.id, item]));
+            for (const item of initial) {
+              if (!map.has(item.id)) {
+                persistedArr.push(item);
+              }
+            }
+            return persistedArr;
+          };
+          return {
+            ...current,
+            categories: mergeById(current.categories, INITIAL_CATEGORIES),
+            competitors: mergeById(current.competitors, INITIAL_COMPETITORS),
+            docTypes: mergeById(current.docTypes, INITIAL_DOC_TYPES),
+            questions: mergeById(current.questions, INITIAL_QUESTIONS),
+            holidays: mergeById(current.holidays, INITIAL_HOLIDAYS),
+            lossReasons: mergeById(current.lossReasons, INITIAL_LOSS_REASONS),
+            periods: mergeById(current.periods, INITIAL_PERIODS),
+            customers: mergeById(current.customers, INITIAL_MASTER_CUSTOMERS),
+            industries: mergeById(current.industries, INITIAL_INDUSTRIES),
+            projectStatuses: mergeById(current.projectStatuses, INITIAL_PROJECT_STATUSES),
+            documentTypes: mergeById(current.documentTypes, INITIAL_DOCUMENT_TYPES),
+            questionTypes: mergeById(current.questionTypes, INITIAL_QUESTION_TYPES),
+            departments: mergeById(current.departments, INITIAL_DEPARTMENTS),
+            users: mergeById(current.users, INITIAL_USERS),
+            auditLogs: mergeById(current.auditLogs, INITIAL_AUDIT_LOGS),
+            approvalLevels: mergeById(current.approvalLevels, INITIAL_APPROVAL_LEVELS),
+            notifTemplates: mergeById(current.notifTemplates, INITIAL_NOTIF_TEMPLATES),
+            roles: mergeById(current.roles, INITIAL_ROLES),
+          };
         }
-        return persisted as any;
+        return current;
       },
     },
   ),

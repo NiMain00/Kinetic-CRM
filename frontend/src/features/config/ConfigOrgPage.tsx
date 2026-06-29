@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useConfigStore } from '@/stores/configStore';
 import type { OrgUnit } from '@/types/domain/config';
+import { Modal, Button } from '@/components/ui';
 
 interface TreeNode {
   unit: OrgUnit;
@@ -19,6 +20,13 @@ const UNIT_TYPE_ICONS: Record<string, string> = {
   department: 'group',
 };
 
+const TYPE_OPTIONS: { value: OrgUnit['unitType']; label: string }[] = [
+  { value: 'company', label: 'Perusahaan' },
+  { value: 'division', label: 'Divisi' },
+  { value: 'branch', label: 'Cabang' },
+  { value: 'department', label: 'Departemen' },
+];
+
 const TYPE_COLORS: Record<string, string> = {
   company: 'text-primary',
   division: 'text-status-purple',
@@ -30,18 +38,44 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
   const orgUnits = useConfigStore((s) => s.orgUnits);
   const addConfigData = useConfigStore((s) => s.addConfigData);
   const updateConfigData = useConfigStore((s) => s.updateConfigData);
+  const deleteConfigData = useConfigStore((s) => s.deleteConfigData);
 
-  const [selectedId, setSelectedId] = useState<string>('br-jkt');
+  const [selectedId, setSelectedId] = useState<string>('');
   const [formName, setFormName] = useState('');
   const [formCode, setFormCode] = useState('');
   const [formCity, setFormCity] = useState('');
   const [formProvince, setFormProvince] = useState('');
   const [formActive, setFormActive] = useState(true);
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addParentId, setAddParentId] = useState<string | null>(null);
+  const [addName, setAddName] = useState('');
+  const [addCode, setAddCode] = useState('');
+  const [addCity, setAddCity] = useState('');
+  const [addProvince, setAddProvince] = useState('');
+  const [addType, setAddType] = useState<OrgUnit['unitType']>('branch');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  // Auto-select first unit on load
+  const sortedUnits = useMemo(() =>
+    [...orgUnits].sort((a, b) => a.sortOrder - b.sortOrder),
+    [orgUnits],
+  );
 
   const selectedUnit = useMemo(
-    () => orgUnits.find((u) => u.id === selectedId),
-    [orgUnits, selectedId],
+    () => orgUnits.find((u) => u.id === selectedId) || sortedUnits[0],
+    [orgUnits, selectedId, sortedUnits],
   );
+
+  // Sync form when selectedUnit changes
+  useEffect(() => {
+    if (selectedUnit) {
+      setFormName(selectedUnit.name);
+      setFormCode(selectedUnit.code);
+      setFormCity(selectedUnit.city || '');
+      setFormProvince(selectedUnit.province || '');
+      setFormActive(selectedUnit.isActive);
+    }
+  }, [selectedUnit?.id]);
 
   // Build tree from flat list
   const tree = useMemo(() => {
@@ -80,6 +114,46 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
     onShowNotification(`Konfigurasi unit ${formName} berhasil disimpan!`, 'success');
   };
 
+  const handleAddUnit = () => {
+    if (!addName || !addCode) {
+      onShowNotification('Nama dan kode unit wajib diisi.', 'error');
+      return;
+    }
+    const maxSort = orgUnits
+      .filter((u) => u.parentId === addParentId)
+      .reduce((max, u) => Math.max(max, u.sortOrder), 0);
+    const newUnit: OrgUnit = {
+      id: `unit-${Date.now()}`,
+      name: addName,
+      code: addCode.toUpperCase().replace(/\s+/g, '_'),
+      parentId: addParentId,
+      unitType: addType,
+      isActive: true,
+      sortOrder: maxSort + 10,
+      city: addCity || undefined,
+      province: addProvince || undefined,
+    };
+    addConfigData('orgUnits', newUnit);
+    setAddModalOpen(false);
+    setSelectedId(newUnit.id);
+    onShowNotification(`Unit ${addName} berhasil ditambahkan!`, 'success');
+  };
+
+  const handleDeleteUnit = () => {
+    if (!deleteConfirmId) return;
+    // Cek apakah unit memiliki anak
+    const hasChildren = orgUnits.some((u) => u.parentId === deleteConfirmId);
+    if (hasChildren) {
+      onShowNotification('Tidak dapat menghapus unit yang masih memiliki sub-unit. Hapus sub-unit terlebih dahulu.', 'error');
+      setDeleteConfirmId(null);
+      return;
+    }
+    deleteConfigData('orgUnits', deleteConfirmId);
+    setDeleteConfirmId(null);
+    setSelectedId('');
+    onShowNotification('Unit berhasil dihapus.', 'success');
+  };
+
   const renderTreeNode = (
     nodes: TreeNode[],
   ): React.ReactNode => {
@@ -96,7 +170,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           } ${depth > 0 ? 'ml-6 mt-1' : 'mt-2'}`}
         >
           <span
-            className={`material-symbols-outlined text-[${depth === 0 ? '20px' : '18px'}] ${TYPE_COLORS[unit.unitType] || 'text-secondary'}`}
+            className={`material-symbols-outlined ${depth === 0 ? 'text-[20px]' : 'text-[18px]'} ${TYPE_COLORS[unit.unitType] || 'text-secondary'}`}
           >
             {unit.unitType === 'branch' ? 'location_on' : UNIT_TYPE_ICONS[unit.unitType] || 'corporate_fare'}
           </span>
@@ -128,7 +202,12 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
         </div>
         <div className="flex gap-3 text-xs md:text-sm">
           <button
-            onClick={() => onShowNotification('Berhasil membuka form tambah unit organisasi.', 'success')}
+            onClick={() => {
+              setAddParentId(null);
+              setAddName(''); setAddCode(''); setAddCity(''); setAddProvince('');
+              setAddType('branch');
+              setAddModalOpen(true);
+            }}
             className="flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg font-label-sm hover:opacity-90 active:scale-95 transition-all font-semibold"
           >
             <span className="material-symbols-outlined text-[20px]">add</span>
@@ -180,8 +259,11 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
                 {formActive ? 'Aktif' : 'Non-Aktif'}
               </span>
               <button
-                onClick={() => onShowNotification('Aksi hapus unit organisasi ditangguhkan.', 'warning')}
+                onClick={() => {
+                  if (selectedUnit) setDeleteConfirmId(selectedUnit.id);
+                }}
                 className="p-2 text-secondary hover:text-danger transition-colors border rounded-lg"
+                disabled={!selectedUnit}
               >
                 <span className="material-symbols-outlined text-lg">delete</span>
               </button>
@@ -250,7 +332,17 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           {/* Sticky editor footer */}
           <div className="p-4 border-t border-border bg-surface-bright flex justify-between items-center shrink-0">
             <button
-              onClick={() => onShowNotification('Aksi tambah sub-unit ditangguhkan.', 'warning')}
+              onClick={() => {
+                if (!selectedUnit) return;
+                setAddParentId(selectedUnit.id);
+                setAddName(''); setAddCode(''); setAddCity(''); setAddProvince('');
+                const childType: OrgUnit['unitType'] =
+                  selectedUnit.unitType === 'company' ? 'division' :
+                  selectedUnit.unitType === 'division' ? 'branch' :
+                  'department';
+                setAddType(childType);
+                setAddModalOpen(true);
+              }}
               className="flex items-center gap-1.5 text-primary text-sm font-semibold hover:underline outline-none"
             >
               <span className="material-symbols-outlined">add_circle</span>
@@ -278,6 +370,69 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           </div>
         </div>
       </div>
+
+      {/* Add Unit Modal */}
+      <Modal
+        isOpen={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        title={addParentId ? 'Tambah Sub-Unit' : 'Tambah Unit Baru'}
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setAddModalOpen(false)}>Batal</Button>
+            <Button variant="primary" size="md" onClick={handleAddUnit}>Simpan</Button>
+          </>
+        }
+      >
+        <div className="space-y-4 text-sm">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-on-surface-variant block">Nama Unit *</label>
+            <input value={addName} onChange={e => setAddName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" placeholder="Nama unit" />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-on-surface-variant block">Kode Unit *</label>
+            <input value={addCode} onChange={e => setAddCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="CONTOH_001" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="font-semibold text-on-surface-variant block">Tipe Unit</label>
+              <select value={addType} onChange={e => setAddType(e.target.value as OrgUnit['unitType'])} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary bg-white">
+                {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="font-semibold text-on-surface-variant block">Induk Unit</label>
+              <input className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-secondary" value={addParentId ? (orgUnits.find(u => u.id === addParentId)?.name || addParentId) : '(Root)'} disabled />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="font-semibold text-on-surface-variant block">Kota</label>
+              <input value={addCity} onChange={e => setAddCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="font-semibold text-on-surface-variant block">Provinsi</label>
+              <input value={addProvince} onChange={e => setAddProvince(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        title="Konfirmasi Hapus"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setDeleteConfirmId(null)}>Batal</Button>
+            <Button variant="danger" size="md" onClick={handleDeleteUnit}>Hapus</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-secondary">
+          Apakah Anda yakin ingin menghapus unit <strong>{selectedUnit?.name}</strong>? Tindakan ini tidak dapat dibatalkan.
+        </p>
+      </Modal>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { MessageSquare, Users, Hash, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import type { Project } from '@/types/domain';
 import { useChatStore } from '@/stores/chatStore';
+import { useAuthStore } from '@/stores/authStore';
 import ChatMessageItem from './components/ChatMessageItem';
 import ChatInput from './components/ChatInput';
 import ChatMembersPanel from './components/ChatMembersPanel';
@@ -12,18 +13,18 @@ interface ChatTabProps {
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
 
-// Current logged-in user (demo — in production this comes from auth store)
-const CURRENT_USER = {
-  id: '2',
-  name: 'Andi Cahyadi',
-  role: 'Branch Manager',
-};
-
 export default function ChatTab({ project }: ChatTabProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showMembers, setShowMembers] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const authUser = useAuthStore((s) => s.user);
+
+  const currentUser = {
+    id: authUser?.id || '2',
+    name: authUser?.fullName || authUser?.name || 'User',
+    role: authUser?.roleName || 'Staff',
+  };
 
   const projectId = project?.id || '1';
 
@@ -34,7 +35,7 @@ export default function ChatTab({ project }: ChatTabProps) {
   const typingUsers = useChatStore((s) => s.typingUsers[projectId] || []);
 
   const typingUserNames = useMemo(
-    () => typingUsers.filter((id) => id !== CURRENT_USER.id).map((id) => users.find((u) => u.id === id)?.name || ''),
+    () => typingUsers.filter((id) => id !== currentUser.id).map((id) => users.find((u) => u.id === id)?.name || ''),
     [typingUsers, users]
   );
 
@@ -51,8 +52,8 @@ export default function ChatTab({ project }: ChatTabProps) {
   // Mark messages as read on mount / when messages change
   useEffect(() => {
     messages.forEach((msg) => {
-      if (msg.senderId !== CURRENT_USER.id && !msg.readBy.includes(CURRENT_USER.id)) {
-        markAsRead(projectId, msg.id, CURRENT_USER.id);
+      if (msg.senderId !== currentUser.id && !msg.readBy.includes(currentUser.id)) {
+        markAsRead(projectId, msg.id, currentUser.id);
       }
     });
   }, [messages, projectId, markAsRead]);
@@ -60,9 +61,9 @@ export default function ChatTab({ project }: ChatTabProps) {
   const handleSendMessage = useCallback((content: string) => {
     addMessage(projectId, {
       projectId,
-      senderId: CURRENT_USER.id,
-      senderName: CURRENT_USER.name,
-      senderRole: CURRENT_USER.role,
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      senderRole: currentUser.role,
       content,
       messageType: 'text',
       mentions: [],
@@ -80,9 +81,9 @@ export default function ChatTab({ project }: ChatTabProps) {
 
     addMessage(projectId, {
       projectId,
-      senderId: CURRENT_USER.id,
-      senderName: CURRENT_USER.name,
-      senderRole: CURRENT_USER.role,
+      senderId: currentUser.id,
+      senderName: currentUser.name,
+      senderRole: currentUser.role,
       content: `Mengirim file: ${file.name}`,
       messageType: isImage ? 'image' : 'file',
       fileUrl: '#',
@@ -198,9 +199,9 @@ export default function ChatTab({ project }: ChatTabProps) {
                       <ChatMessageItem
                         key={msg.id}
                         message={msg}
-                        isOwnMessage={msg.senderId === CURRENT_USER.id}
+                        isOwnMessage={msg.senderId === currentUser.id}
                         showSender={showSender}
-                        currentUserId={CURRENT_USER.id}
+                        currentUserId={currentUser.id}
                       />
                     );
                   })}
@@ -217,14 +218,14 @@ export default function ChatTab({ project }: ChatTabProps) {
           onTyping={handleTyping}
           onFileUpload={handleFileUpload}
           users={users}
-          currentUserId={CURRENT_USER.id}
+          currentUserId={currentUser.id}
         />
       </div>
 
       {/* Members Panel */}
       <ChatMembersPanel
         users={users}
-        currentUserId={CURRENT_USER.id}
+        currentUserId={currentUser.id}
         typingUserNames={typingUserNames}
         isOpen={showMembers}
         onClose={() => setShowMembers(false)}

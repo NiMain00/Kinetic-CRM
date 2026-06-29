@@ -79,11 +79,6 @@ const MasterHolidayPage = LazyLoadPermission(lazy(() => import('@/features/maste
 const MasterLossReasonPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterLossReasonPage')), ['master_data']);
 const MasterPeriodPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterPeriodPage')), ['master_data']);
 
-// Users — hanya Super Admin
-const UsersPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UsersPage')), ['Super Admin']);
-const UserFormPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UserFormPage')), ['Super Admin']);
-const UserDetailPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/users/UserDetailPage')), ['Super Admin']);
-
 // Audit — hanya Super Admin
 const AuditPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/audit/AuditPage')), ['Super Admin']);
 const AuditLogPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/audit/AuditLogPage')), ['Super Admin']);

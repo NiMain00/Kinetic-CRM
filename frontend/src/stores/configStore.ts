@@ -96,34 +96,57 @@ const INITIAL_UPLOAD: UploadConfig = {
 };
 
 const INITIAL_ORG: OrgUnit[] = [
+  // Company
   { id: 'org-root', name: 'Kinetic Enterprise Group', code: 'CORP-01', parentId: null, unitType: 'company', isActive: true, sortOrder: 1 },
-  { id: 'div-ops', name: 'Operations Division', code: 'DIV-OPS-01', parentId: 'org-root', unitType: 'division', isActive: true, sortOrder: 10 },
-  // Branches
-  { id: 'br-ho', name: 'Head Office', code: 'BR-HO-001', parentId: 'div-ops', unitType: 'branch', city: 'Jakarta', province: 'DKI Jakarta', isActive: true, sortOrder: 20 },
-  { id: 'br-jkt-pst', name: 'Jakarta Pusat', code: 'BR-JKT-001', parentId: 'div-ops', unitType: 'branch', city: 'Jakarta Pusat', province: 'DKI Jakarta', isActive: true, sortOrder: 21 },
-  { id: 'br-jkt-sel', name: 'Jakarta Selatan', code: 'BR-JKT-002', parentId: 'div-ops', unitType: 'branch', city: 'Jakarta Selatan', province: 'DKI Jakarta', isActive: true, sortOrder: 22 },
-  { id: 'br-sub', name: 'Surabaya', code: 'BR-SUB-003', parentId: 'div-ops', unitType: 'branch', city: 'Surabaya', province: 'Jawa Timur', isActive: true, sortOrder: 23 },
-  { id: 'br-bdg', name: 'Bandung', code: 'BR-BDG-004', parentId: 'div-ops', unitType: 'branch', city: 'Bandung', province: 'Jawa Barat', isActive: true, sortOrder: 24 },
-  { id: 'br-mdn', name: 'Medan', code: 'BR-MDN-005', parentId: 'div-ops', unitType: 'branch', city: 'Medan', province: 'Sumatera Utara', isActive: true, sortOrder: 25 },
-  { id: 'br-mks', name: 'Makassar', code: 'BR-MKS-006', parentId: 'div-ops', unitType: 'branch', city: 'Makassar', province: 'Sulawesi Selatan', isActive: true, sortOrder: 26 },
-  { id: 'br-bpn', name: 'Balikpapan', code: 'BR-BPN-007', parentId: 'div-ops', unitType: 'branch', city: 'Balikpapan', province: 'Kalimantan Timur', isActive: true, sortOrder: 27 },
-  { id: 'br-pm', name: 'Project Management', code: 'BR-PM-001', parentId: 'div-ops', unitType: 'branch', isActive: true, sortOrder: 28 },
-  { id: 'br-sub-hub', name: 'Surabaya Hub', code: 'BR-SUB-HUB', parentId: 'div-ops', unitType: 'branch', city: 'Surabaya', province: 'Jawa Timur', isActive: true, sortOrder: 29 },
-  { id: 'br-mdn-reg', name: 'Medan Regional', code: 'BR-MDN-REG', parentId: 'div-ops', unitType: 'branch', city: 'Medan', province: 'Sumatera Utara', isActive: true, sortOrder: 30 },
-  { id: 'br-bpn-base', name: 'Balikpapan Base', code: 'BR-BPN-BASE', parentId: 'div-ops', unitType: 'branch', city: 'Balikpapan', province: 'Kalimantan Timur', isActive: true, sortOrder: 31 },
-  { id: 'br-bdg-utara', name: 'Bandung Utara', code: 'BR-BDG-UTARA', parentId: 'div-ops', unitType: 'branch', city: 'Bandung', province: 'Jawa Barat', isActive: true, sortOrder: 32 },
-  { id: 'br-jkt-central', name: 'Jakarta Central', code: 'BR-JKT-CENTRAL', parentId: 'div-ops', unitType: 'branch', city: 'Jakarta Pusat', province: 'DKI Jakarta', isActive: true, sortOrder: 33 },
-  { id: 'br-mdn-office', name: 'Medan Office', code: 'BR-MDN-OFFICE', parentId: 'div-ops', unitType: 'branch', city: 'Medan', province: 'Sumatera Utara', isActive: true, sortOrder: 34 },
-  // Departments
-  { id: 'dept-ops', name: 'Operations', code: 'DEPT-OPS', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 30 },
-  { id: 'dept-pmo', name: 'Project Management Office', code: 'DEPT-PMO', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 31 },
-  { id: 'dept-it', name: 'IT', code: 'DEPT-IT', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 32 },
-  { id: 'dept-qa', name: 'Quality Assurance', code: 'DEPT-QA', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 33 },
-  { id: 'dept-field', name: 'Field Operations', code: 'DEPT-FLD', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 34 },
-  { id: 'dept-fin', name: 'Finance', code: 'DEPT-FIN', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 35 },
-  { id: 'dept-lgl', name: 'Legal', code: 'DEPT-LGL', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 36 },
-  { id: 'dept-mkt', name: 'Marketing', code: 'DEPT-MKT', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 37 },
-  { id: 'dept-mgmt', name: 'Management', code: 'DEPT-MGMT', parentId: 'div-ops', unitType: 'department', isActive: true, sortOrder: 38 },
+
+  // ── Branches (direct under company) ──
+  { id: 'br-ho', name: 'Head Office', code: 'BR-HO-001', parentId: 'org-root', unitType: 'branch', city: 'Jakarta', province: 'DKI Jakarta', isActive: true, sortOrder: 10 },
+  { id: 'br-jkt-pst', name: 'Jakarta Pusat', code: 'BR-JKT-001', parentId: 'org-root', unitType: 'branch', city: 'Jakarta Pusat', province: 'DKI Jakarta', isActive: true, sortOrder: 11 },
+  { id: 'br-jkt-sel', name: 'Jakarta Selatan', code: 'BR-JKT-002', parentId: 'org-root', unitType: 'branch', city: 'Jakarta Selatan', province: 'DKI Jakarta', isActive: true, sortOrder: 12 },
+  { id: 'br-sub', name: 'Surabaya', code: 'BR-SUB-003', parentId: 'org-root', unitType: 'branch', city: 'Surabaya', province: 'Jawa Timur', isActive: true, sortOrder: 13 },
+  { id: 'br-bdg', name: 'Bandung', code: 'BR-BDG-004', parentId: 'org-root', unitType: 'branch', city: 'Bandung', province: 'Jawa Barat', isActive: true, sortOrder: 14 },
+  { id: 'br-mdn', name: 'Medan', code: 'BR-MDN-005', parentId: 'org-root', unitType: 'branch', city: 'Medan', province: 'Sumatera Utara', isActive: true, sortOrder: 15 },
+  { id: 'br-mks', name: 'Makassar', code: 'BR-MKS-006', parentId: 'org-root', unitType: 'branch', city: 'Makassar', province: 'Sulawesi Selatan', isActive: true, sortOrder: 16 },
+  { id: 'br-bpn', name: 'Balikpapan', code: 'BR-BPN-007', parentId: 'org-root', unitType: 'branch', city: 'Balikpapan', province: 'Kalimantan Timur', isActive: true, sortOrder: 17 },
+
+  // ── Head Office Departments ──
+  { id: 'dept-ho-ops', name: 'Operations', code: 'DEPT-HO-OPS', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-ho-pmo', name: 'Project Management Office', code: 'DEPT-HO-PMO', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 21 },
+  { id: 'dept-ho-it', name: 'IT', code: 'DEPT-HO-IT', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 22 },
+  { id: 'dept-ho-qa', name: 'Quality Assurance', code: 'DEPT-HO-QA', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 23 },
+  { id: 'dept-ho-fin', name: 'Finance', code: 'DEPT-HO-FIN', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 24 },
+  { id: 'dept-ho-mkt', name: 'Marketing', code: 'DEPT-HO-MKT', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 25 },
+  { id: 'dept-ho-hr', name: 'Human Resources', code: 'DEPT-HO-HR', parentId: 'br-ho', unitType: 'department', isActive: true, sortOrder: 26 },
+
+  // ── Jakarta Pusat Departments ──
+  { id: 'dept-jkt-ops', name: 'Operations', code: 'DEPT-JKT-OPS', parentId: 'br-jkt-pst', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-jkt-sales', name: 'Sales', code: 'DEPT-JKT-SALES', parentId: 'br-jkt-pst', unitType: 'department', isActive: true, sortOrder: 21 },
+  { id: 'dept-jkt-finance', name: 'Finance', code: 'DEPT-JKT-FIN', parentId: 'br-jkt-pst', unitType: 'department', isActive: true, sortOrder: 22 },
+
+  // ── Jakarta Selatan Departments ──
+  { id: 'dept-js-ops', name: 'Operations', code: 'DEPT-JS-OPS', parentId: 'br-jkt-sel', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-js-sales', name: 'Sales', code: 'DEPT-JS-SALES', parentId: 'br-jkt-sel', unitType: 'department', isActive: true, sortOrder: 21 },
+
+  // ── Surabaya Departments ──
+  { id: 'dept-sub-ops', name: 'Operations', code: 'DEPT-SUB-OPS', parentId: 'br-sub', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-sub-sales', name: 'Sales', code: 'DEPT-SUB-SALES', parentId: 'br-sub', unitType: 'department', isActive: true, sortOrder: 21 },
+  { id: 'dept-sub-finance', name: 'Finance', code: 'DEPT-SUB-FIN', parentId: 'br-sub', unitType: 'department', isActive: true, sortOrder: 22 },
+
+  // ── Bandung Departments ──
+  { id: 'dept-bdg-ops', name: 'Operations', code: 'DEPT-BDG-OPS', parentId: 'br-bdg', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-bdg-sales', name: 'Sales', code: 'DEPT-BDG-SALES', parentId: 'br-bdg', unitType: 'department', isActive: true, sortOrder: 21 },
+
+  // ── Medan Departments ──
+  { id: 'dept-mdn-ops', name: 'Operations', code: 'DEPT-MDN-OPS', parentId: 'br-mdn', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-mdn-sales', name: 'Sales', code: 'DEPT-MDN-SALES', parentId: 'br-mdn', unitType: 'department', isActive: true, sortOrder: 21 },
+
+  // ── Makassar Departments ──
+  { id: 'dept-mks-ops', name: 'Operations', code: 'DEPT-MKS-OPS', parentId: 'br-mks', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-mks-sales', name: 'Sales', code: 'DEPT-MKS-SALES', parentId: 'br-mks', unitType: 'department', isActive: true, sortOrder: 21 },
+
+  // ── Balikpapan Departments ──
+  { id: 'dept-bpn-ops', name: 'Operations', code: 'DEPT-BPN-OPS', parentId: 'br-bpn', unitType: 'department', isActive: true, sortOrder: 20 },
+  { id: 'dept-bpn-sales', name: 'Sales', code: 'DEPT-BPN-SALES', parentId: 'br-bpn', unitType: 'department', isActive: true, sortOrder: 21 },
 ];
 
 type ConfigEntityType = 'slaConfigs' | 'kpiTargets' | 'workflows' | 'connectors' | 'orgUnits';
@@ -196,7 +219,32 @@ export const useConfigStore = create<ConfigState>()(
     }),
     {
       name: 'kinetic-config',
-      version: 1,
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        const current = persistedState || {};
+        if (version < 2) {
+          // Merge: tambah item baru dari INITIAL_* yang belum ada di persisted, tanpa hapus data user
+          const mergeById = <T extends { id: string }>(persisted: T[] | undefined, initial: T[]): T[] => {
+            if (!persisted) return initial;
+            const map = new Map(persisted.map((item) => [item.id, item]));
+            for (const item of initial) {
+              if (!map.has(item.id)) {
+                persisted.push(item);
+              }
+            }
+            return persisted;
+          };
+          return {
+            ...current,
+            orgUnits: mergeById(current.orgUnits, INITIAL_ORG),
+            slaConfigs: mergeById(current.slaConfigs, INITIAL_SLA),
+            kpiTargets: mergeById(current.kpiTargets, INITIAL_TARGETS),
+            connectors: mergeById(current.connectors, INITIAL_CONNECTORS),
+            projectPhases: mergeById(current.projectPhases, INITIAL_PHASES),
+          };
+        }
+        return current;
+      },
     },
   ),
 );

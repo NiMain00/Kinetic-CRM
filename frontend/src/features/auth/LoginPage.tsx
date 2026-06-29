@@ -36,6 +36,7 @@ export default function LoginPage() {
 
       if (username === 'admin' && password === 'admin') {
         login('mock-token', {
+          id: 'usr-001',
           fullName: 'Administrator',
           name: 'Administrator',
           email: 'admin@kinetic-crm.com',
