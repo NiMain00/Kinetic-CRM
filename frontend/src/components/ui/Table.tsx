@@ -24,6 +24,11 @@ interface TableProps<T> {
   pageSize?: number;
   showPagination?: boolean;
   ariaLabel?: string;
+  // Row selection
+  selectedRows?: Set<string>;
+  onSelectionChange?: (selected: Set<string>) => void;
+  // Sticky header
+  stickyHeader?: boolean;
 }
 
 export default function Table<T = Record<string, unknown>>({
@@ -37,6 +42,9 @@ export default function Table<T = Record<string, unknown>>({
   pageSize = 0,
   showPagination = false,
   ariaLabel = 'Tabel data',
+  selectedRows,
+  onSelectionChange,
+  stickyHeader = false,
 }: TableProps<T>) {
   const isMobile = useIsMobile();
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -54,6 +62,46 @@ export default function Table<T = Record<string, unknown>>({
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [data, sortKey, sortDir]);
+
+  const isSelectionMode = !!onSelectionChange;
+  const allSelected = sortedData.length > 0 && selectedRows && sortedData.every((row) => selectedRows.has(keyExtractor(row)));
+
+  const toggleSelectAll = () => {
+    if (!onSelectionChange) return;
+    if (allSelected) {
+      onSelectionChange(new Set());
+    } else {
+      const all = new Set(sortedData.map((row) => keyExtractor(row)));
+      onSelectionChange(all);
+    }
+  };
+
+  const toggleRow = (row: T) => {
+    if (!onSelectionChange || !selectedRows) return;
+    const key = keyExtractor(row);
+    const next = new Set(selectedRows);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    onSelectionChange(next);
+  };
+
+  const selectionColumn: Column<T> = {
+    key: '_selection',
+    header: '',
+    className: 'w-10',
+    render: (row: T) => (
+      <input
+        type="checkbox"
+        checked={selectedRows?.has(keyExtractor(row)) || false}
+        onChange={() => toggleRow(row)}
+        onClick={(e) => e.stopPropagation()}
+        className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+        aria-label={`Pilih ${keyExtractor(row)}`}
+      />
+    ),
+  };
+
+  const displayColumns = isSelectionMode ? [selectionColumn, ...columns] : columns;
 
   const totalPages = showPagination && pageSize > 0 ? Math.ceil(sortedData.length / pageSize) : 1;
   const pagedData = showPagination && pageSize > 0 ? sortedData.slice(page * pageSize, (page + 1) * pageSize) : sortedData;
@@ -155,22 +203,36 @@ export default function Table<T = Record<string, unknown>>({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm" aria-label={ariaLabel} role="table">
           <thead>
-            <tr className="bg-surface-container-low border-b border-border">
-              {columns.map((col) => (
+            <tr className={`bg-surface-container-low border-b border-border ${stickyHeader ? 'sticky top-0 z-10' : ''}`}>
+              {displayColumns.map((col) => (
                 <th
                   key={col.key}
-                  onClick={() => handleSort(col)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort(col); } }}
-                  tabIndex={col.sortable ? 0 : undefined}
-                  role={col.sortable ? 'columnheader button' : 'columnheader'}
-                  aria-sort={sortKey === (col.sortKey || col.key) ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
-                  aria-label={getSortLabel(col)}
-                  className={`px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.sortable ? 'cursor-pointer hover:text-primary select-none' : ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}
+                  onClick={() => col.key === '_selection' ? toggleSelectAll() : handleSort(col)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (col.key === '_selection') toggleSelectAll(); else handleSort(col); } }}
+                  tabIndex={col.key === '_selection' ? 0 : col.sortable ? 0 : undefined}
+                  role={col.key === '_selection' ? 'checkbox' : (col.sortable ? 'columnheader button' : 'columnheader')}
+                  aria-checked={col.key === '_selection' ? allSelected : undefined}
+                  aria-sort={col.key !== '_selection' && sortKey === (col.sortKey || col.key) ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  aria-label={col.key === '_selection' ? 'Pilih semua' : getSortLabel(col)}
+                  className={`px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.key === '_selection' ? 'cursor-pointer' : col.sortable ? 'cursor-pointer hover:text-primary select-none' : ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}
                 >
                   <div className="flex items-center gap-1">
-                    {col.header}
-                    {col.sortable && (
-                      <span className="material-symbols-outlined text-[14px] text-outline" aria-hidden="true">{getSortIcon(col)}</span>
+                    {col.key === '_selection' ? (
+                      <input
+                        type="checkbox"
+                        checked={allSelected || false}
+                        onChange={toggleSelectAll}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                        aria-label="Pilih semua"
+                      />
+                    ) : (
+                      <>
+                        {col.header}
+                        {col.sortable && (
+                          <span className="material-symbols-outlined text-[14px] text-outline" aria-hidden="true">{getSortIcon(col)}</span>
+                        )}
+                      </>
                     )}
                   </div>
                 </th>
@@ -184,7 +246,7 @@ export default function Table<T = Record<string, unknown>>({
                 onClick={() => onRowClick?.(row)}
                 className={`${onRowClick ? 'cursor-pointer hover:bg-primary/5' : 'hover:bg-surface-container-low'} transition-colors`}
               >
-                {columns.map((col) => (
+                {displayColumns.map((col) => (
                   <td key={col.key} className={`px-6 py-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}>
                     {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                   </td>
