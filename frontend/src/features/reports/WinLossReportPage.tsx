@@ -1,49 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useProjectStore } from '@/stores/projectStore';
+
+function formatCurrency(value: number): string {
+  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
+  return `Rp ${value.toLocaleString('id-ID')}`;
+}
+
+function formatCurrencyFull(value: number): string {
+  return `Rp ${value.toLocaleString('id-ID')}`;
+}
 
 interface WinLossRecord {
   id: string;
   name: string;
   client: string;
-  value: string;
+  value: number;
+  valueFormatted: string;
   result: 'WIN' | 'LOSS';
   competitor: string;
   date: string;
 }
 
-const INITIAL_RECORDS: WinLossRecord[] = [
-  { id: 'PRJ-2023-089', name: 'MRT Phase 2B Signaling', client: 'Dishub DKI Jakarta', value: 'Rp 42.500.000.000', result: 'WIN', competitor: '-', date: '12 Oct 2023' },
-  { id: 'PRJ-2023-102', name: 'Digital Tower Control - Medan', client: 'Angkasa Pura II', value: 'Rp 12.800.000.000', result: 'LOSS', competitor: 'IndoTech Solutions', date: '08 Oct 2023' },
-  { id: 'PRJ-2023-114', name: 'Smart City Cloud Integration', client: 'Pemkot Surabaya', value: 'Rp 7.200.000.000', result: 'WIN', competitor: '-', date: '05 Oct 2023' },
-  { id: 'PRJ-2023-118', name: 'Cybersecurity Audit Framework', client: 'Bank Mandiri (Persero)', value: 'Rp 3.500.000.000', result: 'LOSS', competitor: 'SecureLine Ltd', date: '01 Oct 2023' },
-  { id: 'PRJ-2023-125', name: 'Logistics Hub IoT Network', client: 'PT Pos Indonesia', value: 'Rp 18.900.000.000', result: 'WIN', competitor: '-', date: '28 Sep 2023' },
-  { id: 'PRJ-2023-131', name: 'Fiber Optic Backbone - Sumatera', client: 'Telkom Group', value: 'Rp 64.200.000.000', result: 'LOSS', competitor: 'FiberNet Asia', date: '20 Sep 2023' },
-];
-
-const monthlyChart = [
-  { label: 'Jan', win: 40, loss: 20 },
-  { label: 'Feb', win: 55, loss: 25 },
-  { label: 'Mar', win: 70, loss: 15 },
-  { label: 'Apr', win: 45, loss: 50 },
-  { label: 'Mei', win: 60, loss: 30 },
-  { label: 'Jun', win: 65, loss: 20 },
-  { label: 'Jul', win: 85, loss: 10 },
-  { label: 'Agu', win: 50, loss: 40 },
-  { label: 'Sep', win: 55, loss: 35 },
-  { label: 'Okt', win: 95, loss: 5 },
-];
-
 export default function WinLossReportPage() {
   const navigate = useNavigate();
-  const [records] = useState(INITIAL_RECORDS);
+  const { projects } = useProjectStore();
   const [dateRange, setDateRange] = useState('Current Month');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const totalWon = records.filter((r) => r.result === 'WIN').length;
-  const totalLost = records.filter((r) => r.result === 'LOSS').length;
-  const totalProjects = records.length;
-  const winRate = totalProjects ? Math.round((totalWon / totalProjects) * 100) : 0;
+  const { records, totalWon, totalLost, totalProjects, winRate, totalValueWon, monthlyChart } = useMemo(() => {
+    const records: WinLossRecord[] = projects
+      .filter((p): p is typeof p & { winnerDetails: NonNullable<typeof p.winnerDetails> } =>
+        p.winnerDetails?.outcome === 'menang' || p.winnerDetails?.outcome === 'kalah'
+      )
+      .map((p) => ({
+        id: p.code || p.id,
+        name: p.name,
+        client: p.client,
+        value: p.pricing?.value || p.estimatedValue || 0,
+        valueFormatted: formatCurrencyFull(p.pricing?.value || p.estimatedValue || 0),
+        result: p.winnerDetails.outcome === 'menang' ? 'WIN' as const : 'LOSS' as const,
+        competitor: p.competitors?.map((c) => c.name).join(', ') || '-',
+        date: p.date,
+      }));
+
+    const totalWon = records.filter((r) => r.result === 'WIN').length;
+    const totalLost = records.filter((r) => r.result === 'LOSS').length;
+    const totalRecords = records.length;
+    const winRate = totalRecords ? Math.round((totalWon / totalRecords) * 100) : 0;
+    const totalValueWon = records
+      .filter((r) => r.result === 'WIN')
+      .reduce((sum, r) => sum + r.value, 0);
+
+    // Monthly chart
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const monthMap = new Map<string, { win: number; loss: number }>();
+    monthNames.forEach((m) => monthMap.set(m, { win: 0, loss: 0 }));
+
+    projects.forEach((p) => {
+      if (!p.winnerDetails?.outcome) return;
+      const d = new Date(p.date);
+      if (isNaN(d.getTime())) return;
+      const monthLabel = monthNames[d.getMonth()];
+      const entry = monthMap.get(monthLabel);
+      if (entry) {
+        if (p.winnerDetails.outcome === 'menang') entry.win++;
+        else if (p.winnerDetails.outcome === 'kalah') entry.loss++;
+      }
+    });
+
+    const maxVal = Math.max(1, ...Array.from(monthMap.values()).flatMap((v) => [v.win, v.loss]));
+    const monthlyChart = monthNames
+      .filter((m) => {
+        const d = monthMap.get(m)!;
+        return d.win > 0 || d.loss > 0;
+      })
+      .map((label) => ({
+        label,
+        win: Math.round(((monthMap.get(label)?.win || 0) / maxVal) * 100),
+        loss: Math.round(((monthMap.get(label)?.loss || 0) / maxVal) * 100),
+      }));
+
+    return { records, totalWon, totalLost, totalProjects: totalRecords, winRate, totalValueWon, monthlyChart };
+  }, [projects]);
 
   const filtered = records.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.client.toLowerCase().includes(searchQuery.toLowerCase()));
 
@@ -117,7 +159,7 @@ export default function WinLossReportPage() {
               </div>
             </div>
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Value Won</p>
-            <h3 className="font-extrabold text-on-surface text-xl mt-1">Rp 68.6B</h3>
+            <h3 className="font-extrabold text-on-surface text-xl mt-1">{formatCurrency(totalValueWon)}</h3>
           </div>
         </div>
 
@@ -175,7 +217,7 @@ export default function WinLossReportPage() {
                         <p className="text-[10px] text-outline">{r.id}</p>
                       </td>
                       <td className="px-6 py-4 text-secondary">{r.client}</td>
-                      <td className="px-6 py-4 font-mono font-bold text-on-surface">{r.value}</td>
+                      <td className="px-6 py-4 font-mono font-bold text-on-surface">{r.valueFormatted}</td>
                       <td className="px-6 py-4 text-center">
                         <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold badge-compact ${r.result === 'WIN' ? 'bg-success/10 text-success' : 'bg-red-50 text-red-600'}`}>{r.result}</span>
                       </td>

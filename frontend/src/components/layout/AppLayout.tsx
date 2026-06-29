@@ -89,7 +89,7 @@ export default function AppLayout() {
           {isFullBleed ? (
             <Outlet />
           ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-2 sm:px-3 lg:px-3">
               <Outlet />
             </div>
           )}

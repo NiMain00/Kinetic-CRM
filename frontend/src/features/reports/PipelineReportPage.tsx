@@ -1,7 +1,34 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useProjectStore } from '@/stores/projectStore';
 import { useOrgBranches } from '@/hooks/useConfigData';
+
+function formatCurrency(value: number): string {
+  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
+  return `Rp ${value.toLocaleString('id-ID')}`;
+}
+
+const STAGE_ORDER = ['RKS / Prospek', 'LPHS', 'Negosiasi Harga', 'Management Apprv', 'Final Kontrak'] as const;
+
+const STATUS_TO_STAGE: Record<string, string> = {
+  'RKS': 'RKS / Prospek',
+  'LPHS/SIOS': 'LPHS',
+  'Input Harga': 'Negosiasi Harga',
+  'Pemenang': 'Management Apprv',
+  'Executing': 'Final Kontrak',
+  'Target Delivery': 'Final Kontrak',
+};
+
+const STAGE_COLORS = [
+  'bg-primary',
+  'bg-[#1e5494]',
+  'bg-[#3c6ca3]',
+  'bg-[#5a84b3]',
+  'bg-[#789cc2]',
+];
 
 interface PipelineRecord {
   id: string;
@@ -12,32 +39,96 @@ interface PipelineRecord {
   estClose: string;
 }
 
-const PIPELINE_RECORDS: PipelineRecord[] = [
-  { id: 'PRJ-2024-0012', name: 'Modernization Grid - North Site', branch: 'Jakarta Pusat', stage: 'RKS / Prospek', value: 'Rp 42.500.000.000', estClose: '24 Nov 2024' },
-  { id: 'PRJ-2024-0089', name: 'Data Center Expansion Phase 2', branch: 'Surabaya Hub', stage: 'Negosiasi Harga', value: 'Rp 128.800.000.000', estClose: '15 Dec 2024' },
-  { id: 'PRJ-2024-0105', name: 'IoT Integration Fleet Management', branch: 'Medan Regional', stage: 'LPHS', value: 'Rp 12.450.000.000', estClose: '02 Dec 2024' },
-  { id: 'PRJ-2024-0144', name: 'Substation Automation System', branch: 'Jakarta Pusat', stage: 'Management Apprv', value: 'Rp 254.000.000.000', estClose: '10 Jan 2025' },
-  { id: 'PRJ-2024-0167', name: 'Fiber Optic Backhaul - Kalimantan', branch: 'Balikpapan Base', stage: 'RKS / Prospek', value: 'Rp 87.300.000.000', estClose: '20 Jan 2025' },
-  { id: 'PRJ-2024-0198', name: 'Smart Traffic System - Bandung', branch: 'Bandung Utara', stage: 'Final Kontrak', value: 'Rp 22.100.000.000', estClose: '05 Dec 2024' },
-];
-
-const funnelSteps = [
-  { id: '01', name: 'RKS / Prospek', count: '482 Projects', value: 'Rp 1.84T', color: 'bg-primary', scale: 'w-full' },
-  { id: '02', name: 'LPHS', count: '315 Projects', value: 'Rp 1.12T', color: 'bg-[#1e5494]', scale: 'w-[90%]' },
-  { id: '03', name: 'Negosiasi Harga', count: '224 Projects', value: 'Rp 840.5B', color: 'bg-[#3c6ca3]', scale: 'w-[80%]' },
-  { id: '04', name: 'Management Apprv', count: '186 Projects', value: 'Rp 425.2B', color: 'bg-[#5a84b3]', scale: 'w-[70%]' },
-  { id: '05', name: 'Final Kontrak', count: '41 Projects', value: 'Rp 54.1B', color: 'bg-[#789cc2]', scale: 'w-[60%]' },
-];
-
 export default function PipelineReportPage() {
   const navigate = useNavigate();
+  const { projects } = useProjectStore();
   const branches = useOrgBranches();
   const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
   const [viewMode, setViewMode] = useState<'count' | 'value'>('count');
   const [branchFilter, setBranchFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filtered = PIPELINE_RECORDS.filter((r) => {
+  const { pipelineRecords, funnelSteps, totalPipelineValue, totalActiveProjects, growthForecast, avgAging } = useMemo(() => {
+    const pipelineRecords: PipelineRecord[] = projects.map((p) => ({
+      id: p.code || p.id,
+      name: p.name,
+      branch: p.location || '-',
+      stage: STATUS_TO_STAGE[p.status] || p.status,
+      value: formatCurrency(p.estimatedValue || 0),
+      estClose: p.deadlineTender || p.date || '-',
+    }));
+
+    const totalPipelineValue = projects.reduce((sum, p) => sum + (p.estimatedValue || 0), 0);
+    const totalActiveProjects = projects.length;
+
+    // Group by stage
+    const stageMap = new Map<string, { count: number; value: number }>();
+    STAGE_ORDER.forEach((s) => stageMap.set(s, { count: 0, value: 0 }));
+    const otherStage = new Map<string, { count: number; value: number }>();
+
+    projects.forEach((p) => {
+      const stage = STATUS_TO_STAGE[p.status] || 'Lainnya';
+      const val = p.estimatedValue || 0;
+      if (stageMap.has(stage)) {
+        const entry = stageMap.get(stage)!;
+        entry.count++;
+        entry.value += val;
+      } else {
+        const entry = otherStage.get(stage) || { count: 0, value: 0 };
+        entry.count++;
+        entry.value += val;
+        otherStage.set(stage, entry);
+      }
+    });
+
+    // Build funnel with all stages that have data (including non-empty)
+    const allStages = [...STAGE_ORDER.filter((s) => (stageMap.get(s)?.count || 0) > 0)];
+    const maxCount = Math.max(1, ...Array.from(stageMap.values()).map((s) => s.count));
+    const maxValue = Math.max(1, ...Array.from(stageMap.values()).map((s) => s.value));
+    const maxForScale = viewMode === 'count' ? maxCount : maxValue;
+
+    const funnelSteps = allStages.map((name, i) => {
+      const data = stageMap.get(name)!;
+      const scaleVal = viewMode === 'count' ? data.count : data.value;
+      const scalePct = Math.max(20, Math.round((scaleVal / maxForScale) * 100));
+      // Map scalePct (20-100) to tailish width classes
+      const scaleClass = scalePct >= 95 ? 'w-full' :
+        scalePct >= 80 ? 'w-[90%]' :
+        scalePct >= 65 ? 'w-[80%]' :
+        scalePct >= 50 ? 'w-[70%]' :
+        scalePct >= 35 ? 'w-[60%]' : 'w-[50%]';
+
+      return {
+        id: String(i + 1).padStart(2, '0'),
+        name,
+        count: `${data.count} Project${data.count !== 1 ? 's' : ''}`,
+        value: formatCurrency(data.value),
+        color: STAGE_COLORS[i] || 'bg-primary',
+        scale: scaleClass,
+      };
+    });
+
+    // Growth forecast: YoY comparison
+    const thisYear = projects.filter((p) => new Date(p.date).getFullYear() === 2025).length;
+    const lastYear = projects.filter((p) => new Date(p.date).getFullYear() === 2024).length;
+    const growthForecast = lastYear > 0 ? `+${Math.round(((thisYear - lastYear) / lastYear) * 100)}%` : '+0%';
+
+    // Average aging: average days since project creation
+    const now = new Date();
+    const agingDays = projects
+      .map((p) => {
+        const d = new Date(p.date);
+        return isNaN(d.getTime()) ? 0 : Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+      })
+      .filter((days) => days > 0);
+    const avgAging = agingDays.length > 0
+      ? `${Math.round(agingDays.reduce((a, b) => a + b, 0) / agingDays.length)} Days`
+      : '-';
+
+    return { pipelineRecords, funnelSteps, totalPipelineValue, totalActiveProjects, growthForecast, avgAging };
+  }, [projects, viewMode]);
+
+  const filtered = pipelineRecords.filter((r) => {
     const matchBranch = branchFilter === 'All' || r.branch === branchFilter;
     const matchSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchBranch && matchSearch;
@@ -74,7 +165,7 @@ export default function PipelineReportPage() {
             </div>
             <div>
               <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Pipeline Value</p>
-              <p className="font-extrabold text-on-surface text-base">Rp 4.28T</p>
+              <p className="font-extrabold text-on-surface text-base">{formatCurrency(totalPipelineValue)}</p>
             </div>
           </div>
           <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
@@ -83,7 +174,7 @@ export default function PipelineReportPage() {
             </div>
             <div>
               <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Active Projects</p>
-              <p className="font-extrabold text-on-surface text-base">1,248</p>
+              <p className="font-extrabold text-on-surface text-base">{totalActiveProjects}</p>
             </div>
           </div>
           <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
@@ -92,7 +183,7 @@ export default function PipelineReportPage() {
             </div>
             <div>
               <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Growth Forecast</p>
-              <p className="font-extrabold text-indigo-600 text-base">+12.4%</p>
+              <p className="font-extrabold text-indigo-600 text-base">{growthForecast}</p>
             </div>
           </div>
           <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
@@ -101,7 +192,7 @@ export default function PipelineReportPage() {
             </div>
             <div>
               <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Average Aging</p>
-              <p className="font-extrabold text-on-surface text-base font-mono">42 Days</p>
+              <p className="font-extrabold text-on-surface text-base font-mono">{avgAging}</p>
             </div>
           </div>
         </div>
@@ -191,7 +282,7 @@ export default function PipelineReportPage() {
             </table>
           </div>
           <div className="p-4 bg-surface-container-low border-t border-border text-xs text-secondary text-center">
-            Menampilkan {filtered.length} dari {PIPELINE_RECORDS.length} records
+            Menampilkan {filtered.length} dari {pipelineRecords.length} records
           </div>
         </div>
       </div>

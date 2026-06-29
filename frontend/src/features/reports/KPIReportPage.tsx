@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useProjectStore } from '@/stores/projectStore';
 import type { KpiTarget } from '@/types/domain/users';
 
-const INITIAL_KPI_DATA: KpiTarget[] = [
-  { id: 'kpi-1', name: 'Win Rate', category: 'win_rate', targetValue: 75, actualValue: 65.5, unit: '%', period: '2024', status: 'at_risk' },
-  { id: 'kpi-2', name: 'Total Revenue', category: 'revenue', targetValue: 500000000000, actualValue: 425000000000, unit: 'Rp', period: '2024', status: 'at_risk' },
-  { id: 'kpi-3', name: 'Project Count', category: 'project_count', targetValue: 50, actualValue: 42, unit: 'proyek', period: '2024', status: 'on_track' },
-  { id: 'kpi-4', name: 'Average Margin', category: 'avg_margin', targetValue: 20, actualValue: 18.4, unit: '%', period: '2024', status: 'on_track' },
-  { id: 'kpi-5', name: 'SLA Compliance', category: 'sla_compliance', targetValue: 98, actualValue: 94.2, unit: '%', period: '2024', status: 'behind' },
-  { id: 'kpi-6', name: 'Customer Satisfaction', category: 'customer_satisfaction', targetValue: 4.5, actualValue: 4.2, unit: '/5', period: '2024', status: 'on_track' },
-];
+function formatCurrency(value: number): string {
+  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
+  return `Rp ${value.toLocaleString('id-ID')}`;
+}
+
+function getKpiStatus(actual: number, target: number): KpiTarget['status'] {
+  const ratio = target > 0 ? actual / target : 0;
+  if (ratio >= 1.0) return 'achieved';
+  if (ratio >= 0.9) return 'on_track';
+  if (ratio >= 0.75) return 'at_risk';
+  return 'behind';
+}
 
 const statusConfig: Record<string, { label: string; class: string; barClass: string }> = {
   achieved: { label: 'Tercapai', class: 'bg-success/10 text-success', barClass: 'bg-success' },
@@ -20,14 +27,16 @@ const statusConfig: Record<string, { label: string; class: string; barClass: str
 };
 
 const formatValue = (kpi: KpiTarget) => {
-  if (kpi.unit === 'Rp') return `Rp ${(kpi.actualValue / 1000000000).toFixed(1)}B`;
+  if (kpi.unit === 'Rp') return formatCurrency(kpi.actualValue);
   if (kpi.unit === '/5') return kpi.actualValue.toFixed(1);
+  if (kpi.unit === '%') return `${kpi.actualValue}%`;
   return `${kpi.actualValue}${kpi.unit}`;
 };
 
 const formatTarget = (kpi: KpiTarget) => {
-  if (kpi.unit === 'Rp') return `Rp ${(kpi.targetValue / 1000000000).toFixed(1)}B`;
+  if (kpi.unit === 'Rp') return formatCurrency(kpi.targetValue);
   if (kpi.unit === '/5') return kpi.targetValue.toFixed(1);
+  if (kpi.unit === '%') return `${kpi.targetValue}%`;
   return `${kpi.targetValue}${kpi.unit}`;
 };
 
@@ -35,8 +44,97 @@ const getPercent = (actual: number, target: number) => Math.min(100, Math.round(
 
 export default function KPIReportPage() {
   const navigate = useNavigate();
+  const { projects } = useProjectStore();
   const [period, setPeriod] = useState('2024');
-  const [kpiData] = useState(INITIAL_KPI_DATA);
+
+  const kpiData = useMemo((): KpiTarget[] => {
+    const won = projects.filter((p) => p.winnerDetails?.outcome === 'menang').length;
+    const lost = projects.filter((p) => p.winnerDetails?.outcome === 'kalah').length;
+    const totalDecided = won + lost;
+    const winRate = totalDecided > 0 ? Math.round((won / totalDecided) * 100) : 0;
+
+    const totalRevenue = projects.reduce((sum, p) => sum + (p.estimatedValue || 0), 0);
+    const totalProjects = projects.length;
+
+    const projectsWithMargin = projects.filter((p) => p.pricing?.margin != null);
+    const avgMargin = projectsWithMargin.length > 0
+      ? Math.round((projectsWithMargin.reduce((sum, p) => sum + (p.pricing?.margin || 0), 0) / projectsWithMargin.length) * 10) / 10
+      : 0;
+
+    const projectsWithDelivery = projects.filter((p) => p.delivery?.milestones && p.delivery.milestones.length > 0);
+    const slaCompliant = projectsWithDelivery.filter((p) =>
+      p.delivery!.milestones!.every((m) => m.completed)
+    ).length;
+    const slaRate = projectsWithDelivery.length > 0
+      ? Math.round((slaCompliant / projectsWithDelivery.length) * 100)
+      : 0;
+
+    const onTrack = projects.filter((p) => p.status === 'Executing' || p.status === 'Target Delivery').length;
+    const onTrackPct = totalProjects > 0 ? Math.round((onTrack / totalProjects) * 100) : 0;
+
+    return [
+      {
+        id: 'kpi-1',
+        name: 'Win Rate',
+        category: 'win_rate',
+        targetValue: 75,
+        actualValue: winRate,
+        unit: '%',
+        period,
+        status: getKpiStatus(winRate, 75),
+      },
+      {
+        id: 'kpi-2',
+        name: 'Total Pipeline Revenue',
+        category: 'revenue',
+        targetValue: Math.max(totalRevenue, 500_000_000_000),
+        actualValue: totalRevenue,
+        unit: 'Rp',
+        period,
+        status: totalRevenue >= 500_000_000_000 ? 'on_track' : 'at_risk',
+      },
+      {
+        id: 'kpi-3',
+        name: 'Project Count',
+        category: 'project_count',
+        targetValue: Math.max(totalProjects, 50),
+        actualValue: totalProjects,
+        unit: ' proyek',
+        period,
+        status: totalProjects >= 10 ? 'on_track' : totalProjects >= 5 ? 'at_risk' : 'behind',
+      },
+      {
+        id: 'kpi-4',
+        name: 'Average Margin',
+        category: 'avg_margin',
+        targetValue: 20,
+        actualValue: avgMargin,
+        unit: '%',
+        period,
+        status: getKpiStatus(avgMargin, 20),
+      },
+      {
+        id: 'kpi-5',
+        name: 'SLA Compliance',
+        category: 'sla_compliance',
+        targetValue: 98,
+        actualValue: slaRate,
+        unit: '%',
+        period,
+        status: getKpiStatus(slaRate, 98),
+      },
+      {
+        id: 'kpi-6',
+        name: 'On Track Projects',
+        category: 'customer_satisfaction',
+        targetValue: Math.max(totalProjects, 10),
+        actualValue: onTrackPct,
+        unit: '%',
+        period,
+        status: getKpiStatus(onTrackPct, 80),
+      },
+    ];
+  }, [projects, period]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">

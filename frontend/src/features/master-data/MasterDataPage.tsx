@@ -300,7 +300,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
   };
 
   const tabClass = (tab: SuperTab) =>
-    `flex items-center gap-2 px-4 py-3 font-semibold text-xs border-b-2 transition-all cursor-pointer ${
+    `flex items-center gap-1.5 px-2.5 py-1.5 font-semibold text-[10px] border-b-2 transition-all cursor-pointer whitespace-nowrap ${
       activeTab === tab
         ? 'border-primary text-primary bg-primary/5'
         : 'border-transparent text-secondary hover:text-primary hover:bg-surface-container-high'
@@ -482,26 +482,16 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background text-on-surface">
       
-      {/* 1. GAP-03 Banner compliance notification */}
-      <div className="bg-primary/5 border-b border-primary/20 p-3 px-8 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2.5">
-          <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-          <p className="text-[11px] font-medium text-secondary">
-            <span className="font-bold text-primary">GAP-03 & Security Bound:</span> Seluruh pilar konfigurasi disinkronisasikan ke master database terpusat untuk integritas regional.
-          </p>
+      {/* Header — title inline with search */}
+      <div className="bg-white border-b border-border shrink-0 px-8 py-2 flex items-center justify-between gap-3 shadow-sm">
+        <div className="flex items-center gap-3 min-w-0">
+          <h2 className="text-sm font-extrabold text-on-surface whitespace-nowrap">Ruang Kerja Data Master</h2>
+          <span className="hidden sm:block w-px h-4 bg-border/60" />
+          <p className="hidden sm:block text-[10px] text-outline truncate">Konsol operasi pusat untuk memelihara data master regional.</p>
         </div>
-        <span className="text-[9px] uppercase font-mono tracking-widest bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Database Tersinkronisasi</span>
-      </div>
 
-      {/* 2. Top Header and Super Tabs list */}
-      <div className="bg-white border-b border-border shrink-0 px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-sm">
-        <div>
-          <h2 className="font-display-title text-base font-extrabold text-on-surface">Ruang Kerja Data Master</h2>
-          <p className="text-outline text-[11px]">Konsol operasi pusat untuk memelihara normalisasi, kuesioner, kompetitor, dan hak departemen regional.</p>
-        </div>
-        
         {/* Search Query Filter input */}
-        <div className="relative w-64 size-sm shrink-0">
+        <div className="relative w-56 shrink-0">
           <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
           <input
             type="text"
@@ -513,72 +503,72 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         </div>
       </div>
 
-      {/* Under-header Navigation Bar Tabs */}
-      <div className="bg-white px-8 flex overflow-x-auto border-b border-border shrink-0 custom-scrollbar scrollbar-hide">
+      {/* Under-header Navigation Bar Tabs — compact */}
+      <div className="bg-white px-6 flex overflow-x-auto border-b border-border shrink-0 custom-scrollbar scrollbar-hide">
         <button onClick={() => { setActiveTab('customers'); setSearchQuery(''); }} className={tabClass('customers')}>
-          <span className="material-symbols-outlined text-sm">groups</span> Pelanggan
+          <span className="material-symbols-outlined text-xs">groups</span> Pelanggan
         </button>
         <button onClick={() => { setActiveTab('industries'); setSearchQuery(''); }} className={tabClass('industries')}>
-          <span className="material-symbols-outlined text-sm">category</span> Industri
+          <span className="material-symbols-outlined text-xs">category</span> Industri
         </button>
         <button onClick={() => { setActiveTab('categories'); setSearchQuery(''); }} className={tabClass('categories')}>
-          <span className="material-symbols-outlined text-sm">folder</span> Kategori Proyek
+          <span className="material-symbols-outlined text-xs">folder</span> Kategori Proyek
         </button>
         <button onClick={() => { setActiveTab('competitors'); setSearchQuery(''); }} className={tabClass('competitors')}>
-          <span className="material-symbols-outlined text-sm">factory</span> Kompetitor
+          <span className="material-symbols-outlined text-xs">factory</span> Kompetitor
         </button>
         <button onClick={() => { setActiveTab('statuses'); setSearchQuery(''); }} className={tabClass('statuses')}>
-          <span className="material-symbols-outlined text-sm">flag</span> Status Proyek
+          <span className="material-symbols-outlined text-xs">flag</span> Status Proyek
         </button>
         <button onClick={() => { setActiveTab('doc_types'); setSearchQuery(''); }} className={tabClass('doc_types')}>
-          <span className="material-symbols-outlined text-sm">description</span> Tipe Dokumen
+          <span className="material-symbols-outlined text-xs">description</span> Tipe Dokumen
         </button>
         <button onClick={() => { setActiveTab('questions'); setSearchQuery(''); }} className={tabClass('questions')}>
-          <span className="material-symbols-outlined text-sm">list_alt</span> Pertanyaan
+          <span className="material-symbols-outlined text-xs">list_alt</span> Pertanyaan
         </button>
         <button onClick={() => { setActiveTab('question_types'); setSearchQuery(''); }} className={tabClass('question_types')}>
-          <span className="material-symbols-outlined text-sm">rule</span> Tipe Respon
+          <span className="material-symbols-outlined text-xs">rule</span> Tipe Respon
         </button>
         <button onClick={() => { setActiveTab('periods'); setSearchQuery(''); }} className={tabClass('periods')}>
-          <span className="material-symbols-outlined text-sm">calendar_month</span> Periode
+          <span className="material-symbols-outlined text-xs">calendar_month</span> Periode
         </button>
         <button onClick={() => { setActiveTab('holidays'); setSearchQuery(''); }} className={tabClass('holidays')}>
-          <span className="material-symbols-outlined text-sm">celebration</span> Hari Libur
+          <span className="material-symbols-outlined text-xs">celebration</span> Hari Libur
         </button>
         <button onClick={() => { setActiveTab('loss_reasons'); setSearchQuery(''); }} className={tabClass('loss_reasons')}>
-          <span className="material-symbols-outlined text-sm">sentiment_dissatisfied</span> Alasan Kekalahan
+          <span className="material-symbols-outlined text-xs">sentiment_dissatisfied</span> Alasan Kekalahan
         </button>
         <button onClick={() => { setActiveTab('departments'); setSearchQuery(''); }} className={tabClass('departments')}>
-          <span className="material-symbols-outlined text-sm">domain</span> Departemen
+          <span className="material-symbols-outlined text-xs">domain</span> Departemen
         </button>
         <button onClick={() => { setActiveTab('users'); setSearchQuery(''); }} className={tabClass('users')}>
-          <span className="material-symbols-outlined text-sm">manage_accounts</span> Pengguna
+          <span className="material-symbols-outlined text-xs">manage_accounts</span> Pengguna
         </button>
         <button onClick={() => { setActiveTab('audit_logs'); setSearchQuery(''); }} className={tabClass('audit_logs')}>
-          <span className="material-symbols-outlined text-sm">security</span> Log Audit
+          <span className="material-symbols-outlined text-xs">security</span> Log Audit
         </button>
       </div>
 
-      {/* 3. SCROLLABLE INNER PANEL SECTION */}
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+      {/* 3. SCROLLABLE INNER PANEL SECTION — compact */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar">
 
         {/* ==================== CUSTOMER (Doc 021) ==================== */}
         {activeTab === 'customers' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">groups</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">groups</span>
                   Master Pelanggan
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Referensi customer terpusat untuk prospek dan proyek. Doc 021 §1.</p>
+                <p className="text-outline text-[10px] mt-0.5">Referensi customer terpusat untuk prospek dan proyek. Doc 021 §1.</p>
               </div>
-              <button onClick={() => { setNewCust({}); setCustomerModalOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Pelanggan
+              <button onClick={() => { setNewCust({}); setCustomerModalOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Pelanggan
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={customerColumns}
                 data={customers.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -594,21 +584,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== INDUSTRY (Doc 021 §3) ==================== */}
         {activeTab === 'industries' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">category</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">category</span>
                   Master Industri
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Segmen industri untuk customer. Doc 021 §3.</p>
+                <p className="text-outline text-[10px] mt-0.5">Segmen industri untuk customer. Doc 021 §3.</p>
               </div>
-              <button onClick={() => { setEditingIndustry({ id: '', name: '', code: '', is_active: true }); setIndustryDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Industri
+              <button onClick={() => { setEditingIndustry({ id: '', name: '', code: '', is_active: true }); setIndustryDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Industri
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={industryColumns}
                 data={industries.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -624,21 +614,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== PROJECT CATEGORY (Doc 021 §2) ==================== */}
         {activeTab === 'categories' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">folder</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">folder</span>
                   Kategori Proyek
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Klasifikasi proyek berdasarkan jenis pekerjaan. Doc 021 §2.</p>
+                <p className="text-outline text-[10px] mt-0.5">Klasifikasi proyek berdasarkan jenis pekerjaan. Doc 021 §2.</p>
               </div>
-              <button onClick={() => { setEditingCategory({ id: '', name: '', code: '', description: '', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#6B7280', sort_order: 0, is_active: true }); setCategoryDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Kategori
+              <button onClick={() => { setEditingCategory({ id: '', name: '', code: '', description: '', requires_lphs: true, requires_rks: true, default_workflow_type: 'tender', color_hex: '#6B7280', sort_order: 0, is_active: true }); setCategoryDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Kategori
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={categoryColumns}
                 data={categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -654,21 +644,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== COMPETITOR (Doc 023) ==================== */}
         {activeTab === 'competitors' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">factory</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">factory</span>
                   Master Kompetitor
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Entitas kompetitor ternormalisasi untuk analisis win rate. Doc 023.</p>
+                <p className="text-outline text-[10px] mt-0.5">Entitas kompetitor ternormalisasi untuk analisis win rate. Doc 023.</p>
               </div>
-              <button onClick={() => { setNewComp({}); setCompDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Kompetitor
+              <button onClick={() => { setNewComp({}); setCompDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Kompetitor
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={competitorColumns}
                 data={competitors.filter(x => x.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -684,21 +674,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== PROJECT STATUS (Doc 022 §1) ==================== */}
         {activeTab === 'statuses' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">flag</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">flag</span>
                   Status Proyek
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Status proyek dinamis yang dapat dikonfigurasi. Doc 022 §1.</p>
+                <p className="text-outline text-[10px] mt-0.5">Status proyek dinamis yang dapat dikonfigurasi. Doc 022 §1.</p>
               </div>
-              <button onClick={() => { setEditingStatus({ id: '', code: '', label: '', description: '', color_hex: '#6B7280', text_color_hex: '#FFFFFF', sort_order: 0, is_system: false, is_terminal: false, is_active: true, applicable_to: 'both' }); setStatusDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Status
+              <button onClick={() => { setEditingStatus({ id: '', code: '', label: '', description: '', color_hex: '#6B7280', text_color_hex: '#FFFFFF', sort_order: 0, is_system: false, is_terminal: false, is_active: true, applicable_to: 'both' }); setStatusDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Status
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={statusColumns}
                 data={projectStatuses.filter(s => s.label.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -714,21 +704,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== DOCUMENT TYPE (Doc 022 §2) ==================== */}
         {activeTab === 'doc_types' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">description</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">description</span>
                   Tipe Dokumen
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Klasifikasi dokumen untuk upload dan validasi. Doc 022 §2.</p>
+                <p className="text-outline text-[10px] mt-0.5">Klasifikasi dokumen untuk upload dan validasi. Doc 022 §2.</p>
               </div>
-              <button onClick={() => { setEditingDocType({ id: '', name: '', code: '', description: '', allowed_extensions: ['pdf'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'both', sort_order: 0, is_system: false, is_active: true }); setDocTypeDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Tipe
+              <button onClick={() => { setEditingDocType({ id: '', name: '', code: '', description: '', allowed_extensions: ['pdf'], max_size_mb: 25, is_required_at_stage: null, applicable_to: 'both', sort_order: 0, is_system: false, is_active: true }); setDocTypeDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Tipe
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={docTypeColumns}
                 data={documentTypes.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -752,18 +742,18 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== QUESTION TYPE (Doc 024 §2) ==================== */}
         {activeTab === 'question_types' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
-              <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                <span className="material-symbols-outlined mr-1.5 text-primary">rule</span>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+              <h3 className="text-xs font-bold text-on-surface flex items-center">
+                <span className="material-symbols-outlined mr-1.5 text-primary text-sm">rule</span>
                 Tipe Pertanyaan
               </h3>
-              <button onClick={() => { setEditingQuestionType({ id: '', name: '', code: '', description: '', has_options: false, validation_config: '{}', is_system: false, is_active: true }); setQtDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add_circle</span> Tambah Tipe
+              <button onClick={() => { setEditingQuestionType({ id: '', name: '', code: '', description: '', has_options: false, validation_config: '{}', is_system: false, is_active: true }); setQtDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add_circle</span> Tambah Tipe
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={questionTypeColumns}
                 data={questionTypes.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -779,21 +769,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== REPORTING PERIOD (Doc 025 §2) ==================== */}
         {activeTab === 'periods' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">calendar_month</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">calendar_month</span>
                   Periode Pelaporan
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Periode untuk laporan, target, dan SLA. Doc 025 §2.</p>
+                <p className="text-outline text-[10px] mt-0.5">Periode untuk laporan, target, dan SLA. Doc 025 §2.</p>
               </div>
-              <button onClick={() => { setEditingPeriod({ id: '', name: '', code: '', type: 'quarterly', year: 2026, start_date: '', end_date: '', is_active: true, is_locked: false, notes: '' }); setPeriodDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Periode
+              <button onClick={() => { setEditingPeriod({ id: '', name: '', code: '', type: 'quarterly', year: 2026, start_date: '', end_date: '', is_active: true, is_locked: false, notes: '' }); setPeriodDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Periode
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={periodColumns}
                 data={periods.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -809,21 +799,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== PUBLIC HOLIDAY (Doc 025 §3) ==================== */}
         {activeTab === 'holidays' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">celebration</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">celebration</span>
                   Hari Libur Nasional
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Kalender hari libur untuk kalkulasi SLA hari kerja. Doc 025 §3.</p>
+                <p className="text-outline text-[10px] mt-0.5">Kalender hari libur untuk kalkulasi SLA hari kerja. Doc 025 §3.</p>
               </div>
-              <button onClick={() => { setEditingHoliday({ id: '', date: '', name: '', type: 'national', year: 2026, is_active: true }); setHolidayDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Libur
+              <button onClick={() => { setEditingHoliday({ id: '', date: '', name: '', type: 'national', year: 2026, is_active: true }); setHolidayDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Libur
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={holidayColumns}
                 data={holidays.filter(h => h.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -839,21 +829,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== LOSS REASON (Doc 026 §1) ==================== */}
         {activeTab === 'loss_reasons' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">sentiment_dissatisfied</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">sentiment_dissatisfied</span>
                   Alasan Kekalahan
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Alasan kekalahan tender terstandar untuk analisis. Doc 026 §1.</p>
+                <p className="text-outline text-[10px] mt-0.5">Alasan kekalahan tender terstandar untuk analisis. Doc 026 §1.</p>
               </div>
-              <button onClick={() => { setEditingLossReason({ id: '', name: '', code: '', category: 'harga', description: '', sort_order: 0, is_active: true }); setLossReasonDrawerOpen(true); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Alasan
+              <button onClick={() => { setEditingLossReason({ id: '', name: '', code: '', category: 'harga', description: '', sort_order: 0, is_active: true }); setLossReasonDrawerOpen(true); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Alasan
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={lossReasonColumns}
                 data={lossReasons.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -869,21 +859,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== DEPARTEMEN ==================== */}
         {activeTab === 'departments' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">domain</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">domain</span>
                   Master Departemen Organisasi
                 </h3>
-                <p className="text-secondary text-xs mt-0.5 font-semibold">Tentukan departemen resmi sistem, koordinator kepala, serta wilayah afiliasi divisi penanggung jawab.</p>
+                <p className="text-outline text-[10px] mt-0.5 font-medium">Tentukan departemen resmi sistem, koordinator kepala, serta wilayah afiliasi divisi penanggung jawab.</p>
               </div>
-              <button onClick={() => { onShowNotification('Pendaftaran departemen baru disimulasikan.', 'success'); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                <span className="material-symbols-outlined text-[16px]">add</span> Tambah Departemen
+              <button onClick={() => { onShowNotification('Pendaftaran departemen baru disimulasikan.', 'success'); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                <span className="material-symbols-outlined text-[14px]">add</span> Tambah Departemen
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={departmentColumns}
                 data={departments.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -895,10 +885,10 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-6">
-              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3"><span className="material-symbols-outlined text-primary bg-primary/10 p-2.5 rounded-full text-base">groups</span><div><p className="text-[10px] text-outline font-bold uppercase tracking-wider">Total Departemen</p><p className="text-lg font-extrabold text-on-surface">24 Internal</p></div></div>
-              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3 animate-fade-in text-left"><span className="material-symbols-outlined text-success bg-green-50 p-2.5 rounded-full text-base">verified</span><div><p className="text-[10px] text-outline font-bold uppercase tracking-wider">Aktif Beroperasi</p><p className="text-lg font-extrabold text-on-surface">21 Aktif</p></div></div>
-              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3"><span className="material-symbols-outlined text-secondary bg-surface-container-high p-2.5 rounded-full text-base">cancel</span><div><p className="text-[10px] text-outline font-bold uppercase tracking-wider">Inaktif / Ditahan</p><p className="text-lg font-extrabold text-on-surface">03 Nonaktif</p></div></div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 bg-white border border-border rounded-xl shadow-sm flex items-center gap-2"><span className="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-full text-sm">groups</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Total Departemen</p><p className="text-sm font-extrabold text-on-surface">24 Internal</p></div></div>
+              <div className="p-3 bg-white border border-border rounded-xl shadow-sm flex items-center gap-2 animate-fade-in text-left"><span className="material-symbols-outlined text-success bg-green-50 p-2 rounded-full text-sm">verified</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Aktif Beroperasi</p><p className="text-sm font-extrabold text-on-surface">21 Aktif</p></div></div>
+              <div className="p-3 bg-white border border-border rounded-xl shadow-sm flex items-center gap-2"><span className="material-symbols-outlined text-secondary bg-surface-container-high p-2 rounded-full text-sm">cancel</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Inaktif / Ditahan</p><p className="text-sm font-extrabold text-on-surface">03 Nonaktif</p></div></div>
             </div>
           </div>
         )}
@@ -910,26 +900,26 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
         {/* ==================== SYSTEM AUDIT LOG ==================== */}
         {activeTab === 'audit_logs' && (
-          <div className="space-y-6 text-left">
-            <div className="flex justify-between items-center bg-white p-5 border border-border rounded-xl shadow-sm">
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
               <div>
-                <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
-                  <span className="material-symbols-outlined mr-1.5 text-primary">security_update_warning</span>
+                <h3 className="text-xs font-bold text-on-surface flex items-center">
+                  <span className="material-symbols-outlined mr-1.5 text-primary text-sm">security_update_warning</span>
                   Jejak Audit Sistem & Log Keamanan
                 </h3>
-                <p className="text-secondary text-xs mt-0.5">Metadata operasional, perubahan status RKS komparatif, jejak login administrator, dan jejak mutasi data.</p>
+                <p className="text-outline text-[10px] mt-0.5">Metadata operasional, perubahan status RKS komparatif, jejak login administrator, dan jejak mutasi data.</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3.5 py-1.5 bg-white border border-border hover:bg-surface-container-low text-secondary text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">download</span> Ekspor CSV
+                <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3 py-1 bg-white border border-border hover:bg-surface-container-low text-secondary text-[10px] font-semibold rounded-lg flex items-center gap-1 cursor-pointer shadow-sm">
+                  <span className="material-symbols-outlined text-[14px]">download</span> Ekspor CSV
                 </button>
-                <button onClick={() => { onShowNotification('Log audit terupdate secara synchronous.', 'success'); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
-                  <span className="material-symbols-outlined text-[16px]">refresh</span> Perbarui Data
+                <button onClick={() => { onShowNotification('Log audit terupdate secara synchronous.', 'success'); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
+                  <span className="material-symbols-outlined text-[14px]">refresh</span> Perbarui Data
                 </button>
               </div>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-2">
+            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={auditLogColumns}
                 data={auditLogs.filter(log => log.user.toLowerCase().includes(searchQuery.toLowerCase()) || log.entity.toLowerCase().includes(searchQuery.toLowerCase()))}
