@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Card, Button } from '@/components/ui';
+import { PageContainer, PageHeader } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { ApprovalItem, SlaConfig } from '../../types/domain';
 import { useApprovalStore } from '@/stores/approvalStore';
@@ -179,25 +181,16 @@ export default function ApprovalInboxView({
         <span className="font-mono-data text-on-surface">{formatRelativeTime(row.waitingSince)}</span>
       </div>
       <div className="flex gap-2">
-        <button
-          onClick={() => handleReview(row)}
-          className="flex-1 py-2.5 bg-primary text-white rounded-lg font-label-sm text-sm font-semibold touch-min-h"
-        >
+        <Button variant="primary" size="sm" onClick={() => handleReview(row)} className="flex-1">
           Review
-        </button>
-        <button
-          onClick={() => handleInlineApprove(row)}
-          className="flex-1 py-2.5 bg-success text-white rounded-lg font-label-sm text-sm font-semibold touch-min-h"
-        >
+        </Button>
+        <Button variant="secondary" size="sm" onClick={() => handleInlineApprove(row)} className="flex-1 bg-success text-white border-0 hover:opacity-90">
           Setujui
-        </button>
+        </Button>
       </div>
-      <button
-        onClick={() => handleInlineReject(row)}
-        className="w-full py-2 bg-danger/10 text-danger rounded-lg font-label-sm text-sm font-semibold touch-min-h"
-      >
+      <Button variant="ghost" size="sm" onClick={() => handleInlineReject(row)} className="w-full text-danger hover:bg-danger/10">
         Tolak
-      </button>
+      </Button>
     </div>
   );
 
@@ -231,9 +224,9 @@ export default function ApprovalInboxView({
             </td>
             <td className="px-6 py-4 text-right">
               <div className="flex gap-1.5 justify-end">
-                <button onClick={() => handleReview(row)} className="bg-surface border border-border text-primary px-3 py-1.5 rounded font-label-sm text-sm hover:bg-primary hover:text-white transition-all shadow-sm font-semibold touch-min-h">Review</button>
-                <button onClick={() => handleInlineApprove(row)} className="bg-success/10 border border-success/30 text-success px-3 py-1.5 rounded font-label-sm text-sm hover:bg-success hover:text-white transition-all shadow-sm font-semibold touch-min-h">Setujui</button>
-                <button onClick={() => handleInlineReject(row)} className="bg-danger/10 border border-danger/30 text-danger px-3 py-1.5 rounded font-label-sm text-sm hover:bg-danger hover:text-white transition-all shadow-sm font-semibold touch-min-h">Tolak</button>
+                <Button variant="outline" size="sm" onClick={() => handleReview(row)}>Review</Button>
+                <Button variant="secondary" size="sm" onClick={() => handleInlineApprove(row)} className="bg-success text-white border-0 hover:opacity-90">Setujui</Button>
+                <Button variant="ghost" size="sm" onClick={() => handleInlineReject(row)} className="text-danger hover:bg-danger/10">Tolak</Button>
               </div>
             </td>
           </tr>
@@ -243,62 +236,55 @@ export default function ApprovalInboxView({
   );
 
   return (
-    <div className={`${isMobile ? 'p-2' : 'p-1'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto relative`}>
-      {/* Title & Stats */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-outline font-caption-xs text-xs">
-            <span>Operations</span>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-primary font-semibold">Approval Inbox</span>
-          </div>
+    <PageContainer>
+      <PageHeader
+        title={
           <div className="flex items-center gap-4">
-            <h2 className="font-display-title text-display-title text-on-surface">Approval Inbox</h2>
+            <span>Approval Inbox</span>
             <span className="bg-primary text-on-primary px-3 py-0.5 rounded-full font-label-sm text-xs font-semibold">
               {approvals.length} Pending
             </span>
           </div>
-        </div>
-      </div>
+        }
+        description="Operations"
+      />
 
-      {/* Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-        <div className="bg-white border border-border p-3 sm:p-4 rounded-lg shadow-sm flex flex-col justify-between h-24 sm:h-28">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</span>
-          <div className="flex items-baseline gap-2">
+        <Card padding="sm">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</p>
+          <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-bold text-on-surface">{approvals.length}</span>
             <span className="text-success font-label-sm text-sm font-semibold">Active</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-border p-3 sm:p-4 rounded-lg shadow-sm flex flex-col justify-between h-24 sm:h-28 border-l-4 border-l-danger">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</span>
-          <div className="flex items-baseline gap-2">
+        <Card padding="sm" className="border-l-4 border-l-danger">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</p>
+          <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-bold text-danger">{approvals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Requires action</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-border p-3 sm:p-4 rounded-lg shadow-sm flex flex-col justify-between h-24 sm:h-28 border-l-4 border-l-warning">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</span>
-          <div className="flex items-baseline gap-2">
+        <Card padding="sm" className="border-l-4 border-l-warning">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</p>
+          <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-bold text-warning">{approvals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Next 24 hours</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-border p-3 sm:p-4 rounded-lg shadow-sm flex flex-col justify-between h-24 sm:h-28">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Avg. Completion Time</span>
-          <div className="flex items-baseline gap-2">
+        <Card padding="sm">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Avg. Completion Time</p>
+          <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-bold text-on-surface">{approvals.length > 0 ? (approvals.reduce((s, a) => s + parseRelativeTime(a.waitingSince) / 3_600_000, 0) / approvals.length).toFixed(1) : '0.0'}h</span>
             <span className="text-success font-label-sm text-sm font-semibold">Rata-rata</span>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Filter panel */}
-      <div className="bg-surface-container-low border border-border p-4 rounded-xl flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full md:w-auto">
+      <Card padding="sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <span className="text-secondary font-label-sm text-label-sm">Tipe Approval:</span>
           <div className="flex gap-2 overflow-x-auto w-full sm:w-auto">
             {(['Semua', 'Prospek', 'RKS', 'LPHS'] as FilterType[]).map((t) => (
@@ -312,7 +298,7 @@ export default function ApprovalInboxView({
             ))}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Grouped Lists */}
       <div className="space-y-6 sm:space-y-8 pb-12">
@@ -380,6 +366,6 @@ export default function ApprovalInboxView({
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

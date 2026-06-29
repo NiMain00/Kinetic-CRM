@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
+import { PageContainer, PageHeader } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -108,37 +109,31 @@ export default function DashboardPage() {
   const severityColor = { danger: 'text-danger', warning: 'text-status-orange', info: 'text-warning' };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-display-title text-display-title text-on-surface">Pusat Monitoring</h2>
-          <p className="text-secondary font-body-main mt-1" id="current-date">
-            {currentDateString}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          {user?.roleName === 'Super Admin' && (
-            <>
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => navigate('/prospects')}
-                leftIcon={<span className="material-symbols-outlined text-[18px]">group</span>}
-              >
-                Daftar Prospek
-              </Button>
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => navigate('/projects/new')}
-                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              >
-                Proyek Baru
-              </Button>
-            </>
-          )}
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Pusat Monitoring"
+        description={currentDateString}
+        actions={user?.roleName === 'Super Admin' ? (
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              size="md"
+              onClick={() => navigate('/prospects')}
+              leftIcon={<span className="material-symbols-outlined text-[18px]">group</span>}
+            >
+              Daftar Prospek
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/projects/new')}
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+            >
+              Proyek Baru
+            </Button>
+          </div>
+        ) : undefined}
+      />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card padding="md" hover>
@@ -379,6 +374,6 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

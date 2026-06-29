@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginPage() {
@@ -54,27 +55,27 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-surface-dim to-primary/5 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+        <div className="bg-surface-container-lowest rounded-2xl shadow-xl border border-border p-8">
           <div className="text-center mb-8">
             <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-primary text-3xl">corporate_fare</span>
             </div>
-            <h1 className="text-xl font-extrabold text-slate-800">KINETIC CRM</h1>
-            <p className="text-xs text-slate-400 mt-1">Enterprise Workspace Portal</p>
+            <h1 className="font-display-title text-display-title text-on-surface">KINETIC CRM</h1>
+            <p className="text-caption-xs text-secondary mt-1">Enterprise Workspace Portal</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label htmlFor="login-username" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Username atau Email</label>
+              <label htmlFor="login-username" className="text-caption-xs font-semibold text-secondary uppercase tracking-wider">Username atau Email</label>
               <input
                 id="login-username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Masukkan username"
-                className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full px-3 py-2.5 bg-surface-container-low border border-border rounded-lg text-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 autoFocus
                 aria-required="true"
               />
@@ -82,8 +83,8 @@ export default function LoginPage() {
 
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <label htmlFor="login-password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Password</label>
-                <Link to="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
+                <label htmlFor="login-password" className="text-caption-xs font-semibold text-secondary uppercase tracking-wider">Password</label>
+                <Link to="/forgot-password" className="text-caption-xs font-semibold text-primary hover:underline">
                   Lupa password?
                 </Link>
               </div>
@@ -94,14 +95,14 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
+                  className="w-full px-3 py-2.5 bg-surface-container-low border border-border rounded-lg text-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
                   aria-required="true"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm material-symbols-outlined"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-on-surface text-sm material-symbols-outlined"
                 >
                   {showPassword ? 'visibility_off' : 'visibility'}
                 </button>
@@ -114,41 +115,33 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={rememberMe}
                   onChange={() => setRememberMe(!rememberMe)}
-                  className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4"
+                  className="rounded border-border text-primary focus:ring-primary w-4 h-4"
                   aria-label="Ingat saya"
                 />
-                <span className="text-xs text-slate-500">Ingat saya</span>
+                <span className="text-caption-xs text-secondary">Ingat saya</span>
               </label>
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading}
-              aria-label="Masuk"
-              className="w-full bg-primary hover:bg-primary/90 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2"
+              size="lg"
+              className="w-full"
+              leftIcon={isLoading ? undefined : <span className="material-symbols-outlined text-lg">login</span>}
+              isLoading={isLoading}
             >
-              {isLoading ? (
-                <>
-                  <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4 inline-block"></span>
-                  <span>Memproses...</span>
-                </>
-              ) : (
-                <>
-                  <span className="material-symbols-outlined text-lg">login</span>
-                  <span>Masuk</span>
-                </>
-              )}
-            </button>
+              {isLoading ? 'Memproses...' : 'Masuk'}
+            </Button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-slate-100">
-            <p className="text-xs text-slate-400 text-center">
-              Demo: <strong>admin</strong> / <strong>admin</strong>
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-caption-xs text-secondary text-center">
+              Demo: <strong className="text-on-surface">admin</strong> / <strong className="text-on-surface">admin</strong>
             </p>
           </div>
         </div>
 
-        <p className="text-xs text-slate-400 text-center mt-4">
+        <p className="text-caption-xs text-secondary text-center mt-4">
           &copy; {new Date().getFullYear()} Kinetic CRM. All rights reserved.
         </p>
       </div>

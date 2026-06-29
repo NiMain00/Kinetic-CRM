@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { StatusBadge } from '@/components/shared';
+import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
 import { Button, Input, Card } from '@/components/ui';
 import FilterPanel from '@/components/shared/FilterPanel';
 import { useProjectStatuses } from '@/hooks/useConfigData';
@@ -75,21 +75,21 @@ export default function ProjectListPage() {
   }, [activeTab, search, projects, filterValues]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-display-title text-display-title text-on-surface">Proyek</h2>
-          <p className="text-secondary font-body-main mt-1">Kelola dan pantau semua proyek aktif</p>
-        </div>
-        <Button
-          variant="primary"
-          size="md"
-          leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
-          onClick={() => navigate('/projects/new')}
-        >
-          Proyek Baru
-        </Button>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Proyek"
+        description="Kelola dan pantau semua proyek aktif"
+        actions={
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
+            onClick={() => navigate('/projects/new')}
+          >
+            Proyek Baru
+          </Button>
+        }
+      />
 
       <nav className="flex border-b border-border overflow-x-auto">
         {statusTabs.map((tab) => (
@@ -205,6 +205,6 @@ export default function ProjectListPage() {
           </table>
         </div>
       </Card>
-    </div>
+    </PageContainer>
   );
 }

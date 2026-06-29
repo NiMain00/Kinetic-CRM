@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Modal, Button } from '@/components/ui';
+import { Modal, Button, Card } from '@/components/ui';
+import { PageContainer, PageHeader } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -120,30 +121,21 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   };
 
   return (
-    <div className={`${isMobile ? 'p-2' : 'p-1'} space-y-4 sm:space-y-8 flex-1 overflow-y-auto`}>
-      <>
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h2 className="font-display-title text-display-title text-on-surface">Prospek</h2>
-            <nav className="flex text-xs text-outline mt-1 font-label-sm">
-              <span className="hover:text-primary cursor-pointer" onClick={() => onNavigatePage('dashboard')}>
-                Dashboard
-              </span>
-              <span className="mx-2">/</span>
-              <span className="text-primary font-semibold">Daftar Prospek</span>
-            </nav>
-          </div>
-          {can('prospek_create') && (
-            <button
-              onClick={() => navigate('/prospects/new')}
-              className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-label-sm text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all font-semibold touch-min-h"
-            >
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              Buat Prospek Baru
-            </button>
-          )}
-        </div>
+    <PageContainer>
+      <PageHeader
+        title="Prospek"
+        description="Daftar Prospek"
+        actions={can('prospek_create') ? (
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => navigate('/prospects/new')}
+            leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
+          >
+            Buat Prospek Baru
+          </Button>
+        ) : undefined}
+      />
 
         {/* Filter Bar */}
         <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-border shadow-sm space-y-4">
@@ -181,8 +173,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
         </div>
 
-        {/* Table / Card Stack */}
-        <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden">
+        <Card padding="none">
           {isMobile ? (
             <div className="divide-y divide-border">
               {filteredProspects.length === 0 ? (
@@ -366,7 +357,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               </button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Delete Confirmation Modal */}
         <Modal
@@ -382,7 +373,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         >
           <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini dari draf? Tindakan ini tidak dapat dibatalkan.</p>
         </Modal>
-      </>
-    </div>
+    </PageContainer>
   );
 }
