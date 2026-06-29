@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Table, type Column, Button } from '@/components/ui';
+import BulkActions from '@/components/shared/BulkActions';
 
 interface DataTableProps<T> {
   columns: Column<T>[];
@@ -16,6 +17,10 @@ interface DataTableProps<T> {
   // Row selection
   selectedRows?: Set<string>;
   onSelectionChange?: (selected: Set<string>) => void;
+  // Bulk actions
+  onBatchDelete?: () => void;
+  onBatchUpdate?: () => void;
+  onBatchExport?: () => void;
   // Sticky header
   stickyHeader?: boolean;
   // Column visibility
@@ -39,6 +44,9 @@ export default function DataTable<T extends Record<string, unknown>>({
   showPagination = false,
   selectedRows,
   onSelectionChange,
+  onBatchDelete,
+  onBatchUpdate,
+  onBatchExport,
   stickyHeader = false,
   hideableColumns = false,
   exportable = false,
@@ -90,14 +98,15 @@ export default function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div className="space-y-4">
+      <BulkActions
+        selectedCount={selectedRows?.size ?? 0}
+        onClearSelection={() => onSelectionChange?.(new Set())}
+        onBatchDelete={onBatchDelete}
+        onBatchUpdate={onBatchUpdate}
+        onBatchExport={onBatchExport}
+      />
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {selectedRows && selectedRows.size > 0 && (
-            <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
-              {selectedRows.size} terpilih
-            </span>
-          )}
-        </div>
+        <div />
         <div className="flex items-center gap-2">
           {exportable && data.length > 0 && (
             <Button variant="ghost" size="sm" onClick={exportCSV} leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}>

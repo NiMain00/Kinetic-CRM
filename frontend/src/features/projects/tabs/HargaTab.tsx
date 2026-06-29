@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Project, CompetitorEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency } from '@/utils/formatters';
-import { Card, Button, Input, Table } from '@/components/ui';
+import { Card, Button, Input, Table, CurrencyInput } from '@/components/ui';
 import type { Column } from '@/components/ui';
 
 interface TabProps {
@@ -102,16 +102,13 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
           <h3 className="font-heading-section text-heading-section">Rincian Nilai Penawaran</h3>
           <div className="grid grid-cols-2 gap-6 text-sm">
             <div className="space-y-2 col-span-2 sm:col-span-1">
-              <label className="font-semibold text-on-surface-variant block">Harga Penawaran (Rp)*</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary font-semibold font-mono">Rp</span>
-                <input
-                  value={hargaPenawaran}
-                  onChange={e => setHargaPenawaran(Number(e.target.value))}
-                  className="w-full border border-border rounded-lg pl-10 pr-4 py-3 font-mono"
-                  type="number"
-                />
-              </div>
+              <CurrencyInput
+                label="Harga Penawaran"
+                value={hargaPenawaran}
+                onChange={(val) => setHargaPenawaran(val ?? 0)}
+                placeholder="Rp 0"
+                required
+              />
             </div>
             <div className="space-y-2 col-span-2 sm:col-span-1">
               <label className="font-semibold text-on-surface-variant block">Margin (%)*</label>

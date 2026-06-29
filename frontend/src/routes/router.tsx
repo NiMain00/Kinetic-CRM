@@ -66,6 +66,7 @@ const KPITargetsPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIT
 const WinLossReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/WinLossReportPage')), ['laporan_view']);
 const PipelineReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/PipelineReportPage')), ['laporan_view']);
 const ReportsIndexPage = LazyLoadPermission(lazy(() => import('@/features/reports/ReportsIndexPage')), ['laporan_view']);
+const CalendarPage = LazyLoadPermission(lazy(() => import('@/features/reports/CalendarPage')), ['laporan_view']);
 
 // Master Data
 const MasterDataPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDataPage')), ['master_data']);
@@ -148,6 +149,7 @@ export default function AppRouter() {
         <Route path="reports" element={<ReportsIndexPage />} />
         <Route path="reports/win-loss" element={<WinLossReportPage />} />
         <Route path="reports/pipeline" element={<PipelineReportPage />} />
+        <Route path="reports/calendar" element={<CalendarPage />} />
         <Route path="reports/kpi" element={<KPIDashboardPage />} />
         <Route path="reports/kpi/progress" element={<KPIProgressPage />} />
         <Route path="reports/kpi/targets" element={<KPITargetsPage />} />

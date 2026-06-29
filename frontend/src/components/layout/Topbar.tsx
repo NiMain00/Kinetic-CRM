@@ -9,6 +9,7 @@ interface TopbarProps {
   onNotificationsClick?: () => void;
   onProfileClick?: () => void;
   onMenuClick?: () => void;
+  onHelpClick?: () => void;
   notificationCount?: number;
 }
 
@@ -19,6 +20,7 @@ export default function Topbar({
   onNotificationsClick,
   onProfileClick,
   onMenuClick,
+  onHelpClick,
   notificationCount = 3,
 }: TopbarProps) {
   const { dark, toggle } = useThemeStore();
@@ -89,6 +91,16 @@ export default function Topbar({
           aria-label="Pengaturan"
         >
           <span className="material-symbols-outlined text-on-surface" aria-hidden="true">settings</span>
+        </button>
+
+        {/* Keyboard Shortcut Help */}
+        <button
+          onClick={onHelpClick}
+          className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
+          aria-label="Pintasan keyboard"
+          title="Pintasan Keyboard (Shift + ?)"
+        >
+          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">keyboard</span>
         </button>
 
         {/* Dark Mode Toggle */}

@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import toast from 'react-hot-toast';
-import { Button, Card } from '@/components/ui';
+import { Button, Card, CurrencyInput } from '@/components/ui';
 import type { Project } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -23,6 +23,7 @@ export default function ProjectFormPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    control,
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -120,15 +121,20 @@ export default function ProjectFormPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Estimasi Nilai Proyek (Rp) *</label>
-              <input
-                {...register('estimatedValue', { valueAsNumber: true })}
-                className={fieldClass('estimatedValue')}
-                placeholder="Contoh: 4250000000"
-                type="number"
-                aria-label="Estimasi Nilai"
+              <Controller
+                name="estimatedValue"
+                control={control}
+                render={({ field }) => (
+                  <CurrencyInput
+                    label="Estimasi Nilai Proyek"
+                    value={field.value}
+                    onChange={(val) => field.onChange(val ?? 0)}
+                    error={errors.estimatedValue?.message}
+                    placeholder="Rp 0"
+                    required
+                  />
+                )}
               />
-              {errors.estimatedValue && <p className="text-xs text-danger">{errors.estimatedValue.message}</p>}
             </div>
             <div className="space-y-1.5">
               <label className="font-semibold text-sm text-on-surface-variant">Batas Akhir Tender</label>

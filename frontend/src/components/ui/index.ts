@@ -12,3 +12,4 @@ export type { Tab } from './Tabs';
 export { default as DatePicker } from './DatePicker';
 export { default as Stepper } from './Stepper';
 export type { StepperStep } from './Stepper';
+export { default as CurrencyInput } from './CurrencyInput';

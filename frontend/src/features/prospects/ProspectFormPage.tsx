@@ -9,6 +9,7 @@ import { useCustomerStore } from '@/stores/customerStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import CurrencyInput from '@/components/ui/CurrencyInput';
 
 const questionnaireQuestions = [
   {
@@ -99,7 +100,7 @@ export default function ProspectFormPage() {
 
   // Prospect fields
   const [formName, setFormName] = useState(existingProspect?.name || '');
-  const [formValue, setFormValue] = useState(existingProspect?.estimatedValue ? String(existingProspect.estimatedValue) : '');
+  const [formValue, setFormValue] = useState<number | undefined>(existingProspect?.estimatedValue);
   const [formDate, setFormDate] = useState(existingProspect?.date || '');
   const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
 
@@ -161,7 +162,7 @@ export default function ProspectFormPage() {
       client: clientName,
       customerId: customerMode === 'existing' ? selectedCustomerId : undefined,
       customerType: customerMode,
-      estimatedValue: formValue ? Number(formValue) : undefined,
+      estimatedValue: formValue ?? undefined,
       description: formDesc,
       branch: existingProspect?.branch || '',
       potensiUnit: Number(potensiUnit) || 0,
@@ -233,7 +234,7 @@ export default function ProspectFormPage() {
       potensiUnit: potensi,
       author: existingProspect?.author || 'Ahmad Faisal',
       date: formDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      estimatedValue: Number(formValue) || undefined,
+      estimatedValue: formValue ?? undefined,
       description: formDesc,
       branch: userBranch,
       answers,
@@ -521,10 +522,12 @@ export default function ProspectFormPage() {
               </div>
 
               {/* Estimasi Nilai Proyek — non-mandatory (Fase 1 item 1.7) */}
-              <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Estimasi Nilai Proyek (Rp)</label>
-                <input value={formValue} onChange={(e) => setFormValue(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="Contoh: 1500000000" type="number" aria-label="Estimasi Nilai" />
-              </div>
+              <CurrencyInput
+                label="Estimasi Nilai Proyek"
+                value={formValue}
+                onChange={setFormValue}
+                placeholder="Rp 0"
+              />
 
               {/* Estimasi Tanggal Closing — non-mandatory (Fase 1 item 1.7) */}
               <div className="space-y-1.5">

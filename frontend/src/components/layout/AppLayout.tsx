@@ -3,6 +3,8 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumb from './Breadcrumb';
+import ShortcutHelpModal from '@/components/shared/ShortcutHelpModal';
+import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
 import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
@@ -18,6 +20,13 @@ export default function AppLayout() {
   const { getPendingCount } = useApprovalStore();
   const pendingApprovalsCount = getPendingCount();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+
+  useKeyboardShortcuts({
+    navigate,
+    onToggleHelp: () => setShortcutHelpOpen((v) => !v),
+    onClose: () => setShortcutHelpOpen(false),
+  });
 
   useEffect(() => {
     setMobileSidebarOpen(false);
@@ -83,8 +92,10 @@ export default function AppLayout() {
           onNotificationsClick={() => navigate('/notifications')}
           onProfileClick={() => navigate('/profile')}
           onMenuClick={() => setMobileSidebarOpen(true)}
+          onHelpClick={() => setShortcutHelpOpen((v) => !v)}
         />
         <Breadcrumb />
+        <ShortcutHelpModal isOpen={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />
         <main className="flex-1 flex flex-col min-h-0 bg-surface-container-low">
           {isFullBleed ? (
             <Outlet />

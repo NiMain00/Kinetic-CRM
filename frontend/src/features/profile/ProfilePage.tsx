@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePreferencesStore } from '@/stores/preferencesStore';
 
 interface ProfileViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -12,9 +13,9 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
   const [email, setEmail] = useState(currentUser?.email || 'a.pierce@kinetic-corp.com');
   const [avatarIndex, setAvatarIndex] = useState(0);
 
-  // Time preferences
-  const [langPref, setLangPref] = useState('English (United States)');
-  const [tzPref, setTzPref] = useState('(GMT-06:00) Central Time');
+  // Time preferences — persisted via preferences store
+  const { language, timezone, notificationsEnabled, setLanguage, setTimezone, setNotificationsEnabled } =
+    usePreferencesStore();
 
   // Password state modal
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
@@ -306,31 +307,32 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
 
               <div className="flex flex-wrap gap-3 w-full md:w-auto">
                 <select
-                  value={langPref}
+                  value={language}
                   onChange={(e) => {
-                    setLangPref(e.target.value);
-                    onShowNotification(`Bahasa diatur ke ${e.target.value}`, 'success');
+                    const val = e.target.value as 'id' | 'en';
+                    setLanguage(val);
+                    onShowNotification(`Bahasa diatur ke ${val === 'id' ? 'Indonesian (Bahasa)' : 'English'}`, 'success');
                   }}
                   className="flex-1 md:w-44 bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
-                  <option>English (United States)</option>
-                  <option>English (United Kingdom)</option>
-                  <option>Indonesian (Bahasa)</option>
-                  <option>Deutsch</option>
+                  <option value="id">Indonesian (Bahasa)</option>
+                  <option value="en">English</option>
                 </select>
 
                 <select
-                  value={tzPref}
+                  value={timezone}
                   onChange={(e) => {
-                    setTzPref(e.target.value);
+                    setTimezone(e.target.value);
                     onShowNotification(`Zona waktu diubah ke ${e.target.value}`, 'success');
                   }}
                   className="flex-1 md:w-56 bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
-                  <option>(GMT-06:00) Central Time</option>
-                  <option>(GMT-05:00) Eastern Time</option>
-                  <option>(GMT+07:00) Jakarta, Indonesia</option>
-                  <option>(GMT+00:00) UTC Standard</option>
+                  <option>Asia/Jakarta</option>
+                  <option>Asia/Makassar</option>
+                  <option>Asia/Jayapura</option>
+                  <option>America/Chicago</option>
+                  <option>America/New_York</option>
+                  <option>UTC</option>
                 </select>
               </div>
 

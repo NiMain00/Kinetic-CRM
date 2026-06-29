@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { Card, Button, Input, Select } from '@/components/ui';
+import { Card, Button, Input, Select, CurrencyInput } from '@/components/ui';
 
 interface TabProps {
   project?: Project;
@@ -15,7 +15,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
 
   const [outcome, setOutcome] = useState<'menang' | 'kalah' | null>(project?.winnerDetails?.outcome || null);
-  const [finalContractValue, setFinalContractValue] = useState(String(project?.winnerDetails?.contractValue || project?.pricing?.value || ''));
+  const [finalContractValue, setFinalContractValue] = useState<number | undefined>(project?.winnerDetails?.contractValue || project?.pricing?.value);
   const [durationDays, setDurationDays] = useState(String(project?.winnerDetails?.duration || ''));
   const [startDate, setStartDate] = useState(project?.winnerDetails?.startDate || '');
   const [failureReason, setFailureReason] = useState(project?.winnerDetails?.loseReason || '');
@@ -24,7 +24,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   // Sync when switching projects
   useEffect(() => {
     setOutcome(project?.winnerDetails?.outcome || null);
-    setFinalContractValue(String(project?.winnerDetails?.contractValue || project?.pricing?.value || ''));
+    setFinalContractValue(project?.winnerDetails?.contractValue || project?.pricing?.value);
     setDurationDays(String(project?.winnerDetails?.duration || ''));
     setStartDate(project?.winnerDetails?.startDate || '');
     setFailureReason(project?.winnerDetails?.loseReason || '');
@@ -35,7 +35,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
     if (!project?.id) return;
     updateProjectWinner(project.id, {
       outcome,
-      contractValue: outcome === 'menang' ? Number(finalContractValue) : undefined,
+      contractValue: outcome === 'menang' ? (finalContractValue ?? 0) : undefined,
       startDate: outcome === 'menang' ? startDate : undefined,
       duration: outcome === 'menang' ? Number(durationDays) : undefined,
       loseReason: outcome === 'kalah' ? failureReason : undefined,
@@ -53,7 +53,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
     // Persist winner details
     updateProjectWinner(project.id, {
       outcome,
-      contractValue: outcome === 'menang' ? Number(finalContractValue) : undefined,
+      contractValue: outcome === 'menang' ? (finalContractValue ?? 0) : undefined,
       startDate: outcome === 'menang' ? startDate : undefined,
       duration: outcome === 'menang' ? Number(durationDays) : undefined,
       loseReason: outcome === 'kalah' ? failureReason : undefined,
@@ -69,7 +69,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
       time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
       type: outcome === 'menang' ? 'approve' : 'revision',
       description: outcome === 'menang'
-        ? `Nilai kontrak final Rp ${Number(finalContractValue).toLocaleString('id-ID')}`
+        ? `Nilai kontrak final Rp ${(finalContractValue ?? 0).toLocaleString('id-ID')}`
         : `Alasan: ${failureReason}`,
     };
     addTimelineEvent(project.id, event);
@@ -157,16 +157,12 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="col-span-2">
-                    <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Nilai Kontrak Akhir (IDR)</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-mono text-xs text-slate-400">Rp</span>
-                      <input
-                        value={finalContractValue}
-                        onChange={e => setFinalContractValue(e.target.value)}
-                        className="w-full pl-12 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none font-mono text-sm"
-                        type="text"
-                      />
-                    </div>
+                    <CurrencyInput
+                      label="Nilai Kontrak Akhir"
+                      value={finalContractValue}
+                      onChange={setFinalContractValue}
+                      placeholder="Rp 0"
+                    />
                   </div>
                   <div>
                     <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Mulai Proyek</label>
