@@ -42,11 +42,6 @@ export default function ConfigWorkflowPage() {
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       <div className="bg-white border-b border-border px-8 py-5 shrink-0 shadow-sm z-10">
-        <nav className="flex items-center gap-2 mb-1.5 text-xs text-secondary">
-          <span className="font-semibold uppercase tracking-wider">Configuration</span>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-bold uppercase tracking-wider">Workflow</span>
-        </nav>
         <h2 className="font-display-title text-base font-extrabold text-slate-900">Konfigurasi Workflow</h2>
         <p className="text-[11px] text-slate-400 mt-0.5">Atur alur kerja untuk setiap entitas dalam sistem.</p>
       </div>

@@ -56,11 +56,6 @@ export default function ProspectListPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <nav className="flex items-center gap-2 text-xs text-outline font-label-sm mb-1">
-              <button onClick={() => navigate('/dashboard')} className="hover:text-primary">Dashboard</button>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-primary font-semibold">Daftar Prospek</span>
-            </nav>
             <h1 className="text-xl font-extrabold text-on-surface">Prospek</h1>
           </div>
           <button onClick={() => navigate('/prospects/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all" aria-label="Buat Prospek Baru">

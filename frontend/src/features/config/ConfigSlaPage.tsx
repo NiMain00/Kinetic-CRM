@@ -65,11 +65,6 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <nav className="flex items-center gap-2 mb-1.5 font-caption-xs text-caption-xs text-secondary">
-            <span className="text-secondary font-semibold uppercase tracking-wider">Konfigurasi</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold uppercase tracking-wider">Manajemen SLA</span>
-          </nav>
           <h2 className="font-display-title text-base font-extrabold text-slate-900">Konfigurasi SLA & Eskalasi</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Atur batas waktu layanan (SLA) dan aturan eskalasi untuk setiap jenis persetujuan.</p>
         </div>

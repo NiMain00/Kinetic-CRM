@@ -111,11 +111,6 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
       {/* Search Header and Action line */}
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <nav className="flex items-center gap-2 mb-1.5 font-caption-xs text-caption-xs text-secondary">
-            <span className="text-secondary font-semibold uppercase tracking-wider">Workspace Live</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold uppercase tracking-wider">Notifikasi</span>
-          </nav>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Pusat Notifikasi
             {unreadCount > 0 && (

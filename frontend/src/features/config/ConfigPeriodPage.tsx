@@ -60,11 +60,6 @@ export default function ConfigPeriodPage() {
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       <div className="bg-white border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <nav className="flex items-center gap-2 mb-1.5 text-xs text-secondary">
-            <span className="font-semibold uppercase tracking-wider">Configuration</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold uppercase tracking-wider">Periode Fiskal</span>
-          </nav>
           <h2 className="font-display-title text-base font-extrabold text-slate-900">Konfigurasi Periode</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Kelola periode fiskal untuk pelaporan dan target.</p>
         </div>

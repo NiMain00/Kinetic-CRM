@@ -165,11 +165,6 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
       {/* Header bar */}
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <nav className="flex items-center gap-2 mb-1.5 font-caption-xs text-caption-xs text-secondary">
-            <span className="text-secondary font-semibold uppercase tracking-wider">Configuration Hub</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold uppercase tracking-wider">CONF-06</span>
-          </nav>
           <h2 className="font-display-title text-base font-extrabold text-slate-900">
             Notification Configuration
           </h2>

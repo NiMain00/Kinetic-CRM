@@ -73,7 +73,14 @@ export default function Sidebar({
     const activeSeg = activeTab.split('/')[1];
     const itemSeg = itemPath.split('/')[1];
     if (activeSeg === 'project' && itemSeg === 'projects') return true;
-    if (itemPath !== '/' && activeTab.startsWith(itemPath + '/')) return true;
+    // Only match via startsWith if no other nav item is a more specific child
+    if (itemPath !== '/' && activeTab.startsWith(itemPath + '/')) {
+      const hasChildItem = navItems.some(
+        (other) => other.path !== itemPath && other.path.startsWith(itemPath + '/'),
+      );
+      if (hasChildItem) return false;
+      return true;
+    }
     return false;
   };
 

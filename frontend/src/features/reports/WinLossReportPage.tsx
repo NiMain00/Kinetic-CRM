@@ -92,15 +92,6 @@ export default function WinLossReportPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-outline font-label-sm" aria-label="Breadcrumb">
-          <button onClick={() => navigate('/dashboard')} className="hover:text-primary">Dashboard</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <button onClick={() => navigate('/reports')} className="hover:text-primary">Laporan</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-semibold">Win/Loss Report</span>
-        </nav>
-
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-extrabold text-on-surface">Win/Loss Report</h1>

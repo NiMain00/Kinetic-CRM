@@ -76,13 +76,6 @@ export default function ReportsIndexPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-outline font-label-sm" aria-label="Breadcrumb">
-          <button onClick={() => navigate('/dashboard')} className="hover:text-primary">Dashboard</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-semibold">Laporan</span>
-        </nav>
-
         <div>
           <h1 className="text-xl font-extrabold text-on-surface">Laporan & Analisis</h1>
           <p className="text-sm text-secondary mt-1">Tiga jenis laporan: Win/Loss, Pipeline, dan KPI — pilih untuk melihat detail.</p>

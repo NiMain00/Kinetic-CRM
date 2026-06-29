@@ -94,11 +94,6 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <nav className="flex items-center gap-2 text-caption-xs font-caption-xs text-secondary text-xs mb-2">
-            <span>Konfigurasi</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-semibold">Project Status Master</span>
-          </nav>
           <h2 className="font-display-title text-display-title text-on-surface">Konfigurasi Status Proyek</h2>
           <p className="text-secondary text-body-main text-sm">
             Kelola status siklus hidup proyek perusahaan (GAP-04 &amp; CFG-03).

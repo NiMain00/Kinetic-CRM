@@ -57,11 +57,6 @@ export default function MasterCompetitorPage() {
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <nav className="flex items-center gap-2 mb-1.5 font-caption-xs text-caption-xs text-secondary">
-            <span className="text-secondary font-semibold uppercase tracking-wider">Master Data</span>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-primary font-bold uppercase tracking-wider">Kompetitor</span>
-          </nav>
           <h2 className="font-display-title text-base font-extrabold text-slate-900 flex items-center gap-2">
             Master Kompetitor
             <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">{competitors.length}</span>

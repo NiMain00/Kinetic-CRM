@@ -36,6 +36,26 @@ export default function ProjectListPage() {
     return tabs;
   }, [projectStatuses]);
 
+  // Map dari label status (digunakan di project.status) ke kode status (digunakan sebagai tab id)
+  const statusLabelToCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    projectStatuses.forEach((s) => {
+      map[s.label] = s.code;
+      map[s.label.toLowerCase()] = s.code;
+    });
+    // Mapping manual untuk nilai status legacy yang tidak cocok dengan label
+    map['executing'] = 'target_delivery';
+    map['rks'] = 'submit_rks';
+    map['revisi'] = 'revision';
+    map['pemenang'] = 'pengumuman_pemenang';
+    map['selesai'] = 'selesai';
+    map['dibatalkan'] = 'cancelled';
+    map['LPHS/SIOS'] = 'lphs_sios';
+    map['Input Harga'] = 'submit_harga';
+    map['Review Departemen'] = 'review_department';
+    return map;
+  }, [projectStatuses]);
+
   const uniqueClients = useMemo(() => {
     return [...new Set(projects.map((p) => p.client))].sort();
   }, [projects]);
@@ -49,7 +69,17 @@ export default function ProjectListPage() {
   const filtered = useMemo(() => {
     let list = projects;
     if (activeTab !== 'all') {
-      list = list.filter((p) => p.status === activeTab || p.phase === activeTab);
+      list = list.filter((p) => {
+        // Coba cocokkan langsung, lalu melalui mapping label->kode
+        const mappedStatus = statusLabelToCode[p.status] || statusLabelToCode[p.status.toLowerCase()];
+        const mappedPhase = statusLabelToCode[p.phase] || statusLabelToCode[p.phase.toLowerCase()];
+        return (
+          p.status === activeTab ||
+          p.phase === activeTab ||
+          mappedStatus === activeTab ||
+          mappedPhase === activeTab
+        );
+      });
     }
     if (search.trim()) {
       const q = search.toLowerCase();

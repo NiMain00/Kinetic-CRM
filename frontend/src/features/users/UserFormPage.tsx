@@ -71,14 +71,6 @@ export default function UserFormPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-3xl mx-auto space-y-6">
-        <nav className="flex items-center gap-2 text-xs text-outline font-label-sm" aria-label="Breadcrumb">
-          <button onClick={() => navigate('/dashboard')} className="hover:text-primary transition-colors">Dashboard</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <button onClick={() => navigate('/users')} className="hover:text-primary transition-colors">Pengguna</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-semibold">{isEdit ? 'Edit Pengguna' : 'Tambah Pengguna'}</span>
-        </nav>
-
         <div>
           <h1 className="text-xl font-extrabold text-on-surface">{isEdit ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h1>
           <p className="text-sm text-secondary mt-1">{isEdit ? 'Perbarui informasi akun pengguna.' : 'Buat akun pengguna baru untuk akses sistem.'}</p>
