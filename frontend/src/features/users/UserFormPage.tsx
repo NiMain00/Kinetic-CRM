@@ -44,7 +44,9 @@ export default function UserFormPage() {
 
   const onSubmit = (data: UserFormData) => {
     if (isEdit && existing) {
-      updateUser(existing.id, data);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, role, ...rest } = data;
+      updateUser(existing.id, { ...rest, role: role as UserRole });
       toast.success(`Pengguna ${data.fullName} berhasil diperbarui.`);
     } else {
       const newUser: User = {

@@ -499,12 +499,13 @@ export const useMasterDataStore = create<MasterDataState>()(
           const mergeById = <T extends { id: string }>(persistedArr: T[] | undefined, initial: T[]): T[] => {
             if (!persistedArr) return initial;
             const map = new Map(persistedArr.map((item) => [item.id, item]));
+            const result = [...persistedArr];
             for (const item of initial) {
               if (!map.has(item.id)) {
-                persistedArr.push(item);
+                result.push(item);
               }
             }
-            return persistedArr;
+            return result;
           };
           return {
             ...current,

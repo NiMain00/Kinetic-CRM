@@ -30,7 +30,7 @@ interface DataTableProps<T> {
   exportFilename?: string;
 }
 
-export default function DataTable<T extends Record<string, unknown>>({
+export default function DataTable<T>({
   columns,
   data,
   keyExtractor,

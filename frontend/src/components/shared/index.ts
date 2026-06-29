@@ -6,3 +6,8 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as EmptyState } from './EmptyState';
 export { default as PageContainer } from './PageContainer';
 export { default as PageHeader } from './PageHeader';
+export { default as BulkActions } from './BulkActions';
+export { default as CalendarView } from './CalendarView';
+export { default as ActivityFeed } from './ActivityFeed';
+export { default as ShortcutHelpModal } from './ShortcutHelpModal';
+export { MobileOnly, DesktopOnly } from './Responsive';

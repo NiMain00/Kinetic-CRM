@@ -88,11 +88,20 @@ const INITIAL_PHASES: ProjectPhase[] = [
 
 const INITIAL_UPLOAD: UploadConfig = {
   maxFileSizeMb: 10,
-  allowedExtensions: ['pdf', 'doc,docx', 'xls,xlsx', 'jpg,jpeg,png,gif'],
+  allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'gif'],
   storagePath: '/uploads/documents/',
   maxFilesPerUpload: 5,
   enableCompression: true,
-  allowedMimeTypes: ['application/pdf', 'image/jpeg', 'image/png', 'application/msword'],
+  allowedMimeTypes: [
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ],
 };
 
 const INITIAL_ORG: OrgUnit[] = [
@@ -227,12 +236,13 @@ export const useConfigStore = create<ConfigState>()(
           const mergeById = <T extends { id: string }>(persisted: T[] | undefined, initial: T[]): T[] => {
             if (!persisted) return initial;
             const map = new Map(persisted.map((item) => [item.id, item]));
+            const result = [...persisted];
             for (const item of initial) {
               if (!map.has(item.id)) {
-                persisted.push(item);
+                result.push(item);
               }
             }
-            return persisted;
+            return result;
           };
           return {
             ...current,

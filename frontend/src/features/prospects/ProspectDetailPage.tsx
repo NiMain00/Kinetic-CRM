@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
 import StatusBadge from '@/components/shared/StatusBadge';
 import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
+import type { TimelineEvent } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -56,14 +57,14 @@ export default function ProspectDetailPage() {
   const prospect = getProspectById(id || '');
   const events = useMemo(() => {
     if (!prospect) return INITIAL_TIMELINE_EVENTS;
-    const derived = [
+    const derived: TimelineEvent[] = [
       {
         id: `evt-${prospect.id}-created`,
         title: 'Prospek Dibuat',
         actor: prospect.author,
         role: 'Staff',
         time: prospect.date,
-        type: 'status_change' as const,
+        type: 'status_change',
         description: `Prospek "${prospect.name}" dibuat untuk klien ${prospect.client}.`,
       },
     ];
@@ -74,7 +75,7 @@ export default function ProspectDetailPage() {
         actor: 'System',
         role: 'System',
         time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        type: 'approve' as const,
+        type: 'approve',
         description: `Prospek dikonversi menjadi proyek ${prospect.projectId}.`,
       });
     }

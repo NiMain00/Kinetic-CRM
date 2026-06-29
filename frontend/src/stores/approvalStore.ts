@@ -13,6 +13,10 @@ interface ApprovalState {
   removeApproval: (id: string) => void;
 }
 
+const removeById = (id: string) => (s: { approvals: ApprovalItem[] }) => ({
+  approvals: s.approvals.filter((a) => a.id !== id),
+});
+
 export const useApprovalStore = create<ApprovalState>()(
   persist(
     (set, get) => ({
@@ -22,25 +26,16 @@ export const useApprovalStore = create<ApprovalState>()(
 
       getPendingByType: (type) => get().approvals.filter((a) => a.type === type),
 
-      approveItem: (id) =>
-        set((s) => ({
-          approvals: s.approvals.filter((a) => a.id !== id),
-        })),
+      approveItem: (id) => set(removeById(id)),
 
-      rejectItem: (id) =>
-        set((s) => ({
-          approvals: s.approvals.filter((a) => a.id !== id),
-        })),
+      rejectItem: (id) => set(removeById(id)),
 
       addApproval: (item) =>
         set((s) => ({
           approvals: [...s.approvals, item],
         })),
 
-      removeApproval: (id) =>
-        set((s) => ({
-          approvals: s.approvals.filter((a) => a.id !== id),
-        })),
+      removeApproval: (id) => set(removeById(id)),
     }),
     { name: 'kinetic-approvals' },
   ),
