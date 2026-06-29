@@ -3,10 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
 import { useMasterDataStore, type MasterCompetitor } from '@/stores/masterDataStore';
-
-function formatCurrency(n: number) {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
-}
+import { formatCurrency } from '@/utils/formatters';
 
 export default function MasterCompetitorPage() {
   const navigate = useNavigate();

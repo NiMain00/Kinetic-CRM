@@ -3,13 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { useOrgBranches } from '@/hooks/useConfigData';
 import { exportCSV } from '@/utils/export';
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
-  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
-  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
-  return `Rp ${value.toLocaleString('id-ID')}`;
-}
+import { formatCurrencyShort as formatCurrency } from '@/utils/formatters';
 
 const STAGE_ORDER = ['RKS / Prospek', 'LPHS', 'Negosiasi Harga', 'Management Apprv', 'Final Kontrak'] as const;
 

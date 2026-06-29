@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface Notification {
   id: string;
@@ -39,51 +40,59 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
   { id: 'n5', title: 'Sistem: Backup Selesai', message: 'Backup data harian berhasil dilakukan pada pukul 02:00 WIB.', type: 'system', read: true, createdAt: new Date(Date.now() - 259200000).toISOString(), icon: 'dns' },
 ];
 
-export const useNotificationStore = create<NotificationState>((set) => ({
-  notifications: INITIAL_NOTIFICATIONS,
-  unreadCount: INITIAL_NOTIFICATIONS.filter((n) => !n.read).length,
+export const useNotificationStore = create<NotificationState>()(
+  persist(
+    (set) => ({
+      notifications: INITIAL_NOTIFICATIONS,
+      unreadCount: INITIAL_NOTIFICATIONS.filter((n) => !n.read).length,
 
-  addNotification: (n) => {
-    const config = TYPE_CONFIG[n.type] || TYPE_CONFIG.system;
-    const notification: Notification = {
-      ...n,
-      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      read: false,
-      createdAt: new Date().toISOString(),
-      icon: n.icon || config.icon,
-      color: n.color || config.color,
-    };
-    set((s) => ({
-      notifications: [notification, ...s.notifications],
-      unreadCount: s.unreadCount + 1,
-    }));
-  },
+      addNotification: (n) => {
+        const config = TYPE_CONFIG[n.type] || TYPE_CONFIG.system;
+        const notification: Notification = {
+          ...n,
+          id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          read: false,
+          createdAt: new Date().toISOString(),
+          icon: n.icon || config.icon,
+          color: n.color || config.color,
+        };
+        set((s) => ({
+          notifications: [notification, ...s.notifications],
+          unreadCount: s.unreadCount + 1,
+        }));
+      },
 
-  markAsRead: (id) =>
-    set((s) => {
-      const updated = s.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n
-      );
-      return {
-        notifications: updated,
-        unreadCount: updated.filter((n) => !n.read).length,
-      };
+      markAsRead: (id) =>
+        set((s) => {
+          const updated = s.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          );
+          return {
+            notifications: updated,
+            unreadCount: updated.filter((n) => !n.read).length,
+          };
+        }),
+
+      markAllAsRead: () =>
+        set((s) => ({
+          notifications: s.notifications.map((n) => ({ ...n, read: true })),
+          unreadCount: 0,
+        })),
+
+      removeNotification: (id) =>
+        set((s) => {
+          const updated = s.notifications.filter((n) => n.id !== id);
+          return {
+            notifications: updated,
+            unreadCount: updated.filter((n) => !n.read).length,
+          };
+        }),
+
+      clearAll: () => set({ notifications: [], unreadCount: 0 }),
     }),
-
-  markAllAsRead: () =>
-    set((s) => ({
-      notifications: s.notifications.map((n) => ({ ...n, read: true })),
-      unreadCount: 0,
-    })),
-
-  removeNotification: (id) =>
-    set((s) => {
-      const updated = s.notifications.filter((n) => n.id !== id);
-      return {
-        notifications: updated,
-        unreadCount: updated.filter((n) => !n.read).length,
-      };
-    }),
-
-  clearAll: () => set({ notifications: [], unreadCount: 0 }),
-}));
+    {
+      name: 'kinetic-notifications',
+      version: 1,
+    },
+  ),
+);

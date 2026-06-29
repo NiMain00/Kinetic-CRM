@@ -38,6 +38,7 @@ export default function ProjectDetailView({
   const navigate = useNavigate();
 
   const getProjectById = useProjectStore((s) => s.getProjectById);
+  const storeProject = useProjectStore((s) => projectId ? s.projects.find(p => p.id === projectId) : undefined);
   const updateProject = useProjectStore((s) => s.updateProject);
   const deleteProject = useProjectStore((s) => s.deleteProject);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
@@ -48,7 +49,7 @@ export default function ProjectDetailView({
   const STATUS_STEP_MAP = useStatusStepMap();
   const NEXT_PHASE_MAP = useNextPhaseMap();
 
-  const project = propProject || (projectId ? getProjectById(projectId) : undefined);
+  const project = propProject || storeProject;
 
   // Cek apakah project berasal dari prospek Non Potensial (Fase 4 item 4.2)
   const sourceProspect = project?.sourceProspectId ? getProspectById(project.sourceProspectId) : undefined;

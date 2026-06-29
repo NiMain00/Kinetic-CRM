@@ -2,6 +2,13 @@ export function formatCurrency(value: number): string {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 }
 
+export function formatCurrencyShort(value: number): string {
+  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
+  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
+  return `Rp ${value.toLocaleString('id-ID')}`;
+}
+
 export function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat('id-ID').format(new Date(date));
 }

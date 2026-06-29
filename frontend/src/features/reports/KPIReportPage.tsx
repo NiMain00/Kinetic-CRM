@@ -2,14 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { exportCSV } from '@/utils/export';
+import { formatCurrencyShort as formatCurrency } from '@/utils/formatters';
 import type { KpiTarget } from '@/types/domain/users';
-
-function formatCurrency(value: number): string {
-  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
-  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
-  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
-  return `Rp ${value.toLocaleString('id-ID')}`;
-}
 
 function getKpiStatus(actual: number, target: number): KpiTarget['status'] {
   const ratio = target > 0 ? actual / target : 0;
