@@ -87,8 +87,8 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
   const typeIconColor = (type: string) => {
     const map: Record<string, string> = {
       approval: 'bg-teal-50 text-teal-600',
-      revision: 'bg-amber-50 text-amber-600',
-      status_change: 'bg-blue-50 text-blue-600',
+      revision: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
+      status_change: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
       assignment: 'bg-indigo-50 text-indigo-600',
       system: 'bg-surface-container-high text-outline',
     };
@@ -98,8 +98,8 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
   const typeTextColor = (type: string) => {
     const map: Record<string, string> = {
       approval: 'text-teal-600',
-      revision: 'text-amber-600',
-      status_change: 'text-blue-600',
+      revision: 'text-amber-600 dark:text-amber-400',
+      status_change: 'text-blue-600 dark:text-blue-400',
       assignment: 'text-indigo-600',
       system: 'text-outline',
     };
@@ -109,12 +109,12 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       {/* Search Header and Action line */}
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Pusat Notifikasi
             {unreadCount > 0 && (
-              <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">
                 {unreadCount} Belum Dibaca
               </span>
             )}
@@ -157,7 +157,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
           {/* Left filter side card column */}
           <div className="lg:col-span-3 space-y-6">
-            <div className="bg-white p-5 border border-border rounded-xl shadow-xs">
+            <div className="bg-surface-container-lowest p-5 border border-border rounded-xl shadow-xs">
               <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-4">Lihat</h3>
 
               <div className="space-y-1">
@@ -186,7 +186,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   <span className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">mark_as_unread</span> Belum Dibaca
                   </span>
-                  <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">{unreadCount}</span>
+                  <span className="text-[10px] bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">{unreadCount}</span>
                 </button>
 
                 <button

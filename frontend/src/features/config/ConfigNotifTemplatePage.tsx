@@ -161,20 +161,20 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       {/* Header bar */}
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Notification Configuration
           </h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Kelola otomasi pemicu notifikasi in-app, pesan email, sasaran peran, serta templat log.</p>
+          <p className="text-[11px] text-outline mt-0.5">Kelola otomasi pemicu notifikasi in-app, pesan email, sasaran peran, serta templat log.</p>
         </div>
 
         <div className="flex gap-2">
           <button
             onClick={() => onShowNotification('Ekspor berkas riwayat audit konfigurasi...', 'success')}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-border bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors font-semibold text-xs cursor-pointer shadow-xs"
           >
             <span className="material-symbols-outlined text-[16px] text-primary">history</span>
             Audit Logs
@@ -195,10 +195,10 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
         {/* Statistics Widgets */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          <div className="bg-white border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
+          <div className="bg-surface-container-lowest border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Active Templates</p>
-              <h3 className="font-extrabold text-primary text-2xl mt-1">{totalActive} <span className="text-xs text-slate-400 font-normal">/ {displayTemplates.length}</span></h3>
+              <p className="text-outline text-[10px] uppercase font-mono tracking-wider font-semibold">Active Templates</p>
+              <h3 className="font-extrabold text-primary text-2xl mt-1">{totalActive} <span className="text-xs text-outline font-normal">/ {displayTemplates.length}</span></h3>
               <p className="text-[10px] text-success mt-1 italic font-semibold">Ready to route in-app & mailing</p>
             </div>
             <div className="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -206,20 +206,20 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
             </div>
           </div>
 
-          <div className="bg-white border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
+          <div className="bg-surface-container-lowest border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Dispatch Queue</p>
-              <h3 className="font-extrabold text-slate-800 text-2xl mt-1">08</h3>
-              <p className="text-[10px] text-slate-400 mt-1 italic">Pending review target role delivery</p>
+              <p className="text-outline text-[10px] uppercase font-mono tracking-wider font-semibold">Dispatch Queue</p>
+              <h3 className="font-extrabold text-on-surface text-2xl mt-1">08</h3>
+              <p className="text-[10px] text-outline mt-1 italic">Pending review target role delivery</p>
             </div>
             <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>pending_actions</span>
             </div>
           </div>
 
-          <div className="bg-white border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
+          <div className="bg-surface-container-lowest border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
             <div>
-              <p className="text-slate-400 text-[10px] uppercase font-mono tracking-wider font-semibold">Delivery Rate Health</p>
+              <p className="text-outline text-[10px] uppercase font-mono tracking-wider font-semibold">Delivery Rate Health</p>
               <h3 className="font-extrabold text-indigo-650 text-2xl mt-1">{deliveryRate}</h3>
               <p className="text-[10px] text-emerald-650 mt-1 italic font-semibold">System infrastructure active & healthy</p>
             </div>
@@ -231,17 +231,17 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
         </div>
 
         {/* Configuration Table with Filtering */}
-        <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
+        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-xs overflow-hidden">
 
           {/* Header & Tab Selector bar */}
-          <div className="p-4 px-6 border-b border-border bg-slate-50 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+          <div className="p-4 px-6 border-b border-border bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setActiveCategoryTab('all')}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeCategoryTab === 'all'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
                 All Events
@@ -251,7 +251,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeCategoryTab === 'project'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
                 Project Events
@@ -261,7 +261,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeCategoryTab === 'financial'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
                 Financials
@@ -271,7 +271,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                 className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   activeCategoryTab === 'general'
                     ? 'bg-primary text-white shadow-xs'
-                    : 'text-slate-600 hover:bg-slate-200'
+                    : 'text-on-surface-variant hover:bg-surface-container-high'
                 }`}
               >
                 General
@@ -287,11 +287,11 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                 Reset
               </button>
 
-              <div className="h-6 w-[1px] bg-slate-300"></div>
+              <div className="h-6 w-[1px] bg-surface-container-highest"></div>
 
               <button
                 onClick={() => onShowNotification('Template list exported as CSV.', 'success')}
-                className="p-1 px-2 hover:bg-slate-200 rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer text-xs flex items-center gap-1"
+                className="p-1 px-2 hover:bg-surface-container-high rounded text-secondary hover:text-on-surface transition-colors cursor-pointer text-xs flex items-center gap-1"
                 title="Unduh CSV"
               >
                 <span className="material-symbols-outlined text-[16px]">file_download</span> CSV
@@ -303,7 +303,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           <div className="overflow-x-auto table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
               <thead>
-                <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                   <th className="px-6 py-3.5">Event Name</th>
                   <th className="px-6 py-3.5">Message Template</th>
                   <th className="px-6 py-3.5">Recipients</th>
@@ -316,9 +316,9 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                 {filteredTemplates.map((t) => {
                   const storeTemplate = templates.find((st) => st.id === t.id);
                   return (
-                    <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
+                    <tr key={t.id} className="hover:bg-surface-container-low/65 transition-colors">
                       <td className="px-6 py-4">
-                        <div className="font-bold text-slate-800">{t.eventName}</div>
+                        <div className="font-bold text-on-surface">{t.eventName}</div>
                         <div className="text-[10px] text-slate-450 font-mono mt-0.5">ID: {t.id} • {t.description}</div>
                       </td>
                       <td className="px-6 py-4 max-w-sm">
@@ -344,7 +344,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                           ))}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600 font-semibold whitespace-nowrap">
+                      <td className="px-6 py-4 text-on-surface-variant font-semibold whitespace-nowrap">
                         <span className="flex items-center gap-1">
                           <span className="material-symbols-outlined text-[16px] text-primary icon-compact">
                             {t.channel.includes('Email') ? 'alternate_email' : 'notifications'}
@@ -361,7 +361,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                           }`}
                         >
                           <span
-                            className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${
+                            className={`w-4 h-4 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform duration-200 ${
                               t.status ? 'translate-x-2' : '-translate-x-2'
                             }`}
                           ></span>
@@ -370,14 +370,14 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => storeTemplate && handleOpenEditDrawer(storeTemplate)}
-                          className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
+                          className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
                           title="Edit Template"
                         >
                           <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                         </button>
                         <button
                           onClick={() => handleDelete(t.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
+                          className="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
                           title="Hapus Template"
                         >
                           <span className="material-symbols-outlined text-[18px] icon-compact">delete</span>
@@ -389,7 +389,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
                 {filteredTemplates.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="text-center py-12 text-slate-400 italic">
+                    <td colSpan={6} className="text-center py-12 text-outline italic">
                       Tidak ada konfigurasi templat notifikasi ditemukan di kategori ini.
                     </td>
                   </tr>
@@ -398,7 +398,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
             </table>
           </div>
 
-          <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
+          <div className="p-4 bg-surface-container-low border-t border-border flex justify-between items-center text-[10px] text-outline">
             <span>Showing {filteredTemplates.length} of {displayTemplates.length} notification models</span>
             <span>Static environment sandbox</span>
           </div>
@@ -409,23 +409,23 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
       {/* Notification Template Edit Drawer */}
       {drawerOpen && selectedTemplate && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
-          <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
+          <div className="w-full max-w-lg bg-surface-container-lowest h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
 
             {/* Drawer Header */}
-            <div className="p-6 border-b border-border bg-slate-50 flex items-center justify-between">
+            <div className="p-6 border-b border-border bg-surface-container-low flex items-center justify-between">
               <div>
-                <h3 className="font-display-title text-sm font-extrabold text-slate-800">
+                <h3 className="font-display-title text-sm font-extrabold text-on-surface">
                   Edit Notification Template
                 </h3>
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-outline mt-1">
                   Event ID: {selectedTemplate.id} • {selectedTemplate.event_name}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -437,23 +437,23 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               {/* Message Template TextArea */}
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <label className="font-semibold text-slate-700">Message Template text</label>
+                  <label className="font-semibold text-on-surface">Message Template text</label>
                   <span className="text-[10px] text-primary hover:underline font-mono">Available Tags</span>
                 </div>
                 <textarea
-                  className="w-full rounded-lg border border-border p-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono-data text-[12px] bg-slate-50"
+                  className="w-full rounded-lg border border-border p-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono-data text-[12px] bg-surface-container-low"
                   rows={4}
                   value={editingTemplateText}
                   onChange={(e) => setEditingTemplateText(e.target.value)}
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Tag didukung: <code className="bg-slate-100 font-bold px-1 rounded">{'{{projectName}}'}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{'{{userName}}'}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{'{{comment}}'}</code>, <code className="bg-slate-100 font-bold px-1 rounded">{'{{approver}}'}</code>
+                <p className="text-[10px] text-outline mt-1">
+                  Tag didukung: <code className="bg-surface-container font-bold px-1 rounded">{'{{projectName}}'}</code>, <code className="bg-surface-container font-bold px-1 rounded">{'{{userName}}'}</code>, <code className="bg-surface-container font-bold px-1 rounded">{'{{comment}}'}</code>, <code className="bg-surface-container font-bold px-1 rounded">{'{{approver}}'}</code>
                 </p>
               </div>
 
               {/* Roles Selection */}
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 block">Recipient Role Target Audience</label>
+                <label className="font-semibold text-on-surface block">Recipient Role Target Audience</label>
                 <div className="grid grid-cols-2 gap-3">
                   {['ADMIN', 'PM', 'CREATOR', 'EXECUTIVE', 'ALL'].map((r) => {
                     const isChecked = editingRecipients.includes(r);
@@ -462,7 +462,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                         key={r}
                         onClick={() => handleToggleRecipientRole(r)}
                         className={`flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                          isChecked ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                          isChecked ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low'
                         }`}
                       >
                         <span className="material-symbols-outlined text-[18px]">
@@ -470,7 +470,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                         </span>
                         <div className="text-left">
                           <p className="font-bold text-xs">{r}</p>
-                          <p className="text-[9px] text-slate-400">Penerima model otoritas {r}</p>
+                          <p className="text-[9px] text-outline">Penerima model otoritas {r}</p>
                         </div>
                       </label>
                     );
@@ -480,26 +480,26 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
               {/* Delivery Channels */}
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 block">Delivery Channel Distribution</label>
+                <label className="font-semibold text-on-surface block">Delivery Channel Distribution</label>
                 <div className="flex gap-4">
                   <label
                     onClick={() => handleToggleChannel('In-App')}
                     className={`flex-1 flex flex-col gap-1 p-4 border rounded-lg cursor-pointer transition-all ${
                       editingChannels.includes('In-App')
                         ? 'border-primary bg-primary/5'
-                        : 'border-border bg-white hover:bg-slate-50'
+                        : 'border-border bg-surface-container-lowest hover:bg-surface-container-low'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <span className={`material-symbols-outlined ${editingChannels.includes('In-App') ? 'text-primary' : 'text-slate-400'}`}>
+                      <span className={`material-symbols-outlined ${editingChannels.includes('In-App') ? 'text-primary' : 'text-outline'}`}>
                         notifications_active
                       </span>
                       <span className={`material-symbols-outlined text-sm ${editingChannels.includes('In-App') ? 'text-primary' : 'text-slate-350'}`}>
                         {editingChannels.includes('In-App') ? 'radio_button_checked' : 'radio_button_unchecked'}
                       </span>
                     </div>
-                    <span className="font-bold text-slate-800 text-xs">In-App Alerts</span>
-                    <span className="text-[10px] text-slate-400">Real-time modal popups</span>
+                    <span className="font-bold text-on-surface text-xs">In-App Alerts</span>
+                    <span className="text-[10px] text-outline">Real-time modal popups</span>
                   </label>
 
                   <label
@@ -507,35 +507,35 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                     className={`flex-1 flex flex-col gap-1 p-4 border rounded-lg cursor-pointer transition-all ${
                       editingChannels.includes('Email')
                         ? 'border-primary bg-primary/5'
-                        : 'border-border bg-white hover:bg-slate-50'
+                        : 'border-border bg-surface-container-lowest hover:bg-surface-container-low'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-1">
-                      <span className={`material-symbols-outlined ${editingChannels.includes('Email') ? 'text-primary' : 'text-slate-400'}`}>
+                      <span className={`material-symbols-outlined ${editingChannels.includes('Email') ? 'text-primary' : 'text-outline'}`}>
                         alternate_email
                       </span>
                       <span className={`material-symbols-outlined text-sm ${editingChannels.includes('Email') ? 'text-primary' : 'text-slate-350'}`}>
                         {editingChannels.includes('Email') ? 'radio_button_checked' : 'radio_button_unchecked'}
                       </span>
                     </div>
-                    <span className="font-bold text-slate-800 text-xs">Email Dispatch</span>
-                    <span className="text-[10px] text-slate-400">Direct mailbox delivery</span>
+                    <span className="font-bold text-on-surface text-xs">Email Dispatch</span>
+                    <span className="text-[10px] text-outline">Direct mailbox delivery</span>
                   </label>
                 </div>
               </div>
 
               {/* Live Preview Section */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+              <div className="p-4 bg-surface-container-low rounded-xl border border-dashed border-border">
                 <span className="text-[9px] font-extrabold text-slate-450 uppercase tracking-widest block mb-2.5">
                   Live Preview Rendering (In-App)
                 </span>
-                <div className="bg-white p-3.5 rounded-lg shadow-xs border border-border flex gap-3">
+                <div className="bg-surface-container-lowest p-3.5 rounded-lg shadow-xs border border-border flex gap-3">
                   <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[18px]">announcement</span>
                   </div>
                   <div className="flex-grow text-xs">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-slate-800">{selectedTemplate.event_name}</span>
+                      <span className="font-bold text-on-surface">{selectedTemplate.event_name}</span>
                       <span className="text-[9px] text-slate-450 font-mono-data">Just now</span>
                     </div>
                     <p className="text-slate-650 leading-relaxed mt-1">
@@ -548,11 +548,11 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
             </div>
 
             {/* Action Buttons */}
-            <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
+            <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer"
+                className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -571,15 +571,15 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
-            <h3 className="font-bold text-sm text-slate-800 mb-2">Hapus Template Notifikasi?</h3>
-            <p className="text-xs text-slate-500 mb-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-on-surface mb-2">Hapus Template Notifikasi?</h3>
+            <p className="text-xs text-secondary mb-4">
               Template yang dihapus tidak dapat dikembalikan.
             </p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+                className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">
                 Batal
               </button>
               <button onClick={confirmDelete}

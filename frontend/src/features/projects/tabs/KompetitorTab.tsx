@@ -62,7 +62,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
 
   return (
     <div className="space-y-6">
-      <div className="bg-white border border-border p-6 rounded-xl shadow-sm">
+      <div className="bg-surface-container-lowest border border-border p-6 rounded-xl shadow-sm">
         <h3 className="font-heading-section text-heading-section mb-4">Competitor Breakdown &amp; Market Position</h3>
         {competitors.length === 0 && (
           <p className="text-sm text-secondary mb-4">Belum ada data kompetitor. Tambahkan kompetitor di bawah.</p>
@@ -98,7 +98,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                     value={newCompName}
                     onChange={(e) => setNewCompName(e.target.value)}
                     placeholder="Cari / Ketik Nama kompetitor..."
-                    className="bg-white border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm outline-none"
+                    className="bg-surface-container-lowest border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm outline-none"
                     type="text"
                   />
                 </td>
@@ -107,7 +107,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                     value={newCompPrice}
                     onChange={(e) => setNewCompPrice(e.target.value)}
                     placeholder="Contoh: 142500000000"
-                    className="bg-white border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm font-mono outline-none"
+                    className="bg-surface-container-lowest border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm font-mono outline-none"
                     type="number"
                   />
                 </td>
@@ -116,7 +116,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                     value={newCompAdv}
                     onChange={(e) => setNewCompAdv(e.target.value)}
                     placeholder="Kelebihan (pisahkan koma)"
-                    className="bg-white border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm outline-none"
+                    className="bg-surface-container-lowest border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm outline-none"
                     type="text"
                   />
                 </td>
@@ -125,7 +125,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                     value={newCompNote}
                     onChange={(e) => setNewCompNote(e.target.value)}
                     placeholder="Catatan..."
-                    className="bg-white border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary text-sm flex-1 outline-none"
+                    className="bg-surface-container-lowest border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary text-sm flex-1 outline-none"
                     type="text"
                   />
                   <button

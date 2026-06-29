@@ -16,12 +16,12 @@ export default function ChatMembersPanel({ users, currentUserId, typingUserNames
   const offlineUsers = users.filter((u) => !u.isOnline);
 
   const roleColors: Record<string, string> = {
-    'PM': 'text-blue-600 dark:text-blue-400',
-    'Branch Manager': 'text-emerald-600 dark:text-emerald-400',
-    'Procurement': 'text-amber-600 dark:text-amber-400',
-    'Admin': 'text-purple-600 dark:text-purple-400',
+    'PM': 'text-blue-600 dark:text-blue-400 dark:text-blue-400',
+    'Branch Manager': 'text-emerald-600 dark:text-emerald-400 dark:text-emerald-400',
+    'Procurement': 'text-amber-600 dark:text-amber-400 dark:text-amber-400',
+    'Admin': 'text-purple-600 dark:text-purple-400 dark:text-purple-400',
     'Staff': 'text-gray-600 dark:text-gray-400',
-    'Management': 'text-rose-600 dark:text-rose-400',
+    'Management': 'text-rose-600 dark:text-rose-400 dark:text-rose-400',
   };
 
   return (

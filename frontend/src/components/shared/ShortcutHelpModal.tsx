@@ -41,19 +41,19 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-border overflow-hidden">
-        <div className="p-6 border-b border-border flex items-center justify-between bg-slate-50">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in">
+      <div className="w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-2xl border border-border overflow-hidden">
+        <div className="p-6 border-b border-border flex items-center justify-between bg-surface-container-low">
           <div>
-            <h3 className="font-display-title text-sm font-extrabold text-slate-800 flex items-center gap-2">
+            <h3 className="font-display-title text-sm font-extrabold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px] text-primary">keyboard</span>
               Pintasan Keyboard
             </h3>
-            <p className="text-[10px] text-slate-400 mt-1">Tekan Shift + ? kapan saja untuk membuka bantuan ini.</p>
+            <p className="text-[10px] text-outline mt-1">Tekan Shift + ? kapan saja untuk membuka bantuan ini.</p>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -62,20 +62,20 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
           {GROUPS.map((group) => (
             <div key={group.label}>
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-outline mb-3">
                 {group.label}
               </h4>
               <div className="space-y-2">
                 {group.shortcuts.map((s) => (
                   <div
                     key={s.keys}
-                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-surface-container-low transition-colors"
                   >
-                    <span className="text-xs text-slate-600">{s.description}</span>
-                    <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 border border-slate-200 rounded-md text-[11px] font-mono font-bold text-slate-700 shadow-xs">
+                    <span className="text-xs text-on-surface-variant">{s.description}</span>
+                    <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-surface-container border border-border rounded-md text-[11px] font-mono font-bold text-on-surface shadow-xs">
                       {s.keys.split(' + ').map((part, i) => (
                         <React.Fragment key={part}>
-                          {i > 0 && <span className="text-slate-300">+</span>}
+                          {i > 0 && <span className="text-outline">+</span>}
                           <span className="px-1">{part}</span>
                         </React.Fragment>
                       ))}
@@ -87,7 +87,7 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
           ))}
         </div>
 
-        <div className="px-6 py-4 bg-slate-50 border-t border-border flex justify-end">
+        <div className="px-6 py-4 bg-surface-container-low border-t border-border flex justify-end">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer"

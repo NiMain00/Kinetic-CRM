@@ -138,13 +138,13 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
 
       {/* Informasi Tender */}
       {rks && (
-        <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+        <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
           <div className="flex items-center gap-3 mb-6">
             <span className="w-10 h-10 rounded-lg bg-primary-container/10 text-primary flex items-center justify-center">
               <span className="material-symbols-outlined">assignment</span>
             </span>
             <div>
-              <h3 className="font-heading-section text-base font-bold text-slate-800">Informasi Tender</h3>
+              <h3 className="font-heading-section text-base font-bold text-on-surface">Informasi Tender</h3>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -184,7 +184,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
               <p className="text-xs text-secondary font-semibold mb-2">Dokumen Terlampir</p>
               <div className="space-y-2">
                 {rks.uploadedFiles.map((file, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-border">
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-surface-container-low rounded-lg border border-border">
                     <span className="material-symbols-outlined text-danger text-[20px]">description</span>
                     <div className="text-sm">
                       <span className="font-medium">{file.name}</span>
@@ -199,19 +199,19 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
       )}
 
       {/* Jawaban Pertanyaan RKS */}
-      <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+      <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <span className="w-10 h-10 rounded-lg bg-status-teal/10 text-status-teal flex items-center justify-center">
             <span className="material-symbols-outlined">quiz</span>
           </span>
           <div>
-            <h3 className="font-heading-section text-base font-bold text-slate-800">Jawaban Pertanyaan RKS</h3>
+            <h3 className="font-heading-section text-base font-bold text-on-surface">Jawaban Pertanyaan RKS</h3>
             <p className="text-secondary text-xs">Review jawaban yang telah diisi oleh tim proyek.</p>
           </div>
         </div>
 
         {rksQuestions.length === 0 ? (
-          <div className="text-center py-8 text-slate-400">
+          <div className="text-center py-8 text-outline">
             <span className="material-symbols-outlined text-4xl mb-2">help_outline</span>
             <p className="text-sm">Belum ada pertanyaan RKS yang tersedia.</p>
           </div>
@@ -225,7 +225,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
 
               return (
                 <div key={q.id} className={`p-4 rounded-lg border-l-4 ${isAnswered ? 'border-success bg-surface-container-low' : 'border-warning bg-surface-container border border-border'}`}>
-                  <p className="font-semibold text-sm text-slate-700 mb-2">
+                  <p className="font-semibold text-sm text-on-surface mb-2">
                     {index + 1}. {q.question_text}
                     {q.is_required && <span className="text-red-500 ml-1">*</span>}
                   </p>
@@ -241,7 +241,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
                             className={`px-3 py-1 rounded-full text-xs font-semibold border ${
                               isSelected
                                 ? 'bg-primary/10 text-primary border-primary/30'
-                                : 'bg-slate-100 text-slate-400 border-slate-200'
+                                : 'bg-surface-container text-outline border-border'
                             }`}
                           >
                             {opt}
@@ -256,7 +256,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
                     </p>
                   )}
                   {q.help_text && (
-                    <p className="text-xs text-slate-400 mt-1">{q.help_text}</p>
+                    <p className="text-xs text-outline mt-1">{q.help_text}</p>
                   )}
                 </div>
               );
@@ -266,13 +266,13 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
       </section>
 
       {/* Catatan Review */}
-      <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+      <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-4">
           <span className="w-10 h-10 rounded-lg bg-status-purple/10 text-status-purple flex items-center justify-center">
             <span className="material-symbols-outlined">notes</span>
           </span>
           <div>
-            <h3 className="font-heading-section text-base font-bold text-slate-800">Catatan Review</h3>
+            <h3 className="font-heading-section text-base font-bold text-on-surface">Catatan Review</h3>
             <p className="text-secondary text-xs">Tambahkan catatan untuk tim proyek.</p>
           </div>
         </div>
@@ -286,10 +286,10 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
       </section>
 
       {/* Action Buttons */}
-      <section className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <section className="bg-surface-container-low border border-border rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
         {canReview ? (
           <>
-            <div className="flex items-center gap-2 text-slate-500 text-xs text-center sm:text-left">
+            <div className="flex items-center gap-2 text-secondary text-xs text-center sm:text-left">
               <span className="material-symbols-outlined text-[18px]">info</span>
               <span>Pastikan semua data RKS dan jawaban sudah sesuai sebelum approve.</span>
             </div>
@@ -305,7 +305,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
               <button
                 onClick={handleSaveReview}
                 type="button"
-                className="flex-1 sm:flex-initial px-6 py-2.5 bg-white border border-border text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-100 transition-all cursor-pointer"
+                className="flex-1 sm:flex-initial px-6 py-2.5 bg-surface-container-lowest border border-border text-on-surface font-semibold text-sm rounded-lg hover:bg-surface-container transition-all cursor-pointer"
               >
                 Simpan Review
               </button>
@@ -320,7 +320,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2 text-slate-500 text-xs w-full">
+          <div className="flex items-center gap-2 text-secondary text-xs w-full">
             <span className="material-symbols-outlined text-[18px]">lock</span>
             <span>Hanya PM, Admin, atau Super Admin yang dapat melakukan review dan approve RKS.</span>
           </div>

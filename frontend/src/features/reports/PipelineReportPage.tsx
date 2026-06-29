@@ -154,7 +154,7 @@ export default function PipelineReportPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
             <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <span className="material-symbols-outlined text-2xl">account_balance_wallet</span>
             </div>
@@ -163,8 +163,8 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-on-surface text-base">{formatCurrency(totalPipelineValue)}</p>
             </div>
           </div>
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-teal-50 flex items-center justify-center text-teal-600 shrink-0">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center text-teal-600 shrink-0">
               <span className="material-symbols-outlined text-2xl">assignment</span>
             </div>
             <div>
@@ -172,8 +172,8 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-on-surface text-base">{totalActiveProjects}</p>
             </div>
           </div>
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 shrink-0">
               <span className="material-symbols-outlined text-2xl">trending_up</span>
             </div>
             <div>
@@ -181,8 +181,8 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-indigo-600 text-base">{growthForecast}</p>
             </div>
           </div>
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shrink-0">
               <span className="material-symbols-outlined text-2xl">event_available</span>
             </div>
             <div>
@@ -193,15 +193,15 @@ export default function PipelineReportPage() {
         </div>
 
         {/* Funnel Visualization */}
-        <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-5 border-b border-border flex items-center justify-between">
             <h3 className="font-bold text-sm text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">filter_center_focus</span>
               Pipeline Stages
             </h3>
             <div className="inline-flex bg-surface-container-low p-1 rounded-lg border border-border">
-              <button onClick={() => setViewMode('count')} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === 'count' ? 'bg-white shadow-sm text-primary' : 'text-secondary'}`}>By Count</button>
-              <button onClick={() => setViewMode('value')} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === 'value' ? 'bg-white shadow-sm text-primary' : 'text-secondary'}`}>By Value</button>
+              <button onClick={() => setViewMode('count')} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === 'count' ? 'bg-surface-container-lowest shadow-sm text-primary' : 'text-secondary'}`}>By Count</button>
+              <button onClick={() => setViewMode('value')} className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${viewMode === 'value' ? 'bg-surface-container-lowest shadow-sm text-primary' : 'text-secondary'}`}>By Value</button>
             </div>
           </div>
           <div className="p-6 bg-surface-container-low/50 space-y-2 min-h-[240px] flex flex-col justify-center">
@@ -223,17 +223,17 @@ export default function PipelineReportPage() {
         </div>
 
         {/* Pipeline Table */}
-        <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 px-6 border-b border-border bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <h3 className="font-bold text-sm text-on-surface">Pipeline Details</h3>
             <div className="flex gap-3">
-              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border rounded-lg px-3 py-1.5 text-sm bg-white outline-none" aria-label="Filter cabang">
+              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border rounded-lg px-3 py-1.5 text-sm bg-surface-container-lowest outline-none" aria-label="Filter cabang">
                 <option value="All">Semua Cabang</option>
                 {branchOptions.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
-                <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-white outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek..." aria-label="Cari" />
+                <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-surface-container-lowest outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek..." aria-label="Cari" />
               </div>
             </div>
           </div>

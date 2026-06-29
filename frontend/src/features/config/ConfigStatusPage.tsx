@@ -111,7 +111,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
       {/* Bento Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <div className="bg-white p-6 rounded-xl border border-border shadow-sm">
+          <div className="bg-surface-container-lowest p-6 rounded-xl border border-border shadow-sm">
             <p className="text-secondary font-label-sm text-label-sm mb-1 uppercase tracking-wider text-xs">Total Status</p>
             <h3 className="font-display-title text-display-title text-primary text-2xl">{statuses.length}</h3>
             <div className="mt-4 flex items-center gap-2 text-success text-xs font-semibold">
@@ -127,13 +127,13 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-on-surface-variant font-medium">Aktif</span>
-                <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold text-success">
+                <span className="font-mono-data text-mono-data bg-surface-container-lowest px-2 py-0.5 rounded border font-bold text-success">
                   {activeCount}
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs text-on-surface-variant font-medium">Tidak Aktif</span>
-                <span className="font-mono-data text-mono-data bg-white px-2 py-0.5 rounded border font-bold text-danger">
+                <span className="font-mono-data text-mono-data bg-surface-container-lowest px-2 py-0.5 rounded border font-bold text-danger">
                   {inactiveCount}
                 </span>
               </div>
@@ -142,14 +142,14 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                   className="bg-success h-full transition-all"
                   style={{ width: statuses.length > 0 ? `${(activeCount / statuses.length) * 100}%` : '0%' }}
                 ></div>
-                <div className="bg-slate-300 h-full" style={{ width: statuses.length > 0 ? `${(inactiveCount / statuses.length) * 100}%` : '0%' }}></div>
+                <div className="bg-surface-container-highest h-full" style={{ width: statuses.length > 0 ? `${(inactiveCount / statuses.length) * 100}%` : '0%' }}></div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Data Table Container */}
-        <div className="lg:col-span-3 bg-white rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
+        <div className="lg:col-span-3 bg-surface-container-lowest rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
           <div className="p-6 border-b border-border flex items-center justify-between bg-surface-bright">
             <h4 className="font-heading-section text-heading-section text-on-surface text-base">Daftar Status</h4>
           </div>
@@ -188,15 +188,15 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleToggle(row.id)}
-                        className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${row.is_active ? 'bg-success' : 'bg-slate-300'}`}
+                        className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${row.is_active ? 'bg-success' : 'bg-surface-container-highest'}`}
                       >
-                        <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${row.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
+                        <span className={`w-4 h-4 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform duration-200 ${row.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
                       </button>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleOpenEdit(row)}
-                        className="p-1 text-primary hover:bg-slate-100 rounded-lg text-lg btn-compact"
+                        className="p-1 text-primary hover:bg-surface-container rounded-lg text-lg btn-compact"
                       >
                         <span className="material-symbols-outlined icon-compact">edit</span>
                       </button>
@@ -218,7 +218,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
       >
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 top-0 h-full w-full max-w-[480px] bg-white z-[70] shadow-2xl flex flex-col transition-transform duration-300"
+          className="absolute right-0 top-0 h-full w-full max-w-[480px] bg-surface-container-lowest z-[70] shadow-2xl flex flex-col transition-transform duration-300"
           style={{ transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)' }}
         >
           <div className="p-6 border-b border-border flex items-center justify-between bg-surface-container-lowest">

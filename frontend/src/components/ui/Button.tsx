@@ -13,7 +13,7 @@ const variants = {
   secondary: 'bg-surface-container-low text-on-surface border border-border hover:bg-surface-container-high',
   ghost: 'text-secondary hover:bg-surface-container-high hover:text-primary',
   danger: 'bg-danger text-on-error hover:opacity-90 border border-danger',
-  outline: 'bg-white text-primary border border-border hover:bg-primary/5',
+  outline: 'bg-surface-container-lowest text-primary border border-border hover:bg-primary/5',
 };
 
 const sizes = {

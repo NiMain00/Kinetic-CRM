@@ -53,7 +53,7 @@ export default function ConfigDashboardPage() {
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className="bg-white border border-border rounded-xl p-6 text-left hover:border-primary hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
+            className="bg-surface-container-lowest border border-border rounded-xl p-6 text-left hover:border-primary hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
           >
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">

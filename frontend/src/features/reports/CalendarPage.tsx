@@ -153,12 +153,12 @@ export default function CalendarPage() {
   }, [projects, holidays]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
-      <div className="bg-white border-b border-border px-6 py-2.5 shrink-0 shadow-sm z-10">
-        <h2 className="font-display-title text-sm font-extrabold text-slate-900">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
+      <div className="bg-surface-container-lowest border-b border-border px-6 py-2.5 shrink-0 shadow-sm z-10">
+        <h2 className="font-display-title text-sm font-extrabold text-on-surface">
           Kalender Proyek
         </h2>
-        <p className="text-[11px] text-slate-400 mt-0.5">
+        <p className="text-[11px] text-outline mt-0.5">
           Deadline tender, jadwal delivery, milestone, approval LPHS, timeline, dan hari libur.
         </p>
       </div>

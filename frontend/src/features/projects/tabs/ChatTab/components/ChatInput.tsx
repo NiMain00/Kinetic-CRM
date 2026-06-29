@@ -133,7 +133,7 @@ export default function ChatInput({ onSendMessage, onTyping, onFileUpload, users
                 <p className="text-[11px] text-outline">{user.role}</p>
               </div>
               {user.isOnline && (
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                <div className="w-2 h-2 rounded-full bg-emerald-50 dark:bg-emerald-950/300" />
               )}
             </button>
           ))}

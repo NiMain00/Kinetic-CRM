@@ -180,7 +180,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   onClick={() => { setActiveFilter(tab); setCurrentPage(1); }}
                   className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
                     activeFilter === tab
-                      ? 'bg-white text-primary shadow-sm border border-border font-bold'
+                      ? 'bg-surface-container-lowest text-primary shadow-sm border border-border font-bold'
                       : 'text-secondary hover:bg-surface-container-high'
                   }`}
                 >
@@ -312,7 +312,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     paginatedProspects.map((row, index) => {
                       const globalIndex = (currentPage - 1) * PAGE_SIZE + index + 1;
                       return (
-                      <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 transition-colors group">
+                      <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors group">
                         <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{globalIndex}</td>
                         <td className="px-6 py-4">
                           <div
@@ -393,7 +393,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Prev
               </button>
@@ -401,7 +401,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border text-secondary hover:bg-surface-container-low'}`}
+                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low'}`}
                 >
                   {i + 1}
                 </button>
@@ -409,7 +409,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <button
                 disabled={currentPage === totalPages || totalPages === 0}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Next
               </button>

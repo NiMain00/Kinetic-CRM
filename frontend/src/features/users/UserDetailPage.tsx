@@ -59,7 +59,7 @@ export default function UserDetailPage() {
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Profile Card */}
-        <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl shrink-0">{initials}</div>
             <div className="flex-1 space-y-2">
@@ -103,7 +103,7 @@ export default function UserDetailPage() {
         </div>
 
         {/* Activity Log */}
-        <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
           <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">history</span>
             Aktivitas Terbaru

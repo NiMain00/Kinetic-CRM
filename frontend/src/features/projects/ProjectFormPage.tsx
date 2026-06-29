@@ -69,7 +69,7 @@ export default function ProjectFormPage() {
           <p className="text-sm text-secondary mt-1">Lengkapi informasi dasar proyek untuk memulai siklus tender.</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
           <div className="space-y-1.5">
             <label className="font-semibold text-sm text-on-surface-variant">Nama Proyek *</label>
             <input
@@ -87,7 +87,7 @@ export default function ProjectFormPage() {
               <label className="font-semibold text-sm text-on-surface-variant">Client *</label>
               <select
                 {...register('client')}
-                className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
+                className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-surface-container-lowest"
                 aria-label="Client"
               >
                 <option value="">Pilih client...</option>
@@ -99,7 +99,7 @@ export default function ProjectFormPage() {
               <label className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>
               <select
                 {...register('type')}
-                className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-sm bg-white"
+                className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-sm bg-surface-container-lowest"
                 aria-label="Tipe Proyek"
               >
                 {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}

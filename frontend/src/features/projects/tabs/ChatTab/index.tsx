@@ -146,7 +146,7 @@ export default function ChatTab({ project }: ChatTabProps) {
           <div className="flex items-center gap-1">
             {/* Online count */}
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-variant text-[11px] text-outline mr-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/300" />
               {users.filter((u) => u.isOnline).length} online
             </div>
             <button

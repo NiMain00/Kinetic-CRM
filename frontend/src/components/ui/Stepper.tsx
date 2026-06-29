@@ -21,12 +21,12 @@ export default function Stepper({ steps, currentStep, className = '' }: StepperP
           <div key={step.label} className="flex flex-col gap-2">
             <div
               className={`h-1.5 rounded-full transition-colors duration-300 ${
-                isCompleted ? 'bg-primary' : isActive ? 'bg-primary' : 'bg-slate-200'
+                isCompleted ? 'bg-primary' : isActive ? 'bg-primary' : 'bg-surface-container-high'
               }`}
             />
             <div
               className={`flex items-center gap-1.5 transition-colors duration-300 ${
-                isActive || isCompleted ? 'text-primary font-bold' : 'text-slate-500'
+                isActive || isCompleted ? 'text-primary font-bold' : 'text-secondary'
               }`}
             >
               <span

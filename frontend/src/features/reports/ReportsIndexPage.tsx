@@ -77,17 +77,17 @@ export default function ReportsIndexPage() {
 
         {/* Quick Summary Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Projects</p>
             <p className="text-2xl font-extrabold text-on-surface mt-1">{stats.totalProjects}</p>
             <span className={`text-xs ${stats.growthColor} font-semibold`}>{stats.growthLabel}</span>
           </div>
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Win Rate</p>
             <p className="text-2xl font-extrabold text-on-surface mt-1">{stats.winRate}%</p>
             <span className="text-xs text-success font-semibold">{stats.wonCount} project{stats.wonCount !== 1 ? 's' : ''} won</span>
           </div>
-          <div className="bg-white border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Pipeline Value</p>
             <p className="text-2xl font-extrabold text-on-surface mt-1">{formatCurrency(stats.totalValue)}</p>
             <span className="text-xs text-secondary font-semibold">{stats.totalProjects} active project{stats.totalProjects !== 1 ? 's' : ''}</span>
@@ -100,7 +100,7 @@ export default function ReportsIndexPage() {
             <button
               key={card.title}
               onClick={() => navigate(card.path)}
-              className="bg-white border border-border rounded-xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-left cursor-pointer group"
+              className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-left cursor-pointer group"
               aria-label={`Buka ${card.title}`}
             >
               <div className={`w-12 h-12 rounded-lg ${card.bgColor} flex items-center justify-center ${card.color} mb-4`}>

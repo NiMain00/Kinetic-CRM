@@ -68,8 +68,8 @@ export default function OverviewTab({ project }: TabProps) {
               <span className="text-4xl font-bold text-white">{project?.progress}%</span>
               <span className="font-caption-xs mb-1 opacity-80 text-white/90 text-sm">Tahap {project?.phase}</span>
             </div>
-            <div className="w-full bg-white/20 h-2.5 rounded-full overflow-hidden">
-              <div className="bg-white h-full rounded-full" style={{ width: `${project?.progress || 0}%` }}></div>
+            <div className="w-full bg-surface-container-lowest/20 h-2.5 rounded-full overflow-hidden">
+              <div className="bg-surface-container-lowest h-full rounded-full" style={{ width: `${project?.progress || 0}%` }}></div>
             </div>
             <p className="mt-4 font-caption-xs text-white/70 text-xs">
               {project && project.progress < 100 ? 'Lanjut ke tahap berikutnya setelah persetujuan' : 'Proyek selesai'}

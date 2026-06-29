@@ -42,10 +42,10 @@ export default function ChatMessageItem({ message, isOwnMessage, showSender, cur
   const timeAgo = formatDistanceToNow(new Date(message.createdAt), { addSuffix: true, locale: id });
 
   const roleColors: Record<string, string> = {
-    'PM': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    'Branch Manager': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    'Procurement': 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    'Admin': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    'PM': 'bg-blue-100 text-blue-700 dark:text-blue-400 dark:bg-blue-900/30 dark:text-blue-400',
+    'Branch Manager': 'bg-emerald-100 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-900/30 dark:text-emerald-400',
+    'Procurement': 'bg-amber-100 text-amber-700 dark:text-amber-400 dark:bg-amber-900/30 dark:text-amber-400',
+    'Admin': 'bg-purple-100 text-purple-700 dark:text-purple-400 dark:bg-purple-900/30 dark:text-purple-400',
     'Staff': 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
     'Management': 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
   };

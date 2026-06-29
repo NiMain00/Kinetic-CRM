@@ -14,11 +14,11 @@ const ACCOUNT_ICONS: Record<string, string> = {
 };
 
 const ACCOUNT_COLORS: Record<string, string> = {
-  admin: 'bg-red-500',
-  Cabang: 'bg-blue-500',
-  PM: 'bg-emerald-500',
-  Dept: 'bg-amber-500',
-  Admin: 'bg-purple-500',
+  admin: 'bg-red-50 dark:bg-red-950/300',
+  Cabang: 'bg-blue-50 dark:bg-blue-950/300',
+  PM: 'bg-emerald-50 dark:bg-emerald-950/300',
+  Dept: 'bg-amber-50 dark:bg-amber-950/300',
+  Admin: 'bg-purple-50 dark:bg-purple-950/300',
 };
 
 const ADMIN_ACCOUNT = {
@@ -191,7 +191,7 @@ export default function LoginPage() {
             <div className="grid grid-cols-2 gap-2">
               {demoAccounts.map((acct) => {
                 const isSelected = username === acct.username;
-                const color = acct.username === 'admin' ? ACCOUNT_COLORS.admin : (ACCOUNT_COLORS[acct.role] || 'bg-slate-500');
+                const color = acct.username === 'admin' ? ACCOUNT_COLORS.admin : (ACCOUNT_COLORS[acct.role] || 'bg-surface-container-low0');
                 const icon = acct.username === 'admin' ? ACCOUNT_ICONS.admin : (ACCOUNT_ICONS[acct.role] || 'person');
                 return (
                   <button

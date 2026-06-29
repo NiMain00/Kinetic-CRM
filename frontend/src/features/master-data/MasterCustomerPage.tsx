@@ -71,7 +71,7 @@ export default function MasterCustomerPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Master Customer
@@ -90,7 +90,7 @@ export default function MasterCustomerPage() {
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
                 <input type="text" placeholder="Cari nama, kode, atau PIC..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-surface-container-low border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary" aria-label="Cari customer" />
               </div>
-              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none" aria-label="Filter tipe">
+              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none" aria-label="Filter tipe">
                 <option value="all">Semua Tipe</option>
                 <option value="swasta">Swasta</option>
                 <option value="bumn">BUMN</option>
@@ -131,13 +131,13 @@ export default function MasterCustomerPage() {
                         <td className="px-6 py-4 text-outline">{c.city}</td>
                         <td className="px-6 py-4 text-center">
                           <button onClick={() => toggleStatus(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${c.is_active ? 'bg-success' : 'bg-border'}`} aria-label={`Toggle status ${c.name}`}>
-                            <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${c.is_active ? 'translate-x-2' : '-translate-x-2'}`} />
+                            <span className={`w-4 h-4 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform duration-200 ${c.is_active ? 'translate-x-2' : '-translate-x-2'}`} />
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
                             <button onClick={() => openEdit(c)} className="p-1.5 rounded-lg hover:bg-surface-container-high text-outline hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
-                            <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
+                            <button onClick={() => handleDelete(c.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:bg-red-950/30 text-outline hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                           </div>
                         </td>
                       </tr>
@@ -164,7 +164,7 @@ export default function MasterCustomerPage() {
           </div>
           <div className="space-y-2">
             <label className="font-semibold text-secondary block">Tipe Customer *</label>
-            <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as MasterCustomer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+            <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as MasterCustomer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
               <option value="swasta">Swasta</option>
               <option value="bumn">BUMN</option>
               <option value="pemerintah">Pemerintah</option>

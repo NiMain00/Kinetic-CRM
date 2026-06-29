@@ -138,32 +138,32 @@ export default function KPITargetsPage() {
       header: 'KPI Name',
       render: row => (
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px] text-slate-400" aria-hidden="true">{CATEGORY_ICONS[row.category] || 'monitoring'}</span>
-          <span className="font-bold text-slate-800 text-xs">{row.name}</span>
+          <span className="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">{CATEGORY_ICONS[row.category] || 'monitoring'}</span>
+          <span className="font-bold text-on-surface text-xs">{row.name}</span>
         </div>
       ),
     },
     {
       key: 'category',
       header: 'Category',
-      render: row => <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-semibold text-slate-600">{row.category.replace(/_/g, ' ')}</span>,
+      render: row => <span className="px-2 py-0.5 bg-surface-container rounded text-[10px] font-semibold text-on-surface-variant">{row.category.replace(/_/g, ' ')}</span>,
     },
     {
       key: 'period',
       header: 'Period',
-      render: row => <span className="text-slate-400 font-mono text-[10px]">{row.period}</span>,
+      render: row => <span className="text-outline font-mono text-[10px]">{row.period}</span>,
     },
     {
       key: 'targetValue',
       header: 'Target Value',
       align: 'right',
-      render: row => <span className="font-mono font-bold text-slate-700 text-xs">{formatTargetValue(row)}</span>,
+      render: row => <span className="font-mono font-bold text-on-surface text-xs">{formatTargetValue(row)}</span>,
     },
     {
       key: 'unit',
       header: 'Unit',
       align: 'center',
-      render: row => <span className="text-[10px] text-slate-500 uppercase">{row.unit}</span>,
+      render: row => <span className="text-[10px] text-secondary uppercase">{row.unit}</span>,
     },
     {
       key: 'status',
@@ -174,7 +174,7 @@ export default function KPITargetsPage() {
     {
       key: 'createdAt',
       header: 'Created',
-      render: row => <span className="text-[10px] text-slate-400 font-mono">{row.createdAt}</span>,
+      render: row => <span className="text-[10px] text-outline font-mono">{row.createdAt}</span>,
     },
     {
       key: 'id',
@@ -184,7 +184,7 @@ export default function KPITargetsPage() {
         can('kpi_manage') ? (
           <button
             onClick={() => handleDelete(row.id)}
-            className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-danger transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-outline hover:text-danger transition-colors cursor-pointer"
             title="Hapus target"
             aria-label={`Hapus target ${row.name}`}
           >
@@ -196,11 +196,11 @@ export default function KPITargetsPage() {
   ];
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">KPI Target Setting</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Atur dan kelola target KPI untuk setiap periode.</p>
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Target Setting</h2>
+          <p className="text-[11px] text-outline mt-0.5">Atur dan kelola target KPI untuk setiap periode.</p>
         </div>
         {can('kpi_manage') && (
           <Button
@@ -218,8 +218,8 @@ export default function KPITargetsPage() {
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="none" header={
             <div className="flex items-center justify-between">
-              <h4 className="font-bold text-slate-800 text-xs">Daftar Target KPI</h4>
-              <span className="text-[10px] text-slate-400">{targets.length} target</span>
+              <h4 className="font-bold text-on-surface text-xs">Daftar Target KPI</h4>
+              <span className="text-[10px] text-outline">{targets.length} target</span>
             </div>
           }>
             <Table<KpiTarget & { createdAt: string } & Record<string, unknown>>

@@ -217,7 +217,7 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between rounded-lg border border-border p-2 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+        className="w-full flex items-center justify-between rounded-lg border border-border p-2 text-xs bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
       >
         <span className={selected.length === 0 ? 'text-outline' : 'text-on-surface'}>
           {selected.length === 0 ? (placeholder || 'Semua') : `${selected.length} dipilih`}
@@ -225,7 +225,7 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
         <span className="material-symbols-outlined text-[16px] text-outline">{open ? 'expand_less' : 'expand_more'}</span>
       </button>
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg p-2 z-20 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-surface-container-lowest border border-border rounded-lg shadow-lg p-2 z-20 max-h-48 overflow-y-auto">
           {options.map((opt) => (
             <label
               key={opt.value}

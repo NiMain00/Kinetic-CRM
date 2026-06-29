@@ -65,7 +65,7 @@ export default function UserListPage() {
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
               <input value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }} className="w-full pl-10 pr-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary outline-none focus:ring-1" placeholder="Cari nama atau email..." type="text" aria-label="Cari pengguna" />
             </div>
-            <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value as UserRole | 'all'); setCurrentPage(1); }} className="border border-border rounded-lg px-4 py-2 text-sm bg-white outline-none focus:ring-1 focus:ring-primary" aria-label="Filter role">
+            <select value={roleFilter} onChange={(e) => { setRoleFilter(e.target.value as UserRole | 'all'); setCurrentPage(1); }} className="border border-border rounded-lg px-4 py-2 text-sm bg-surface-container-lowest outline-none focus:ring-1 focus:ring-primary" aria-label="Filter role">
               <option value="all">Semua Role</option>
               {ALL_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
@@ -73,7 +73,7 @@ export default function UserListPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
           <div className="overflow-x-auto table-mobile-compact">
             <table className="w-full text-left text-sm table-auto" aria-label="Daftar Pengguna">
               <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border">
@@ -96,7 +96,7 @@ export default function UserListPage() {
                   </tr>
                 ) : (
                   paginated.map((u) => (
-                    <tr key={u.id} onClick={() => navigate(`/users/${u.id}`)} className="hover:bg-blue-50/30 transition-colors cursor-pointer">
+                    <tr key={u.id} onClick={() => navigate(`/users/${u.id}`)} className="hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
@@ -132,11 +132,11 @@ export default function UserListPage() {
               Menampilkan <span className="font-bold text-on-surface">{(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> dari <span className="font-bold text-on-surface">{filtered.length}</span> hasil
             </span>
             <div className="flex items-center gap-1">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-3 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman sebelumnya">Prev</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-3 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman sebelumnya">Prev</button>
               {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`px-3 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border text-secondary hover:bg-surface-container-low'}`}>{i + 1}</button>
+                <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`px-3 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low'}`}>{i + 1}</button>
               ))}
-              <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-3 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman selanjutnya">Next</button>
+              <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-3 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman selanjutnya">Next</button>
             </div>
           </div>
         </div>

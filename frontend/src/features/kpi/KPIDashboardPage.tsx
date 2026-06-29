@@ -79,11 +79,11 @@ export default function KPIDashboardPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">KPI Dashboard</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Ringkasan kinerja indikator utama organisasi secara real-time.</p>
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Dashboard</h2>
+          <p className="text-[11px] text-outline mt-0.5">Ringkasan kinerja indikator utama organisasi secara real-time.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>} onClick={handleExport} aria-label="Export laporan KPI">
@@ -95,7 +95,7 @@ export default function KPIDashboardPage() {
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <div className="flex items-center gap-3" role="toolbar" aria-label="Filter periode">
-            <span className="text-xs font-semibold text-slate-500">Periode:</span>
+            <span className="text-xs font-semibold text-secondary">Periode:</span>
             <Select
               options={periodOptions}
               value={periodFilter}
@@ -114,60 +114,60 @@ export default function KPIDashboardPage() {
               const config = STATUS_CONFIG[kpi.status] || STATUS_CONFIG.on_track;
               const borderColor = kpi.status === 'behind' ? 'border-l-danger' : kpi.status === 'at_risk' ? 'border-l-warning' : 'border-l-success';
               return (
-                <div key={kpi.id} className={`bg-white border border-border rounded-xl p-5 shadow-xs hover:shadow-md transition-shadow border-l-4 ${borderColor}`} role="listitem" aria-label={`KPI ${kpi.name}`}>
+                <div key={kpi.id} className={`bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs hover:shadow-md transition-shadow border-l-4 ${borderColor}`} role="listitem" aria-label={`KPI ${kpi.name}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className={`material-symbols-outlined text-lg ${kpi.status === 'behind' ? 'text-danger' : kpi.status === 'at_risk' ? 'text-warning' : 'text-success'}`} aria-hidden="true">{KPI_ICONS[kpi.category] || 'monitoring'}</span>
-                      <h4 className="font-bold text-slate-800 text-xs">{kpi.name}</h4>
+                      <h4 className="font-bold text-on-surface text-xs">{kpi.name}</h4>
                     </div>
                     <Badge variant={config.variant} size="sm">{config.label}</Badge>
                   </div>
                   <div className="flex items-end gap-2 mb-3">
-                    <span className="text-2xl font-extrabold text-slate-800">{formatValue(kpi)}</span>
-                    <span className="text-xs text-slate-400 mb-1">/ {formatTarget(kpi)}</span>
+                    <span className="text-2xl font-extrabold text-on-surface">{formatValue(kpi)}</span>
+                    <span className="text-xs text-outline mb-1">/ {formatTarget(kpi)}</span>
                   </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress ${kpi.name}: ${progress}%`}>
+                  <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress ${kpi.name}: ${progress}%`}>
                     <div className={`h-full rounded-full transition-all duration-500 ${kpi.status === 'on_track' ? 'bg-success' : kpi.status === 'at_risk' ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${progress}%` }}></div>
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1.5">{progress}% dari target • {kpi.period}</p>
+                  <p className="text-[10px] text-outline mt-1.5">{progress}% dari target • {kpi.period}</p>
                 </div>
               );
             })}
           </div>)}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7 bg-white border border-border rounded-xl p-6 shadow-xs">
-              <h4 className="font-bold text-slate-800 text-xs mb-6">Win Rate Trend (YTD)</h4>
-              <div className="h-56 flex items-end justify-between gap-3 px-2 border-b border-slate-200" aria-label="Grafik tren win rate">
+            <div className="lg:col-span-7 bg-surface-container-lowest border border-border rounded-xl p-6 shadow-xs">
+              <h4 className="font-bold text-on-surface text-xs mb-6">Win Rate Trend (YTD)</h4>
+              <div className="h-56 flex items-end justify-between gap-3 px-2 border-b border-border" aria-label="Grafik tren win rate">
                 {MONTHLY_DATA.map((d, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center h-full justify-end group">
                     <div className="w-full flex items-end justify-center gap-1 h-[85%]">
-                      <div className="w-1/3 bg-slate-300 rounded-t-xs transition-all group-hover:brightness-110" style={{ height: `${d.target}%` }} title={`Target: ${d.target}%`} role="img" aria-label={`Bulan ${d.month} target ${d.target}%`}></div>
+                      <div className="w-1/3 bg-surface-container-highest rounded-t-xs transition-all group-hover:brightness-110" style={{ height: `${d.target}%` }} title={`Target: ${d.target}%`} role="img" aria-label={`Bulan ${d.month} target ${d.target}%`}></div>
                       <div className="w-1/3 bg-primary rounded-t-xs transition-all group-hover:brightness-110" style={{ height: `${d.actual}%` }} title={`Actual: ${d.actual}%`} role="img" aria-label={`Bulan ${d.month} aktual ${d.actual}%`}></div>
                     </div>
-                    <span className="mt-2 text-[9px] font-bold text-slate-400">{d.month}</span>
+                    <span className="mt-2 text-[9px] font-bold text-outline">{d.month}</span>
                   </div>
                 ))}
               </div>
               <div className="flex gap-4 mt-4 justify-center">
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-500"><span className="w-3 h-3 bg-primary rounded-xs" aria-hidden="true"></span> Actual</div>
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-500"><span className="w-3 h-3 bg-slate-300 rounded-xs" aria-hidden="true"></span> Target</div>
+                <div className="flex items-center gap-1.5 text-[10px] text-secondary"><span className="w-3 h-3 bg-primary rounded-xs" aria-hidden="true"></span> Actual</div>
+                <div className="flex items-center gap-1.5 text-[10px] text-secondary"><span className="w-3 h-3 bg-surface-container-highest rounded-xs" aria-hidden="true"></span> Target</div>
               </div>
             </div>
 
-            <div className="lg:col-span-5 bg-white border border-border rounded-xl p-6 shadow-xs">
-              <h4 className="font-bold text-slate-800 text-xs mb-4">Department Performance Scores</h4>
+            <div className="lg:col-span-5 bg-surface-container-lowest border border-border rounded-xl p-6 shadow-xs">
+              <h4 className="font-bold text-on-surface text-xs mb-4">Department Performance Scores</h4>
               <div className="space-y-4" role="list" aria-label="Skor performa departemen">
                 {DEPARTMENT_SCORES.map(d => (
                   <div key={d.dept} className="space-y-1" role="listitem">
                     <div className="flex justify-between text-[11px]">
-                      <span className="font-semibold text-slate-700">{d.dept}</span>
-                      <span className="font-bold text-slate-800">{d.score}%</span>
+                      <span className="font-semibold text-on-surface">{d.dept}</span>
+                      <span className="font-bold text-on-surface">{d.score}%</span>
                     </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden" role="progressbar" aria-valuenow={d.score} aria-valuemin={0} aria-valuemax={100} aria-label={`Skor ${d.dept}: ${d.score}%`}>
+                    <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden" role="progressbar" aria-valuenow={d.score} aria-valuemin={0} aria-valuemax={100} aria-label={`Skor ${d.dept}: ${d.score}%`}>
                       <div className={`h-full rounded-full ${d.score >= 90 ? 'bg-success' : d.score >= 80 ? 'bg-primary' : d.score >= 70 ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${d.score}%` }}></div>
                     </div>
-                    <p className="text-[9px] text-slate-400">{d.projects} proyek aktif</p>
+                    <p className="text-[9px] text-outline">{d.projects} proyek aktif</p>
                   </div>
                 ))}
               </div>

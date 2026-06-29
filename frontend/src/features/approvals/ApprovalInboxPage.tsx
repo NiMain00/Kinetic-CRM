@@ -154,13 +154,13 @@ export default function ApprovalInboxView({
     `px-3 py-1 rounded-full text-caption-xs font-semibold touch-min-h whitespace-nowrap transition-all ${
       active
         ? 'bg-primary text-on-primary'
-        : 'bg-white border border-border text-on-surface hover:bg-surface-variant'
+        : 'bg-surface-container-lowest border border-border text-on-surface hover:bg-surface-variant'
     }`;
 
   const renderApprovalCard = (row: ApprovalItem) => (
     <div
       key={row.id}
-      className="bg-white border border-border rounded-xl p-4 space-y-3 active:scale-[0.99] transition-transform"
+      className="bg-surface-container-lowest border border-border rounded-xl p-4 space-y-3 active:scale-[0.99] transition-transform"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -309,7 +309,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-primary">person_search</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Prospek Approvals <span className="text-outline font-normal ml-2">({prospekApprovals.length})</span></h3>
             </div>
-            <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
+            <div className="bg-surface-container-lowest border border-border rounded-lg overflow-hidden shadow-sm">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {prospekApprovals.map(renderApprovalCard)}
@@ -328,7 +328,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-status-purple">description</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">RKS (Rencana Kerja Syarat) <span className="text-outline font-normal ml-2">({rksApprovals.length})</span></h3>
             </div>
-            <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
+            <div className="bg-surface-container-lowest border border-border rounded-lg overflow-hidden shadow-sm">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {rksApprovals.map(renderApprovalCard)}
@@ -347,7 +347,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-status-orange">assignment_turned_in</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">LPHS (Laporan Hasil Survey) <span className="text-outline font-normal ml-2">({lphsApprovals.length})</span></h3>
             </div>
-            <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
+            <div className="bg-surface-container-lowest border border-border rounded-lg overflow-hidden shadow-sm">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {lphsApprovals.map(renderApprovalCard)}

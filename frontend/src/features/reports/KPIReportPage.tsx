@@ -140,7 +140,7 @@ export default function KPIReportPage() {
             <p className="text-sm text-secondary mt-1">Key Performance Indicators - Target vs Realisasi.</p>
           </div>
           <div className="flex items-center gap-3">
-            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border border-border rounded-lg px-4 py-2 text-sm bg-white outline-none" aria-label="Periode">
+            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border border-border rounded-lg px-4 py-2 text-sm bg-surface-container-lowest outline-none" aria-label="Periode">
               <option>2024</option>
               <option>2025</option>
               <option>2026</option>
@@ -167,7 +167,7 @@ export default function KPIReportPage() {
           {kpiData.slice(0, 4).map((kpi) => {
             const cfg = statusConfig[kpi.status] || statusConfig.on_track;
             return (
-              <div key={kpi.id} className="bg-white border border-border rounded-xl p-5 shadow-sm">
+              <div key={kpi.id} className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">{kpi.name}</p>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${cfg.class}`}>{cfg.label}</span>
@@ -176,7 +176,7 @@ export default function KPIReportPage() {
                   <span className="text-2xl font-extrabold text-on-surface">{formatValue(kpi)}</span>
                   <span className="text-xs text-outline">/ {formatTarget(kpi)}</span>
                 </div>
-                <div className="mt-3 w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div className="mt-3 w-full bg-surface-container h-2 rounded-full overflow-hidden">
                   <div className={`${cfg.barClass} h-full rounded-full transition-all`} style={{ width: `${getPercent(kpi.actualValue, kpi.targetValue)}%` }} />
                 </div>
               </div>
@@ -185,7 +185,7 @@ export default function KPIReportPage() {
         </div>
 
         {/* Full KPI Table */}
-        <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="p-5 border-b border-border">
             <h3 className="font-bold text-sm text-on-surface">Detail KPI Metrics</h3>
           </div>
@@ -211,7 +211,7 @@ export default function KPIReportPage() {
                       <td className="px-6 py-4 text-right font-mono font-bold text-on-surface">{formatValue(kpi)}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden max-w-[200px]">
+                          <div className="flex-1 bg-surface-container h-2 rounded-full overflow-hidden max-w-[200px]">
                             <div className={`${cfg.barClass} h-full rounded-full`} style={{ width: `${pct}%` }} />
                           </div>
                           <span className="text-xs font-bold text-secondary w-10 text-right">{pct}%</span>

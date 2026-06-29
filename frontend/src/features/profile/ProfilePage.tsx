@@ -74,7 +74,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       
       {/* Top action header info */}
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Profil Pengguna
@@ -91,7 +91,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Left Card - Primary profile details */}
-            <div className="md:col-span-8 bg-white border border-border rounded-xl shadow-xs p-6 sm:p-8">
+            <div className="md:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-xs p-6 sm:p-8">
               
               <form onSubmit={handleSaveProfile} className="space-y-6">
                 
@@ -179,7 +179,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                       <label className="text-[10px] font-bold text-secondary uppercase tracking-wider block mb-1">Peran yang Ditugaskan</label>
                       <div className="flex items-center justify-between font-medium text-[11px] text-secondary">
                         <span>{currentUser?.roleName || 'Branch Operations Manager'}</span>
-                        <span className="material-symbols-outlined text-[14px] text-emerald-600">verified_user</span>
+                        <span className="material-symbols-outlined text-[14px] text-emerald-600 dark:text-emerald-400">verified_user</span>
                       </div>
                     </div>
 
@@ -223,7 +223,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
             <div className="md:col-span-4 space-y-6">
               
               {/* Security Actions */}
-              <div className="bg-white border border-border rounded-xl p-5 shadow-xs">
+              <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs">
                 <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-[18px]">security</span>
                   Keamanan Akun
@@ -241,16 +241,16 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                   <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
                 </button>
 
-                <div className="mt-4 p-3 bg-amber-50/50 border border-amber-300/30 rounded-lg flex gap-2.5">
+                <div className="mt-4 p-3 bg-amber-50/50 dark:bg-amber-950/30 border border-amber-300/30 rounded-lg flex gap-2.5">
                   <span className="material-symbols-outlined text-warning text-sm mt-0.5">info</span>
-                  <p className="text-[10px] text-amber-700 leading-normal">
+                  <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-normal">
                     Pembaruan kata sandi: <strong>42 hari lalu</strong>. Operasi perusahaan memerlukan rotasi setiap 90 hari.
                   </p>
                 </div>
               </div>
 
               {/* Session logs details */}
-              <div className="bg-white border border-border rounded-xl p-5 shadow-xs">
+              <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs">
                 <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-4 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-[18px]">monitoring</span>
                   Sesi Aktif
@@ -275,7 +275,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                   <button
                     type="button"
                     onClick={handleLogoutAll}
-                    className="w-full mt-2 border border-red-200 hover:bg-red-50 text-red-650 font-bold text-xs py-2 rounded-lg transition-colors cursor-pointer"
+                    className="w-full mt-2 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:bg-red-950/30 text-red-650 font-bold text-xs py-2 rounded-lg transition-colors cursor-pointer"
                   >
                     Keluar dari Semua Sesi
                   </button>
@@ -291,7 +291,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white rounded-full border border-border flex items-center justify-center text-primary shrink-0 shade-md">
+                <div className="w-12 h-12 bg-surface-container-lowest rounded-full border border-border flex items-center justify-center text-primary shrink-0 shade-md">
                   <span className="material-symbols-outlined text-[20px]">language</span>
                 </div>
                 <div>
@@ -308,7 +308,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                     setLanguage(val);
                     onShowNotification(`Bahasa diatur ke ${val === 'id' ? 'Indonesian (Bahasa)' : 'English'}`, 'success');
                   }}
-                  className="flex-1 md:w-44 bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
+                  className="flex-1 md:w-44 bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
                   <option value="id">Indonesian (Bahasa)</option>
                   <option value="en">English</option>
@@ -320,7 +320,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                     setTimezone(e.target.value);
                     onShowNotification(`Zona waktu diubah ke ${e.target.value}`, 'success');
                   }}
-                  className="flex-1 md:w-56 bg-white border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
+                  className="flex-1 md:w-56 bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none"
                 >
                   <option>Asia/Jakarta</option>
                   <option>Asia/Makassar</option>

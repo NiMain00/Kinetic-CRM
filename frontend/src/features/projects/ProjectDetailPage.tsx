@@ -110,8 +110,14 @@ export default function ProjectDetailView({
       // LPHS/SIOS only for Tender projects
       items.splice(2, 1);
     }
+    // Sembunyikan Target Delivery jika proyek kalah
+    const isKalah = project.status === 'Kalah' || project.winnerDetails?.outcome === 'kalah';
+    if (isKalah) {
+      const idx = items.findIndex(t => t.label === 'Target Delivery');
+      if (idx >= 0) items.splice(idx, 1);
+    }
     return items;
-  }, [project.type, isFromNonPotensial]);
+  }, [project.type, isFromNonPotensial, project.status, project.winnerDetails?.outcome]);
 
   const activeTab = tabs.find(t => t.path === (urlTab || 'overview'))?.label || 'Overview';
   const isOverview = activeTab === 'Overview';
@@ -243,28 +249,28 @@ export default function ProjectDetailView({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
-      <section className="bg-white border-b border-border px-8 py-3.5 shadow-sm z-30">
+      <section className="bg-surface-container-lowest border-b border-border px-8 py-3.5 shadow-sm z-30">
         {/* Dynamic Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-xs text-secondary mb-2 flex-wrap">
           <button
             type="button"
             onClick={() => onNavigatePage('projects')}
-            className="hover:text-primary transition-colors font-medium flex items-center gap-1 text-slate-500"
+            className="hover:text-primary transition-colors font-medium flex items-center gap-1 text-secondary"
           >
-            <span className="material-symbols-outlined text-[16px] text-slate-400">tactic</span>
+            <span className="material-symbols-outlined text-[16px] text-outline">tactic</span>
             Projects
           </button>
-          <span className="material-symbols-outlined text-[14px] text-slate-300">chevron_right</span>
+          <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
           <button
             type="button"
             onClick={() => navigate(`/project/${projectId}/overview`)}
-            className="hover:text-primary transition-colors font-semibold text-slate-600"
+            className="hover:text-primary transition-colors font-semibold text-on-surface-variant"
           >
             {project.code}
           </button>
           {!isOverview && (
             <>
-              <span className="material-symbols-outlined text-[14px] text-slate-300">chevron_right</span>
+              <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
               <span className="text-primary font-bold bg-primary/5 px-2 py-0.5 rounded border border-primary/20">
                 {activeTab}
               </span>
@@ -276,7 +282,7 @@ export default function ProjectDetailView({
           <div className="flex items-center gap-3">
             <button
               onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/project/${projectId}/overview`)}
-              className="p-1.5 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center border border-border bg-white"
+              className="p-1.5 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center border border-border bg-surface-container-lowest"
             >
               <span className="material-symbols-outlined text-primary text-[20px]">arrow_back</span>
             </button>
@@ -363,7 +369,7 @@ export default function ProjectDetailView({
                         <span className="material-symbols-outlined text-[16px]">check</span>
                       </div>
                     ) : isActive ? (
-                      <div className="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
+                      <div className="w-10 h-10 rounded-full bg-surface-container-lowest border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
                         {stepNum}
                       </div>
                     ) : (
@@ -383,7 +389,7 @@ export default function ProjectDetailView({
           )}
 
           {/* Tab Navigation Bar — visible on ALL tabs */}
-          <nav className="bg-white border-b border-border px-8 overflow-x-auto select-none">
+          <nav className="bg-surface-container-lowest border-b border-border px-8 overflow-x-auto select-none">
             <div className="flex items-center gap-8 min-w-max">
               {tabs.map((tab, index) => {
                 const locked = isTabLocked(index);

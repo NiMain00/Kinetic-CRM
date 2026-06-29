@@ -89,20 +89,20 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
   const isExecuting = project?.status === 'Executing';
 
   return (
-    <div className="space-y-8 animate-fade-in text-slate-800">
+    <div className="space-y-8 animate-fade-in text-on-surface">
       {/* Completion banner */}
       {isCompleted && (
-        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+        <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 rounded-xl">
           <span className="material-symbols-outlined text-success text-[24px]">check_circle</span>
           <div>
             <p className="text-sm font-bold text-emerald-800">Proyek Telah Selesai</p>
-            <p className="text-xs text-emerald-600">Semua tahapan proyek telah diselesaikan.</p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400">Semua tahapan proyek telah diselesaikan.</p>
           </div>
         </div>
       )}
 
       <div className="grid grid-cols-12 gap-8">
-        <div className="col-span-12 lg:col-span-8 bg-white border border-border rounded-xl shadow-sm p-8 space-y-8">
+        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm p-8 space-y-8">
           <div>
             <h3 className="font-heading-section text-base font-bold text-on-surface mb-2 flex items-center">
               <span className="material-symbols-outlined mr-2 text-primary">local_shipping</span>
@@ -116,15 +116,15 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
               <div>
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Mulai Delivery</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[18px]">calendar_month</span>
-                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-slate-800" />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">calendar_month</span>
+                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface" />
                 </div>
               </div>
               <div>
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Estimasi Tanggal Sampai</label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 material-symbols-outlined text-[18px]">event_available</span>
-                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-slate-800" />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">event_available</span>
+                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface" />
                 </div>
               </div>
             </div>
@@ -135,7 +135,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
                 <input type="range" min={0} max={100} value={progress} onChange={e => setProgress(Number(e.target.value))} className="flex-1 accent-primary" />
                 <span className="font-bold text-sm text-primary w-10 text-right">{progress}%</span>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden">
+              <div className="w-full bg-surface-container h-2 rounded-full mt-2 overflow-hidden">
                 <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${progress}%` }}></div>
               </div>
             </div>
@@ -144,7 +144,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
               <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Progress Milestone</label>
               <div className="space-y-2">
                 {milestones.map((m) => (
-                  <label key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:bg-slate-50 cursor-pointer transition-colors">
+                  <label key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:bg-surface-container-low cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={m.completed}
@@ -168,7 +168,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
                 value={deliveryNote}
                 onChange={e => setDeliveryNote(e.target.value)}
                 rows={6}
-                className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none text-slate-800"
+                className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none text-on-surface"
                 placeholder="Masukkan rincian khusus logistik atau persyaratan khusus di lapangan..."
               />
             </div>
@@ -203,7 +203,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Klien</span>
-                <span className="font-semibold text-slate-800">{project?.client}</span>
+                <span className="font-semibold text-on-surface">{project?.client}</span>
               </div>
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Nilai Proyek</span>
@@ -211,11 +211,11 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
               </div>
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Lokasi</span>
-                <span className="font-semibold text-slate-800">{project?.location}</span>
+                <span className="font-semibold text-on-surface">{project?.location}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-secondary font-medium">Progress Overall</span>
-                <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[10px]">{project?.progress || 0}%</span>
+                <span className="font-semibold text-on-surface bg-surface-container px-2 py-0.5 rounded text-[10px]">{project?.progress || 0}%</span>
               </div>
             </div>
           </Card>

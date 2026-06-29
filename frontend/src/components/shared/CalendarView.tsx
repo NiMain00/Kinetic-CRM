@@ -20,10 +20,10 @@ const MONTHS = [
 const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
 const TYPE_STYLES: Record<string, { dot: string; bg: string; label: string }> = {
-  deadline: { dot: 'bg-red-500', bg: 'bg-red-50 border-red-200', label: 'Deadline' },
-  delivery: { dot: 'bg-blue-500', bg: 'bg-blue-50 border-blue-200', label: 'Delivery' },
-  milestone: { dot: 'bg-purple-500', bg: 'bg-purple-50 border-purple-200', label: 'Milestone' },
-  holiday: { dot: 'bg-amber-500', bg: 'bg-amber-50 border-amber-200', label: 'Libur' },
+  deadline: { dot: 'bg-red-500', bg: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800', label: 'Deadline' },
+  delivery: { dot: 'bg-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800', label: 'Delivery' },
+  milestone: { dot: 'bg-purple-500', bg: 'bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800', label: 'Milestone' },
+  holiday: { dot: 'bg-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800', label: 'Libur' },
 };
 
 export default function CalendarView({ events, onDateClick }: CalendarViewProps) {
@@ -110,23 +110,23 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
       {/* Calendar Grid */}
-      <div className="lg:col-span-8 bg-white border border-border rounded-xl shadow-xs overflow-hidden">
+      <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-xs overflow-hidden">
         {/* Month Navigation */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-border">
+        <div className="flex items-center justify-between px-6 py-4 bg-surface-container-low border-b border-border">
           <div className="flex items-center gap-2">
             <button
               onClick={prevMonth}
-              className="p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+              className="p-2 rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer"
               aria-label="Bulan sebelumnya"
             >
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <h3 className="font-display-title text-sm font-extrabold text-slate-800 min-w-[180px] text-center">
+            <h3 className="font-display-title text-sm font-extrabold text-on-surface min-w-[180px] text-center">
               {MONTHS[currentMonth]} {currentYear}
             </h3>
             <button
               onClick={nextMonth}
-              className="p-2 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+              className="p-2 rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer"
               aria-label="Bulan berikutnya"
             >
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -145,7 +145,7 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
           {DAYS.map((day) => (
             <div
               key={day}
-              className="px-2 py-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center"
+              className="px-2 py-2 text-[10px] font-bold uppercase tracking-wider text-outline text-center"
             >
               {day}
             </div>
@@ -156,7 +156,7 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
         <div className="grid grid-cols-7">
           {calendarDays.map((day, i) => {
             if (day === null) {
-              return <div key={`empty-${i}`} className="min-h-[90px] bg-slate-50/30" />;
+              return <div key={`empty-${i}`} className="min-h-[90px] bg-surface-container-low/30" />;
             }
 
             const key = formatDateKey(day);
@@ -167,7 +167,7 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
               <button
                 key={key}
                 onClick={() => handleDayClick(day)}
-                className={`min-h-[90px] p-2 border-b border-r border-border text-left transition-colors hover:bg-slate-50 cursor-pointer relative ${
+                className={`min-h-[90px] p-2 border-b border-r border-border text-left transition-colors hover:bg-surface-container-low cursor-pointer relative ${
                   selectedDate?.getDate() === day &&
                   selectedDate?.getMonth() === currentMonth &&
                   selectedDate?.getFullYear() === currentYear
@@ -179,7 +179,7 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
                   className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
                     isToday(day)
                       ? 'bg-primary text-white'
-                      : 'text-slate-700'
+                      : 'text-on-surface'
                   }`}
                 >
                   {day}
@@ -190,15 +190,15 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
                       <div
                         key={idx}
                         className={`flex items-center gap-1 px-1 py-0.5 rounded ${
-                          TYPE_STYLES[ev.type]?.bg || 'bg-slate-100'
+                          TYPE_STYLES[ev.type]?.bg || 'bg-surface-container'
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_STYLES[ev.type]?.dot || 'bg-slate-400'}`} />
-                        <span className="text-[9px] truncate font-medium text-slate-700">{ev.title}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${TYPE_STYLES[ev.type]?.dot || 'bg-outline'}`} />
+                        <span className="text-[9px] truncate font-medium text-on-surface">{ev.title}</span>
                       </div>
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[8px] text-slate-400 font-semibold px-1">
+                      <span className="text-[8px] text-outline font-semibold px-1">
                         +{dayEvents.length - 3} lainnya
                       </span>
                     )}
@@ -212,18 +212,18 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
 
       {/* Sidebar — Selected Date Events */}
       <div className="lg:col-span-4 space-y-4">
-        <div className="bg-white border border-border rounded-xl shadow-xs p-5">
-          <h4 className="font-display-title text-xs font-extrabold text-slate-800 mb-1">
+        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-xs p-5">
+          <h4 className="font-display-title text-xs font-extrabold text-on-surface mb-1">
             {selectedDate ? formatDateReadable(selectedDate) : 'Pilih tanggal'}
           </h4>
-          <p className="text-[10px] text-slate-400 mb-4">
+          <p className="text-[10px] text-outline mb-4">
             {selectedDate
               ? `${selectedEvents.length} kegiatan`
               : 'Klik tanggal pada kalender untuk melihat kegiatan.'}
           </p>
 
           {selectedDate && selectedEvents.length === 0 && (
-            <div className="text-center py-8 text-slate-400">
+            <div className="text-center py-8 text-outline">
               <span className="material-symbols-outlined text-3xl mb-2">event_busy</span>
               <p className="text-xs">Tidak ada kegiatan pada tanggal ini.</p>
             </div>
@@ -233,17 +233,17 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
             {selectedEvents.map((ev, idx) => (
               <div
                 key={idx}
-                className={`p-3 rounded-xl border ${TYPE_STYLES[ev.type]?.bg || 'bg-slate-50 border-slate-200'}`}
+                className={`p-3 rounded-xl border ${TYPE_STYLES[ev.type]?.bg || 'bg-surface-container-low border-border'}`}
               >
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`w-2 h-2 rounded-full ${TYPE_STYLES[ev.type]?.dot || 'bg-slate-400'}`} />
-                  <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">
+                  <span className={`w-2 h-2 rounded-full ${TYPE_STYLES[ev.type]?.dot || 'bg-outline'}`} />
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-secondary">
                     {TYPE_STYLES[ev.type]?.label || ev.type}
                   </span>
                 </div>
-                <p className="text-xs font-bold text-slate-800">{ev.title}</p>
+                <p className="text-xs font-bold text-on-surface">{ev.title}</p>
                 {ev.subtitle && (
-                  <p className="text-[10px] text-slate-500 mt-0.5">{ev.subtitle}</p>
+                  <p className="text-[10px] text-secondary mt-0.5">{ev.subtitle}</p>
                 )}
               </div>
             ))}
@@ -251,12 +251,12 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
 
           {/* Legend */}
           <div className="mt-5 pt-4 border-t border-border">
-            <h5 className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-2">Legenda</h5>
+            <h5 className="text-[9px] font-bold uppercase tracking-wider text-outline mb-2">Legenda</h5>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(TYPE_STYLES).map(([key, style]) => (
                 <div key={key} className="flex items-center gap-1.5">
                   <span className={`w-2 h-2 rounded-full ${style.dot}`} />
-                  <span className="text-[10px] text-slate-500">{style.label}</span>
+                  <span className="text-[10px] text-secondary">{style.label}</span>
                 </div>
               ))}
             </div>

@@ -105,7 +105,7 @@ export default function ActivityFeed({ maxItems = 50, showFilter = true }: Activ
               className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
                 filterEntity === type
                   ? 'bg-primary text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                   : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
               {type === 'all' ? 'Semua' : type.charAt(0).toUpperCase() + type.slice(1)}
@@ -116,7 +116,7 @@ export default function ActivityFeed({ maxItems = 50, showFilter = true }: Activ
 
       <div className="space-y-2">
         {filtered.length === 0 ? (
-          <div className="text-center py-12 text-slate-400">
+          <div className="text-center py-12 text-outline">
             <span className="material-symbols-outlined text-4xl mb-2">timeline</span>
             <p className="text-sm font-medium">Belum ada aktivitas</p>
             <p className="text-xs">Aktivitas akan muncul saat ada notifikasi atau perubahan data.</p>
@@ -125,23 +125,23 @@ export default function ActivityFeed({ maxItems = 50, showFilter = true }: Activ
           filtered.map((item) => (
             <div
               key={item.id}
-              className="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors border border-transparent hover:border-border"
+              className="flex items-start gap-3 p-3 rounded-xl hover:bg-surface-container-low transition-colors border border-transparent hover:border-border"
             >
-              <div className={`w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 ${item.type === 'audit' ? 'text-amber-600' : 'text-primary'}`}>
+              <div className={`w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0 ${item.type === 'audit' ? 'text-amber-600' : 'text-primary'}`}>
                 <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-bold text-slate-800 truncate">{item.title}</p>
-                  <span className="text-[10px] text-slate-400 whitespace-nowrap">{formatTime(item.createdAt)}</span>
+                  <p className="text-xs font-bold text-on-surface truncate">{item.title}</p>
+                  <span className="text-[10px] text-outline whitespace-nowrap">{formatTime(item.createdAt)}</span>
                 </div>
-                <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{item.message}</p>
+                <p className="text-[11px] text-secondary mt-0.5 line-clamp-2">{item.message}</p>
                 <div className="flex items-center gap-2 mt-1">
                   <span className={`text-[9px] font-semibold uppercase tracking-wider ${item.type === 'audit' ? 'text-amber-500' : 'text-primary'}`}>
                     {item.type === 'audit' ? 'Audit' : 'Notifikasi'}
                   </span>
-                  <span className="text-[9px] text-slate-300">·</span>
-                  <span className="text-[9px] text-slate-400 capitalize">{item.entityType}</span>
+                  <span className="text-[9px] text-outline-variant">·</span>
+                  <span className="text-[9px] text-outline capitalize">{item.entityType}</span>
                 </div>
               </div>
             </div>

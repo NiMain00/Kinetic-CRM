@@ -63,7 +63,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Panel review persetujuan">
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-surface-container-lowest shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
         {/* Header */}
         <div className="p-6 border-b border-border flex justify-between items-center bg-surface-container-lowest shrink-0">
           <div>
@@ -137,7 +137,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
                   {idx < timelineEvents.length - 1 && (
                     <div className="absolute left-3.5 top-6 w-0.5 h-full bg-border" />
                   )}
-                  <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-full flex items-center justify-center ${actionColor[event.type]} bg-white border-2 border-current`}>
+                  <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-full flex items-center justify-center ${actionColor[event.type]} bg-surface-container-lowest border-2 border-current`}>
                     <span className="material-symbols-outlined text-[14px]">{actionIcon[event.type]}</span>
                   </div>
                   <div>

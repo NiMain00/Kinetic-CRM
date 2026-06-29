@@ -20,9 +20,11 @@
       }
       /* Custom scrollbar for high-density UI */
       ::-webkit-scrollbar { width: 6px; height: 6px; }
-      ::-webkit-scrollbar-track { background: #f1f1f1; }
+      ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #c2c6d2; border-radius: 10px; }
       ::-webkit-scrollbar-thumb:hover { background: #727782; }
+      .dark ::-webkit-scrollbar-thumb { background: #424751; }
+      .dark ::-webkit-scrollbar-thumb:hover { background: #8e929c; }
     </style>
   </head>
   <body class="bg-background text-on-surface font-body-main selection:bg-primary-fixed selection:text-on-primary-fixed">

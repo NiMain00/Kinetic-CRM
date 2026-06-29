@@ -295,7 +295,7 @@ export default function ProspectFormPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT COLUMN: Customer Info */}
-          <div className="lg:col-span-6 bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
+          <div className="lg:col-span-6 bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
             <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
               <span className="material-symbols-outlined">business</span>
               Data Customer
@@ -381,9 +381,9 @@ export default function ProspectFormPage() {
             ) : (
               /* New Customer form */
               <div className="space-y-3">
-                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2">
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                  <span className="text-xs text-amber-700 font-semibold">Customer baru — badge kuning "Perlu Verifikasi" akan tampil</span>
+                  <span className="text-xs text-amber-700 dark:text-amber-400 font-semibold">Customer baru — badge kuning "Perlu Verifikasi" akan tampil</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -396,7 +396,7 @@ export default function ProspectFormPage() {
                 </div>
                 <div className="space-y-1.5">
                   <label className="font-semibold text-sm text-on-surface-variant">Tipe Customer</label>
-                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm">
+                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm">
                     {CUSTOMER_TYPES.map(t => (
                       <option key={t.value} value={t.value}>{t.label}</option>
                     ))}
@@ -430,7 +430,7 @@ export default function ProspectFormPage() {
                     if (customerMode === 'new') setNewCustIndustryId(e.target.value);
                     else setIndustryId(e.target.value);
                   }}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm"
                 >
                   <option value="">Pilih Industri</option>
                   {industries.map(ind => (
@@ -451,7 +451,7 @@ export default function ProspectFormPage() {
                 <select
                   value={providerExisting}
                   onChange={(e) => setProviderExisting(e.target.value)}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm"
                 >
                   <option value="">Tidak Ada</option>
                   {competitors.map(prov => (
@@ -495,7 +495,7 @@ export default function ProspectFormPage() {
           {/* RIGHT COLUMN: Prospect Info + Questionnaire */}
           <div className="lg:col-span-6 space-y-6">
             {/* Basic Prospect Info */}
-            <div className="bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
               <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined">assignment</span>
                 Informasi Prospek
@@ -512,7 +512,7 @@ export default function ProspectFormPage() {
                 <select
                   value={projectType}
                   onChange={(e) => setProjectType(e.target.value as 'Tender' | 'Prospecting')}
-                  className="w-full px-4 py-2 border border-border rounded-lg bg-white outline-none focus:ring-2 focus:ring-primary text-sm"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm"
                   aria-label="Tipe Proyek"
                 >
                   <option value="Tender">Tender</option>
@@ -559,7 +559,7 @@ export default function ProspectFormPage() {
             </div>
 
             {/* Questionnaire - "Pertanyaan Standar" */}
-            <div className="bg-white border border-border rounded-xl p-6 shadow-sm space-y-5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
               <h3 className="font-bold text-sm text-status-teal border-b border-border pb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined">quiz</span>
                 Pertanyaan Standar
@@ -569,7 +569,7 @@ export default function ProspectFormPage() {
                 <div key={q.key} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-3">
                   <p className="font-semibold text-sm text-on-surface">{q.label}</p>
                   {q.isText ? (
-                    <input value={answers[q.key]} onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })} placeholder={q.placeholder} className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary outline-none" type="text" />
+                    <input value={answers[q.key]} onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })} placeholder={q.placeholder} className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none" type="text" />
                   ) : (
                     <div className="flex gap-4 flex-wrap">
                       {q.options?.map((opt) => (
@@ -587,12 +587,12 @@ export default function ProspectFormPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-between items-center bg-white border border-border p-4 rounded-xl shadow-sm">
-          <button onClick={() => navigate('/prospects')} className="px-6 py-2.5 bg-white border border-border text-on-surface font-semibold rounded-lg hover:bg-surface-container-low transition-all text-sm">
+        <div className="flex justify-between items-center bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+          <button onClick={() => navigate('/prospects')} className="px-6 py-2.5 bg-surface-container-lowest border border-border text-on-surface font-semibold rounded-lg hover:bg-surface-container-low transition-all text-sm">
             Kembali ke Daftar
           </button>
           <div className="flex gap-3">
-            <button onClick={handleSaveDraft} className="px-6 py-2.5 bg-white border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all text-sm" aria-label="Simpan Draft">
+            <button onClick={handleSaveDraft} className="px-6 py-2.5 bg-surface-container-lowest border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all text-sm" aria-label="Simpan Draft">
               Simpan Draft
             </button>
             <button onClick={handleSubmitReview} className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:brightness-110 transition-all text-sm flex items-center gap-2" aria-label="Kirim ke Review">

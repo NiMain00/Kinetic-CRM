@@ -359,7 +359,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
     {
       key: 'type', header: 'Jenis', sortable: true,
       render: (c) => {
-        const colorMap: Record<string, string> = { bumn: 'bg-status-indigo/15 text-status-indigo', pemerintah: 'bg-status-orange/15 text-status-orange', asing: 'bg-purple-100 text-purple-700' };
+        const colorMap: Record<string, string> = { bumn: 'bg-status-indigo/15 text-status-indigo', pemerintah: 'bg-status-orange/15 text-status-orange', asing: 'bg-purple-100 text-purple-700 dark:text-purple-400' };
         return <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${colorMap[c.type] || 'bg-surface-container-high text-secondary'}`}>{c.type}</span>;
       },
     },
@@ -376,7 +376,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
     },
     {
       key: '_actions', header: 'Aksi', align: 'right',
-      render: (c) => <button onClick={() => { deleteData('customers', c.id); onShowNotification('Pelanggan dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-outline hover:text-red-650 rounded cursor-pointer"><span className="material-symbols-outlined text-base">delete</span></button>,
+      render: (c) => <button onClick={() => { deleteData('customers', c.id); onShowNotification('Pelanggan dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 dark:bg-red-950/30 text-outline hover:text-red-650 rounded cursor-pointer"><span className="material-symbols-outlined text-base">delete</span></button>,
     },
   ];
 
@@ -466,7 +466,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
     { key: 'code', header: 'Kode', render: (d) => <span className="p-1 px-2 font-mono bg-surface-container-high rounded text-secondary text-[11px] font-semibold">{d.code}</span> },
     { key: 'head', header: 'Kepala Urusan', render: (d) => <div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full bg-status-indigo/20 text-status-indigo flex items-center justify-center text-[10px]"><span className="material-symbols-outlined text-[12px]">person</span></div><span className="font-semibold text-secondary">{d.head}</span></div> },
     { key: 'division', header: 'Divisi Utama', render: (d) => <span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">{d.division}</span> },
-    { key: 'status', header: 'Status', align: 'center', render: (d) => <button onClick={() => { updateData('departments', d.id, { status: !d.status } as any); onShowNotification(`Status departemen ${d.name} dirubah.`, 'success'); }} className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${d.status ? 'bg-success' : 'bg-border'}`}><span className={`inline-block h-3 w-3 transform rounded-full bg-white transition duration-200 ${d.status ? 'translate-x-5' : 'translate-x-1'}`} /></button> },
+    { key: 'status', header: 'Status', align: 'center', render: (d) => <button onClick={() => { updateData('departments', d.id, { status: !d.status } as any); onShowNotification(`Status departemen ${d.name} dirubah.`, 'success'); }} className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${d.status ? 'bg-success' : 'bg-border'}`}><span className={`inline-block h-3 w-3 transform rounded-full bg-surface-container-lowest transition duration-200 ${d.status ? 'translate-x-5' : 'translate-x-1'}`} /></button> },
     { key: '_actions', header: 'Aksi', align: 'right', render: (d) => <button onClick={() => { setEditingDepartment(d); setDeptDrawerOpen(true); }} className="p-1 hover:bg-surface-container-high rounded text-outline hover:text-primary cursor-pointer" title="Atur Departemen"><span className="material-symbols-outlined text-base">edit_note</span></button> },
   ];
 
@@ -475,15 +475,15 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
     { key: 'user', header: 'Pelaku Operator', render: (log) => <div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[9px] font-black">{log.userInitials}</span><span className="font-bold text-secondary">{log.user}</span></div> },
     { key: 'action', header: 'Tipe Mutasi', render: (log) => <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase ${log.actionColor}`}>{log.action}</span> },
     { key: 'entity', header: 'Entitas Referensi', render: (log) => <div><span className="font-bold text-on-surface">{log.entity}</span><span className="text-[10px] text-outline block font-medium">({log.entityName})</span></div> },
-    { key: 'impact', header: 'Dampak Risiko', align: 'center', render: (log) => <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${log.impact === 'High' ? 'text-red-500' : log.impact === 'Medium' ? 'text-amber-500' : 'text-outline'}`}><span className={`w-1.5 h-1.5 rounded-full ${log.impact === 'High' ? 'bg-red-500' : log.impact === 'Medium' ? 'bg-amber-500' : 'bg-outline'}`} />Akses {log.impact}</span> },
-    { key: '_actions', header: 'Periksa JSON', align: 'right', render: (log) => <button onClick={() => { setSelectedAuditLog(log); setAuditDetailOpen(true); }} className="px-3 py-1 bg-white border border-border text-primary hover:bg-primary/5 rounded font-bold transition-all text-[10px] cursor-pointer">Bandingkan Diff</button> },
+    { key: 'impact', header: 'Dampak Risiko', align: 'center', render: (log) => <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${log.impact === 'High' ? 'text-red-500' : log.impact === 'Medium' ? 'text-amber-500' : 'text-outline'}`}><span className={`w-1.5 h-1.5 rounded-full ${log.impact === 'High' ? 'bg-red-50 dark:bg-red-950/300' : log.impact === 'Medium' ? 'bg-amber-50 dark:bg-amber-950/300' : 'bg-outline'}`} />Akses {log.impact}</span> },
+    { key: '_actions', header: 'Periksa JSON', align: 'right', render: (log) => <button onClick={() => { setSelectedAuditLog(log); setAuditDetailOpen(true); }} className="px-3 py-1 bg-surface-container-lowest border border-border text-primary hover:bg-primary/5 rounded font-bold transition-all text-[10px] cursor-pointer">Bandingkan Diff</button> },
   ];
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden bg-background text-on-surface">
       
       {/* Header — title inline with search */}
-      <div className="bg-white border-b border-border shrink-0 px-8 py-2 flex items-center justify-between gap-3 shadow-sm">
+      <div className="bg-surface-container-lowest border-b border-border shrink-0 px-8 py-2 flex items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-3 min-w-0">
           <h2 className="text-sm font-extrabold text-on-surface whitespace-nowrap">Ruang Kerja Data Master</h2>
           <span className="hidden sm:block w-px h-4 bg-border/60" />
@@ -504,7 +504,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
       </div>
 
       {/* Under-header Navigation Bar Tabs — compact */}
-      <div className="bg-white px-6 flex overflow-x-auto border-b border-border shrink-0 custom-scrollbar scrollbar-hide">
+      <div className="bg-surface-container-lowest px-6 flex overflow-x-auto border-b border-border shrink-0 custom-scrollbar scrollbar-hide">
         <button onClick={() => { setActiveTab('customers'); setSearchQuery(''); }} className={tabClass('customers')}>
           <span className="material-symbols-outlined text-xs">groups</span> Pelanggan
         </button>
@@ -555,7 +555,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== CUSTOMER (Doc 021) ==================== */}
         {activeTab === 'customers' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">groups</span>
@@ -568,7 +568,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={customerColumns}
                 data={customers.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -585,7 +585,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== INDUSTRY (Doc 021 §3) ==================== */}
         {activeTab === 'industries' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">category</span>
@@ -598,7 +598,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={industryColumns}
                 data={industries.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -615,7 +615,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== PROJECT CATEGORY (Doc 021 §2) ==================== */}
         {activeTab === 'categories' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">folder</span>
@@ -628,7 +628,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={categoryColumns}
                 data={categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -645,7 +645,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== COMPETITOR (Doc 023) ==================== */}
         {activeTab === 'competitors' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">factory</span>
@@ -658,7 +658,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={competitorColumns}
                 data={competitors.filter(x => x.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -675,7 +675,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== PROJECT STATUS (Doc 022 §1) ==================== */}
         {activeTab === 'statuses' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">flag</span>
@@ -688,7 +688,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={statusColumns}
                 data={projectStatuses.filter(s => s.label.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -705,7 +705,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== DOCUMENT TYPE (Doc 022 §2) ==================== */}
         {activeTab === 'doc_types' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">description</span>
@@ -718,7 +718,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={docTypeColumns}
                 data={documentTypes.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -743,7 +743,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== QUESTION TYPE (Doc 024 §2) ==================== */}
         {activeTab === 'question_types' && (
           <div className="space-y-3">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <h3 className="text-xs font-bold text-on-surface flex items-center">
                 <span className="material-symbols-outlined mr-1.5 text-primary text-sm">rule</span>
                 Tipe Pertanyaan
@@ -753,7 +753,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={questionTypeColumns}
                 data={questionTypes.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -770,7 +770,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== REPORTING PERIOD (Doc 025 §2) ==================== */}
         {activeTab === 'periods' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">calendar_month</span>
@@ -783,7 +783,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={periodColumns}
                 data={periods.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -800,7 +800,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== PUBLIC HOLIDAY (Doc 025 §3) ==================== */}
         {activeTab === 'holidays' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">celebration</span>
@@ -813,7 +813,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={holidayColumns}
                 data={holidays.filter(h => h.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -830,7 +830,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== LOSS REASON (Doc 026 §1) ==================== */}
         {activeTab === 'loss_reasons' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">sentiment_dissatisfied</span>
@@ -843,7 +843,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={lossReasonColumns}
                 data={lossReasons.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -860,7 +860,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== DEPARTEMEN ==================== */}
         {activeTab === 'departments' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">domain</span>
@@ -873,7 +873,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </button>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={departmentColumns}
                 data={departments.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -886,9 +886,9 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3 bg-white border border-border rounded-xl shadow-sm flex items-center gap-2"><span className="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-full text-sm">groups</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Total Departemen</p><p className="text-sm font-extrabold text-on-surface">24 Internal</p></div></div>
-              <div className="p-3 bg-white border border-border rounded-xl shadow-sm flex items-center gap-2 animate-fade-in text-left"><span className="material-symbols-outlined text-success bg-green-50 p-2 rounded-full text-sm">verified</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Aktif Beroperasi</p><p className="text-sm font-extrabold text-on-surface">21 Aktif</p></div></div>
-              <div className="p-3 bg-white border border-border rounded-xl shadow-sm flex items-center gap-2"><span className="material-symbols-outlined text-secondary bg-surface-container-high p-2 rounded-full text-sm">cancel</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Inaktif / Ditahan</p><p className="text-sm font-extrabold text-on-surface">03 Nonaktif</p></div></div>
+              <div className="p-3 bg-surface-container-lowest border border-border rounded-xl shadow-sm flex items-center gap-2"><span className="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-full text-sm">groups</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Total Departemen</p><p className="text-sm font-extrabold text-on-surface">24 Internal</p></div></div>
+              <div className="p-3 bg-surface-container-lowest border border-border rounded-xl shadow-sm flex items-center gap-2 animate-fade-in text-left"><span className="material-symbols-outlined text-success bg-green-50 dark:bg-green-950/30 p-2 rounded-full text-sm">verified</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Aktif Beroperasi</p><p className="text-sm font-extrabold text-on-surface">21 Aktif</p></div></div>
+              <div className="p-3 bg-surface-container-lowest border border-border rounded-xl shadow-sm flex items-center gap-2"><span className="material-symbols-outlined text-secondary bg-surface-container-high p-2 rounded-full text-sm">cancel</span><div><p className="text-[9px] text-outline font-bold uppercase tracking-wider">Inaktif / Ditahan</p><p className="text-sm font-extrabold text-on-surface">03 Nonaktif</p></div></div>
             </div>
           </div>
         )}
@@ -901,7 +901,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         {/* ==================== SYSTEM AUDIT LOG ==================== */}
         {activeTab === 'audit_logs' && (
           <div className="space-y-3 text-left">
-            <div className="flex justify-between items-center bg-white p-3 border border-border rounded-xl shadow-sm">
+            <div className="flex justify-between items-center bg-surface-container-lowest p-3 border border-border rounded-xl shadow-sm">
               <div>
                 <h3 className="text-xs font-bold text-on-surface flex items-center">
                   <span className="material-symbols-outlined mr-1.5 text-primary text-sm">security_update_warning</span>
@@ -910,7 +910,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 <p className="text-outline text-[10px] mt-0.5">Metadata operasional, perubahan status RKS komparatif, jejak login administrator, dan jejak mutasi data.</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3 py-1 bg-white border border-border hover:bg-surface-container-low text-secondary text-[10px] font-semibold rounded-lg flex items-center gap-1 cursor-pointer shadow-sm">
+                <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3 py-1 bg-surface-container-lowest border border-border hover:bg-surface-container-low text-secondary text-[10px] font-semibold rounded-lg flex items-center gap-1 cursor-pointer shadow-sm">
                   <span className="material-symbols-outlined text-[14px]">download</span> Ekspor CSV
                 </button>
                 <button onClick={() => { onShowNotification('Log audit terupdate secara synchronous.', 'success'); }} className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-lg flex items-center gap-1 hover:brightness-110 cursor-pointer shadow-sm">
@@ -919,7 +919,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </div>
             </div>
 
-            <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
+            <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden p-1.5">
               <DataTable
                 columns={auditLogColumns}
                 data={auditLogs.filter(log => log.user.toLowerCase().includes(searchQuery.toLowerCase()) || log.entity.toLowerCase().includes(searchQuery.toLowerCase()))}
@@ -961,18 +961,18 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-surface-container-low p-2.5 rounded border border-border">
                 <span className="text-[10px] font-bold text-outline uppercase font-mono block">Status Sebelum Perubahan</span>
-                <pre className="font-mono text-[10px] text-red-650 bg-red-50/20 p-2 rounded mt-1.5 overflow-x-auto">
+                <pre className="font-mono text-[10px] text-red-650 bg-red-50 dark:bg-red-950/30/20 p-2 rounded mt-1.5 overflow-x-auto">
                   {selectedAuditLog.beforeJson}
                 </pre>
               </div>
               <div className="bg-surface-container-low p-2.5 rounded border border-border">
                 <span className="text-[10px] font-bold text-outline uppercase font-mono block">Status Sesudah Perubahan</span>
-                <pre className="font-mono text-[10px] text-success bg-green-50/20 p-2 rounded mt-1.5 overflow-x-auto">
+                <pre className="font-mono text-[10px] text-success bg-green-50 dark:bg-green-950/30/20 p-2 rounded mt-1.5 overflow-x-auto">
                   {selectedAuditLog.afterJson}
                 </pre>
               </div>
             </div>
-            <div className="bg-amber-50 p-3 rounded border border-amber-200 text-[10px] text-amber-700">
+            <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded border border-amber-200 dark:border-amber-800 text-[10px] text-amber-700 dark:text-amber-400">
               <span className="font-bold block mb-0.5">Enforcement Audit Trail:</span> File backup mutasi disimpan dalam memory sandbox. Administrator diizinkan rollback dalam 24 jam.
             </div>
           </div>
@@ -1004,8 +1004,8 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newCust.code || ''} onChange={(e) => setNewCust({...newCust, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="font-bold text-outline mb-1 block">Jenis</label><select value={newCust.type || 'swasta'} onChange={(e) => setNewCust({...newCust, type: e.target.value as any})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="swasta">Swasta</option><option value="bumn">BUMN</option><option value="pemerintah">Pemerintah</option><option value="asing">Asing</option></select></div>
-            <div><label className="font-bold text-outline mb-1 block">Industri</label><select value={newCust.industry_id || ''} onChange={(e) => setNewCust({...newCust, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
+            <div><label className="font-bold text-outline mb-1 block">Jenis</label><select value={newCust.type || 'swasta'} onChange={(e) => setNewCust({...newCust, type: e.target.value as any})} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="swasta">Swasta</option><option value="bumn">BUMN</option><option value="pemerintah">Pemerintah</option><option value="asing">Asing</option></select></div>
+            <div><label className="font-bold text-outline mb-1 block">Industri</label><select value={newCust.industry_id || ''} onChange={(e) => setNewCust({...newCust, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
           </div>
           <div><label className="font-bold text-outline mb-1 block">Nama PIC</label><input type="text" placeholder="Nama PIC" value={newCust.pic_name || ''} onChange={(e) => setNewCust({...newCust, pic_name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div className="grid grid-cols-2 gap-3">
@@ -1046,7 +1046,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         <div className="space-y-4 text-xs">
           <div><label className="font-bold text-outline mb-1 block">Nama Kompetitor *</label><input type="text" placeholder="Nama resmi" value={newComp.name || ''} onChange={(e) => setNewComp({...newComp, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newComp.code || ''} onChange={(e) => setNewComp({...newComp, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-          <div><label className="font-bold text-outline mb-1 block">Industri</label><select value={newComp.industry_id || ''} onChange={(e) => setNewComp({...newComp, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
+          <div><label className="font-bold text-outline mb-1 block">Industri</label><select value={newComp.industry_id || ''} onChange={(e) => setNewComp({...newComp, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
           <div><label className="font-bold text-outline mb-1 block">Bidang Usaha</label><input type="text" placeholder="Bidang usaha utama" value={newComp.bidang_usaha || ''} onChange={(e) => setNewComp({...newComp, bidang_usaha: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Website</label><input type="text" placeholder="https://" value={newComp.website || ''} onChange={(e) => setNewComp({...newComp, website: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Deskripsi</label><textarea rows={3} placeholder="Catatan analisis" value={newComp.description || ''} onChange={(e) => setNewComp({...newComp, description: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
@@ -1094,7 +1094,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               onChange={(e) => {
                 if (editingUser) setEditingUser({ ...editingUser, role: e.target.value, roleColor: e.target.value === 'Admin' ? 'bg-status-maroon/10 text-status-maroon' : 'bg-secondary-container text-on-secondary-container' });
               }}
-              className="w-full p-2 border border-border rounded-lg text-xs bg-white"
+              className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"
             >
               <option value="Cabang">Cabang (Branch Operations)</option>
               <option value="PM">Project Manager (PM)</option>
@@ -1179,7 +1179,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <label className="font-bold text-outline mb-1 block">Tipe Jawaban</label>
             <select
               id="new-q-type"
-              className="w-full p-2 border border-border rounded-lg text-xs bg-white"
+              className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"
               value={newQuestionTypeId}
               onChange={(e) => {
                 const nextId = e.target.value;
@@ -1193,7 +1193,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           </div>
           <div>
             <label className="font-bold text-outline mb-1 block">Konteks</label>
-            <select id="new-q-context" className="w-full p-2 border border-border rounded-lg text-xs bg-white">
+            <select id="new-q-context" className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest">
               <option value="prospect">Prospek</option>
               <option value="rks">RKS</option>
               <option value="both">Keduanya</option>
@@ -1201,7 +1201,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           </div>
           <div>
             <label className="font-bold text-outline mb-1 block">Kategori</label>
-            <select id="new-q-category" className="w-full p-2 border border-border rounded-lg text-xs bg-white">
+            <select id="new-q-category" className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest">
               <option value="Data Pribadi">Data Pribadi</option>
               <option value="Lokasi">Lokasi</option>
               <option value="Verifikasi Fisik">Verifikasi Fisik</option>
@@ -1231,7 +1231,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                   placeholder="Satu opsi per baris (contoh: Ya\nTidak)"
                   value={newQuestionOptions.join('\n')}
                   onChange={(e) => setNewQuestionOptions(e.target.value.split('\n').map(s => s.trim()).filter(Boolean))}
-                  className="w-full p-2 border border-border rounded-lg text-xs resize-none bg-white"
+                  className="w-full p-2 border border-border rounded-lg text-xs resize-none bg-surface-container-lowest"
                 />
               </div>
             );
@@ -1267,7 +1267,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama tipe" value={editingQuestionType?.name || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Kode *</label><input type="text" placeholder="snake_case" value={editingQuestionType?.code || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
           <div><label className="font-bold text-outline mb-1 block">Deskripsi</label><textarea rows={2} placeholder="Deskripsi" value={editingQuestionType?.description || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
-          <div><label className="font-bold text-outline mb-1 block">Has Options</label><select value={editingQuestionType?.has_options ? '1' : '0'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, has_options: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
+          <div><label className="font-bold text-outline mb-1 block">Has Options</label><select value={editingQuestionType?.has_options ? '1' : '0'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, has_options: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
           <div><label className="font-bold text-outline mb-1 block">Validation Config (JSON)</label><textarea rows={4} placeholder='{"maxLength": 500}' value={editingQuestionType?.validation_config || '{}'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, validation_config: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono bg-surface-container-low resize-none" /></div>
         </div>
       </Drawer>
@@ -1320,10 +1320,10 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama kategori" value={editingCategory?.name || ''} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingCategory?.code || ''} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="font-bold text-outline mb-1 block">Wajib LPHS</label><select value={editingCategory?.requires_lphs ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_lphs: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
-            <div><label className="font-bold text-outline mb-1 block">Wajib RKS</label><select value={editingCategory?.requires_rks ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_rks: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
+            <div><label className="font-bold text-outline mb-1 block">Wajib LPHS</label><select value={editingCategory?.requires_lphs ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_lphs: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
+            <div><label className="font-bold text-outline mb-1 block">Wajib RKS</label><select value={editingCategory?.requires_rks ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_rks: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
           </div>
-          <div><label className="font-bold text-outline mb-1 block">Workflow Default</label><select value={editingCategory?.default_workflow_type || 'tender'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, default_workflow_type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+          <div><label className="font-bold text-outline mb-1 block">Workflow Default</label><select value={editingCategory?.default_workflow_type || 'tender'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, default_workflow_type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
           <div><label className="font-bold text-outline mb-1 block">Warna (Hex)</label><input type="text" placeholder="#RRGGBB" value={editingCategory?.color_hex || '#6B7280'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
         </div>
       </Drawer>
@@ -1355,7 +1355,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div><label className="font-bold text-outline mb-1 block">Warna Badge</label><input type="text" placeholder="#RRGGBB" value={editingStatus?.color_hex || '#6B7280'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
             <div><label className="font-bold text-outline mb-1 block">Warna Teks</label><input type="text" placeholder="#FFFFFF" value={editingStatus?.text_color_hex || '#FFFFFF'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, text_color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
           </div>
-          <div><label className="font-bold text-outline mb-1 block">Berlaku Untuk</label><select value={editingStatus?.applicable_to || 'both'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+          <div><label className="font-bold text-outline mb-1 block">Berlaku Untuk</label><select value={editingStatus?.applicable_to || 'both'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
         </div>
       </Drawer>
 
@@ -1383,7 +1383,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           <div><label className="font-bold text-outline mb-1 block">Kode *</label><input type="text" placeholder="KODE" value={editingDocType?.code || ''} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
           <div><label className="font-bold text-outline mb-1 block">Ekstensi (pisahkan koma)</label><input type="text" placeholder="pdf, docx, xlsx" value={editingDocType?.allowed_extensions?.join(', ') || 'pdf'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, allowed_extensions: e.target.value.split(',').map(s => s.trim()) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Max Size (MB)</label><input type="number" placeholder="25" value={editingDocType?.max_size_mb || 25} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, max_size_mb: parseInt(e.target.value) || 25 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-          <div><label className="font-bold text-outline mb-1 block">Berlaku Untuk</label><select value={editingDocType?.applicable_to || 'both'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+          <div><label className="font-bold text-outline mb-1 block">Berlaku Untuk</label><select value={editingDocType?.applicable_to || 'both'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
         </div>
       </Drawer>
 
@@ -1410,7 +1410,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Q1 2026" value={editingPeriod?.name || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="2026-Q1" value={editingPeriod?.code || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="font-bold text-outline mb-1 block">Tipe</label><select value={editingPeriod?.type || 'quarterly'} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="monthly">Bulanan</option><option value="quarterly">Kuartalan</option><option value="semester">Semester</option><option value="annual">Tahunan</option></select></div>
+            <div><label className="font-bold text-outline mb-1 block">Tipe</label><select value={editingPeriod?.type || 'quarterly'} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="monthly">Bulanan</option><option value="quarterly">Kuartalan</option><option value="semester">Semester</option><option value="annual">Tahunan</option></select></div>
             <div><label className="font-bold text-outline mb-1 block">Tahun</label><input type="number" placeholder="2026" value={editingPeriod?.year || 2026} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, year: parseInt(e.target.value) || 2026 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -1443,7 +1443,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         <div className="space-y-4 text-xs">
           <div><label className="font-bold text-outline mb-1 block">Nama Hari Libur *</label><input type="text" placeholder="Nama libur" value={editingHoliday?.name || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Tanggal *</label><input type="date" value={editingHoliday?.date || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, date: e.target.value, year: parseInt(e.target.value.slice(0, 4)) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-          <div><label className="font-bold text-outline mb-1 block">Tipe</label><select value={editingHoliday?.type || 'national'} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="national">Nasional</option><option value="company_specific">Spesifik Perusahaan</option><option value="optional">Opsional</option></select></div>
+          <div><label className="font-bold text-outline mb-1 block">Tipe</label><select value={editingHoliday?.type || 'national'} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="national">Nasional</option><option value="company_specific">Spesifik Perusahaan</option><option value="optional">Opsional</option></select></div>
         </div>
       </Drawer>
 
@@ -1470,7 +1470,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         <div className="space-y-4 text-xs">
           <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama alasan" value={editingLossReason?.name || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
           <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingLossReason?.code || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
-          <div><label className="font-bold text-outline mb-1 block">Kategori</label><select value={editingLossReason?.category || 'harga'} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, category: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="harga">Harga</option><option value="teknis">Teknis</option><option value="relasi">Relasi</option><option value="administrasi">Administrasi</option><option value="waktu">Waktu</option><option value="lainnya">Lainnya</option></select></div>
+          <div><label className="font-bold text-outline mb-1 block">Kategori</label><select value={editingLossReason?.category || 'harga'} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, category: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-surface-container-lowest"><option value="harga">Harga</option><option value="teknis">Teknis</option><option value="relasi">Relasi</option><option value="administrasi">Administrasi</option><option value="waktu">Waktu</option><option value="lainnya">Lainnya</option></select></div>
           <div><label className="font-bold text-outline mb-1 block">Deskripsi</label><textarea rows={3} placeholder="Deskripsi" value={editingLossReason?.description || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
         </div>
       </Drawer>

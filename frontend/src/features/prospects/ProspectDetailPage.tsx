@@ -251,7 +251,7 @@ export default function ProspectDetailPage() {
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
@@ -355,7 +355,7 @@ export default function ProspectDetailPage() {
           {/* Main Detail */}
           <div className="lg:col-span-7 space-y-6">
             {/* Overview Section */}
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">overview</span>
                 Overview Prospek
@@ -413,7 +413,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Customer Info Card */}
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">business</span>
                 Informasi Customer
@@ -436,7 +436,7 @@ export default function ProspectDetailPage() {
 
               {/* Verification badge info */}
               {customer?.verifiedAt && customer?.verifiedBy && (
-                <div className="mb-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-700">
+                <div className="mb-3 p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-400">
                   <span className="material-symbols-outlined text-[16px]">verified</span>
                   Terverifikasi oleh {customer.verifiedBy} pada {new Date(customer.verifiedAt).toLocaleDateString('id-ID')}
                 </div>
@@ -497,7 +497,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">description</span>
                 Deskripsi
@@ -508,7 +508,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Dynamic Questionnaire Answers */}
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">quiz</span>
                 Jawaban Pertanyaan Standar
@@ -526,7 +526,7 @@ export default function ProspectDetailPage() {
 
           {/* Sidebar - Status Timeline */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">timeline</span>
                 Riwayat Status
@@ -537,7 +537,7 @@ export default function ProspectDetailPage() {
                     {idx < events.length - 1 && (
                       <div className="absolute left-3.5 top-6 w-0.5 h-full bg-border" />
                     )}
-                    <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-full flex items-center justify-center ${actionColor(event.type)} bg-white border-2 border-current`}>
+                    <div className={`absolute left-0 top-0.5 w-7 h-7 rounded-full flex items-center justify-center ${actionColor(event.type)} bg-surface-container-lowest border-2 border-current`}>
                       <span className="material-symbols-outlined text-[14px]">{actionIcon(event.type)}</span>
                     </div>
                     <div>

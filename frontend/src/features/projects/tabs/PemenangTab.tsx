@@ -88,9 +88,9 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in text-slate-800">
+    <div className="space-y-8 animate-fade-in text-on-surface">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <section className="lg:col-span-5 bg-white rounded-xl border border-border shadow-sm p-6">
+        <section className="lg:col-span-5 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
           <h3 className="font-heading-section text-base font-bold text-on-surface mb-6 flex items-center">
             <span className="material-symbols-outlined mr-2 text-primary">gavel</span>
             Penentuan Hasil Tender
@@ -139,7 +139,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
                 </button>
               </div>
             </div>
-            <div className="p-4 bg-slate-50 rounded-lg border-l-4 border-info">
+            <div className="p-4 bg-surface-container-low rounded-lg border-l-4 border-info">
               <p className="text-xs text-on-surface-variant italic">
                 "Pastikan status pemenang telah sesuai dengan surat pengumuman resmi dari pihak pemberi kerja sebelum melakukan konfirmasi data."
               </p>
@@ -149,7 +149,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
 
         <section className="lg:col-span-7">
           {outcome === 'menang' ? (
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6 h-full">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 h-full">
               <h3 className="font-heading-section text-base font-bold text-success mb-6 flex items-center">
                 <span className="material-symbols-outlined mr-2">verified</span>
                 Detail Kontrak Pemenang
@@ -186,16 +186,16 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
                 </div>
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Dokumen SPK / Kontrak</label>
-                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer group">
-                    <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary transition-colors mb-2">cloud_upload</span>
+                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+                    <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors mb-2">cloud_upload</span>
                     <p className="text-sm font-semibold text-secondary">Seret file ke sini atau <span className="text-primary underline">klik untuk unggah</span></p>
-                    <p className="text-xs text-slate-400 mt-1">PDF, DOCX, ZIP (Maks. 25MB)</p>
+                    <p className="text-xs text-outline mt-1">PDF, DOCX, ZIP (Maks. 25MB)</p>
                   </div>
                 </div>
               </div>
             </div>
           ) : outcome === 'kalah' ? (
-            <div className="bg-white rounded-xl border border-border shadow-sm p-6 h-full">
+            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 h-full">
               <h3 className="font-heading-section text-base font-bold text-danger mb-6 flex items-center">
                 <span className="material-symbols-outlined mr-2">report</span>
                 Analisa Kekalahan Tender
@@ -206,7 +206,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
                   <select
                     value={failureReason}
                     onChange={e => setFailureReason(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-danger focus:outline-none text-xs bg-white text-slate-800"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-danger focus:outline-none text-xs bg-surface-container-lowest text-on-surface"
                   >
                     <option value="">Pilih Alasan Utama...</option>
                     <option value="harga">Harga Penawaran Terlalu Tinggi</option>
@@ -221,7 +221,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
                   <textarea
                     value={loseNote}
                     onChange={e => setLoseNote(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-danger focus:outline-none text-xs resize-none text-slate-800"
+                    className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-danger focus:outline-none text-xs resize-none text-on-surface"
                     placeholder="Berikan detail tambahan mengenai penyebab kekalahan atau poin-poin yang perlu diperbaiki untuk tender mendatang..."
                     rows={6}
                   />
@@ -233,10 +233,10 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
               </div>
             </div>
           ) : (
-            <div className="bg-slate-50 rounded-xl border border-dashed border-border p-12 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
-              <span className="material-symbols-outlined text-6xl text-slate-400 mb-4">pending_actions</span>
-              <h4 className="font-heading-section text-base font-bold text-slate-500">Hasil Tender Belum Dipilih</h4>
-              <p className="text-on-surface-variant max-w-sm mt-2 text-xs text-slate-400">Pilih hasil tender di sisi kiri untuk melengkapi data penutupan proyek.</p>
+            <div className="bg-surface-container-low rounded-xl border border-dashed border-border p-12 flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+              <span className="material-symbols-outlined text-6xl text-outline mb-4">pending_actions</span>
+              <h4 className="font-heading-section text-base font-bold text-secondary">Hasil Tender Belum Dipilih</h4>
+              <p className="text-on-surface-variant max-w-sm mt-2 text-xs text-outline">Pilih hasil tender di sisi kiri untuk melengkapi data penutupan proyek.</p>
             </div>
           )}
         </section>

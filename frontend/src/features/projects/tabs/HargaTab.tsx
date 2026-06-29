@@ -98,7 +98,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 bg-white border border-border rounded-xl shadow-sm p-6 space-y-6">
+        <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm p-6 space-y-6">
           <h3 className="font-heading-section text-heading-section">Rincian Nilai Penawaran</h3>
           <div className="grid grid-cols-2 gap-6 text-sm">
             <div className="space-y-2 col-span-2 sm:col-span-1">
@@ -147,7 +147,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
           </div>
         </div>
 
-        <div className="lg:col-span-4 bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
           <div className="bg-primary-container p-6 text-on-primary-container">
             <h4 className="font-semibold uppercase tracking-widest text-xs opacity-80 mb-2">Ringkasan Finansial</h4>
             <div className="text-3xl font-display-title font-bold text-white">{formatCurrency(hargaPenawaran)}</div>
@@ -166,7 +166,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
         </div>
       </div>
 
-      <div className="bg-white border border-border p-6 rounded-xl shadow-sm">
+      <div className="bg-surface-container-lowest border border-border p-6 rounded-xl shadow-sm">
         <h3 className="font-heading-section text-heading-section mb-4">Perbandingan Harga Kompetitor</h3>
         <Table
           columns={competitorColumns}

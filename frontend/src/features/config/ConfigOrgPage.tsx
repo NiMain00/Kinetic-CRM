@@ -166,7 +166,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               ? depth > 0
                 ? 'bg-primary-fixed text-primary border border-primary'
                 : 'bg-primary/10 text-primary font-bold'
-              : 'hover:bg-slate-50'
+              : 'hover:bg-surface-container-low'
           } ${depth > 0 ? 'ml-6 mt-1' : 'mt-2'}`}
         >
           <span
@@ -176,7 +176,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           </span>
           <span className="font-medium">{unit.name}</span>
           {!unit.isActive && (
-            <span className="text-[10px] text-slate-400 ml-auto">Non-Aktif</span>
+            <span className="text-[10px] text-outline ml-auto">Non-Aktif</span>
           )}
         </div>
         {children.length > 0 && (
@@ -219,10 +219,10 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
       {/* Duel Pane Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Side: Tree panel */}
-        <div className="lg:col-span-4 bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[550px]">
+        <div className="lg:col-span-4 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[550px]">
           <div className="p-4 border-b border-border bg-surface-bright flex justify-between items-center shrink-0">
             <h3 className="font-label-sm text-primary text-sm font-bold">STRUKTUR HIERARKI</h3>
-            <div className="flex gap-1 text-slate-500">
+            <div className="flex gap-1 text-secondary">
               <span className="material-symbols-outlined hover:bg-surface-container rounded p-1 cursor-pointer text-lg">unfold_more</span>
               <span className="material-symbols-outlined hover:bg-surface-container rounded p-1 cursor-pointer text-lg">sync</span>
             </div>
@@ -230,7 +230,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
 
           <div className="flex-grow overflow-y-auto p-4">
             {tree.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-8">Belum ada unit organisasi.</p>
+              <p className="text-xs text-outline text-center py-8">Belum ada unit organisasi.</p>
             ) : (
               renderTreeNode(tree)
             )}
@@ -238,9 +238,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
         </div>
 
         {/* Right Side: Form Editor */}
-        <div className="lg:col-span-8 bg-white border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[550px]">
+        <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[550px]">
           {/* Editor Header */}
-          <div className="p-6 border-b border-border bg-white flex justify-between items-center shrink-0">
+          <div className="p-6 border-b border-border bg-surface-container-lowest flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-fixed text-primary rounded-lg flex items-center justify-center">
                 <span className="material-symbols-outlined text-[28px]">
@@ -355,7 +355,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
                   if (selectedUnit) handleSelectUnit(selectedUnit);
                   onShowNotification('Form reset ke nilai awal.', 'success');
                 }}
-                className="px-4 py-1.5 border border-border bg-white text-secondary rounded hover:bg-slate-50 text-sm font-semibold"
+                className="px-4 py-1.5 border border-border bg-surface-container-lowest text-secondary rounded hover:bg-surface-container-low text-sm font-semibold"
               >
                 Atur Ulang
               </button>
@@ -395,7 +395,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="font-semibold text-on-surface-variant block">Tipe Unit</label>
-              <select value={addType} onChange={e => setAddType(e.target.value as OrgUnit['unitType'])} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary bg-white">
+              <select value={addType} onChange={e => setAddType(e.target.value as OrgUnit['unitType'])} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
                 {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>

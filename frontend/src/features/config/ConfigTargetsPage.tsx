@@ -83,10 +83,10 @@ export default function ConfigTargetsPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="bg-white border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">Konfigurasi Target</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Atur target KPI dan approval untuk setiap periode.</p>
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">Konfigurasi Target</h2>
+          <p className="text-[11px] text-outline mt-0.5">Atur target KPI dan approval untuk setiap periode.</p>
         </div>
         <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>} onClick={handleOpenCreate}>
           Tambah Target
@@ -105,31 +105,31 @@ export default function ConfigTargetsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Target</p>
-              <p className="text-xl font-extrabold text-slate-800 mt-1">{filtered.length}</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Total Target</p>
+              <p className="text-xl font-extrabold text-on-surface mt-1">{filtered.length}</p>
             </div>
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Tercapai</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Tercapai</p>
               <p className="text-xl font-extrabold text-success mt-1">{filtered.filter(t => t.actualValue >= t.targetValue).length}</p>
             </div>
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Belum Tercapai</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Belum Tercapai</p>
               <p className="text-xl font-extrabold text-warning mt-1">{filtered.filter(t => t.actualValue < t.targetValue).length}</p>
             </div>
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Avg Achievement</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Avg Achievement</p>
               <p className="text-xl font-extrabold text-primary mt-1">
                 {filtered.length > 0 ? Math.round(filtered.reduce((s, t) => s + (t.actualValue / t.targetValue) * 100, 0) / filtered.length) : 0}%
               </p>
             </div>
           </div>
 
-          <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto table-mobile-compact">
               <table className="w-full text-xs text-left table-auto">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Target</th>
                     <th className="px-6 py-3.5">Kategori</th>
                     <th className="px-6 py-3.5 text-right">Nilai Target</th>
@@ -142,26 +142,26 @@ export default function ConfigTargetsPage() {
                   {filtered.map((t) => {
                     const pct = Math.round((t.actualValue / t.targetValue) * 100);
                     return (
-                      <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
+                      <tr key={t.id} className="hover:bg-surface-container-low/65 transition-colors">
                         <td className="px-6 py-4">
-                          <p className="font-bold text-slate-800 text-xs">{t.name}</p>
-                          <p className="text-[10px] text-slate-400">{t.description}</p>
+                          <p className="font-bold text-on-surface text-xs">{t.name}</p>
+                          <p className="text-[10px] text-outline">{t.description}</p>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${t.category === 'KPI' ? 'bg-primary/10 text-primary' : 'bg-status-purple/10 text-status-purple'}`}>{t.category}</span>
                         </td>
-                        <td className="px-6 py-4 text-right font-mono font-bold text-slate-800">{formatValue(t)}</td>
-                        <td className="px-6 py-4 text-right font-mono font-bold text-slate-600">{t.actualValue > 0 ? formatActual(t) : '-'}</td>
+                        <td className="px-6 py-4 text-right font-mono font-bold text-on-surface">{formatValue(t)}</td>
+                        <td className="px-6 py-4 text-right font-mono font-bold text-on-surface-variant">{t.actualValue > 0 ? formatActual(t) : '-'}</td>
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center gap-2 justify-center">
-                            <div className="w-20 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div className="w-20 bg-surface-container rounded-full h-1.5 overflow-hidden">
                               <div className={`h-full rounded-full ${pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
                             </div>
                             <span className={`text-[10px] font-bold ${pct >= 100 ? 'text-success' : pct >= 75 ? 'text-warning' : 'text-danger'}`}>{pct}%</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
+                          <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
                             <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                           </button>
                         </td>
@@ -171,7 +171,7 @@ export default function ConfigTargetsPage() {
                 </tbody>
               </table>
             </div>
-            <div className="p-4 bg-slate-50 border-t border-border flex justify-between items-center text-[10px] text-slate-400">
+            <div className="p-4 bg-surface-container-low border-t border-border flex justify-between items-center text-[10px] text-outline">
               <span>{filtered.length} target untuk {selectedPeriod}</span>
               <span>Sandbox environment</span>
             </div>
@@ -180,37 +180,37 @@ export default function ConfigTargetsPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
-          <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col">
-            <div className="p-6 border-b border-border bg-slate-50 flex items-center justify-between">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
+          <div className="w-full max-w-lg bg-surface-container-lowest h-full shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-border bg-surface-container-low flex items-center justify-between">
               <div>
-                <h3 className="font-display-title text-sm font-extrabold text-slate-800">{editingTarget ? 'Edit Target' : 'Tambah Target Baru'}</h3>
-                <p className="text-[10px] text-slate-400 mt-1">Periode: {selectedPeriod}</p>
+                <h3 className="font-display-title text-sm font-extrabold text-on-surface">{editingTarget ? 'Edit Target' : 'Tambah Target Baru'}</h3>
+                <p className="text-[10px] text-outline mt-1">Periode: {selectedPeriod}</p>
               </div>
-              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 transition-colors cursor-pointer">
+              <button onClick={() => setShowForm(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 block">Nama Target *</label>
+                <label className="font-semibold text-on-surface block">Nama Target *</label>
                 <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Win Rate" required />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 block">Kategori</label>
-                <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                <label className="font-semibold text-on-surface block">Kategori</label>
+                <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                   <option value="KPI">KPI</option>
                   <option value="Approval">Approval</option>
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-slate-700 block">Nilai Target *</label>
+                  <label className="font-semibold text-on-surface block">Nilai Target *</label>
                   <input type="number" value={formTargetValue} onChange={e => setFormTargetValue(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" step="any" required />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-slate-700 block">Satuan</label>
-                  <select value={formUnit} onChange={e => setFormUnit(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-white">
+                  <label className="font-semibold text-on-surface block">Satuan</label>
+                  <select value={formUnit} onChange={e => setFormUnit(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     <option value="%">%</option>
                     <option value="Rp">Rupiah</option>
                     <option value="unit">Unit</option>
@@ -221,12 +221,12 @@ export default function ConfigTargetsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-slate-700 block">Deskripsi</label>
+                <label className="font-semibold text-on-surface block">Deskripsi</label>
                 <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi target" />
               </div>
             </form>
-            <div className="p-6 border-t border-border bg-slate-50 flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">Cancel</button>
+            <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
+              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
               <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingTarget ? 'Simpan Perubahan' : 'Buat Target'}</button>
             </div>
           </div>

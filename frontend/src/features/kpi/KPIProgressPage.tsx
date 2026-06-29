@@ -147,32 +147,32 @@ export default function KPIProgressPage() {
       header: 'KPI Name',
       render: row => (
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px] text-slate-400" aria-hidden="true">{CATEGORY_ICONS[row.category] || 'monitoring'}</span>
-          <span className="font-bold text-slate-800 text-xs">{row.name}</span>
+          <span className="material-symbols-outlined text-[16px] text-outline" aria-hidden="true">{CATEGORY_ICONS[row.category] || 'monitoring'}</span>
+          <span className="font-bold text-on-surface text-xs">{row.name}</span>
         </div>
       ),
     },
     {
       key: 'categoryLabel',
       header: 'Category',
-      render: row => <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-semibold text-slate-600">{row.categoryLabel}</span>,
+      render: row => <span className="px-2 py-0.5 bg-surface-container rounded text-[10px] font-semibold text-on-surface-variant">{row.categoryLabel}</span>,
     },
     {
       key: 'period',
       header: 'Period',
-      render: row => <span className="text-slate-400 font-mono text-[10px]">{row.period}</span>,
+      render: row => <span className="text-outline font-mono text-[10px]">{row.period}</span>,
     },
     {
       key: 'targetValue',
       header: 'Target',
       align: 'right',
-      render: row => <span className="font-mono font-bold text-slate-700 text-xs">{formatTarget(row)}</span>,
+      render: row => <span className="font-mono font-bold text-on-surface text-xs">{formatTarget(row)}</span>,
     },
     {
       key: 'actualValue',
       header: 'Actual',
       align: 'right',
-      render: row => <span className="font-mono font-bold text-slate-700 text-xs">{formatActual(row)}</span>,
+      render: row => <span className="font-mono font-bold text-on-surface text-xs">{formatActual(row)}</span>,
     },
     {
       key: 'progress',
@@ -180,10 +180,10 @@ export default function KPIProgressPage() {
       align: 'center',
       render: row => (
         <div className="flex items-center gap-2 min-w-[100px]">
-          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={row.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress ${row.name}: ${row.progress}%`}>
+          <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden" role="progressbar" aria-valuenow={row.progress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress ${row.name}: ${row.progress}%`}>
             <div className={`h-full rounded-full ${row.status === 'on_track' ? 'bg-success' : row.status === 'at_risk' ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${row.progress}%` }}></div>
           </div>
-          <span className="text-[10px] font-bold text-slate-500 w-8 text-right">{row.progress}%</span>
+          <span className="text-[10px] font-bold text-secondary w-8 text-right">{row.progress}%</span>
         </div>
       ),
     },
@@ -206,11 +206,11 @@ export default function KPIProgressPage() {
     : 0;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
-      <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">KPI Progress Monitoring</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Pantau perkembangan KPI secara detail per kategori dan periode.</p>
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Progress Monitoring</h2>
+          <p className="text-[11px] text-outline mt-0.5">Pantau perkembangan KPI secara detail per kategori dan periode.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>} onClick={() => toast.success('Laporan progress sedang diekspor.')} aria-label="Export data progress">
@@ -256,41 +256,41 @@ export default function KPIProgressPage() {
             <Card padding="md">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">speed</span>
-                <span className="text-[10px] font-semibold text-slate-500">Avg Progress</span>
+                <span className="text-[10px] font-semibold text-secondary">Avg Progress</span>
               </div>
-              <p className="text-xl font-extrabold text-slate-800">{progressTrend.toFixed(0)}%</p>
-              <p className="text-[10px] text-slate-400">{filteredData.length} KPI aktif</p>
+              <p className="text-xl font-extrabold text-on-surface">{progressTrend.toFixed(0)}%</p>
+              <p className="text-[10px] text-outline">{filteredData.length} KPI aktif</p>
             </Card>
             <Card padding="md">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-[18px] text-success" aria-hidden="true">check_circle</span>
-                <span className="text-[10px] font-semibold text-slate-500">On Track</span>
+                <span className="text-[10px] font-semibold text-secondary">On Track</span>
               </div>
               <p className="text-xl font-extrabold text-success">{filteredData.filter(r => r.status === 'on_track').length}</p>
-              <p className="text-[10px] text-slate-400">KPI sesuai target</p>
+              <p className="text-[10px] text-outline">KPI sesuai target</p>
             </Card>
             <Card padding="md">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-[18px] text-warning" aria-hidden="true">warning</span>
-                <span className="text-[10px] font-semibold text-slate-500">At Risk</span>
+                <span className="text-[10px] font-semibold text-secondary">At Risk</span>
               </div>
               <p className="text-xl font-extrabold text-warning">{filteredData.filter(r => r.status === 'at_risk').length}</p>
-              <p className="text-[10px] text-slate-400">Perlu perhatian</p>
+              <p className="text-[10px] text-outline">Perlu perhatian</p>
             </Card>
             <Card padding="md">
               <div className="flex items-center gap-2 mb-1">
                 <span className="material-symbols-outlined text-[18px] text-danger" aria-hidden="true">error</span>
-                <span className="text-[10px] font-semibold text-slate-500">Behind</span>
+                <span className="text-[10px] font-semibold text-secondary">Behind</span>
               </div>
               <p className="text-xl font-extrabold text-danger">{filteredData.filter(r => r.status === 'behind').length}</p>
-              <p className="text-[10px] text-slate-400">Butuh tindakan segera</p>
+              <p className="text-[10px] text-outline">Butuh tindakan segera</p>
             </Card>
           </div>
 
           <Card padding="none" header={
             <div className="flex items-center justify-between">
-              <h4 className="font-bold text-slate-800 text-xs">Detail Progress KPI</h4>
-              <span className="text-[10px] text-slate-400">{filteredData.length} items</span>
+              <h4 className="font-bold text-on-surface text-xs">Detail Progress KPI</h4>
+              <span className="text-[10px] text-outline">{filteredData.length} items</span>
             </div>
           }>
             <Table<KpiProgressRow>
@@ -306,15 +306,15 @@ export default function KPIProgressPage() {
             />
           </Card>
 
-          <div className="bg-white border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-surface-container-lowest border border-border rounded-xl shadow-xs overflow-hidden">
             <div className="p-5 border-b border-border">
-              <h4 className="font-bold text-slate-800 text-xs">Department Breakdown</h4>
-              <p className="text-[10px] text-slate-400 mt-0.5">Rincian progress KPI per departemen</p>
+              <h4 className="font-bold text-on-surface text-xs">Department Breakdown</h4>
+              <p className="text-[10px] text-outline mt-0.5">Rincian progress KPI per departemen</p>
             </div>
             <div className="overflow-x-auto table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" aria-label="Tabel breakdown departemen">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-secondary uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Department</th>
                     <th className="px-6 py-3.5 text-center">Total KPI</th>
                     <th className="px-6 py-3.5 text-center">Avg Progress</th>
@@ -326,15 +326,15 @@ export default function KPIProgressPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {DEPARTMENT_BREAKDOWNS.map(d => (
-                    <tr key={d.department} className="hover:bg-slate-50/65 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-800">{d.department}</td>
-                      <td className="px-6 py-4 text-center font-mono font-bold text-slate-600">{d.kpiCount}</td>
-                      <td className="px-6 py-4 text-center font-mono font-bold text-slate-600">{d.avgProgress}%</td>
+                    <tr key={d.department} className="hover:bg-surface-container-low/65 transition-colors">
+                      <td className="px-6 py-4 font-bold text-on-surface">{d.department}</td>
+                      <td className="px-6 py-4 text-center font-mono font-bold text-on-surface-variant">{d.kpiCount}</td>
+                      <td className="px-6 py-4 text-center font-mono font-bold text-on-surface-variant">{d.avgProgress}%</td>
                       <td className="px-6 py-4 text-center"><span className="text-success font-bold">{d.onTrack}</span></td>
                       <td className="px-6 py-4 text-center"><span className="text-warning font-bold">{d.atRisk}</span></td>
                       <td className="px-6 py-4 text-center"><span className="text-danger font-bold">{d.behind}</span></td>
                       <td className="px-6 py-4">
-                        <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={d.avgProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress ${d.department}: ${d.avgProgress}%`}>
+                        <div className="w-24 h-1.5 bg-surface-container rounded-full overflow-hidden" role="progressbar" aria-valuenow={d.avgProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Progress ${d.department}: ${d.avgProgress}%`}>
                           <div className={`h-full rounded-full ${d.avgProgress >= 90 ? 'bg-success' : d.avgProgress >= 80 ? 'bg-primary' : d.avgProgress >= 70 ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${d.avgProgress}%` }}></div>
                         </div>
                       </td>

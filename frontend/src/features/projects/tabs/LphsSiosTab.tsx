@@ -466,7 +466,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
       case 'approved': return <span className="material-symbols-outlined text-success text-[18px]">check_circle</span>;
       case 'reviewing': return <span className="material-symbols-outlined text-info text-[18px]">hourglass_top</span>;
       case 'revision': return <span className="material-symbols-outlined text-warning text-[18px]">edit_note</span>;
-      default: return <span className="material-symbols-outlined text-slate-300 text-[18px]">radio_button_unchecked</span>;
+      default: return <span className="material-symbols-outlined text-outline text-[18px]">radio_button_unchecked</span>;
     }
   };
 
@@ -493,10 +493,10 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
               <span className="material-symbols-outlined text-primary text-[20px]">description</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold truncate">{lphs.lphsFileName}</p>
-                {lphs.lphsFileSize && <p className="text-[10px] text-slate-400">{lphs.lphsFileSize}</p>}
+                {lphs.lphsFileSize && <p className="text-[10px] text-outline">{lphs.lphsFileSize}</p>}
               </div>
               {!lphs.departmentsLocked && (
-                <button onClick={() => { updateProjectLphs(project?.id || '', { ...lphs, lphsFileName: undefined, lphsFileSize: undefined }); setLphs(prev => ({ ...prev, lphsFileName: undefined, lphsFileSize: undefined })); }} className="text-slate-400 hover:text-danger cursor-pointer">
+                <button onClick={() => { updateProjectLphs(project?.id || '', { ...lphs, lphsFileName: undefined, lphsFileSize: undefined }); setLphs(prev => ({ ...prev, lphsFileName: undefined, lphsFileSize: undefined })); }} className="text-outline hover:text-danger cursor-pointer">
                   <span className="material-symbols-outlined text-[16px]">close</span>
                 </button>
               )}
@@ -508,9 +508,9 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
               <span className="material-symbols-outlined text-primary text-[20px]">description</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold truncate">{lphsFile.name}</p>
-                <p className="text-[10px] text-slate-400">{(lphsFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                <p className="text-[10px] text-outline">{(lphsFile.size / 1024 / 1024).toFixed(1)} MB</p>
               </div>
-              <button onClick={handleRemoveLphsFile} className="text-slate-400 hover:text-danger cursor-pointer">
+              <button onClick={handleRemoveLphsFile} className="text-outline hover:text-danger cursor-pointer">
                 <span className="material-symbols-outlined text-[16px]">close</span>
               </button>
             </div>
@@ -526,11 +526,11 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
               <div className="relative my-3">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                <div className="relative flex justify-center"><span className="bg-white px-2 text-[10px] text-slate-400">atau</span></div>
+                <div className="relative flex justify-center"><span className="bg-surface-container-lowest px-2 text-[10px] text-outline">atau</span></div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-700 block mb-1.5">URL Eksternal (Google Docs, OneDrive, dll)</label>
+                <label className="text-xs font-semibold text-on-surface block mb-1.5">URL Eksternal (Google Docs, OneDrive, dll)</label>
                 <input type="url" value={lphsUrl} onChange={e => setLphsUrl(e.target.value)} placeholder="https://docs.google.com/..." className="w-full rounded-lg border border-border p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary" />
               </div>
             </>
@@ -553,7 +553,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
               <span className="material-symbols-outlined text-primary text-[20px]">description</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold truncate">{lphs.siosFileName}</p>
-                {lphs.siosFileSize && <p className="text-[10px] text-slate-400">{lphs.siosFileSize}</p>}
+                {lphs.siosFileSize && <p className="text-[10px] text-outline">{lphs.siosFileSize}</p>}
               </div>
             </div>
           )}
@@ -563,9 +563,9 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
               <span className="material-symbols-outlined text-primary text-[20px]">description</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold truncate">{siosFile.name}</p>
-                <p className="text-[10px] text-slate-400">{(siosFile.size / 1024 / 1024).toFixed(1)} MB</p>
+                <p className="text-[10px] text-outline">{(siosFile.size / 1024 / 1024).toFixed(1)} MB</p>
               </div>
-              <button onClick={handleRemoveSiosFile} className="text-slate-400 hover:text-danger cursor-pointer">
+              <button onClick={handleRemoveSiosFile} className="text-outline hover:text-danger cursor-pointer">
                 <span className="material-symbols-outlined text-[16px]">close</span>
               </button>
             </div>
@@ -601,12 +601,12 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
               const isDisabled = lphs.departmentsLocked;
               return (
                 <div key={dept.id} className={`flex items-center gap-3 p-2.5 rounded-lg border transition-colors ${
-                  isDisabled ? (isSelected ? 'bg-slate-50 border-border' : 'bg-white border-border opacity-50') : 'hover:bg-slate-50 cursor-pointer'
+                  isDisabled ? (isSelected ? 'bg-surface-container-low border-border' : 'bg-surface-container-lowest border-border opacity-50') : 'hover:bg-surface-container-low cursor-pointer'
                 }`} onClick={() => !isDisabled && toggleDept(dept.id)}>
                   <input type="checkbox" checked={isSelected} disabled={isDisabled} readOnly className="accent-primary cursor-pointer" />
                   <div className="flex-1">
                     <p className="text-xs font-semibold">{dept.name}</p>
-                    <p className="text-[10px] text-slate-400">{dept.division} • {dept.head}</p>
+                    <p className="text-[10px] text-outline">{dept.division} • {dept.head}</p>
                   </div>
                   {approval && (
                     <Badge variant={STATUS_BADGE[approval.status] || 'default'}>{STATUS_LABEL[approval.status]}</Badge>
@@ -639,7 +639,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
           {/* Re-upload after revision */}
           {needsRevisionReupload && isCabang && (
-            <button onClick={handleReuploadRevision} className="w-full inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-500 text-white hover:brightness-110" type="button">
+            <button onClick={handleReuploadRevision} className="w-full inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-50 dark:bg-amber-950/300 text-white hover:brightness-110" type="button">
               <span className="material-symbols-outlined text-[18px]">upload</span>
               Upload Ulang Revisi
             </button>
@@ -663,13 +663,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
           <div className="p-5">
             {/* PM Row */}
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-border mb-3">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-container-low border border-border mb-3">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-primary">person</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-slate-800">Project Manager</p>
-                <p className="text-xs text-slate-400">{STATUS_LABEL[lphs.pmStatus]}{lphs.pmApprovedAt ? ` • ${new Date(lphs.pmApprovedAt).toLocaleDateString('id-ID')}` : ''}</p>
+                <p className="text-sm font-bold text-on-surface">Project Manager</p>
+                <p className="text-xs text-outline">{STATUS_LABEL[lphs.pmStatus]}{lphs.pmApprovedAt ? ` • ${new Date(lphs.pmApprovedAt).toLocaleDateString('id-ID')}` : ''}</p>
               </div>
               <div className="flex items-center gap-2">
                 {statusIcon(lphs.pmStatus)}
@@ -678,7 +678,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                     <button onClick={handlePmApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                       Setujui
                     </button>
-                    <button onClick={handlePmRevision} className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                    <button onClick={handlePmRevision} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                       Revisi
                     </button>
                   </>
@@ -689,13 +689,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
             {/* Management Row */}
             {lphs.overallStatus !== 'draft' && (
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 border border-amber-200 mb-3">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 mb-3">
                 <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-amber-700">verified</span>
+                  <span className="material-symbols-outlined text-amber-700 dark:text-amber-400">verified</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-amber-800">Management</p>
-                  <p className="text-xs text-amber-600">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {statusIcon(lphs.mgmtStatus)}
@@ -704,7 +704,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                       <button onClick={handleMgmtApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                         Setujui
                       </button>
-                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                         Revisi
                       </button>
                     </>
@@ -715,34 +715,34 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
             )}
 
             {/* Department Table */}
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Departemen Reviewer</h4>
+            <h4 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">Departemen Reviewer</h4>
             <div className="space-y-2">
               {lphs.departmentApprovals.length === 0 && lphs.departmentsLocked === false && (
-                <p className="text-sm text-slate-400 italic text-center py-8">Belum ada departemen dipilih. Pilih departemen reviewer sebelum submit.</p>
+                <p className="text-sm text-outline italic text-center py-8">Belum ada departemen dipilih. Pilih departemen reviewer sebelum submit.</p>
               )}
               {lphs.departmentApprovals.length === 0 && lphs.departmentsLocked === true && (
-                <p className="text-sm text-slate-400 italic text-center py-8">Tidak ada data departemen.</p>
+                <p className="text-sm text-outline italic text-center py-8">Tidak ada data departemen.</p>
               )}
               {lphs.departmentApprovals.map(approval => {
                 const dept = departments.find(d => d.id === approval.departmentId);
                 return (
-                  <div key={approval.departmentId} className="flex items-center gap-4 p-4 rounded-xl bg-white border border-border hover:shadow-xs transition-shadow">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-slate-500 text-[16px]">domain</span>
+                  <div key={approval.departmentId} className="flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest border border-border hover:shadow-xs transition-shadow">
+                    <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-secondary text-[16px]">domain</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-800">{approval.departmentName}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <p className="text-sm font-semibold text-on-surface">{approval.departmentName}</p>
+                      <div className="flex items-center gap-2 text-xs text-outline">
                         <span>{STATUS_LABEL[approval.status]}</span>
                         {approval.approverName && <span>• {approval.approverName}</span>}
                         {approval.approvedAt && <span>• {new Date(approval.approvedAt).toLocaleDateString('id-ID')}</span>}
                         {approval.revisionRound > 0 && <Badge variant="warning">Revisi ke-{approval.revisionRound}</Badge>}
                       </div>
                       {approval.reviewNotes && (
-                        <p className="text-[10px] text-slate-400 mt-1 italic">"{approval.reviewNotes}"</p>
+                        <p className="text-[10px] text-outline mt-1 italic">"{approval.reviewNotes}"</p>
                       )}
                       {approval.revisionNotes && (
-                        <p className="text-[10px] text-amber-600 mt-1 italic">Catatan revisi: {approval.revisionNotes}</p>
+                        <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">Catatan revisi: {approval.revisionNotes}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -753,7 +753,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                           <button onClick={() => handleDeptApprove(approval.departmentId)} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                             Setujui
                           </button>
-                          <button onClick={() => handleDeptRevisionClick(approval.departmentId)} className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                          <button onClick={() => handleDeptRevisionClick(approval.departmentId)} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                             Revisi
                           </button>
                         </div>
@@ -776,7 +776,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                   <span className="material-symbols-outlined text-primary">description</span>
                   <div className="flex-1">
                     <p className="text-xs font-semibold">LPHS: {lphs.lphsFileName}</p>
-                    {lphs.lphsFileSize && <p className="text-[10px] text-slate-400">{lphs.lphsFileSize}</p>}
+                    {lphs.lphsFileSize && <p className="text-[10px] text-outline">{lphs.lphsFileSize}</p>}
                   </div>
                   {lphs.lphsExternalUrl && (
                     <a href={lphs.lphsExternalUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-xs flex items-center gap-1 hover:underline">
@@ -790,7 +790,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                   <span className="material-symbols-outlined text-primary">link</span>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold">URL LPHS Eksternal</p>
-                    <p className="text-[10px] text-slate-400 truncate">{lphs.lphsExternalUrl}</p>
+                    <p className="text-[10px] text-outline truncate">{lphs.lphsExternalUrl}</p>
                   </div>
                   <a href={lphs.lphsExternalUrl} target="_blank" rel="noopener noreferrer" className="text-primary text-xs flex items-center gap-1 hover:underline">
                     <span className="material-symbols-outlined text-[16px]">open_in_new</span> Buka
@@ -802,7 +802,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                   <span className="material-symbols-outlined text-primary">description</span>
                   <div className="flex-1">
                     <p className="text-xs font-semibold">SIOS: {lphs.siosFileName}</p>
-                    {lphs.siosFileSize && <p className="text-[10px] text-slate-400">{lphs.siosFileSize}</p>}
+                    {lphs.siosFileSize && <p className="text-[10px] text-outline">{lphs.siosFileSize}</p>}
                   </div>
                 </div>
               )}
@@ -813,16 +813,16 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
       {/* Targeted Revision Dialog */}
       {revisionDialog.open && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
-            <h3 className="font-bold text-sm text-slate-800 mb-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-on-surface mb-4">
               {revisionDialog.role === 'pm' ? 'PM' : 'Management'} — Kirim Targeted Revision
             </h3>
-            <p className="text-xs text-slate-400 mb-4">Pilih departemen yang perlu melakukan review ulang:</p>
+            <p className="text-xs text-outline mb-4">Pilih departemen yang perlu melakukan review ulang:</p>
 
             <div className="space-y-2 mb-4">
               {lphs.departmentApprovals.map(a => (
-                <label key={a.departmentId} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-slate-50 cursor-pointer">
+                <label key={a.departmentId} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-surface-container-low cursor-pointer">
                   <input type="checkbox" checked={revisionDialog.targetDepts.includes(a.departmentId)} onChange={() => {
                     setRevisionDialog(prev => ({
                       ...prev,
@@ -833,7 +833,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                   }} className="accent-primary" />
                   <div className="flex-1">
                     <p className="text-xs font-semibold">{a.departmentName}</p>
-                    <p className="text-[10px] text-slate-400">Status: {STATUS_LABEL[a.status]}</p>
+                    <p className="text-[10px] text-outline">Status: {STATUS_LABEL[a.status]}</p>
                   </div>
                   {a.status === 'approved' && <Badge variant="success">OK</Badge>}
                 </label>
@@ -841,12 +841,12 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
             </div>
 
             <div className="mb-4">
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Catatan Revisi</label>
+              <label className="text-xs font-semibold text-on-surface block mb-1.5">Catatan Revisi</label>
               <textarea value={revisionDialog.notes} onChange={e => setRevisionDialog(prev => ({ ...prev, notes: e.target.value }))} rows={3} className="w-full rounded-lg border border-border p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Jelaskan apa yang perlu direvisi..." />
             </div>
 
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setRevisionDialog({ open: false, targetDepts: [], notes: '', role: 'pm' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+              <button onClick={() => setRevisionDialog({ open: false, targetDepts: [], notes: '', role: 'pm' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">
                 Batal
               </button>
               <button onClick={handleSendRevision} className="px-4 py-2 bg-warning text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
@@ -859,23 +859,23 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
       {/* Department Revision Dialog */}
       {deptRevisionDialog.open && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
-            <h3 className="font-bold text-sm text-slate-800 mb-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center">
+          <div className="bg-surface-container-lowest rounded-xl shadow-2xl max-w-lg w-full mx-4 p-6">
+            <h3 className="font-bold text-sm text-on-surface mb-4">
               Revisi — {deptRevisionDialog.departmentName}
             </h3>
-            <p className="text-xs text-slate-400 mb-4">Berikan catatan revisi untuk dokumen LPHS/SIOS:</p>
+            <p className="text-xs text-outline mb-4">Berikan catatan revisi untuk dokumen LPHS/SIOS:</p>
 
             <div className="mb-4">
-              <label className="text-xs font-semibold text-slate-700 block mb-1.5">Catatan Revisi</label>
+              <label className="text-xs font-semibold text-on-surface block mb-1.5">Catatan Revisi</label>
               <textarea value={deptRevisionDialog.notes} onChange={e => setDeptRevisionDialog(prev => ({ ...prev, notes: e.target.value }))} rows={3} className="w-full rounded-lg border border-border p-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Jelaskan apa yang perlu direvisi..." />
             </div>
 
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setDeptRevisionDialog({ open: false, departmentId: '', departmentName: '', notes: '' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-slate-100 transition-colors cursor-pointer">
+              <button onClick={() => setDeptRevisionDialog({ open: false, departmentId: '', departmentName: '', notes: '' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">
                 Batal
               </button>
-              <button onClick={handleDeptRevisionSend} className="px-4 py-2 bg-amber-500 text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
+              <button onClick={handleDeptRevisionSend} className="px-4 py-2 bg-amber-50 dark:bg-amber-950/300 text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
                 Kirim Revisi
               </button>
             </div>

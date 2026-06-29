@@ -204,19 +204,19 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
 
       {currentStep === 0 && (
         <div className="space-y-6">
-          <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+          <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-10 h-10 rounded-lg bg-primary-container/10 text-primary flex items-center justify-center">
                 <span className="material-symbols-outlined">assignment</span>
               </span>
               <div>
-                <h3 className="font-heading-section text-base font-bold text-slate-800">Informasi Tender Utama</h3>
+                <h3 className="font-heading-section text-base font-bold text-on-surface">Informasi Tender Utama</h3>
                 <p className="text-secondary text-xs">Identitas nomor tender dan nama paket di portal e-proc.</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex flex-col gap-2">
-                <label className="font-label-sm text-xs font-semibold text-slate-600">Nomor Tender</label>
+                <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Nomor Tender</label>
                 <input
                   value={nomorTender}
                   onChange={(e) => setNomorTender(e.target.value)}
@@ -225,7 +225,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 />
               </div>
               <div className="flex flex-col gap-2 md:col-span-2">
-                <label className="font-label-sm text-xs font-semibold text-slate-600">Nama Tender</label>
+                <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Nama Tender</label>
                 <input
                   value={namaTender}
                   onChange={(e) => setNamaTender(e.target.value)}
@@ -234,7 +234,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="font-label-sm text-xs font-semibold text-slate-600">Deadline Tender</label>
+                <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Deadline Tender</label>
                 <input
                   value={deadlineTender}
                   onChange={(e) => setDeadlineTender(e.target.value)}
@@ -245,43 +245,43 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+          <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-10 h-10 rounded-lg bg-status-indigo/10 text-status-indigo flex items-center justify-center">
                 <span className="material-symbols-outlined">upload_file</span>
               </span>
               <div>
-                <h3 className="font-heading-section text-base font-bold text-slate-800">Dokumen RKS & Lampiran</h3>
+                <h3 className="font-heading-section text-base font-bold text-on-surface">Dokumen RKS & Lampiran</h3>
                 <p className="text-secondary text-xs">Unggah lembar acuan RKS resmi dari pihak klien.</p>
               </div>
             </div>
 
             <div
               onClick={handleUpload}
-              className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group"
+              className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer group"
             >
-              <span className="material-symbols-outlined text-4xl text-slate-400 group-hover:text-primary mb-3 transition-colors">cloud_upload</span>
-              <p className="font-label-sm text-sm text-slate-700 mb-1">
+              <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary mb-3 transition-colors">cloud_upload</span>
+              <p className="font-label-sm text-sm text-on-surface mb-1">
                 Drag and drop file here, atau <span className="text-primary font-semibold hover:underline">browse</span>
               </p>
-              <p className="text-xs text-slate-400">PDF atau DOCX format (Max size: 25MB)</p>
+              <p className="text-xs text-outline">PDF atau DOCX format (Max size: 25MB)</p>
             </div>
 
             {uploadedFiles.length > 0 && (
               <div className="mt-6 space-y-3">
                 {uploadedFiles.map((file, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 border border-border rounded-lg hover:border-slate-300 transition-all">
+                  <div key={idx} className="flex items-center justify-between p-4 bg-surface-container-low border border-border rounded-lg hover:border-border transition-all">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="material-symbols-outlined text-danger shrink-0 text-[32px]">description</span>
                       <div className="truncate">
-                        <p className="font-label-sm text-sm font-semibold text-slate-800 truncate">{file.name}</p>
-                        <p className="text-xs text-slate-400">{file.size} • Uploaded {file.time}</p>
+                        <p className="font-label-sm text-sm font-semibold text-on-surface truncate">{file.name}</p>
+                        <p className="text-xs text-outline">{file.size} • Uploaded {file.time}</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleDeleteFile(idx); }}
-                      className="p-1.5 hover:bg-red-50 hover:text-danger rounded-lg transition-colors text-slate-400"
+                      className="p-1.5 hover:bg-red-50 dark:bg-red-950/30 hover:text-danger rounded-lg transition-colors text-outline"
                     >
                       <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
@@ -291,20 +291,20 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             )}
           </section>
 
-          <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+          <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-10 h-10 rounded-lg bg-status-teal/10 text-status-teal flex items-center justify-center">
                 <span className="material-symbols-outlined">quiz</span>
               </span>
               <div>
-                <h3 className="font-heading-section text-base font-bold text-slate-800">Ketentuan Pelaksanaan Pekerjaan</h3>
+                <h3 className="font-heading-section text-base font-bold text-on-surface">Ketentuan Pelaksanaan Pekerjaan</h3>
                 <p className="text-secondary text-xs">Sifat administrasi lapangan dan cakupan teknis proyek.</p>
               </div>
             </div>
 
             <div className="space-y-6">
-              <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="font-semibold text-xs text-slate-700 mb-3">Apakah sudah ada jadwal penjelasan tender (Aanwijzing)?</p>
+              <div className="p-4 bg-surface-container-low rounded-lg border border-border">
+                <p className="font-semibold text-xs text-on-surface mb-3">Apakah sudah ada jadwal penjelasan tender (Aanwijzing)?</p>
                 <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
                   {['Ya, Terjadwal', 'Tidak / Belum Ada'].map((opt) => (
                     <label key={opt} className="flex items-center gap-2.5 cursor-pointer">
@@ -313,9 +313,9 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                         name="aanwijzing_opt"
                         checked={aanwijzing === opt}
                         onChange={() => setAanwijzing(opt)}
-                        className="w-4 h-4 text-primary focus:ring-primary border-slate-300"
+                        className="w-4 h-4 text-primary focus:ring-primary border-border"
                       />
-                      <span className="text-sm text-slate-700 font-medium">{opt}</span>
+                      <span className="text-sm text-on-surface font-medium">{opt}</span>
                     </label>
                   ))}
                 </div>
@@ -323,7 +323,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
 
               <div className="grid grid-cols-1 gap-6">
                 <div className="flex flex-col gap-2">
-                  <label className="font-label-sm text-xs font-semibold text-slate-600">Lokasi Pelaksanaan Pekerjaan Resmi</label>
+                  <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Lokasi Pelaksanaan Pekerjaan Resmi</label>
                   <input
                     value={workLocation}
                     onChange={(e) => setWorkLocation(e.target.value)}
@@ -333,7 +333,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="font-label-sm text-xs font-semibold text-slate-600">Lingkup Pekerjaan Utama (Scope of Work)</label>
+                  <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Lingkup Pekerjaan Utama (Scope of Work)</label>
                   <textarea
                     value={mainScope}
                     onChange={(e) => setMainScope(e.target.value)}
@@ -346,14 +346,14 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             </div>
           </section>
 
-          <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+          <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
                 <span className="w-10 h-10 rounded-lg bg-status-purple/10 text-status-purple flex items-center justify-center">
                   <span className="material-symbols-outlined">notes</span>
                 </span>
                 <div>
-                  <h3 className="font-heading-section text-base font-bold text-slate-800">Catatan Tambahan Internal</h3>
+                  <h3 className="font-heading-section text-base font-bold text-on-surface">Catatan Tambahan Internal</h3>
                   <p className="text-secondary text-xs">Instruksi internal dan konteks non-publik.</p>
                 </div>
               </div>
@@ -367,13 +367,13 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             />
           </section>
 
-          <section className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-slate-500 text-xs text-center sm:text-left">
+          <section className="bg-surface-container-low border border-border rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-secondary text-xs text-center sm:text-left">
               <span className="material-symbols-outlined text-[18px]">info</span>
               <span>Pastikan semua data telah diisi sebelum submit.</span>
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              <button onClick={handleSave} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-white border border-border text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-100 transition-all">
+              <button onClick={handleSave} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-surface-container-lowest border border-border text-on-surface font-semibold text-sm rounded-lg hover:bg-surface-container transition-all">
                 Simpan Draft
               </button>
               <button onClick={handleSubmit} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-container shadow transition-all flex items-center justify-center gap-2">
@@ -387,19 +387,19 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
 
       {currentStep === 1 && (
         <div className="space-y-6">
-          <section className="bg-white rounded-xl border border-border shadow-sm p-6 sm:p-8">
+          <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
             <div className="flex items-center gap-3 mb-6">
               <span className="w-10 h-10 rounded-lg bg-primary-container/10 text-primary flex items-center justify-center">
                 <span className="material-symbols-outlined">help</span>
               </span>
               <div>
-                <h3 className="font-heading-section text-base font-bold text-slate-800">Pertanyaan RKS</h3>
+                <h3 className="font-heading-section text-base font-bold text-on-surface">Pertanyaan RKS</h3>
                 <p className="text-secondary text-xs">Jawab pertanyaan berikut untuk melengkapi data RKS.</p>
               </div>
             </div>
 
             {rksQuestions.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-8 text-outline">
                 <span className="material-symbols-outlined text-4xl mb-2">help_outline</span>
                 <p className="text-sm">Belum ada pertanyaan RKS yang tersedia.</p>
                 <p className="text-xs mt-1">Silakan tambahkan pertanyaan di menu Master Data.</p>
@@ -409,8 +409,8 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 {rksQuestions.map((q: any, index: number) => {
                   const typeCode = getQuestionTypeCode(q.question_type_id);
                   return (
-                    <div key={q.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                      <p className="font-semibold text-sm text-slate-700 mb-3">
+                    <div key={q.id} className="p-4 bg-surface-container-low rounded-lg border border-border">
+                      <p className="font-semibold text-sm text-on-surface mb-3">
                         {index + 1}. {q.question_text}
                         {q.is_required && <span className="text-red-500 ml-1">*</span>}
                       </p>
@@ -418,7 +418,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                         <textarea
                           value={answers[q.id] || ''}
                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                          className="w-full px-4 py-3 bg-white border border-border rounded-lg resize-none text-sm"
+                          className="w-full px-4 py-3 bg-surface-container-lowest border border-border rounded-lg resize-none text-sm"
                           placeholder={q.placeholder_text || 'Jawab pertanyaan ini...'}
                           rows={typeCode === 'textarea' ? 4 : 2}
                         />
@@ -428,7 +428,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                           type="number"
                           value={answers[q.id] || ''}
                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                          className="w-full px-4 py-3 bg-white border border-border rounded-lg text-sm"
+                          className="w-full px-4 py-3 bg-surface-container-lowest border border-border rounded-lg text-sm"
                           placeholder={q.placeholder_text || 'Masukkan angka...'}
                         />
                       )}
@@ -437,7 +437,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                           type="date"
                           value={answers[q.id] || ''}
                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                          className="w-full px-4 py-3 bg-white border border-border rounded-lg text-sm"
+                          className="w-full px-4 py-3 bg-surface-container-lowest border border-border rounded-lg text-sm"
                         />
                       )}
                       {typeCode === 'radio' && (
@@ -449,9 +449,9 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                                 name={`q_${q.id}`}
                                 checked={answers[q.id] === opt}
                                 onChange={() => handleAnswerChange(q.id, opt)}
-                                className="w-4 h-4 text-primary focus:ring-primary border-slate-300"
+                                className="w-4 h-4 text-primary focus:ring-primary border-border"
                               />
-                              <span className="text-sm text-slate-700 font-medium">{opt}</span>
+                              <span className="text-sm text-on-surface font-medium">{opt}</span>
                             </label>
                           ))}
                         </div>
@@ -470,9 +470,9 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                                     : [...current, opt];
                                   handleAnswerChange(q.id, next.join(','));
                                 }}
-                                className="w-4 h-4 text-primary focus:ring-primary border-slate-300 rounded"
+                                className="w-4 h-4 text-primary focus:ring-primary border-border rounded"
                               />
-                              <span className="text-sm text-slate-700 font-medium">{opt}</span>
+                              <span className="text-sm text-on-surface font-medium">{opt}</span>
                             </label>
                           ))}
                         </div>
@@ -481,7 +481,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                         <select
                           value={answers[q.id] || ''}
                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                          className="w-full px-4 py-3 bg-white border border-border rounded-lg text-sm"
+                          className="w-full px-4 py-3 bg-surface-container-lowest border border-border rounded-lg text-sm"
                         >
                           <option value="">Pilih jawaban...</option>
                           {(q.options || []).map((opt: string) => (
@@ -490,7 +490,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                         </select>
                       )}
                       {q.help_text && (
-                        <p className="text-xs text-slate-400 mt-2">{q.help_text}</p>
+                        <p className="text-xs text-outline mt-2">{q.help_text}</p>
                       )}
                     </div>
                   );
@@ -499,13 +499,13 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             )}
           </section>
 
-          <section className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-slate-500 text-xs text-center sm:text-left">
+          <section className="bg-surface-container-low border border-border rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-secondary text-xs text-center sm:text-left">
               <span className="material-symbols-outlined text-[18px]">info</span>
               <span>Pastikan semua pertanyaan telah dijawab sebelum submit.</span>
             </div>
             <div className="flex gap-3 w-full sm:w-auto">
-              <button onClick={() => setCurrentStep(0)} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-white border border-border text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-100 transition-all flex items-center justify-center gap-2">
+              <button onClick={() => setCurrentStep(0)} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-surface-container-lowest border border-border text-on-surface font-semibold text-sm rounded-lg hover:bg-surface-container transition-all flex items-center justify-center gap-2">
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                 Kembali
               </button>

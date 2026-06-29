@@ -29,7 +29,7 @@ const TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
   revision: { icon: 'edit_document', color: 'border-amber-500 text-amber-600 bg-amber-50' },
   status_change: { icon: 'swap_horiz', color: 'border-blue-500 text-blue-600 bg-blue-50' },
   assignment: { icon: 'person_add', color: 'border-indigo-500 text-indigo-600 bg-indigo-50' },
-  system: { icon: 'dns', color: 'border-slate-500 text-slate-500 bg-slate-50' },
+  system: { icon: 'dns', color: 'border-outline text-secondary bg-surface-container' },
 };
 
 const INITIAL_NOTIFICATIONS: Notification[] = [

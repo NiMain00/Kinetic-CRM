@@ -65,10 +65,10 @@ export default function ConfigQuestionTypesPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="bg-white border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900">Tipe Pertanyaan</h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Kelola tipe pertanyaan untuk kuesioner prospek.</p>
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">Tipe Pertanyaan</h2>
+          <p className="text-[11px] text-outline mt-0.5">Kelola tipe pertanyaan untuk kuesioner prospek.</p>
         </div>
         <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>} onClick={handleOpenCreate}>
           Tambah Tipe
@@ -78,25 +78,25 @@ export default function ConfigQuestionTypesPage() {
       <div className="flex-1 overflow-y-auto p-6 sm:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Total Tipe</p>
-              <p className="text-xl font-extrabold text-slate-800 mt-1">{types.length}</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Total Tipe</p>
+              <p className="text-xl font-extrabold text-on-surface mt-1">{types.length}</p>
             </div>
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Aktif</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Aktif</p>
               <p className="text-xl font-extrabold text-success mt-1">{types.filter(t => t.is_active).length}</p>
             </div>
-            <div className="bg-white border border-border p-4 rounded-xl shadow-sm">
-              <p className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">Non-Aktif</p>
+            <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
+              <p className="text-[10px] text-outline uppercase font-mono tracking-wider">Non-Aktif</p>
               <p className="text-xl font-extrabold text-warning mt-1">{types.filter(t => !t.is_active).length}</p>
             </div>
           </div>
 
-          <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Tipe</th>
                     <th className="px-6 py-3.5">Deskripsi</th>
                     <th className="px-6 py-3.5 text-center">Status</th>
@@ -105,21 +105,21 @@ export default function ConfigQuestionTypesPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {types.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50/65 transition-colors">
+                    <tr key={t.id} className="hover:bg-surface-container-low/65 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-primary text-lg icon-compact">help_outline</span>
-                          <span className="font-bold text-slate-800">{t.name}</span>
+                          <span className="font-bold text-on-surface">{t.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-500">{t.description}</td>
+                      <td className="px-6 py-4 text-secondary">{t.description}</td>
                       <td className="px-6 py-4 text-center">
-                        <button onClick={() => handleToggleStatus(t.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${t.is_active ? 'bg-success' : 'bg-slate-300'}`}>
-                          <span className={`w-4 h-4 bg-white rounded-full shadow-xs transform transition-transform duration-200 ${t.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
+                        <button onClick={() => handleToggleStatus(t.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${t.is_active ? 'bg-success' : 'bg-surface-container-highest'}`}>
+                          <span className={`w-4 h-4 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform duration-200 ${t.is_active ? 'translate-x-2' : '-translate-x-2'}`}></span>
                         </button>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
+                        <button onClick={() => handleOpenEdit(t)} className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit">
                           <span className="material-symbols-outlined text-[18px] icon-compact">edit</span>
                         </button>
                       </td>
@@ -135,15 +135,15 @@ export default function ConfigQuestionTypesPage() {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editingType ? 'Edit Tipe Pertanyaan' : 'Tambah Tipe Pertanyaan'} size="md">
         <form onSubmit={handleSave} className="space-y-5 text-xs">
           <div className="space-y-2">
-            <label className="font-semibold text-slate-700 block">Nama Tipe *</label>
+            <label className="font-semibold text-on-surface block">Nama Tipe *</label>
             <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Pilihan Ganda" required />
           </div>
           <div className="space-y-2">
-            <label className="font-semibold text-slate-700 block">Deskripsi</label>
+            <label className="font-semibold text-on-surface block">Deskripsi</label>
             <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi tipe pertanyaan" />
           </div>
           <div className="space-y-2">
-            <label className="font-semibold text-slate-700 block">Status</label>
+            <label className="font-semibold text-on-surface block">Status</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="radio" name="qtStatus" checked={formStatus === true} onChange={() => setFormStatus(true)} className="text-primary" />
