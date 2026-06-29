@@ -7,6 +7,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useStatusStepMap, useNextPhaseMap } from '@/hooks/useConfigData';
+import { usePermission } from '@/hooks/usePermission';
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -43,6 +44,7 @@ export default function ProjectDetailView({
   const getProspectById = useProspectStore((s) => s.getProspectById);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const { approvals, approveItem } = useApprovalStore();
+  const { can } = usePermission();
   const STATUS_STEP_MAP = useStatusStepMap();
   const NEXT_PHASE_MAP = useNextPhaseMap();
 
@@ -202,6 +204,21 @@ export default function ProjectDetailView({
     }
   };
 
+  const handleRevision = () => {
+    if (!projectId || !project) return;
+    updateProject(projectId, { status: 'Revision', phase: 'Revisi' });
+    addTimelineEvent(projectId, {
+      id: `evt-${Date.now()}`,
+      title: 'Proyek Direvisi',
+      actor: 'System',
+      role: 'System',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'revision',
+      description: 'Proyek dikembalikan ke tahap revisi.',
+    });
+    toast.success('Proyek dikembalikan ke tahap revisi.');
+  };
+
   const handleShowNotification = (message: string, type: 'success' | 'warning' | 'error') => {
     onShowNotification(message, type);
   };
@@ -260,6 +277,7 @@ export default function ProjectDetailView({
           </div>
 
           <div className="flex items-center gap-2">
+            {can('proyek_delete') && (
             <button
               onClick={handleDeleteProject}
               className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all flex items-center gap-1.5"
@@ -267,9 +285,16 @@ export default function ProjectDetailView({
               <span className="material-symbols-outlined text-[16px]">delete</span>
               Hapus
             </button>
-            <button className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all">
+            )}
+            {can('proyek_edit') && (
+            <button
+              onClick={handleRevision}
+              className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all"
+            >
               Revisi
             </button>
+            )}
+            {can('approval_process') && (
             <button
               onClick={handleApproveProject}
               className="px-5 py-1.5 bg-success text-white font-semibold text-xs rounded-lg hover:opacity-90 shadow-sm transition-all flex items-center gap-2"
@@ -277,6 +302,7 @@ export default function ProjectDetailView({
               <span className="material-symbols-outlined text-[16px]">check_circle</span>
               Approve
             </button>
+            )}
           </div>
         </div>
       </section>

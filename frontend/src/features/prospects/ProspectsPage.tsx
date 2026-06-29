@@ -16,6 +16,8 @@ interface ProspectsViewProps {
 
 type FilterTab = 'All' | 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved' | 'Perlu Verifikasi';
 
+const PAGE_SIZE = 10;
+
 export default function ProspectsView({ onShowNotification, onNavigatePage }: ProspectsViewProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const { can } = usePermission();
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleDelete = (id: string) => {
@@ -72,16 +75,16 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const projectStatuses = useProjectStatuses();
 
   const statusColorMap = useMemo(() => {
-    const map: Record<string, string> = {};
+    const map: Record<string, { bg: string; text: string }> = {};
     projectStatuses.forEach((s) => {
       const hex = s.color_hex;
-      map[s.code] = `bg-[${hex}15] text-[${hex}]`;
+      map[s.code] = { bg: `${hex}25`, text: hex };
     });
-    map['Non Potensial'] = 'bg-slate-200 text-slate-600';
-    map['Potensial'] = 'bg-emerald-100 text-emerald-700';
-    map['Waiting PM'] = 'bg-warning/10 text-warning';
-    map['Revision'] = 'bg-status-orange/10 text-status-orange';
-    map['Approved'] = 'bg-success/10 text-success';
+    map['Non Potensial'] = { bg: '#e2e8f0', text: '#475569' };
+    map['Potensial'] = { bg: '#d1fae5', text: '#065f46' };
+    map['Waiting PM'] = { bg: '#fef3c7', text: '#b45309' };
+    map['Revision'] = { bg: '#ffedd5', text: '#c2410c' };
+    map['Approved'] = { bg: '#d1fae5', text: '#16a34a' };
     return map;
   }, [projectStatuses]);
 
@@ -103,11 +106,17 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     return matchesSearch && matchesTab;
   });
 
-  const statusColor = (status: string, prospect?: typeof prospects[0]) => {
+  const totalPages = Math.ceil(filteredProspects.length / PAGE_SIZE);
+  const paginatedProspects = filteredProspects.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
+  const statusColor = (status: string, prospect?: typeof prospects[0]): { bg: string; text: string } => {
     if (prospect?.customerData?.needsVerification) {
-      return 'bg-amber-100 text-amber-700';
+      return { bg: '#fef3c7', text: '#b45309' };
     }
-    return statusColorMap[status] || 'bg-info/10 text-info';
+    return statusColorMap[status] || { bg: '#e0f2fe', text: '#0284c7' };
   };
 
   const FILTER_TABS: FilterTab[] = ['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved', 'Perlu Verifikasi'];
@@ -168,7 +177,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               {FILTER_TABS.map(tab => (
                 <button
                   key={tab}
-                  onClick={() => setActiveFilter(tab)}
+                  onClick={() => { setActiveFilter(tab); setCurrentPage(1); }}
                   className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
                     activeFilter === tab
                       ? 'bg-white text-primary shadow-sm border border-border font-bold'
@@ -187,7 +196,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 </span>
                 <input
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
                   className="pl-10 pr-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-1"
                   placeholder="Cari prospek atau klien..."
                   type="text"
@@ -200,13 +209,13 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         <Card padding="none">
           {isMobile ? (
             <div className="divide-y divide-border">
-              {filteredProspects.length === 0 ? (
+              {paginatedProspects.length === 0 ? (
                 <div className="px-6 py-12 text-center text-secondary">
                   <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
                   <p>Tidak ada prospek ditemukan</p>
                 </div>
               ) : (
-                filteredProspects.map((row, index) => (
+                paginatedProspects.map((row, index) => (
                   <div key={row.id} className="p-4 space-y-3 active:bg-surface-container-low transition-colors">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
@@ -220,7 +229,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           <p className="text-xs text-secondary truncate">{row.description}</p>
                         )}
                       </div>
-                      <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColor(row.status, row)}`}>
+                      <span
+                        className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                        style={{ backgroundColor: statusColor(row.status, row).bg, color: statusColor(row.status, row).text }}
+                      >
                         {row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
                       </span>
                     </div>
@@ -239,7 +251,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         <span className="text-on-surface text-xs">{row.author}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {row.status === 'Approved' && !row.isConverted && (
+                        {row.status === 'Approved' && !row.isConverted && can('proyek_create') && (
                           <button
                             onClick={() => handleBuatProyek(row)}
                             className="touch-min flex items-center justify-center text-success hover:text-success hover:bg-success/10 rounded-lg transition-all"
@@ -297,9 +309,11 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       </td>
                     </tr>
                   ) : (
-                    filteredProspects.map((row, index) => (
+                    paginatedProspects.map((row, index) => {
+                      const globalIndex = (currentPage - 1) * PAGE_SIZE + index + 1;
+                      return (
                       <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 transition-colors group">
-                        <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{index + 1}</td>
+                        <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{globalIndex}</td>
                         <td className="px-6 py-4">
                           <div
                             onClick={() => navigate(`/prospects/${row.id}`)}
@@ -313,7 +327,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         </td>
                         <td className="px-6 py-4 text-secondary">{row.client}</td>
                         <td className="px-6 py-4">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusColor(row.status, row)}`}>
+                          <span
+                            className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                            style={{ backgroundColor: statusColor(row.status, row).bg, color: statusColor(row.status, row).text }}
+                          >
                             {row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
                           </span>
                         </td>
@@ -358,7 +375,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           </div>
                         </td>
                       </tr>
-                    ))
+                    );
+                      })
                   )}
                 </tbody>
               </table>
@@ -368,15 +386,31 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           {/* Pagination footer */}
           <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3">
             <span className="text-secondary font-caption-xs">
-              Showing <span className="font-bold text-on-surface">1 - {filteredProspects.length}</span> of{' '}
-              <span className="font-bold text-on-surface">{filteredProspects.length}</span> results
+              Menampilkan <span className="font-bold text-on-surface">{filteredProspects.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filteredProspects.length)}</span> dari{' '}
+              <span className="font-bold text-on-surface">{filteredProspects.length}</span> hasil
             </span>
             <div className="flex items-center gap-1">
-              <button className="touch-min flex items-center justify-center p-1 rounded bg-white border border-border text-secondary cursor-not-allowed px-2" disabled>
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
                 Prev
               </button>
-              <button className="touch-min flex items-center justify-center p-1 px-2.5 rounded bg-primary text-white font-semibold">1</button>
-              <button className="touch-min flex items-center justify-center p-1 rounded bg-white border border-border text-secondary cursor-not-allowed px-2" disabled>
+              {Array.from({ length: Math.max(totalPages, 1) }, (_, i) => (
+                <button
+                  key={i + 1}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border text-secondary hover:bg-surface-container-low'}`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                disabled={currentPage === totalPages || totalPages === 0}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
                 Next
               </button>
             </div>

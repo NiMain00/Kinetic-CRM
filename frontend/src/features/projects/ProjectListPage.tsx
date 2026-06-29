@@ -1,12 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
-import { formatCurrency, formatDate } from '@/utils/formatters';
+import { formatCurrency } from '@/utils/formatters';
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Card } from '@/components/ui';
 import { exportCSV } from '@/utils/export';
 import FilterPanel from '@/components/shared/FilterPanel';
 import { useProjectStatuses } from '@/hooks/useConfigData';
+import { usePermission } from '@/hooks/usePermission';
 
 const progressColor = (pct: number) => {
   if (pct >= 80) return 'bg-success';
@@ -14,10 +15,14 @@ const progressColor = (pct: number) => {
   return 'bg-primary';
 };
 
+const PAGE_SIZE = 15;
+
 export default function ProjectListPage() {
   const navigate = useNavigate();
+  const { can } = usePermission();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     client: '',
@@ -105,6 +110,12 @@ export default function ProjectListPage() {
     return list;
   }, [activeTab, search, projects, filterValues]);
 
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
   return (
     <PageContainer>
       <PageHeader
@@ -132,6 +143,7 @@ export default function ProjectListPage() {
             >
               Export CSV
             </Button>
+            {can('proyek_create') && (
             <Button
               variant="primary"
               size="md"
@@ -140,6 +152,7 @@ export default function ProjectListPage() {
             >
               Proyek Baru
             </Button>
+            )}
           </div>
         }
       />
@@ -148,7 +161,7 @@ export default function ProjectListPage() {
         {statusTabs.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { setActiveTab(tab.id); setCurrentPage(1); }}
             className={`px-5 py-3 font-label-sm text-sm transition-all relative whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-primary font-bold border-b-2 border-primary'
@@ -167,7 +180,7 @@ export default function ProjectListPage() {
             <input
               placeholder="Cari nama, klien, kode..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
               className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary outline-none focus:ring-1"
               aria-label="Cari proyek"
             />
@@ -195,19 +208,24 @@ export default function ProjectListPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Proyek</p>
-          <p className="text-2xl font-bold text-on-surface mt-1">{projects.length}</p>
+          <p className="text-2xl font-bold text-on-surface mt-1">{filtered.length}</p>
         </Card>
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Nilai</p>
-          <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrency(projects.reduce((s, p) => s + p.estimatedValue, 0))}</p>
+          <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrency(filtered.reduce((s, p) => s + p.estimatedValue, 0))}</p>
         </Card>
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Active</p>
-          <p className="text-2xl font-bold text-success mt-1">{projects.filter((p) => p.status === 'Executing' || p.status === 'LPHS/SIOS').length}</p>
+          <p className="text-2xl font-bold text-success mt-1">
+            {filtered.filter((p) => {
+              const terminalStatuses = ['Selesai', 'Kalah', 'Completed', 'Cancelled', 'Dibatalkan'];
+              return !terminalStatuses.includes(p.status) && !terminalStatuses.includes(p.phase);
+            }).length}
+          </p>
         </Card>
         <Card padding="sm">
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Won</p>
-          <p className="text-2xl font-bold text-status-purple mt-1">{projects.filter((p) => p.winnerDetails?.outcome === 'menang').length}</p>
+          <p className="text-2xl font-bold text-status-purple mt-1">{filtered.filter((p) => p.winnerDetails?.outcome === 'menang').length}</p>
         </Card>
       </div>
 
@@ -226,12 +244,12 @@ export default function ProjectListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.length === 0 ? (
+              {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-outline text-sm">Tidak ada proyek ditemukan</td>
                 </tr>
               ) : (
-                filtered.map((project) => (
+                paginated.map((project) => (
                   <tr
                     key={project.id}
                     onClick={() => navigate(`/project/${project.id}/overview`)}
@@ -258,6 +276,39 @@ export default function ProjectListPage() {
           </table>
         </div>
       </Card>
+
+      {/* Pagination footer */}
+      <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3 rounded-b-xl">
+        <span className="text-secondary font-caption-xs">
+          Menampilkan <span className="font-bold text-on-surface">{filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> dari{' '}
+          <span className="font-bold text-on-surface">{filtered.length}</span> hasil
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            className="touch-min flex items-center justify-center px-2 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Prev
+          </button>
+          {Array.from({ length: Math.max(totalPages, 1) }, (_, i) => (
+            <button
+              key={i + 1}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`touch-min flex items-center justify-center px-2.5 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border text-secondary hover:bg-surface-container-low'}`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            className="touch-min flex items-center justify-center px-2 py-1 rounded bg-white border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </PageContainer>
   );
 }

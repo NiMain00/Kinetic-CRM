@@ -54,7 +54,32 @@ export default function ProspectDetailPage() {
   const isSuperAdmin = userRole === 'Super Admin';
 
   const prospect = getProspectById(id || '');
-  const [events] = useState(INITIAL_TIMELINE_EVENTS);
+  const events = useMemo(() => {
+    if (!prospect) return INITIAL_TIMELINE_EVENTS;
+    const derived = [
+      {
+        id: `evt-${prospect.id}-created`,
+        title: 'Prospek Dibuat',
+        actor: prospect.author,
+        role: 'Staff',
+        time: prospect.date,
+        type: 'status_change' as const,
+        description: `Prospek "${prospect.name}" dibuat untuk klien ${prospect.client}.`,
+      },
+    ];
+    if (prospect.isConverted && prospect.projectId) {
+      derived.push({
+        id: `evt-${prospect.id}-converted`,
+        title: 'Dikonversi ke Proyek',
+        actor: 'System',
+        role: 'System',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'approve' as const,
+        description: `Prospek dikonversi menjadi proyek ${prospect.projectId}.`,
+      });
+    }
+    return derived.length > 1 ? derived : INITIAL_TIMELINE_EVENTS;
+  }, [prospect]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Cari customer terkait (untuk data verifikasi & auto-fill)
