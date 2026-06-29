@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Modal, Button } from '@/components/ui';
+import StatusBadge from '@/components/shared/StatusBadge';
 import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
@@ -53,6 +55,7 @@ export default function ProspectDetailPage() {
 
   const prospect = getProspectById(id || '');
   const [events] = useState(INITIAL_TIMELINE_EVENTS);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Cari customer terkait (untuk data verifikasi & auto-fill)
   const customer = prospect?.customerId
@@ -81,24 +84,6 @@ export default function ProspectDetailPage() {
   // Cek apakah prospect sudah dikonversi ke proyek
   const isConverted = prospect.isConverted && prospect.projectId;
 
-  const statusBadge = (status: string) => {
-    if (needsVerification) {
-      return 'bg-amber-100 text-amber-700';
-    }
-    const map: Record<string, string> = {
-      'Non Potensial': 'bg-slate-200 text-slate-600',
-      Potensial: 'bg-emerald-100 text-emerald-700',
-      'Waiting PM': 'bg-warning/10 text-warning',
-      Revision: 'bg-status-orange/10 text-status-orange',
-      Approved: 'bg-success/10 text-success',
-    };
-    return map[status] || 'bg-secondary-container/50 text-on-secondary-container';
-  };
-
-  const statusLabel = () => {
-    if (needsVerification) return 'Perlu Verifikasi';
-    return prospect.status;
-  };
 
   const actionIcon = (type: string) => {
     const map: Record<string, string> = {
@@ -183,15 +168,18 @@ export default function ProspectDetailPage() {
   };
 
   const handleDelete = () => {
-    if (confirm('Apakah Anda yakin ingin menghapus prospek ini?')) {
-      // Jika prospek sudah dikonversi ke proyek, hapus juga proyeknya
-      if (prospect.isConverted && prospect.projectId) {
-        deleteProject(prospect.projectId);
-      }
-      deleteProspect(prospect.id);
-      toast.success('Prospek berhasil dihapus.');
-      navigate('/prospects');
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteProspect = () => {
+    // Jika prospek sudah dikonversi ke proyek, hapus juga proyeknya
+    if (prospect.isConverted && prospect.projectId) {
+      deleteProject(prospect.projectId);
     }
+    deleteProspect(prospect.id);
+    toast.success('Prospek berhasil dihapus.');
+    setShowDeleteModal(false);
+    navigate('/prospects');
   };
 
   // --- KONVERSI KE PROYEK (Fase 3 item 3.3) ---
@@ -236,29 +224,13 @@ export default function ProspectDetailPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs text-outline font-label-sm" aria-label="Breadcrumb">
-          <button onClick={() => navigate('/dashboard')} className="hover:text-primary transition-colors">Dashboard</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <button onClick={() => navigate('/prospects')} className="hover:text-primary transition-colors">Prospek</button>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-semibold truncate max-w-[200px]">{prospect.name}</span>
-        </nav>
-
         {/* Header */}
         <div className="bg-white rounded-xl border border-border shadow-sm p-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl font-extrabold text-on-surface">{prospect.name}</h1>
-                <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusBadge(prospect.status)}`}>
-                  {statusLabel()}
-                </span>
-                {needsVerification && (
-                  <span className="px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 border border-amber-300">
-                    Perlu Verifikasi
-                  </span>
-                )}
+                <StatusBadge status={needsVerification ? 'Perlu Verifikasi' : prospect.status} />
               </div>
               <p className="text-sm text-secondary">{prospect.client}</p>
               <div className="flex items-center gap-4 text-xs text-outline mt-2 flex-wrap">
@@ -569,6 +541,21 @@ export default function ProspectDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Konfirmasi Hapus"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)}>Batal</Button>
+            <Button variant="danger" size="md" onClick={confirmDeleteProspect}>Hapus</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini? Tindakan ini tidak dapat dibatalkan.</p>
+      </Modal>
     </div>
   );
 }

@@ -20,6 +20,12 @@ const FALLBACK_VARIANT_MAP: Record<string, BadgeVariant> = {
   draft: 'default',
   submitted: 'info',
   in_review: 'warning',
+  // Prospect statuses
+  'non potensial': 'default',
+  potensial: 'success',
+  'waiting pm': 'info',
+  revision: 'warning',
+  'perlu verifikasi': 'info',
 };
 
 function hexToBadgeVariant(hex: string): BadgeVariant {

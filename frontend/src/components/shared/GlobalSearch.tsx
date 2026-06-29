@@ -26,7 +26,7 @@ const searchIndex: SearchResult[] = [
   { label: 'Notifikasi', path: '/notifications', icon: 'notifications', category: 'Admin' },
 ];
 
-export default function GlobalSearch() {
+export default function GlobalSearch({ className = '' }: { className?: string }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +58,7 @@ export default function GlobalSearch() {
   };
 
   return (
-    <div ref={ref} className="relative w-full max-w-xs">
+    <div ref={ref} className={`relative w-full max-w-xs ${className}`}>
       <Input
         placeholder="Cari apa saja..."
         value={query}

@@ -77,9 +77,9 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
       revision: 'border-l-amber-500',
       status_change: 'border-l-blue-500',
       assignment: 'border-l-indigo-600',
-      system: 'border-l-slate-400',
+      system: 'border-l-outline',
     };
-    return map[type] || 'border-l-slate-400';
+    return map[type] || 'border-l-outline';
   };
 
   const typeIconColor = (type: string) => {
@@ -88,9 +88,9 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
       revision: 'bg-amber-50 text-amber-600',
       status_change: 'bg-blue-50 text-blue-600',
       assignment: 'bg-indigo-50 text-indigo-600',
-      system: 'bg-slate-100 text-slate-500',
+      system: 'bg-surface-container-high text-outline',
     };
-    return map[type] || 'bg-slate-100 text-slate-500';
+    return map[type] || 'bg-surface-container-high text-outline';
   };
 
   const typeTextColor = (type: string) => {
@@ -99,13 +99,13 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
       revision: 'text-amber-600',
       status_change: 'text-blue-600',
       assignment: 'text-indigo-600',
-      system: 'text-slate-500',
+      system: 'text-outline',
     };
-    return map[type] || 'text-slate-500';
+    return map[type] || 'text-outline';
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-slate-800">
+    <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       {/* Search Header and Action line */}
       <div className="bg-white border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
@@ -114,7 +114,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <span className="text-primary font-bold uppercase tracking-wider">Notifikasi</span>
           </nav>
-          <h2 className="font-display-title text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Pusat Notifikasi
             {unreadCount > 0 && (
               <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
@@ -122,18 +122,18 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
               </span>
             )}
           </h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Pantau seluruh persetujuan, permintaan revisi, dan perubahan status.</p>
+          <p className="text-[11px] text-outline mt-0.5">Pantau seluruh persetujuan, permintaan revisi, dan perubahan status.</p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="relative w-48 sm:w-64">
-            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
             <input
               type="text"
               placeholder="Cari notifikasi..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-border focus:bg-white rounded-lg text-xs leading-none"
+              className="w-full pl-8 pr-3 py-1.5 bg-surface-container-low border border-border focus:bg-surface-container-lowest rounded-lg text-xs leading-none"
             />
           </div>
 
@@ -146,9 +146,9 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
               markAllAsRead();
               onShowNotification('Semua notifikasi ditandai telah dibaca.', 'success');
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-border bg-surface-container-lowest text-secondary hover:bg-surface-container-low transition-colors font-semibold text-xs cursor-pointer shadow-xs"
           >
-            <span className="material-symbols-outlined text-[16px] text-slate-500">checklist</span>
+            <span className="material-symbols-outlined text-[16px] text-outline">checklist</span>
             Tandai Dibaca
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
           {/* Left filter side card column */}
           <div className="lg:col-span-3 space-y-6">
             <div className="bg-white p-5 border border-border rounded-xl shadow-xs">
-              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-4">Lihat</h3>
+              <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-4">Lihat</h3>
 
               <div className="space-y-1">
                 <button
@@ -169,13 +169,13 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-all text-left font-semibold ${
                     activeTab === 'all'
                       ? 'bg-primary/10 text-primary font-bold'
-                      : 'text-slate-600 hover:bg-slate-50'
+                      : 'text-secondary hover:bg-surface-container-low'
                   }`}
                 >
                   <span className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">all_inbox</span> Semua
                   </span>
-                  <span className="text-[10px] bg-slate-200/50 px-2 py-0.5 rounded-full text-slate-600 font-bold">{notifications.length}</span>
+                  <span className="text-[10px] bg-surface-container-high/50 px-2 py-0.5 rounded-full text-secondary font-bold">{notifications.length}</span>
                 </button>
 
                 <button
@@ -183,7 +183,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-all text-left font-semibold ${
                     activeTab === 'unread'
                       ? 'bg-primary/10 text-primary font-bold'
-                      : 'text-slate-600 hover:bg-slate-50'
+                      : 'text-secondary hover:bg-surface-container-low'
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -197,27 +197,27 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   className={`w-full flex items-center justify-between px-3 py-2 text-xs rounded-lg transition-all text-left font-semibold ${
                     activeTab === 'read'
                       ? 'bg-primary/10 text-primary font-bold'
-                      : 'text-slate-600 hover:bg-slate-50'
+                      : 'text-secondary hover:bg-surface-container-low'
                   }`}
                 >
                   <span className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">check_circle</span> Sudah Dibaca
                   </span>
-                  <span className="text-[10px] bg-slate-200/50 px-2 py-0.5 rounded-full text-slate-500 font-bold">{readCount}</span>
+                  <span className="text-[10px] bg-surface-container-high/50 px-2 py-0.5 rounded-full text-outline font-bold">{readCount}</span>
                 </button>
               </div>
 
               <hr className="my-5 border-border" />
 
-              <h3 className="font-bold text-slate-800 text-xs uppercase tracking-wider mb-3.5">Filter Tipe</h3>
+              <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-3.5">Filter Tipe</h3>
               <div className="space-y-2.5">
                 {Object.entries(TYPE_LABEL).map(([key, label]) => (
-                  <label key={key} className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-slate-600 hover:text-slate-900">
+                  <label key={key} className="flex items-center gap-2.5 cursor-pointer text-xs font-medium text-secondary hover:text-on-surface">
                     <input
                       type="checkbox"
                       checked={filterTypes[key as keyof typeof filterTypes]}
                       onChange={() => handleToggleFilterType(key as keyof typeof filterTypes)}
-                      className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4"
+                      className="rounded border-border text-primary focus:ring-primary w-4 h-4"
                     />
                     <span>{label}</span>
                   </label>

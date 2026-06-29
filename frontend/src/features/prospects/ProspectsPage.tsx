@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Modal, Button } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -24,12 +25,17 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const { can } = usePermission();
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const handleDelete = (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus prospek ini dari draf?')) {
-      deleteProspect(id);
-      onShowNotification('Prospek berhasil dihapus.', 'success');
-    }
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteProspect(deleteTarget);
+    onShowNotification('Prospek berhasil dihapus.', 'success');
+    setDeleteTarget(null);
   };
 
   const handleBuatProyek = (prospek: typeof prospects[0]) => {
@@ -83,6 +89,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     let matchesTab: boolean;
     if (activeFilter === 'All') {
       matchesTab = true;
+    } else if (activeFilter === 'Non Potensial') {
+      matchesTab = p.status === 'Non Potensial' || p.prospectType === 'non_potensial';
+    } else if (activeFilter === 'Potensial') {
+      matchesTab = p.status === 'Potensial' || p.prospectType === 'potensial';
     } else if (activeFilter === 'Perlu Verifikasi') {
       matchesTab = p.customerData?.needsVerification === true;
     } else {
@@ -357,6 +367,21 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </div>
           </div>
         </div>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={deleteTarget !== null}
+          onClose={() => setDeleteTarget(null)}
+          title="Konfirmasi Hapus"
+          footer={
+            <>
+              <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
+              <Button variant="danger" size="md" onClick={confirmDelete}>Hapus</Button>
+            </>
+          }
+        >
+          <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini dari draf? Tindakan ini tidak dapat dibatalkan.</p>
+        </Modal>
       </>
     </div>
   );

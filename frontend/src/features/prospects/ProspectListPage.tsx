@@ -8,13 +8,22 @@ const PAGE_SIZE = 5;
 export default function ProspectListPage() {
   const navigate = useNavigate();
   const prospects = useProspectStore((s) => s.prospects);
-  const [activeFilter, setActiveFilter] = useState<'All' | 'Prospecting' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
+  const [activeFilter, setActiveFilter] = useState<'All' | 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = prospects.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.client.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchTab = activeFilter === 'All' || p.status === activeFilter;
+    let matchTab: boolean;
+    if (activeFilter === 'All') {
+      matchTab = true;
+    } else if (activeFilter === 'Non Potensial') {
+      matchTab = p.status === 'Non Potensial' || p.prospectType === 'non_potensial';
+    } else if (activeFilter === 'Potensial') {
+      matchTab = p.status === 'Potensial' || p.prospectType === 'potensial';
+    } else {
+      matchTab = p.status === activeFilter;
+    }
     return matchSearch && matchTab;
   });
 
@@ -23,12 +32,22 @@ export default function ProspectListPage() {
 
   const statusBadge = (status: string) => {
     const map: Record<string, string> = {
-      Prospecting: 'bg-info/10 text-info',
+      'Non Potensial': 'bg-slate-200 text-slate-600',
+      Potensial: 'bg-emerald-100 text-emerald-700',
       'Waiting PM': 'bg-warning/10 text-warning',
       Revision: 'bg-status-orange/10 text-status-orange',
       Approved: 'bg-success/10 text-success',
     };
     return map[status] || 'bg-secondary-container/50 text-on-secondary-container';
+  };
+
+  const TAB_LABELS: Record<string, string> = {
+    All: 'Semua',
+    'Non Potensial': 'Non Potensial',
+    Potensial: 'Potensial',
+    'Waiting PM': 'Menunggu PM',
+    Revision: 'Revisi',
+    Approved: 'Disetujui',
   };
 
   return (
@@ -54,7 +73,7 @@ export default function ProspectListPage() {
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-border shadow-sm space-y-4">
           <div className="flex flex-wrap items-center gap-4 justify-between">
             <div className="flex gap-2 p-1 bg-surface-container-low rounded-lg border border-border">
-              {(['All', 'Prospecting', 'Waiting PM', 'Revision', 'Approved'] as const).map((tab) => (
+              {(['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => { setActiveFilter(tab); setCurrentPage(1); }}
@@ -62,7 +81,7 @@ export default function ProspectListPage() {
                     activeFilter === tab ? 'bg-white text-primary shadow-sm border border-border font-bold' : 'text-secondary hover:bg-surface-container-high'
                   }`}
                 >
-                  {tab === 'All' ? 'Semua' : tab}
+                  {TAB_LABELS[tab] || tab}
                 </button>
               ))}
             </div>

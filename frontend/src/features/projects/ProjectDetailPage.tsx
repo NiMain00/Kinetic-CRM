@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Modal, Button } from '@/components/ui';
 import type { Project } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
@@ -50,6 +51,7 @@ export default function ProjectDetailView({
   // Cek apakah project berasal dari prospek Non Potensial (Fase 4 item 4.2)
   const sourceProspect = project?.sourceProspectId ? getProspectById(project.sourceProspectId) : undefined;
   const isFromNonPotensial = sourceProspect?.prospectType === 'non_potensial' || sourceProspect?.status === 'Non Potensial';
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (!project) {
     return (
@@ -149,18 +151,22 @@ export default function ProjectDetailView({
 
   const handleDeleteProject = () => {
     if (!projectId) return;
-    if (confirm('Apakah Anda yakin ingin menghapus proyek ini?')) {
-      // Jika proyek berasal dari prospek, reset status konversi
-      if (project.sourceProspectId) {
-        updateProspect(project.sourceProspectId, {
-          isConverted: false,
-          projectId: undefined,
-        });
-      }
-      deleteProject(projectId);
-      toast.success('Proyek berhasil dihapus.');
-      onNavigatePage('projects');
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteProject = () => {
+    if (!projectId) return;
+    // Jika proyek berasal dari prospek, reset status konversi
+    if (project.sourceProspectId) {
+      updateProspect(project.sourceProspectId, {
+        isConverted: false,
+        projectId: undefined,
+      });
     }
+    deleteProject(projectId);
+    toast.success('Proyek berhasil dihapus.');
+    setShowDeleteModal(false);
+    onNavigatePage('projects');
   };
 
   const handleTabChange = (path: string) => {
@@ -444,6 +450,20 @@ export default function ProjectDetailView({
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Konfirmasi Hapus"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)}>Batal</Button>
+            <Button variant="danger" size="md" onClick={confirmDeleteProject}>Hapus</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus proyek ini? Tindakan ini tidak dapat dibatalkan.</p>
+      </Modal>
     </div>
   );
 }
