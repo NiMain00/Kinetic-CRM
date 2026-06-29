@@ -245,9 +245,9 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
           {/* Right main feed column */}
           <div className="lg:col-span-9 space-y-4">
             {filteredNotifications.length === 0 ? (
-              <div className="bg-white p-12 text-center border border-border rounded-xl shadow-xs text-slate-400">
-                <span className="material-symbols-outlined text-5xl mb-3 text-slate-300">notifications_off</span>
-                <p className="font-bold text-sm text-slate-600 mb-1">Tidak ada notifikasi</p>
+              <div className="bg-surface-container-lowest p-12 text-center border border-border rounded-xl shadow-xs text-outline">
+                <span className="material-symbols-outlined text-5xl mb-3 text-outline">notifications_off</span>
+                <p className="font-bold text-sm text-secondary mb-1">Tidak ada notifikasi</p>
                 <p className="text-xs">Tidak ada notifikasi yang sesuai dengan filter saat ini.</p>
               </div>
             ) : (
@@ -260,7 +260,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                     }
                   }}
                   className={`border-l-4 rounded-xl shadow-xs border border-border transition-all hover:shadow-md cursor-pointer relative overflow-hidden ${
-                    n.read ? 'bg-slate-50/50 opacity-80' : 'bg-white'
+                    n.read ? 'bg-surface-container-low/50 opacity-80' : 'bg-surface-container-lowest'
                   } ${typeBorderColor(n.type)}`}
                 >
                   <div className="p-5 flex items-start gap-4">
@@ -273,10 +273,10 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                         <span className={`text-[9px] font-bold uppercase tracking-widest ${typeTextColor(n.type)}`}>
                           {TYPE_LABEL[n.type] || n.type}
                         </span>
-                        <span className="text-[10px] text-slate-400 font-mono">{formatTime(n.createdAt)}</span>
+                        <span className="text-[10px] text-outline font-mono">{formatTime(n.createdAt)}</span>
                       </div>
 
-                      <h4 className="font-bold text-slate-900 text-sm mb-1">{n.title}</h4>
+                      <h4 className="font-bold text-on-surface text-sm mb-1">{n.title}</h4>
                       <p className="text-secondary text-xs leading-relaxed mb-3 pr-2">{n.message}</p>
 
                       <div className="flex items-center gap-3">
@@ -287,7 +287,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                               markAsRead(n.id);
                               onShowNotification('Notifikasi ditandai telah dibaca.', 'success');
                             }}
-                            className="text-[11px] font-semibold text-slate-500 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                            className="text-[11px] font-semibold text-outline hover:text-on-surface flex items-center gap-1 cursor-pointer"
                           >
                             <span className="material-symbols-outlined text-[13px]">check</span> Tandai Dibaca
                           </button>
@@ -297,7 +297,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
                     <button
                       onClick={(e) => handleArchive(n.id, e)}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-danger hover:bg-danger/10 transition-all cursor-pointer"
                       title="Arsipkan"
                     >
                       <span className="material-symbols-outlined text-[18px]">archive</span>
@@ -308,7 +308,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
             )}
 
             {/* Footer */}
-            <div className="pt-6 border-t border-border flex justify-between items-center text-[11px] text-slate-400">
+            <div className="pt-6 border-t border-border flex justify-between items-center text-[11px] text-outline">
               <p>Menampilkan {filteredNotifications.length} dari {notifications.length} notifikasi</p>
             </div>
           </div>

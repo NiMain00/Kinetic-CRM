@@ -299,7 +299,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
     `flex items-center gap-2 px-4 py-3 font-semibold text-xs border-b-2 transition-all cursor-pointer ${
       activeTab === tab
         ? 'border-primary text-primary bg-primary/5'
-        : 'border-transparent text-secondary hover:text-primary hover:bg-slate-55'
+        : 'border-transparent text-secondary hover:text-primary hover:bg-surface-container-high'
     }`;
 
   const renderPreviewInput = (q: MasterQuestion) => {
@@ -308,13 +308,13 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
     switch (code) {
       case 'text':
         return (
-          <input type="text" disabled placeholder={q.placeholder_text || 'Contoh masukan teks...'} className="w-full bg-slate-50 border border-border rounded-lg p-2 text-xs focus:outline-none cursor-not-allowed" />
+          <input type="text" disabled placeholder={q.placeholder_text || 'Contoh masukan teks...'} className="w-full bg-surface-container-low border border-border rounded-lg p-2 text-xs focus:outline-none cursor-not-allowed" />
         );
       case 'radio':
         return (
           <div className="space-y-1.5 mt-2">
             {(q.options || ['Opsi 1', 'Opsi 2']).map((opt, i) => (
-              <label key={i} className="flex items-center gap-2 p-2 border border-border rounded-lg bg-slate-50 text-xs">
+              <label key={i} className="flex items-center gap-2 p-2 border border-border rounded-lg bg-surface-container-low text-xs">
                 <input type="radio" checked={i === 0} disabled className="text-primary focus:ring-0" />
                 <span>{opt}</span>
               </label>
@@ -322,16 +322,16 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
           </div>
         );
       case 'textarea':
-        return <textarea disabled rows={3} placeholder={q.placeholder_text || 'Masukkan teks...'} className="w-full bg-slate-50 border border-border rounded-lg p-2 text-xs resize-none cursor-not-allowed" />;
+        return <textarea disabled rows={3} placeholder={q.placeholder_text || 'Masukkan teks...'} className="w-full bg-surface-container-low border border-border rounded-lg p-2 text-xs resize-none cursor-not-allowed" />;
       case 'number':
-        return <input type="number" disabled placeholder={q.placeholder_text || '0'} className="w-full bg-slate-50 border border-border rounded-lg p-2 text-xs cursor-not-allowed" />;
+        return <input type="number" disabled placeholder={q.placeholder_text || '0'} className="w-full bg-surface-container-low border border-border rounded-lg p-2 text-xs cursor-not-allowed" />;
       case 'date':
-        return <input type="date" disabled className="w-full bg-slate-50 border border-border rounded-lg p-2 text-xs cursor-not-allowed" />;
+        return <input type="date" disabled className="w-full bg-surface-container-low border border-border rounded-lg p-2 text-xs cursor-not-allowed" />;
       case 'checkbox':
         return (
           <div className="space-y-1.5 mt-2">
             {(q.options || ['Opsi 1', 'Opsi 2']).map((opt, i) => (
-              <label key={i} className="flex items-center gap-2 p-2 border border-border rounded-lg bg-slate-50 text-xs">
+              <label key={i} className="flex items-center gap-2 p-2 border border-border rounded-lg bg-surface-container-low text-xs">
                 <input type="checkbox" disabled className="text-primary focus:ring-0" />
                 <span>{opt}</span>
               </label>
@@ -340,23 +340,23 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
         );
       case 'select':
         return (
-          <select disabled className="w-full bg-slate-50 border border-border rounded-lg p-2 text-xs cursor-not-allowed">
+          <select disabled className="w-full bg-surface-container-low border border-border rounded-lg p-2 text-xs cursor-not-allowed">
             <option>{(q.options || ['Pilih opsi'])[0]}</option>
           </select>
         );
       default:
-        return <input type="text" disabled className="w-full bg-slate-50 border border-border rounded-lg p-2 text-xs cursor-not-allowed" />;
+        return <input type="text" disabled className="w-full bg-surface-container-low border border-border rounded-lg p-2 text-xs cursor-not-allowed" />;
     }
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background text-slate-800">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-background text-on-surface">
       
       {/* 1. GAP-03 Banner compliance notification */}
       <div className="bg-primary/5 border-b border-primary/20 p-3 px-8 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <span className="material-symbols-outlined text-primary text-base">verified_user</span>
-          <p className="text-[11px] font-medium text-slate-600">
+          <p className="text-[11px] font-medium text-secondary">
             <span className="font-bold text-primary">GAP-03 & Security Bound:</span> Seluruh pilar konfigurasi disinkronisasikan ke master database terpusat untuk integritas regional.
           </p>
         </div>
@@ -366,19 +366,19 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
       {/* 2. Top Header and Super Tabs list */}
       <div className="bg-white border-b border-border shrink-0 px-8 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-sm">
         <div>
-          <h2 className="font-display-title text-base font-extrabold text-slate-800">Ruang Kerja Data Master</h2>
-          <p className="text-slate-400 text-[11px]">Konsol operasi pusat untuk memelihara normalisasi, kuesioner, kompetitor, dan hak departemen regional.</p>
+          <h2 className="font-display-title text-base font-extrabold text-on-surface">Ruang Kerja Data Master</h2>
+          <p className="text-outline text-[11px]">Konsol operasi pusat untuk memelihara normalisasi, kuesioner, kompetitor, dan hak departemen regional.</p>
         </div>
         
         {/* Search Query Filter input */}
         <div className="relative w-64 size-sm shrink-0">
-          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+          <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
           <input
             type="text"
             placeholder="Cari records master..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-100 rounded-full border-none focus:ring-1 focus:ring-primary text-xs"
+            className="w-full pl-8 pr-3 py-1.5 bg-surface-container-high rounded-full border-none focus:ring-1 focus:ring-primary text-xs"
           />
         </div>
       </div>
@@ -451,7 +451,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Nama</th>
                     <th className="p-3">Kode</th>
                     <th className="p-3">Jenis</th>
@@ -465,30 +465,30 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {customers.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).map((c, idx) => (
-                    <tr key={c.id} className="hover:bg-slate-50 group">
-                      <td className="p-3 font-bold text-slate-800">{c.name}</td>
-                      <td className="p-3 font-mono font-semibold text-slate-500">{c.code}</td>
+                    <tr key={c.id} className="hover:bg-surface-container-low group">
+                      <td className="p-3 font-bold text-on-surface">{c.name}</td>
+                      <td className="p-3 font-mono font-semibold text-outline">{c.code}</td>
                       <td className="p-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                          c.type === 'bumn' ? 'bg-status-indigo/15 text-status-indigo' : c.type === 'pemerintah' ? 'bg-status-orange/15 text-status-orange' : c.type === 'asing' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'
+                          c.type === 'bumn' ? 'bg-status-indigo/15 text-status-indigo' : c.type === 'pemerintah' ? 'bg-status-orange/15 text-status-orange' : c.type === 'asing' ? 'bg-purple-100 text-purple-700' : 'bg-surface-container-high text-secondary'
                         }`}>{c.type}</span>
                       </td>
-                      <td className="p-3 text-[10px] text-slate-500">{industryName(c.industry_id)}</td>
+                      <td className="p-3 text-[10px] text-outline">{industryName(c.industry_id)}</td>
                       <td className="p-3">
-                        <div className="font-medium text-slate-700">{c.pic_name}</div>
+                        <div className="font-medium text-secondary">{c.pic_name}</div>
                       </td>
                       <td className="p-3">
-                        <div className="text-[10px] text-slate-400">{c.pic_email}</div>
-                        <div className="text-[10px] text-slate-400">{c.pic_phone}</div>
+                        <div className="text-[10px] text-outline">{c.pic_email}</div>
+                        <div className="text-[10px] text-outline">{c.pic_phone}</div>
                       </td>
-                      <td className="p-3 text-slate-500 text-[10px]">{c.city}</td>
+                      <td className="p-3 text-outline text-[10px]">{c.city}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${c.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${c.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                       <td className="p-3 text-right">
-                        <button onClick={() => { deleteData('customers', c.id); onShowNotification('Pelanggan dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-slate-400 hover:text-red-650 rounded cursor-pointer">
+                        <button onClick={() => { deleteData('customers', c.id); onShowNotification('Pelanggan dinonaktifkan.', 'success'); }} className="p-1 hover:bg-red-50 text-outline hover:text-red-650 rounded cursor-pointer">
                           <span className="material-symbols-outlined text-base">delete</span>
                         </button>
                       </td>
@@ -519,7 +519,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama Industri</th>
                     <th className="p-3 text-center">Aktif</th>
@@ -527,12 +527,12 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {industries.filter(i => i.name.toLowerCase().includes(searchQuery.toLowerCase())).map((i) => (
-                    <tr key={i.id} className="hover:bg-slate-50">
+                    <tr key={i.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{i.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{i.name}</td>
+                      <td className="p-3 font-bold text-on-surface">{i.name}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${i.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${i.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${i.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${i.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -562,7 +562,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
                     <th className="p-3 text-center">LPHS</th>
@@ -574,16 +574,16 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50">
+                    <tr key={c.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{c.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{c.name}</td>
-                      <td className="p-3 text-center"><span className={`text-[10px] font-bold ${c.requires_lphs ? 'text-success' : 'text-slate-400'}`}>{c.requires_lphs ? 'Ya' : 'Tidak'}</span></td>
-                      <td className="p-3 text-center"><span className={`text-[10px] font-bold ${c.requires_rks ? 'text-success' : 'text-slate-400'}`}>{c.requires_rks ? 'Ya' : 'Tidak'}</span></td>
-                      <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold">{c.default_workflow_type}</span></td>
+                      <td className="p-3 font-bold text-on-surface">{c.name}</td>
+                      <td className="p-3 text-center"><span className={`text-[10px] font-bold ${c.requires_lphs ? 'text-success' : 'text-outline'}`}>{c.requires_lphs ? 'Ya' : 'Tidak'}</span></td>
+                      <td className="p-3 text-center"><span className={`text-[10px] font-bold ${c.requires_rks ? 'text-success' : 'text-outline'}`}>{c.requires_rks ? 'Ya' : 'Tidak'}</span></td>
+                      <td className="p-3"><span className="px-2 py-0.5 bg-surface-container-high text-secondary rounded text-[10px] font-bold">{c.default_workflow_type}</span></td>
                       <td className="p-3 text-center"><span className="inline-block w-4 h-4 rounded-full border" style={{ backgroundColor: c.color_hex }} /></td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${c.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${c.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${c.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -613,7 +613,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
                     <th className="p-3">Industri</th>
@@ -624,15 +624,15 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {competitors.filter(x => x.name.toLowerCase().includes(searchQuery.toLowerCase())).map((x) => (
-                    <tr key={x.id} className="hover:bg-slate-50">
+                    <tr key={x.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{x.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{x.name}</td>
-                      <td className="p-3 text-[10px] text-slate-500">{industryName(x.industry_id)}</td>
-                      <td className="p-3 text-slate-600">{x.bidang_usaha}</td>
+                      <td className="p-3 font-bold text-on-surface">{x.name}</td>
+                      <td className="p-3 text-[10px] text-outline">{industryName(x.industry_id)}</td>
+                      <td className="p-3 text-secondary">{x.bidang_usaha}</td>
                       <td className="p-3 text-[10px] text-primary underline">{x.website}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${x.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${x.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${x.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${x.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -662,7 +662,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Urutan</th>
                     <th className="p-3">Kode</th>
                     <th className="p-3">Label</th>
@@ -675,19 +675,19 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {projectStatuses.filter(s => s.label.toLowerCase().includes(searchQuery.toLowerCase())).map((s) => (
-                    <tr key={s.id} className="hover:bg-slate-50">
-                      <td className="p-3 text-center text-slate-400">{s.sort_order}</td>
-                      <td className="p-3 font-mono font-bold text-slate-600">{s.code}</td>
+                    <tr key={s.id} className="hover:bg-surface-container-low">
+                      <td className="p-3 text-center text-outline">{s.sort_order}</td>
+                      <td className="p-3 font-mono font-bold text-secondary">{s.code}</td>
                       <td className="p-3">
                         <span className="px-2 py-0.5 rounded text-[10px] font-bold text-white" style={{ backgroundColor: s.color_hex }}>{s.label}</span>
                       </td>
-                      <td className="p-3"><span className="font-mono text-[10px] text-slate-400">{s.color_hex}</span></td>
-                      <td className="p-3 text-center">{s.is_system ? <span className="text-success text-[10px]">System</span> : <span className="text-slate-400 text-[10px]">Custom</span>}</td>
-                      <td className="p-3 text-center">{s.is_terminal ? <span className="text-danger text-[10px]">Ya</span> : <span className="text-slate-400 text-[10px]">Tidak</span>}</td>
-                      <td className="p-3 text-slate-600 text-[10px]">{s.applicable_to}</td>
+                      <td className="p-3"><span className="font-mono text-[10px] text-outline">{s.color_hex}</span></td>
+                      <td className="p-3 text-center">{s.is_system ? <span className="text-success text-[10px]">System</span> : <span className="text-outline text-[10px]">Custom</span>}</td>
+                      <td className="p-3 text-center">{s.is_terminal ? <span className="text-danger text-[10px]">Ya</span> : <span className="text-outline text-[10px]">Tidak</span>}</td>
+                      <td className="p-3 text-secondary text-[10px]">{s.applicable_to}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${s.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${s.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${s.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${s.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -717,7 +717,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
                     <th className="p-3">Ekstensi</th>
@@ -729,16 +729,16 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {documentTypes.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase())).map((d) => (
-                    <tr key={d.id} className="hover:bg-slate-50">
+                    <tr key={d.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{d.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{d.name}</td>
-                      <td className="p-3 font-mono text-[10px] text-slate-500">{d.allowed_extensions.join(', ')}</td>
-                      <td className="p-3 text-center font-mono text-slate-600">{d.max_size_mb} MB</td>
-                      <td className="p-3 text-slate-600 text-[10px]">{d.applicable_to}</td>
-                      <td className="p-3 text-center">{d.is_system ? <span className="text-success text-[10px]">Ya</span> : <span className="text-slate-400 text-[10px]">Tidak</span>}</td>
+                      <td className="p-3 font-bold text-on-surface">{d.name}</td>
+                      <td className="p-3 font-mono text-[10px] text-outline">{d.allowed_extensions.join(', ')}</td>
+                      <td className="p-3 text-center font-mono text-secondary">{d.max_size_mb} MB</td>
+                      <td className="p-3 text-secondary text-[10px]">{d.applicable_to}</td>
+                      <td className="p-3 text-center">{d.is_system ? <span className="text-success text-[10px]">Ya</span> : <span className="text-outline text-[10px]">Tidak</span>}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${d.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${d.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${d.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${d.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -773,7 +773,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden text-left">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
                     <th className="p-3">Memiliki Opsi</th>
@@ -784,15 +784,15 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {questionTypes.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase())).map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50">
+                    <tr key={t.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{t.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{t.name}</td>
-                      <td className="p-3">{t.has_options ? <span className="text-success text-[10px] font-bold">Ya</span> : <span className="text-slate-400 text-[10px]">Tidak</span>}</td>
-                      <td className="p-3"><code className="font-mono text-[10px] bg-slate-50 border border-border p-1 rounded text-indigo-650">{t.validation_config}</code></td>
-                      <td className="p-3 text-center">{t.is_system ? <span className="text-success text-[10px]">Ya</span> : <span className="text-slate-400 text-[10px]">Tidak</span>}</td>
+                      <td className="p-3 font-bold text-on-surface">{t.name}</td>
+                      <td className="p-3">{t.has_options ? <span className="text-success text-[10px] font-bold">Ya</span> : <span className="text-outline text-[10px]">Tidak</span>}</td>
+                      <td className="p-3"><code className="font-mono text-[10px] bg-surface-container-low border border-border p-1 rounded text-indigo-650">{t.validation_config}</code></td>
+                      <td className="p-3 text-center">{t.is_system ? <span className="text-success text-[10px]">Ya</span> : <span className="text-outline text-[10px]">Tidak</span>}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${t.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${t.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${t.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${t.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -822,7 +822,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
                     <th className="p-3">Tipe</th>
@@ -835,20 +835,20 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {periods.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50">
+                    <tr key={p.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{p.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{p.name}</td>
-                      <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold">{p.type}</span></td>
-                      <td className="p-3 font-mono text-slate-600">{p.year}</td>
-                      <td className="p-3 font-mono text-[10px] text-slate-500">{p.start_date}</td>
-                      <td className="p-3 font-mono text-[10px] text-slate-500">{p.end_date}</td>
+                      <td className="p-3 font-bold text-on-surface">{p.name}</td>
+                      <td className="p-3"><span className="px-2 py-0.5 bg-surface-container-high text-secondary rounded text-[10px] font-bold">{p.type}</span></td>
+                      <td className="p-3 font-mono text-secondary">{p.year}</td>
+                      <td className="p-3 font-mono text-[10px] text-outline">{p.start_date}</td>
+                      <td className="p-3 font-mono text-[10px] text-outline">{p.end_date}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${p.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${p.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${p.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                       <td className="p-3 text-center">
-                        {p.is_locked ? <span className="text-danger text-[10px] font-bold">Terkunci</span> : <span className="text-slate-400 text-[10px]">Buka</span>}
+                        {p.is_locked ? <span className="text-danger text-[10px] font-bold">Terkunci</span> : <span className="text-outline text-[10px]">Buka</span>}
                       </td>
                     </tr>
                   ))}
@@ -877,7 +877,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Tanggal</th>
                     <th className="p-3">Nama Hari Libur</th>
                     <th className="p-3">Tipe</th>
@@ -886,13 +886,13 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {holidays.filter(h => h.name.toLowerCase().includes(searchQuery.toLowerCase())).map((h) => (
-                    <tr key={h.id} className="hover:bg-slate-50">
-                      <td className="p-3 font-mono text-slate-600">{h.date}</td>
-                      <td className="p-3 font-bold text-slate-800">{h.name}</td>
-                      <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold">{h.type}</span></td>
+                    <tr key={h.id} className="hover:bg-surface-container-low">
+                      <td className="p-3 font-mono text-secondary">{h.date}</td>
+                      <td className="p-3 font-bold text-on-surface">{h.name}</td>
+                      <td className="p-3"><span className="px-2 py-0.5 bg-surface-container-high text-secondary rounded text-[10px] font-bold">{h.type}</span></td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${h.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${h.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${h.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${h.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -922,7 +922,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-3">Kode</th>
                     <th className="p-3">Nama</th>
                     <th className="p-3">Kategori</th>
@@ -932,14 +932,14 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {lossReasons.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase())).map((l) => (
-                    <tr key={l.id} className="hover:bg-slate-50">
+                    <tr key={l.id} className="hover:bg-surface-container-low">
                       <td className="p-3 font-mono font-bold text-primary">{l.code}</td>
-                      <td className="p-3 font-bold text-slate-800">{l.name}</td>
-                      <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-bold">{l.category}</span></td>
-                      <td className="p-3 text-slate-500 text-[10px]">{l.description}</td>
+                      <td className="p-3 font-bold text-on-surface">{l.name}</td>
+                      <td className="p-3"><span className="px-2 py-0.5 bg-surface-container-high text-secondary rounded text-[10px] font-bold">{l.category}</span></td>
+                      <td className="p-3 text-outline text-[10px]">{l.description}</td>
                       <td className="p-3 text-center">
-                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${l.is_active ? 'text-success' : 'text-slate-400'}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${l.is_active ? 'bg-success' : 'bg-slate-400'}`} />
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold ${l.is_active ? 'text-success' : 'text-outline'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${l.is_active ? 'bg-success' : 'bg-outline'}`} />
                         </span>
                       </td>
                     </tr>
@@ -969,7 +969,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border">
+                  <tr className="bg-surface-container-low border-b border-border">
                     <th className="p-4 w-12 text-center">No</th>
                     <th className="p-4">Nama Departemen</th>
                     <th className="p-4">Kode</th>
@@ -981,20 +981,20 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {departments.filter(d => d.name.toLowerCase().includes(searchQuery.toLowerCase())).map((d, idx) => (
-                    <tr key={d.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="p-4 text-center font-mono text-slate-400">{(idx + 1).toString().padStart(2, '0')}</td>
-                      <td className="p-4 font-bold text-slate-800">{d.name}</td>
-                      <td className="p-4"><span className="p-1 px-2 font-mono bg-slate-100 rounded text-slate-650 text-[11px] font-semibold">{d.code}</span></td>
-                      <td className="p-4"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full bg-status-indigo/20 text-status-indigo flex items-center justify-center text-[10px]"><span className="material-symbols-outlined text-[12px]">person</span></div><span className="font-semibold text-slate-750">{d.head}</span></div></td>
+                    <tr key={d.id} className="hover:bg-surface-container-low transition-colors group">
+                      <td className="p-4 text-center font-mono text-outline">{(idx + 1).toString().padStart(2, '0')}</td>
+                      <td className="p-4 font-bold text-on-surface">{d.name}</td>
+                      <td className="p-4"><span className="p-1 px-2 font-mono bg-surface-container-high rounded text-secondary text-[11px] font-semibold">{d.code}</span></td>
+                      <td className="p-4"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full bg-status-indigo/20 text-status-indigo flex items-center justify-center text-[10px]"><span className="material-symbols-outlined text-[12px]">person</span></div><span className="font-semibold text-secondary">{d.head}</span></div></td>
                       <td className="p-4"><span className="px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded-full text-[10px] font-bold">{d.division}</span></td>
                       <td className="p-4 text-center">
-                        <button onClick={() => { updateData('departments', d.id, { status: !d.status } as any); onShowNotification(`Status departemen ${d.name} dirubah.`, 'success'); }} className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${d.status ? 'bg-success' : 'bg-slate-350 bg-slate-300'}`}>
+                        <button onClick={() => { updateData('departments', d.id, { status: !d.status } as any); onShowNotification(`Status departemen ${d.name} dirubah.`, 'success'); }} className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors ${d.status ? 'bg-success' : 'bg-border'}`}>
                           <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition duration-200 ${d.status ? 'translate-x-5' : 'translate-x-1'}`} />
                         </button>
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-1">
-                          <button onClick={() => { setEditingDepartment(d); setDeptDrawerOpen(true); }} className="p-1 hover:bg-slate-100 rounded text-slate-500 hover:text-primary cursor-pointer" title="Atur Departemen">
+                          <button onClick={() => { setEditingDepartment(d); setDeptDrawerOpen(true); }} className="p-1 hover:bg-surface-container-high rounded text-outline hover:text-primary cursor-pointer" title="Atur Departemen">
                             <span className="material-symbols-outlined text-base">edit_note</span>
                           </button>
                         </div>
@@ -1006,9 +1006,9 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
             <div className="grid grid-cols-3 gap-6">
-              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3"><span className="material-symbols-outlined text-primary bg-primary/10 p-2.5 rounded-full text-base">groups</span><div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Departemen</p><p className="text-lg font-extrabold text-slate-800">24 Internal</p></div></div>
-              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3 animate-fade-in text-left"><span className="material-symbols-outlined text-success bg-green-50 p-2.5 rounded-full text-base">verified</span><div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Aktif Beroperasi</p><p className="text-lg font-extrabold text-slate-800">21 Aktif</p></div></div>
-              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3"><span className="material-symbols-outlined text-secondary bg-slate-100 p-2.5 rounded-full text-base">cancel</span><div><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Inaktif / Ditahan</p><p className="text-lg font-extrabold text-slate-800">03 Nonaktif</p></div></div>
+              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3"><span className="material-symbols-outlined text-primary bg-primary/10 p-2.5 rounded-full text-base">groups</span><div><p className="text-[10px] text-outline font-bold uppercase tracking-wider">Total Departemen</p><p className="text-lg font-extrabold text-on-surface">24 Internal</p></div></div>
+              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3 animate-fade-in text-left"><span className="material-symbols-outlined text-success bg-green-50 p-2.5 rounded-full text-base">verified</span><div><p className="text-[10px] text-outline font-bold uppercase tracking-wider">Aktif Beroperasi</p><p className="text-lg font-extrabold text-on-surface">21 Aktif</p></div></div>
+              <div className="p-5 bg-white border border-border rounded-xl shadow-sm flex items-center gap-3"><span className="material-symbols-outlined text-secondary bg-surface-container-high p-2.5 rounded-full text-base">cancel</span><div><p className="text-[10px] text-outline font-bold uppercase tracking-wider">Inaktif / Ditahan</p><p className="text-lg font-extrabold text-on-surface">03 Nonaktif</p></div></div>
             </div>
           </div>
         )}
@@ -1030,7 +1030,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 <p className="text-secondary text-xs mt-0.5">Metadata operasional, perubahan status RKS komparatif, jejak login administrator, dan jejak mutasi data.</p>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3.5 py-1.5 bg-white border border-border hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm">
+                <button onClick={() => onShowNotification('Ekspor CSV dari real-time audit log berhasil.', 'success')} className="px-3.5 py-1.5 bg-white border border-border hover:bg-surface-container-low text-secondary text-xs font-semibold rounded-lg flex items-center gap-1.5 cursor-pointer shadow-sm">
                   <span className="material-symbols-outlined text-[16px]">download</span> Ekspor CSV
                 </button>
                 <button onClick={() => { onShowNotification('Log audit terupdate secara synchronous.', 'success'); }} className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg flex items-center gap-1.5 hover:brightness-110 cursor-pointer shadow-sm">
@@ -1042,7 +1042,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             <div className="bg-white border border-border rounded-xl shadow-sm overflow-hidden">
               <table className="w-full text-xs table-auto table-mobile-compact">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-border font-bold">
+                  <tr className="bg-surface-container-low border-b border-border font-bold">
                     <th className="p-4">Waktu Log</th>
                     <th className="p-4">Pelaku Operator</th>
                     <th className="p-4">Tipe Mutasi</th>
@@ -1053,12 +1053,12 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </thead>
                 <tbody className="divide-y divide-border">
                   {auditLogs.filter(log => log.user.toLowerCase().includes(searchQuery.toLowerCase()) || log.entity.toLowerCase().includes(searchQuery.toLowerCase())).map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50 transition-colors group">
-                      <td className="p-4 font-mono font-medium text-slate-600"><p>{log.time}</p><p className="text-[9px] text-slate-400">Waktu Standar Server Lokal</p></td>
-                      <td className="p-4"><div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[9px] font-black">{log.userInitials}</span><span className="font-bold text-slate-750">{log.user}</span></div></td>
+                    <tr key={log.id} className="hover:bg-surface-container-low transition-colors group">
+                      <td className="p-4 font-mono font-medium text-secondary"><p>{log.time}</p><p className="text-[9px] text-outline">Waktu Standar Server Lokal</p></td>
+                      <td className="p-4"><div className="flex items-center gap-2"><span className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[9px] font-black">{log.userInitials}</span><span className="font-bold text-secondary">{log.user}</span></div></td>
                       <td className="p-4"><span className={`px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase ${log.actionColor}`}>{log.action}</span></td>
-                      <td className="p-4"><span className="font-bold text-slate-800">{log.entity}</span><span className="text-[10px] text-slate-400 block font-medium">({log.entityName})</span></td>
-                      <td className="p-4 text-center"><span className={`inline-flex items-center gap-1 text-[10px] font-bold ${log.impact === 'High' ? 'text-red-500' : log.impact === 'Medium' ? 'text-amber-500' : 'text-slate-400'}`}><span className={`w-1.5 h-1.5 rounded-full ${log.impact === 'High' ? 'bg-red-500' : log.impact === 'Medium' ? 'bg-amber-500' : 'bg-slate-400'}`} />Akses {log.impact}</span></td>
+                      <td className="p-4"><span className="font-bold text-on-surface">{log.entity}</span><span className="text-[10px] text-outline block font-medium">({log.entityName})</span></td>
+                      <td className="p-4 text-center"><span className={`inline-flex items-center gap-1 text-[10px] font-bold ${log.impact === 'High' ? 'text-red-500' : log.impact === 'Medium' ? 'text-amber-500' : 'text-outline'}`}><span className={`w-1.5 h-1.5 rounded-full ${log.impact === 'High' ? 'bg-red-500' : log.impact === 'Medium' ? 'bg-amber-500' : 'bg-outline'}`} />Akses {log.impact}</span></td>
                       <td className="p-4 text-right"><button onClick={() => { setSelectedAuditLog(log); setAuditDetailOpen(true); }} className="px-3 py-1 bg-white border border-border text-primary hover:bg-primary/5 rounded font-bold transition-all text-[10px] cursor-pointer">Bandingkan Diff</button></td>
                     </tr>
                   ))}
@@ -1076,19 +1076,19 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* 1. AUDIT DETAIL COMPARATIVE JSON MODAL */}
       {auditDetailOpen && selectedAuditLog && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[85vh] flex flex-col overflow-hidden text-left font-body-main animate-fade-in">
-            <div className="p-5 border-b border-border bg-slate-50 flex justify-between items-center">
+            <div className="p-5 border-b border-border bg-surface-container-low flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl">manage_history</span>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-850">Laporan Json Perbedaan Mutasi Data</h4>
-                  <p className="text-[10px] text-slate-400">ID log: {selectedAuditLog.id} • Operator: {selectedAuditLog.user}</p>
+                  <h4 className="text-xs font-bold text-on-surface">Laporan Json Perbedaan Mutasi Data</h4>
+                  <p className="text-[10px] text-outline">ID log: {selectedAuditLog.id} • Operator: {selectedAuditLog.user}</p>
                 </div>
               </div>
               <button
                 onClick={() => setAuditDetailOpen(false)}
-                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400 cursor-pointer"
+                className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline cursor-pointer"
               >
                 <span className="material-symbols-outlined text-xs">close</span>
               </button>
@@ -1096,14 +1096,14 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
             <div className="p-5 flex-1 overflow-y-auto space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 p-2.5 rounded border border-border">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block">Status Sebelum Perubahan</span>
+                <div className="bg-surface-container-low p-2.5 rounded border border-border">
+                  <span className="text-[10px] font-bold text-outline uppercase font-mono block">Status Sebelum Perubahan</span>
                   <pre className="font-mono text-[10px] text-red-650 bg-red-50/20 p-2 rounded mt-1.5 overflow-x-auto">
                     {selectedAuditLog.beforeJson}
                   </pre>
                 </div>
-                <div className="bg-slate-50 p-2.5 rounded border border-border">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase font-mono block">Status Sesudah Perubahan</span>
+                <div className="bg-surface-container-low p-2.5 rounded border border-border">
+                  <span className="text-[10px] font-bold text-outline uppercase font-mono block">Status Sesudah Perubahan</span>
                   <pre className="font-mono text-[10px] text-success bg-green-50/20 p-2 rounded mt-1.5 overflow-x-auto">
                     {selectedAuditLog.afterJson}
                   </pre>
@@ -1114,10 +1114,10 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </div>
             </div>
 
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5 shrink-0">
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5 shrink-0">
               <button
                 onClick={() => setAuditDetailOpen(false)}
-                className="px-4 py-1.5 bg-white border border-border text-slate-650 rounded text-xs font-bold hover:bg-slate-100 cursor-pointer"
+                className="px-4 py-1.5 bg-white border border-border text-secondary rounded text-xs font-bold hover:bg-surface-container-high cursor-pointer"
               >
                 Tutup Dokumen
               </button>
@@ -1137,43 +1137,43 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* 2. CUSTOMER ADD MODAL */}
       {customerModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden text-left animate-fade-in">
-            <div className="p-5 border-b border-border bg-slate-50 flex justify-between items-center">
+            <div className="p-5 border-b border-border bg-surface-container-low flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-xl">groups</span>
-                <span className="text-xs font-bold text-slate-800">Tambah Pelanggan Baru</span>
+                <span className="text-xs font-bold text-on-surface">Tambah Pelanggan Baru</span>
               </div>
-              <button onClick={() => setCustomerModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 bg-slate-100 hover:bg-slate-200 text-xs">
+              <button onClick={() => setCustomerModalOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline bg-surface-container-high hover:bg-surface-container-high text-xs">
                 <span className="material-symbols-outlined text-xs">close</span>
               </button>
             </div>
             <div className="p-5 space-y-4 text-xs max-h-[60vh] overflow-y-auto">
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Nama Pelanggan *</label><input type="text" placeholder="Nama pelanggan" value={newCust.name || ''} onChange={(e) => setNewCust({...newCust, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newCust.code || ''} onChange={(e) => setNewCust({...newCust, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Nama Pelanggan *</label><input type="text" placeholder="Nama pelanggan" value={newCust.name || ''} onChange={(e) => setNewCust({...newCust, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newCust.code || ''} onChange={(e) => setNewCust({...newCust, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Jenis</label><select value={newCust.type || 'swasta'} onChange={(e) => setNewCust({...newCust, type: e.target.value as any})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="swasta">Swasta</option><option value="bumn">BUMN</option><option value="pemerintah">Pemerintah</option><option value="asing">Asing</option></select></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Industri</label><select value={newCust.industry_id || ''} onChange={(e) => setNewCust({...newCust, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
+                <div><label className="font-bold text-outline mb-1 block">Jenis</label><select value={newCust.type || 'swasta'} onChange={(e) => setNewCust({...newCust, type: e.target.value as any})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="swasta">Swasta</option><option value="bumn">BUMN</option><option value="pemerintah">Pemerintah</option><option value="asing">Asing</option></select></div>
+                <div><label className="font-bold text-outline mb-1 block">Industri</label><select value={newCust.industry_id || ''} onChange={(e) => setNewCust({...newCust, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama PIC</label><input type="text" placeholder="Nama PIC" value={newCust.pic_name || ''} onChange={(e) => setNewCust({...newCust, pic_name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama PIC</label><input type="text" placeholder="Nama PIC" value={newCust.pic_name || ''} onChange={(e) => setNewCust({...newCust, pic_name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Email PIC</label><input type="email" placeholder="email@domain.com" value={newCust.pic_email || ''} onChange={(e) => setNewCust({...newCust, pic_email: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Telepon PIC</label><input type="text" placeholder="021-12345678" value={newCust.pic_phone || ''} onChange={(e) => setNewCust({...newCust, pic_phone: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Email PIC</label><input type="email" placeholder="email@domain.com" value={newCust.pic_email || ''} onChange={(e) => setNewCust({...newCust, pic_email: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Telepon PIC</label><input type="text" placeholder="021-12345678" value={newCust.pic_phone || ''} onChange={(e) => setNewCust({...newCust, pic_phone: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Alamat</label><textarea rows={2} placeholder="Alamat lengkap" value={newCust.address || ''} onChange={(e) => setNewCust({...newCust, address: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Alamat</label><textarea rows={2} placeholder="Alamat lengkap" value={newCust.address || ''} onChange={(e) => setNewCust({...newCust, address: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Kota</label><input type="text" placeholder="Kota" value={newCust.city || ''} onChange={(e) => setNewCust({...newCust, city: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Provinsi</label><input type="text" placeholder="Provinsi" value={newCust.province || ''} onChange={(e) => setNewCust({...newCust, province: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Kota</label><input type="text" placeholder="Kota" value={newCust.city || ''} onChange={(e) => setNewCust({...newCust, city: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Provinsi</label><input type="text" placeholder="Provinsi" value={newCust.province || ''} onChange={(e) => setNewCust({...newCust, province: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">NPWP</label><input type="text" placeholder="XX.XXX.XXX.X-XXX.XXX" value={newCust.npwp || ''} onChange={(e) => setNewCust({...newCust, npwp: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">NPWP</label><input type="text" placeholder="XX.XXX.XXX.X-XXX.XXX" value={newCust.npwp || ''} onChange={(e) => setNewCust({...newCust, npwp: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Catatan</label><textarea rows={2} placeholder="Catatan" value={newCust.notes || ''} onChange={(e) => setNewCust({...newCust, notes: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Catatan</label><textarea rows={2} placeholder="Catatan" value={newCust.notes || ''} onChange={(e) => setNewCust({...newCust, notes: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setCustomerModalOpen(false)} className="px-4 py-1.5 border border-border bg-white rounded text-xs text-slate-600 hover:bg-slate-100">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setCustomerModalOpen(false)} className="px-4 py-1.5 border border-border bg-white rounded text-xs text-secondary hover:bg-surface-container-high">Batal</button>
               <button onClick={() => {
                 if (!newCust.name) { onShowNotification('Nama pelanggan wajib dimasukkan.', 'error'); return; }
                 const added: Customer = { id: String(customers.length + 1), name: newCust.name, code: newCust.code || `CST-${Math.floor(100 + Math.random() * 899)}`, type: newCust.type || 'swasta', industry_id: newCust.industry_id || null, pic_name: newCust.pic_name || '', pic_email: newCust.pic_email || '', pic_phone: newCust.pic_phone || '', address: newCust.address || '', city: newCust.city || '', province: newCust.province || '', npwp: newCust.npwp || '', notes: newCust.notes || '', is_active: true };
@@ -1188,22 +1188,22 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* 3. COMPETITOR DRAWER */}
       {compDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-855 flex items-center gap-1.5"><span className="material-symbols-outlined text-primary text-sm">factory</span>Tambah Kompetitor Baru</h4><p className="text-[10px] text-slate-400">Normalisasi master kompetitor (Doc 023)</p></div>
-              <button onClick={() => setCompDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface flex items-center gap-1.5"><span className="material-symbols-outlined text-primary text-sm">factory</span>Tambah Kompetitor Baru</h4><p className="text-[10px] text-outline">Normalisasi master kompetitor (Doc 023)</p></div>
+              <button onClick={() => setCompDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama Kompetitor *</label><input type="text" placeholder="Nama resmi" value={newComp.name || ''} onChange={(e) => setNewComp({...newComp, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newComp.code || ''} onChange={(e) => setNewComp({...newComp, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Industri</label><select value={newComp.industry_id || ''} onChange={(e) => setNewComp({...newComp, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Bidang Usaha</label><input type="text" placeholder="Bidang usaha utama" value={newComp.bidang_usaha || ''} onChange={(e) => setNewComp({...newComp, bidang_usaha: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Website</label><input type="text" placeholder="https://" value={newComp.website || ''} onChange={(e) => setNewComp({...newComp, website: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Deskripsi</label><textarea rows={3} placeholder="Catatan analisis" value={newComp.description || ''} onChange={(e) => setNewComp({...newComp, description: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama Kompetitor *</label><input type="text" placeholder="Nama resmi" value={newComp.name || ''} onChange={(e) => setNewComp({...newComp, name: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="Kode" value={newComp.code || ''} onChange={(e) => setNewComp({...newComp, code: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Industri</label><select value={newComp.industry_id || ''} onChange={(e) => setNewComp({...newComp, industry_id: e.target.value || null})} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="">- Pilih Industri -</option>{industries.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
+              <div><label className="font-bold text-outline mb-1 block">Bidang Usaha</label><input type="text" placeholder="Bidang usaha utama" value={newComp.bidang_usaha || ''} onChange={(e) => setNewComp({...newComp, bidang_usaha: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Website</label><input type="text" placeholder="https://" value={newComp.website || ''} onChange={(e) => setNewComp({...newComp, website: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Deskripsi</label><textarea rows={3} placeholder="Catatan analisis" value={newComp.description || ''} onChange={(e) => setNewComp({...newComp, description: e.target.value})} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setCompDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setCompDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!newComp.name) { onShowNotification('Nama kompetitor wajib diisi.', 'error'); return; }
                 const added: Competitor = { id: String(competitors.length + 1), name: newComp.name, code: newComp.code || `COMP-${Math.floor(100 + Math.random() * 899)}`, industry_id: newComp.industry_id || null, bidang_usaha: newComp.bidang_usaha || '', website: newComp.website || '', description: newComp.description || '', is_active: true };
@@ -1218,24 +1218,24 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* 5. SLIDE OVER DRAWER FOR ADDING / EDITING USERS */}
       {userDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold text-on-surface flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-sm">security</span>
                   {editingUser ? 'Edit Pengguna Regional' : 'Tambah Pengguna Baru'}
                 </h4>
-                <p className="text-[10px] text-slate-400">MAST-05 Access Scoping Security</p>
+                <p className="text-[10px] text-outline">MAST-05 Access Scoping Security</p>
               </div>
-              <button onClick={() => setUserDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400">
+              <button onClick={() => setUserDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline">
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
             </div>
 
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Nama Lengkap Karyawan</label>
+                <label className="font-bold text-outline mb-1 block">Nama Lengkap Karyawan</label>
                 <input
                   type="text"
                   placeholder="Masukkan nama lengkap..."
@@ -1247,7 +1247,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 />
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Sistem Role Group</label>
+                <label className="font-bold text-outline mb-1 block">Sistem Role Group</label>
                 <select
                   value={editingUser ? editingUser.role : 'Cabang'}
                   onChange={(e) => {
@@ -1260,10 +1260,10 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                   <option value="Dept">Department Head</option>
                   <option value="Admin">System Administrator</option>
                 </select>
-                <p className="text-[9px] text-slate-400 mt-0.5">Scoping default disesuaikan dengan limitasi regional.</p>
+                <p className="text-[9px] text-outline mt-0.5">Scoping default disesuaikan dengan limitasi regional.</p>
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Penempatan Regional / Kantor Pusat</label>
+                <label className="font-bold text-outline mb-1 block">Penempatan Regional / Kantor Pusat</label>
                 <input
                   type="text"
                   placeholder="Misal: Cabang Jakarta Pusat"
@@ -1275,7 +1275,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 />
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Email Akun</label>
+                <label className="font-bold text-outline mb-1 block">Email Akun</label>
                 <input
                   type="email"
                   placeholder="name.staff@kinetic.co.id"
@@ -1288,8 +1288,8 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </div>
             </div>
 
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setUserDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-650">
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setUserDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">
                 Batal
               </button>
               <button
@@ -1313,28 +1313,28 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* 6. SLIDE OVER DRAWER FOR QUESTION DRAWER */}
       {questionDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <h4 className="text-xs font-bold text-on-surface flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-sm">edit_note</span>
                   Tambah Pertanyaan Baru
                 </h4>
-                <p className="text-[10px] text-slate-400">Doc 024 §3 - Master Pertanyaan</p>
+                <p className="text-[10px] text-outline">Doc 024 §3 - Master Pertanyaan</p>
               </div>
-              <button onClick={() => setQuestionDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400">
+              <button onClick={() => setQuestionDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline">
                 <span className="material-symbols-outlined text-sm">close</span>
               </button>
             </div>
 
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Teks Pertanyaan *</label>
+                <label className="font-bold text-outline mb-1 block">Teks Pertanyaan *</label>
                 <input type="text" id="new-q-text" placeholder="Teks pertanyaan" className="w-full p-2 border border-border rounded-lg text-xs" />
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Tipe Jawaban</label>
+                <label className="font-bold text-outline mb-1 block">Tipe Jawaban</label>
                 <select
                   id="new-q-type"
                   className="w-full p-2 border border-border rounded-lg text-xs bg-white"
@@ -1352,7 +1352,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
               </div>
 
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Konteks</label>
+                <label className="font-bold text-outline mb-1 block">Konteks</label>
                 <select id="new-q-context" className="w-full p-2 border border-border rounded-lg text-xs bg-white">
                   <option value="prospect">Prospek</option>
                   <option value="rks">RKS</option>
@@ -1360,7 +1360,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </select>
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Kategori</label>
+                <label className="font-bold text-outline mb-1 block">Kategori</label>
                 <select id="new-q-category" className="w-full p-2 border border-border rounded-lg text-xs bg-white">
                   <option value="Data Pribadi">Data Pribadi</option>
                   <option value="Lokasi">Lokasi</option>
@@ -1372,12 +1372,12 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 </select>
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Placeholder</label>
+                <label className="font-bold text-outline mb-1 block">Placeholder</label>
                 <input type="text" id="new-q-placeholder" placeholder="Placeholder text" className="w-full p-2 border border-border rounded-lg text-xs" />
               </div>
               <div>
-                <label className="font-bold text-slate-500 mb-1 block">Help Text</label>
-                <textarea id="new-q-help" rows={3} placeholder="Teks bantuan" className="w-full p-2 border border-border rounded-lg text-xs resize-none bg-slate-50" />
+                <label className="font-bold text-outline mb-1 block">Help Text</label>
+                <textarea id="new-q-help" rows={3} placeholder="Teks bantuan" className="w-full p-2 border border-border rounded-lg text-xs resize-none bg-surface-container-low" />
               </div>
 
               {/* Options draft (only when has_options=true) */}
@@ -1386,7 +1386,7 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
                 if (!qt?.has_options) return null;
                 return (
                   <div>
-                    <label className="font-bold text-slate-500 mb-1 block">Opsi Jawaban</label>
+                    <label className="font-bold text-outline mb-1 block">Opsi Jawaban</label>
                     <textarea
                       id="new-q-options"
                       rows={3}
@@ -1401,8 +1401,8 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
             </div>
 
 
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setQuestionDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setQuestionDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 const text = (document.getElementById('new-q-text') as HTMLInputElement)?.value;
                 const typeId = (document.getElementById('new-q-type') as HTMLSelectElement)?.value;
@@ -1438,21 +1438,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* QUESTION TYPE DRAWER */}
       {qtDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">rule</span>{editingQuestionType ? 'Edit' : 'Tambah'} Tipe Pertanyaan</h4></div>
-              <button onClick={() => setQtDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">rule</span>{editingQuestionType ? 'Edit' : 'Tambah'} Tipe Pertanyaan</h4></div>
+              <button onClick={() => setQtDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama *</label><input type="text" placeholder="Nama tipe" value={editingQuestionType?.name || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode *</label><input type="text" placeholder="snake_case" value={editingQuestionType?.code || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Deskripsi</label><textarea rows={2} placeholder="Deskripsi" value={editingQuestionType?.description || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Has Options</label><select value={editingQuestionType?.has_options ? '1' : '0'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, has_options: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Validation Config (JSON)</label><textarea rows={4} placeholder='{"maxLength": 500}' value={editingQuestionType?.validation_config || '{}'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, validation_config: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono bg-slate-50 resize-none" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama tipe" value={editingQuestionType?.name || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode *</label><input type="text" placeholder="snake_case" value={editingQuestionType?.code || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Deskripsi</label><textarea rows={2} placeholder="Deskripsi" value={editingQuestionType?.description || ''} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Has Options</label><select value={editingQuestionType?.has_options ? '1' : '0'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, has_options: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
+              <div><label className="font-bold text-outline mb-1 block">Validation Config (JSON)</label><textarea rows={4} placeholder='{"maxLength": 500}' value={editingQuestionType?.validation_config || '{}'} onChange={(e) => setEditingQuestionType(prev => prev ? { ...prev, validation_config: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono bg-surface-container-low resize-none" /></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setQtDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setQtDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingQuestionType?.name || !editingQuestionType?.code) { onShowNotification('Nama dan kode wajib diisi.', 'error'); return; }
                 if (editingQuestionType.id) {
@@ -1472,18 +1472,18 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* INDUSTRY DRAWER */}
       {industryDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">category</span>Tambah Industri</h4></div>
-              <button onClick={() => setIndustryDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">category</span>Tambah Industri</h4></div>
+              <button onClick={() => setIndustryDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama Industri *</label><input type="text" placeholder="Nama" value={editingIndustry?.name || ''} onChange={(e) => setEditingIndustry(prev => ({ ...prev!, name: e.target.value, id: prev?.id || '', code: prev?.code || '', is_active: prev?.is_active ?? true }))} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingIndustry?.code || ''} onChange={(e) => setEditingIndustry(prev => ({ ...prev!, code: e.target.value, id: prev?.id || '', name: prev?.name || '', is_active: prev?.is_active ?? true }))} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama Industri *</label><input type="text" placeholder="Nama" value={editingIndustry?.name || ''} onChange={(e) => setEditingIndustry(prev => ({ ...prev!, name: e.target.value, id: prev?.id || '', code: prev?.code || '', is_active: prev?.is_active ?? true }))} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingIndustry?.code || ''} onChange={(e) => setEditingIndustry(prev => ({ ...prev!, code: e.target.value, id: prev?.id || '', name: prev?.name || '', is_active: prev?.is_active ?? true }))} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setIndustryDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setIndustryDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingIndustry?.name) { onShowNotification('Nama industri wajib diisi.', 'error'); return; }
                 const added: Industry = { id: `IND-${String(industries.length + 1).padStart(2, '0')}`, name: editingIndustry.name, code: editingIndustry.code || editingIndustry.name.slice(0, 5).toUpperCase(), is_active: true };
@@ -1498,24 +1498,24 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* CATEGORY DRAWER */}
       {categoryDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">folder</span>Tambah Kategori Proyek</h4></div>
-              <button onClick={() => setCategoryDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">folder</span>Tambah Kategori Proyek</h4></div>
+              <button onClick={() => setCategoryDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama *</label><input type="text" placeholder="Nama kategori" value={editingCategory?.name || ''} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingCategory?.code || ''} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama kategori" value={editingCategory?.name || ''} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingCategory?.code || ''} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Wajib LPHS</label><select value={editingCategory?.requires_lphs ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_lphs: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Wajib RKS</label><select value={editingCategory?.requires_rks ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_rks: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
+                <div><label className="font-bold text-outline mb-1 block">Wajib LPHS</label><select value={editingCategory?.requires_lphs ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_lphs: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
+                <div><label className="font-bold text-outline mb-1 block">Wajib RKS</label><select value={editingCategory?.requires_rks ? '1' : '0'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, requires_rks: e.target.value === '1' } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="1">Ya</option><option value="0">Tidak</option></select></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Workflow Default</label><select value={editingCategory?.default_workflow_type || 'tender'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, default_workflow_type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Warna (Hex)</label><input type="text" placeholder="#RRGGBB" value={editingCategory?.color_hex || '#6B7280'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Workflow Default</label><select value={editingCategory?.default_workflow_type || 'tender'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, default_workflow_type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+              <div><label className="font-bold text-outline mb-1 block">Warna (Hex)</label><input type="text" placeholder="#RRGGBB" value={editingCategory?.color_hex || '#6B7280'} onChange={(e) => setEditingCategory(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setCategoryDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setCategoryDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingCategory?.name) { onShowNotification('Nama kategori wajib diisi.', 'error'); return; }
                 const added: ProjectCategory = { id: `CAT-${String(categories.length + 1).padStart(2, '0')}`, name: editingCategory.name, code: editingCategory.code || editingCategory.name.slice(0, 8).toUpperCase(), description: '', requires_lphs: editingCategory.requires_lphs ?? true, requires_rks: editingCategory.requires_rks ?? true, default_workflow_type: editingCategory.default_workflow_type || 'tender', color_hex: editingCategory.color_hex || '#6B7280', sort_order: categories.length + 1, is_active: true };
@@ -1530,23 +1530,23 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* STATUS DRAWER */}
       {statusDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">flag</span>{editingStatus ? 'Edit' : 'Tambah'} Status Proyek</h4></div>
-              <button onClick={() => setStatusDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">flag</span>{editingStatus ? 'Edit' : 'Tambah'} Status Proyek</h4></div>
+              <button onClick={() => setStatusDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode *</label><input type="text" placeholder="snake_case" value={editingStatus?.code || ''} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Label *</label><input type="text" placeholder="Nama tampilan" value={editingStatus?.label || ''} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, label: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode *</label><input type="text" placeholder="snake_case" value={editingStatus?.code || ''} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Label *</label><input type="text" placeholder="Nama tampilan" value={editingStatus?.label || ''} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, label: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Warna Badge</label><input type="text" placeholder="#RRGGBB" value={editingStatus?.color_hex || '#6B7280'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Warna Teks</label><input type="text" placeholder="#FFFFFF" value={editingStatus?.text_color_hex || '#FFFFFF'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, text_color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Warna Badge</label><input type="text" placeholder="#RRGGBB" value={editingStatus?.color_hex || '#6B7280'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Warna Teks</label><input type="text" placeholder="#FFFFFF" value={editingStatus?.text_color_hex || '#FFFFFF'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, text_color_hex: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               </div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Berlaku Untuk</label><select value={editingStatus?.applicable_to || 'both'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+              <div><label className="font-bold text-outline mb-1 block">Berlaku Untuk</label><select value={editingStatus?.applicable_to || 'both'} onChange={(e) => setEditingStatus(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setStatusDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setStatusDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingStatus?.code || !editingStatus?.label) { onShowNotification('Kode dan label wajib diisi.', 'error'); return; }
                 const maxSort = Math.max(...projectStatuses.map(s => s.sort_order), 0);
@@ -1562,21 +1562,21 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* DOC TYPE DRAWER */}
       {docTypeDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">description</span>Tambah Tipe Dokumen</h4></div>
-              <button onClick={() => setDocTypeDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">description</span>Tambah Tipe Dokumen</h4></div>
+              <button onClick={() => setDocTypeDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama *</label><input type="text" placeholder="Nama tipe dokumen" value={editingDocType?.name || ''} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode *</label><input type="text" placeholder="KODE" value={editingDocType?.code || ''} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Ekstensi (pisahkan koma)</label><input type="text" placeholder="pdf, docx, xlsx" value={editingDocType?.allowed_extensions?.join(', ') || 'pdf'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, allowed_extensions: e.target.value.split(',').map(s => s.trim()) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Max Size (MB)</label><input type="number" placeholder="25" value={editingDocType?.max_size_mb || 25} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, max_size_mb: parseInt(e.target.value) || 25 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Berlaku Untuk</label><select value={editingDocType?.applicable_to || 'both'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama tipe dokumen" value={editingDocType?.name || ''} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode *</label><input type="text" placeholder="KODE" value={editingDocType?.code || ''} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Ekstensi (pisahkan koma)</label><input type="text" placeholder="pdf, docx, xlsx" value={editingDocType?.allowed_extensions?.join(', ') || 'pdf'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, allowed_extensions: e.target.value.split(',').map(s => s.trim()) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Max Size (MB)</label><input type="number" placeholder="25" value={editingDocType?.max_size_mb || 25} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, max_size_mb: parseInt(e.target.value) || 25 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Berlaku Untuk</label><select value={editingDocType?.applicable_to || 'both'} onChange={(e) => setEditingDocType(prev => prev ? { ...prev, applicable_to: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="both">Keduanya</option><option value="tender">Tender</option><option value="prospecting">Prospecting</option></select></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setDocTypeDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setDocTypeDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingDocType?.name || !editingDocType?.code) { onShowNotification('Nama dan kode wajib diisi.', 'error'); return; }
                 const added: DocumentType = { id: `DT-${String(documentTypes.length + 1).padStart(2, '0')}`, name: editingDocType.name, code: editingDocType.code, description: '', allowed_extensions: editingDocType.allowed_extensions || ['pdf'], max_size_mb: editingDocType.max_size_mb || 25, is_required_at_stage: null, applicable_to: editingDocType.applicable_to || 'both', sort_order: documentTypes.length + 1, is_system: false, is_active: true };
@@ -1591,26 +1591,26 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* PERIOD DRAWER */}
       {periodDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">calendar_month</span>Tambah Periode</h4></div>
-              <button onClick={() => setPeriodDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">calendar_month</span>Tambah Periode</h4></div>
+              <button onClick={() => setPeriodDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama *</label><input type="text" placeholder="Q1 2026" value={editingPeriod?.name || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="2026-Q1" value={editingPeriod?.code || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Q1 2026" value={editingPeriod?.name || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="2026-Q1" value={editingPeriod?.code || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Tipe</label><select value={editingPeriod?.type || 'quarterly'} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="monthly">Bulanan</option><option value="quarterly">Kuartalan</option><option value="semester">Semester</option><option value="annual">Tahunan</option></select></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Tahun</label><input type="number" placeholder="2026" value={editingPeriod?.year || 2026} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, year: parseInt(e.target.value) || 2026 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Tipe</label><select value={editingPeriod?.type || 'quarterly'} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="monthly">Bulanan</option><option value="quarterly">Kuartalan</option><option value="semester">Semester</option><option value="annual">Tahunan</option></select></div>
+                <div><label className="font-bold text-outline mb-1 block">Tahun</label><input type="number" placeholder="2026" value={editingPeriod?.year || 2026} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, year: parseInt(e.target.value) || 2026 } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <div><label className="font-bold text-slate-500 mb-1 block">Tanggal Mulai</label><input type="date" value={editingPeriod?.start_date || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, start_date: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-                <div><label className="font-bold text-slate-500 mb-1 block">Tanggal Selesai</label><input type="date" value={editingPeriod?.end_date || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, end_date: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Tanggal Mulai</label><input type="date" value={editingPeriod?.start_date || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, start_date: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+                <div><label className="font-bold text-outline mb-1 block">Tanggal Selesai</label><input type="date" value={editingPeriod?.end_date || ''} onChange={(e) => setEditingPeriod(prev => prev ? { ...prev, end_date: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
               </div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setPeriodDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setPeriodDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingPeriod?.name) { onShowNotification('Nama periode wajib diisi.', 'error'); return; }
                 const added: ReportingPeriod = { id: `PER-${String(periods.length + 1).padStart(2, '0')}`, name: editingPeriod.name, code: editingPeriod.code || `${editingPeriod.year || 2026}-${(editingPeriod.type || 'quarterly').slice(0, 2).toUpperCase()}`, type: editingPeriod.type || 'quarterly', year: editingPeriod.year || 2026, start_date: editingPeriod.start_date || `${editingPeriod.year || 2026}-01-01`, end_date: editingPeriod.end_date || `${editingPeriod.year || 2026}-12-31`, is_active: true, is_locked: false, notes: '' };
@@ -1625,19 +1625,19 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* HOLIDAY DRAWER */}
       {holidayDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">celebration</span>Tambah Hari Libur</h4></div>
-              <button onClick={() => setHolidayDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">celebration</span>Tambah Hari Libur</h4></div>
+              <button onClick={() => setHolidayDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama Hari Libur *</label><input type="text" placeholder="Nama libur" value={editingHoliday?.name || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Tanggal *</label><input type="date" value={editingHoliday?.date || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, date: e.target.value, year: parseInt(e.target.value.slice(0, 4)) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Tipe</label><select value={editingHoliday?.type || 'national'} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="national">Nasional</option><option value="company_specific">Spesifik Perusahaan</option><option value="optional">Opsional</option></select></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama Hari Libur *</label><input type="text" placeholder="Nama libur" value={editingHoliday?.name || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Tanggal *</label><input type="date" value={editingHoliday?.date || ''} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, date: e.target.value, year: parseInt(e.target.value.slice(0, 4)) } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Tipe</label><select value={editingHoliday?.type || 'national'} onChange={(e) => setEditingHoliday(prev => prev ? { ...prev, type: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="national">Nasional</option><option value="company_specific">Spesifik Perusahaan</option><option value="optional">Opsional</option></select></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setHolidayDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setHolidayDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingHoliday?.name || !editingHoliday?.date) { onShowNotification('Nama dan tanggal wajib diisi.', 'error'); return; }
                 const year = parseInt(editingHoliday.date.slice(0, 4));
@@ -1653,20 +1653,20 @@ export default function MasterDataView({ onShowNotification }: MasterDataViewPro
 
       {/* LOSS REASON DRAWER */}
       {lossReasonDrawerOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-end">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex justify-end">
           <div className="w-full max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between text-left">
-            <div className="p-5 border-b border-border bg-slate-50 flex items-center justify-between">
-              <div><h4 className="text-xs font-bold text-slate-800"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">sentiment_dissatisfied</span>Tambah Alasan Kekalahan</h4></div>
-              <button onClick={() => setLossReasonDrawerOpen(false)} className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-400"><span className="material-symbols-outlined text-sm">close</span></button>
+            <div className="p-5 border-b border-border bg-surface-container-low flex items-center justify-between">
+              <div><h4 className="text-xs font-bold text-on-surface"><span className="material-symbols-outlined text-primary text-sm align-middle mr-1">sentiment_dissatisfied</span>Tambah Alasan Kekalahan</h4></div>
+              <button onClick={() => setLossReasonDrawerOpen(false)} className="w-7 h-7 rounded-full bg-surface-container-high hover:bg-surface-container-high flex items-center justify-center text-outline"><span className="material-symbols-outlined text-sm">close</span></button>
             </div>
             <div className="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
-              <div><label className="font-bold text-slate-500 mb-1 block">Nama *</label><input type="text" placeholder="Nama alasan" value={editingLossReason?.name || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingLossReason?.code || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Kategori</label><select value={editingLossReason?.category || 'harga'} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, category: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="harga">Harga</option><option value="teknis">Teknis</option><option value="relasi">Relasi</option><option value="administrasi">Administrasi</option><option value="waktu">Waktu</option><option value="lainnya">Lainnya</option></select></div>
-              <div><label className="font-bold text-slate-500 mb-1 block">Deskripsi</label><textarea rows={3} placeholder="Deskripsi" value={editingLossReason?.description || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Nama *</label><input type="text" placeholder="Nama alasan" value={editingLossReason?.name || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kode</label><input type="text" placeholder="KODE" value={editingLossReason?.code || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, code: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs font-mono" /></div>
+              <div><label className="font-bold text-outline mb-1 block">Kategori</label><select value={editingLossReason?.category || 'harga'} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, category: e.target.value as any } : null)} className="w-full p-2 border border-border rounded-lg text-xs bg-white"><option value="harga">Harga</option><option value="teknis">Teknis</option><option value="relasi">Relasi</option><option value="administrasi">Administrasi</option><option value="waktu">Waktu</option><option value="lainnya">Lainnya</option></select></div>
+              <div><label className="font-bold text-outline mb-1 block">Deskripsi</label><textarea rows={3} placeholder="Deskripsi" value={editingLossReason?.description || ''} onChange={(e) => setEditingLossReason(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full p-2 border border-border rounded-lg text-xs resize-none" /></div>
             </div>
-            <div className="p-4 border-t border-border bg-slate-50 flex justify-end gap-2.5">
-              <button onClick={() => setLossReasonDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-slate-100 text-slate-600">Batal</button>
+            <div className="p-4 border-t border-border bg-surface-container-low flex justify-end gap-2.5">
+              <button onClick={() => setLossReasonDrawerOpen(false)} className="px-4 py-1.5 bg-white border border-border rounded text-xs hover:bg-surface-container-high text-secondary">Batal</button>
               <button onClick={() => {
                 if (!editingLossReason?.name) { onShowNotification('Nama alasan wajib diisi.', 'error'); return; }
                 const maxSort = Math.max(...lossReasons.map(l => l.sort_order), 0);
