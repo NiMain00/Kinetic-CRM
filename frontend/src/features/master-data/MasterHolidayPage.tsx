@@ -25,7 +25,7 @@ export default function MasterHolidayPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ type: 'national', year: new Date().getFullYear() });
+    setForm({ type: 'national', year: new Date().getFullYear(), is_active: true });
     setDrawerOpen(true);
   };
 

@@ -22,10 +22,16 @@ export interface MasterCategory {
 export interface MasterCompetitor {
   id: string;
   name: string;
+  code: string;
   min_price: number;
   max_price: number;
+  industry_id: string | null;
+  bidang_usaha: string;
+  website: string;
   advantages: string;
+  description: string;
   notes: string;
+  is_active: boolean;
 }
 
 export interface MasterDocType {
@@ -57,22 +63,30 @@ export interface MasterHoliday {
   date: string;
   type: 'national' | 'regional';
   year: number;
+  is_active: boolean;
 }
 
 export interface MasterLossReason {
   id: string;
   name: string;
   code: string;
+  category: string;
   description: string;
+  sort_order: number;
   is_active: boolean;
 }
 
 export interface MasterPeriod {
   id: string;
   name: string;
+  code: string;
+  type: 'monthly' | 'quarterly' | 'semester' | 'annual';
+  year: number;
   start_date: string;
   end_date: string;
   is_active: boolean;
+  is_locked: boolean;
+  notes: string;
 }
 
 export interface MasterCustomer {
@@ -80,10 +94,15 @@ export interface MasterCustomer {
   name: string;
   code: string;
   type: 'swasta' | 'bumn' | 'pemerintah' | 'asing';
+  industry_id: string | null;
   pic_name: string;
   pic_email: string;
   pic_phone: string;
+  address: string;
   city: string;
+  province: string;
+  npwp: string;
+  notes: string;
   is_active: boolean;
 }
 
@@ -209,10 +228,10 @@ const INITIAL_CATEGORIES: MasterCategory[] = [
 ];
 
 const INITIAL_COMPETITORS: MasterCompetitor[] = [
-  { id: 'CP-001', name: 'PT Astra Modern Ltd', min_price: 500000000, max_price: 1500000000, advantages: 'Pengalaman luas di konstruksi, jaringan kuat', notes: 'Kompetitor utama di tender infrastruktur' },
-  { id: 'CP-002', name: 'Global Enterprise Solutions', min_price: 300000000, max_price: 800000000, advantages: 'Tim IT berpengalaman, sertifikasi internasional', notes: 'Pesaing kuat di tender IT' },
-  { id: 'CP-003', name: 'PT Nippon Power Corp', min_price: 750000000, max_price: 2000000000, advantages: 'Teknologi mutakhir, dukungan purna jual', notes: '' },
-  { id: 'CP-004', name: 'PT Tekno Konstruksi Indonesia', min_price: 400000000, max_price: 1200000000, advantages: 'Harga kompetitif, proyek tepat waktu', notes: 'Kompetitor terkuat di sektor konstruksi sipil' },
+  { id: 'CP-001', name: 'PT Astra Modern Ltd', code: 'ASTRA', min_price: 500000000, max_price: 1500000000, industry_id: 'IND-02', bidang_usaha: 'Konstruksi & Infrastruktur', website: 'https://astra-modern.co.id', advantages: 'Pengalaman luas di konstruksi, jaringan kuat', description: 'Kompetitor utama di tender infrastruktur', notes: '', is_active: true },
+  { id: 'CP-002', name: 'Global Enterprise Solutions', code: 'GES', min_price: 300000000, max_price: 800000000, industry_id: 'IND-03', bidang_usaha: 'Teknologi Informasi', website: 'https://global-enterprise.co.id', advantages: 'Tim IT berpengalaman, sertifikasi internasional', description: 'Pesaing kuat di tender IT', notes: '', is_active: true },
+  { id: 'CP-003', name: 'PT Nippon Power Corp', code: 'NIPPON', min_price: 750000000, max_price: 2000000000, industry_id: 'IND-01', bidang_usaha: 'Energi & Kelistrikan', website: 'https://nippon-power.co.id', advantages: 'Teknologi mutakhir, dukungan purna jual', description: 'Kompetitor asing di sektor energi', notes: '', is_active: true },
+  { id: 'CP-004', name: 'PT Tekno Konstruksi Indonesia', code: 'TEKNO', min_price: 400000000, max_price: 1200000000, industry_id: 'IND-02', bidang_usaha: 'Konstruksi Sipil', website: 'https://teknokonstruksi.co.id', advantages: 'Harga kompetitif, proyek tepat waktu', description: 'Kompetitor terkuat di sektor konstruksi sipil', notes: '', is_active: true },
 ];
 
 const INITIAL_DOC_TYPES: MasterDocType[] = [
@@ -236,37 +255,37 @@ const INITIAL_QUESTIONS: MasterQuestion[] = [
 ];
 
 const INITIAL_HOLIDAYS: MasterHoliday[] = [
-  { id: 'HOL-01', name: 'Tahun Baru Masehi', date: '2025-01-01', type: 'national', year: 2025 },
-  { id: 'HOL-02', name: 'Hari Raya Idul Fitri', date: '2025-05-12', type: 'national', year: 2025 },
-  { id: 'HOL-03', name: 'Hari Kemerdekaan RI', date: '2025-08-17', type: 'national', year: 2025 },
-  { id: 'HOL-04', name: 'Hari Raya Natal', date: '2025-12-25', type: 'national', year: 2025 },
-  { id: 'HOL-05', name: 'Hari Jadi Jakarta', date: '2025-06-22', type: 'regional', year: 2025 },
-  { id: 'HOL-06', name: 'Tahun Baru 2026', date: '2026-01-01', type: 'national', year: 2026 },
+  { id: 'HOL-01', name: 'Tahun Baru Masehi', date: '2025-01-01', type: 'national', year: 2025, is_active: true },
+  { id: 'HOL-02', name: 'Hari Raya Idul Fitri', date: '2025-05-12', type: 'national', year: 2025, is_active: true },
+  { id: 'HOL-03', name: 'Hari Kemerdekaan RI', date: '2025-08-17', type: 'national', year: 2025, is_active: true },
+  { id: 'HOL-04', name: 'Hari Raya Natal', date: '2025-12-25', type: 'national', year: 2025, is_active: true },
+  { id: 'HOL-05', name: 'Hari Jadi Jakarta', date: '2025-06-22', type: 'regional', year: 2025, is_active: true },
+  { id: 'HOL-06', name: 'Tahun Baru 2026', date: '2026-01-01', type: 'national', year: 2026, is_active: true },
 ];
 
 const INITIAL_LOSS_REASONS: MasterLossReason[] = [
-  { id: 'LR-01', name: 'Harga Terlalu Tinggi', code: 'HARGA', description: 'Harga penawaran melebihi budget owner', is_active: true },
-  { id: 'LR-02', name: 'Skor Teknis Kurang', code: 'TEKNIS', description: 'Skor teknis di bawah ambang batas', is_active: true },
-  { id: 'LR-03', name: 'Administrasi Tidak Lengkap', code: 'ADMIN', description: 'Kelengkapan dokumen administrasi', is_active: true },
-  { id: 'LR-04', name: 'Kompetitor Lebih Unggul', code: 'PESAING', description: 'Kompetitor memiliki pengalaman spesifik', is_active: true },
-  { id: 'LR-05', name: 'Pembatalan Tender oleh Owner', code: 'BATAL', description: 'Tender dibatalkan oleh pemberi kerja', is_active: true },
+  { id: 'LR-01', name: 'Harga Terlalu Tinggi', code: 'HARGA', category: 'harga', description: 'Harga penawaran melebihi budget owner', sort_order: 1, is_active: true },
+  { id: 'LR-02', name: 'Skor Teknis Kurang', code: 'TEKNIS', category: 'teknis', description: 'Skor teknis di bawah ambang batas', sort_order: 2, is_active: true },
+  { id: 'LR-03', name: 'Administrasi Tidak Lengkap', code: 'ADMIN', category: 'administrasi', description: 'Kelengkapan dokumen administrasi', sort_order: 3, is_active: true },
+  { id: 'LR-04', name: 'Kompetitor Lebih Unggul', code: 'PESAING', category: 'lainnya', description: 'Kompetitor memiliki pengalaman spesifik', sort_order: 4, is_active: true },
+  { id: 'LR-05', name: 'Pembatalan Tender oleh Owner', code: 'BATAL', category: 'lainnya', description: 'Tender dibatalkan oleh pemberi kerja', sort_order: 5, is_active: true },
 ];
 
 const INITIAL_PERIODS: MasterPeriod[] = [
-  { id: 'PER-01', name: '2025 Q1', start_date: '2025-01-01', end_date: '2025-03-31', is_active: false },
-  { id: 'PER-02', name: '2025 Q2', start_date: '2025-04-01', end_date: '2025-06-30', is_active: true },
-  { id: 'PER-03', name: '2025 Q3', start_date: '2025-07-01', end_date: '2025-09-30', is_active: true },
-  { id: 'PER-04', name: '2025 FY', start_date: '2025-01-01', end_date: '2025-12-31', is_active: false },
-  { id: 'PER-05', name: '2026 Q1', start_date: '2026-01-01', end_date: '2026-03-31', is_active: true },
-  { id: 'PER-06', name: '2026 Q2', start_date: '2026-04-01', end_date: '2026-06-30', is_active: true },
-  { id: 'PER-07', name: '2026 H1', start_date: '2026-01-01', end_date: '2026-06-30', is_active: false },
+  { id: 'PER-01', name: '2025 Q1', code: '2025-Q1', type: 'quarterly', year: 2025, start_date: '2025-01-01', end_date: '2025-03-31', is_active: false, is_locked: true, notes: 'Periode Q1 2025' },
+  { id: 'PER-02', name: '2025 Q2', code: '2025-Q2', type: 'quarterly', year: 2025, start_date: '2025-04-01', end_date: '2025-06-30', is_active: true, is_locked: false, notes: 'Periode Q2 2025' },
+  { id: 'PER-03', name: '2025 Q3', code: '2025-Q3', type: 'quarterly', year: 2025, start_date: '2025-07-01', end_date: '2025-09-30', is_active: true, is_locked: false, notes: 'Periode Q3 2025' },
+  { id: 'PER-04', name: '2025 FY', code: '2025-FY', type: 'annual', year: 2025, start_date: '2025-01-01', end_date: '2025-12-31', is_active: false, is_locked: true, notes: 'Periode fiskal 2025' },
+  { id: 'PER-05', name: '2026 Q1', code: '2026-Q1', type: 'quarterly', year: 2026, start_date: '2026-01-01', end_date: '2026-03-31', is_active: true, is_locked: false, notes: 'Periode Q1 2026' },
+  { id: 'PER-06', name: '2026 Q2', code: '2026-Q2', type: 'quarterly', year: 2026, start_date: '2026-04-01', end_date: '2026-06-30', is_active: true, is_locked: false, notes: 'Periode Q2 2026' },
+  { id: 'PER-07', name: '2026 H1', code: '2026-H1', type: 'semester', year: 2026, start_date: '2026-01-01', end_date: '2026-06-30', is_active: false, is_locked: false, notes: 'Periode semester 1 2026' },
 ];
 
 const INITIAL_MASTER_CUSTOMERS: MasterCustomer[] = [
-  { id: 'C-001', name: 'PT Astra International Tbk', code: 'ASTRA', type: 'swasta', pic_name: 'Budi Santoso', pic_email: 'budi@astra.co.id', pic_phone: '021-12345678', city: 'Jakarta Utara', is_active: true },
-  { id: 'C-002', name: 'Bank Rakyat Indonesia', code: 'BRI', type: 'bumn', pic_name: 'Siti Aminah', pic_email: 'siti@bri.co.id', pic_phone: '021-87654321', city: 'Jakarta Pusat', is_active: true },
-  { id: 'C-003', name: 'Dinas Kesehatan Prov DKI', code: 'DINKES', type: 'pemerintah', pic_name: 'Herry Setiawan', pic_email: 'herry@dinkes.go.id', pic_phone: '021-56789012', city: 'Jakarta Pusat', is_active: false },
-  { id: 'C-004', name: 'Siemens Indonesia', code: 'SIEMENS', type: 'asing', pic_name: 'John Doe', pic_email: 'john@siemens.co.id', pic_phone: '021-23456789', city: 'Jakarta Selatan', is_active: true },
+  { id: 'C-001', name: 'PT Astra International Tbk', code: 'ASTRA', type: 'swasta', industry_id: 'IND-05', pic_name: 'Budi Santoso', pic_email: 'budi@astra.co.id', pic_phone: '021-12345678', address: 'Jl. Sudirman No. 1', city: 'Jakarta Utara', province: 'DKI Jakarta', npwp: '01.234.567.8-901.000', notes: 'Customer utama sektor otomotif', is_active: true },
+  { id: 'C-002', name: 'Bank Rakyat Indonesia', code: 'BRI', type: 'bumn', industry_id: 'IND-04', pic_name: 'Siti Aminah', pic_email: 'siti@bri.co.id', pic_phone: '021-87654321', address: 'Jl. Thamrin No. 2', city: 'Jakarta Pusat', province: 'DKI Jakarta', npwp: '02.345.678.9-012.000', notes: 'Customer BUMN perbankan', is_active: true },
+  { id: 'C-003', name: 'Dinas Kesehatan Prov DKI', code: 'DINKES', type: 'pemerintah', industry_id: 'IND-06', pic_name: 'Herry Setiawan', pic_email: 'herry@dinkes.go.id', pic_phone: '021-56789012', address: 'Jl. Kesehatan No. 5', city: 'Jakarta Pusat', province: 'DKI Jakarta', npwp: '03.456.789.0-123.000', notes: 'Instansi pemerintah sektor kesehatan', is_active: false },
+  { id: 'C-004', name: 'Siemens Indonesia', code: 'SIEMENS', type: 'asing', industry_id: 'IND-03', pic_name: 'John Doe', pic_email: 'john@siemens.co.id', pic_phone: '021-23456789', address: 'Jl. Rasuna Said Kav 3-4', city: 'Jakarta Selatan', province: 'DKI Jakarta', npwp: '04.567.890.1-234.000', notes: 'Perusahaan asing sektor teknologi', is_active: true },
 ];
 
 // ===== NEW INITIAL DATA =====
@@ -472,10 +491,10 @@ export const useMasterDataStore = create<MasterDataState>()(
     }),
     {
       name: 'kinetic-master-data',
-      version: 1,
+      version: 2,
       migrate: (persisted: unknown, version: number) => {
-        if (version === 0) {
-          // Re-initialize with latest defaults to pick up new fields (e.g. has_options)
+        if (version === 0 || version === 1) {
+          // Re-initialize with latest defaults to pick up new fields
           return { ...INITIAL_DATA as any };
         }
         return persisted as any;

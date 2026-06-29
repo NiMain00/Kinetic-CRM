@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import { exportCSV } from '@/utils/export';
 import type { AuditLogEntry } from '../../types/domain/users';
 
 const ACTION_COLORS: Record<string, string> = {
@@ -62,7 +62,18 @@ export default function AuditPage() {
           </h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Jejak audit sistem untuk seluruh aktivitas pengguna dan perubahan data.</p>
         </div>
-        <button onClick={() => toast.success('Ekspor audit log sedang diproses.')} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
+        <button onClick={() => exportCSV(
+          filteredLogs,
+          [
+            { header: 'Timestamp', accessor: (l) => l.timestamp },
+            { header: 'Aktor', accessor: (l) => l.actor },
+            { header: 'Aksi', accessor: (l) => l.action },
+            { header: 'Entitas', accessor: (l) => `${l.entityType}: ${l.entityName}` },
+            { header: 'Ringkasan', accessor: (l) => l.summary },
+            { header: 'Dampak', accessor: (l) => l.impact },
+          ],
+          'audit_trail',
+        )} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-colors font-semibold text-xs cursor-pointer shadow-xs">
           <span className="material-symbols-outlined text-[16px]">file_download</span> Export CSV
         </button>
       </div>

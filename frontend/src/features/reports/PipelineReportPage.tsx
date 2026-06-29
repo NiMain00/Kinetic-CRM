@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { useProjectStore } from '@/stores/projectStore';
 import { useOrgBranches } from '@/hooks/useConfigData';
+import { exportCSV } from '@/utils/export';
 
 function formatCurrency(value: number): string {
   if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
@@ -151,9 +151,19 @@ export default function PipelineReportPage() {
             <h1 className="text-xl font-extrabold text-on-surface">Pipeline Report</h1>
             <p className="text-sm text-secondary mt-1">Analisis tahapan pipeline dan distribusi proyek aktif.</p>
           </div>
-          <button onClick={() => toast.success('Export PDF sedang diproses.')} className="px-4 py-2 border border-border rounded-lg text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-all flex items-center gap-1.5" aria-label="Export PDF">
-            <span className="material-symbols-outlined text-[18px] text-danger">picture_as_pdf</span>
-            Export
+          <button onClick={() => exportCSV(
+            filtered,
+            [
+              { header: 'Nama Proyek', accessor: (r) => `${r.name} (${r.id})` },
+              { header: 'Cabang', accessor: (r) => r.branch },
+              { header: 'Stage', accessor: (r) => r.stage },
+              { header: 'Nilai', accessor: (r) => r.value },
+              { header: 'Est. Close', accessor: (r) => r.estClose },
+            ],
+            'pipeline_report',
+          )} className="px-4 py-2 border border-border rounded-lg text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-all flex items-center gap-1.5" aria-label="Export CSV">
+            <span className="material-symbols-outlined text-[18px] text-primary">file_download</span>
+            Export CSV
           </button>
         </div>
 

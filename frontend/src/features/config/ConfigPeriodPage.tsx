@@ -22,9 +22,14 @@ export default function ConfigPeriodPage() {
     const newPeriod: MasterPeriod = {
       id: `PER-${String(periods.length + 1).padStart(2, '0')}`,
       name: formName,
+      code: formName.replace(/\s+/g, '-').toUpperCase(),
+      type: 'annual',
+      year: parseInt(formYear) || new Date().getFullYear(),
       start_date: formStartDate,
       end_date: formEndDate,
       is_active: false,
+      is_locked: false,
+      notes: '',
     };
     addData('periods', newPeriod);
     toast.success(`Periode ${formName} berhasil ditambahkan.`);

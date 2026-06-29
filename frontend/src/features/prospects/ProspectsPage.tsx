@@ -7,6 +7,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProjectStatuses } from '@/hooks/useConfigData';
 import { usePermission } from '@/hooks/usePermission';
+import { exportCSV } from '@/utils/export';
 
 interface ProspectsViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -125,16 +126,39 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       <PageHeader
         title="Prospek"
         description="Daftar Prospek"
-        actions={can('prospek_create') ? (
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => navigate('/prospects/new')}
-            leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
-          >
-            Buat Prospek Baru
-          </Button>
-        ) : undefined}
+        actions={
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
+              onClick={() => exportCSV(
+                prospects,
+                [
+                  { header: 'Nama Prospek', accessor: (p) => p.name },
+                  { header: 'Client', accessor: (p) => p.client },
+                  { header: 'Status', accessor: (p) => p.status },
+                  { header: 'Nilai Estimasi', accessor: (p) => p.estimatedValue ? `Rp ${p.estimatedValue.toLocaleString('id-ID')}` : '-' },
+                  { header: 'Author', accessor: (p) => p.author },
+                  { header: 'Tanggal', accessor: (p) => p.date },
+                ],
+                'daftar_prospek',
+              )}
+            >
+              Export CSV
+            </Button>
+            {can('prospek_create') && (
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => navigate('/prospects/new')}
+                leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
+              >
+                Buat Prospek Baru
+              </Button>
+            )}
+          </div>
+        }
       />
 
         {/* Filter Bar */}

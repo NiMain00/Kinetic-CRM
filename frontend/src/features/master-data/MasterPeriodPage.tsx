@@ -37,7 +37,8 @@ export default function MasterPeriodPage() {
       toast.success('Periode berhasil diperbarui');
     } else {
       const id = `PER-${String(periods.length + 1).padStart(2, '0')}`;
-      addData<MasterPeriod>('periods', { ...form, id } as MasterPeriod);
+      const year = form.start_date ? new Date(form.start_date).getFullYear() : new Date().getFullYear();
+      addData<MasterPeriod>('periods', { code: form.name?.replace(/\s+/g, '-').toUpperCase() || '', type: 'quarterly', year, is_locked: false, notes: '', ...form, id } as MasterPeriod);
       toast.success('Periode berhasil ditambahkan');
     }
     setDrawerOpen(false);

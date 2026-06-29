@@ -49,7 +49,7 @@ export default function MasterCustomerPage() {
       toast.success('Customer berhasil diperbarui');
     } else {
       const id = `C-${String(customers.length + 1).padStart(3, '0')}`;
-      addData<MasterCustomer>('customers', { ...form, id } as MasterCustomer);
+      addData<MasterCustomer>('customers', { industry_id: null, address: '', province: '', npwp: '', notes: '', ...form, id } as MasterCustomer);
       toast.success('Customer berhasil ditambahkan');
     }
     setModalOpen(false);

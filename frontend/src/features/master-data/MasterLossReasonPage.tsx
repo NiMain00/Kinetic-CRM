@@ -37,7 +37,8 @@ export default function MasterLossReasonPage() {
       toast.success('Alasan kekalahan berhasil diperbarui');
     } else {
       const id = `LR-${String(lossReasons.length + 1).padStart(2, '0')}`;
-      addData<MasterLossReason>('lossReasons', { ...form, id } as MasterLossReason);
+      const maxSort = Math.max(...lossReasons.map(r => r.sort_order), 0);
+      addData<MasterLossReason>('lossReasons', { category: 'lainnya', sort_order: maxSort + 1, ...form, id } as MasterLossReason);
       toast.success('Alasan kekalahan berhasil ditambahkan');
     }
     setDrawerOpen(false);

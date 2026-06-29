@@ -4,6 +4,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
 import { Button, Input, Card } from '@/components/ui';
+import { exportCSV } from '@/utils/export';
 import FilterPanel from '@/components/shared/FilterPanel';
 import { useProjectStatuses } from '@/hooks/useConfigData';
 
@@ -80,14 +81,36 @@ export default function ProjectListPage() {
         title="Proyek"
         description="Kelola dan pantau semua proyek aktif"
         actions={
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
-            onClick={() => navigate('/projects/new')}
-          >
-            Proyek Baru
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
+              onClick={() => exportCSV(
+                filtered,
+                [
+                  { header: 'Kode', accessor: (p) => p.code },
+                  { header: 'Nama Proyek', accessor: (p) => p.name },
+                  { header: 'Klien', accessor: (p) => p.client },
+                  { header: 'Status', accessor: (p) => p.status },
+                  { header: 'Nilai', accessor: (p) => formatCurrency(p.estimatedValue) },
+                  { header: 'Progress', accessor: (p) => `${p.progress}%` },
+                  { header: 'Tanggal', accessor: (p) => p.date },
+                ],
+                'daftar_proyek',
+              )}
+            >
+              Export CSV
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
+              onClick={() => navigate('/projects/new')}
+            >
+              Proyek Baru
+            </Button>
+          </div>
         }
       />
 

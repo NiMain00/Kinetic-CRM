@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { useProjectStore } from '@/stores/projectStore';
+import { exportCSV } from '@/utils/export';
 import type { KpiTarget } from '@/types/domain/users';
 
 function formatCurrency(value: number): string {
@@ -160,9 +160,19 @@ export default function KPIReportPage() {
               <option>2025</option>
               <option>2026</option>
             </select>
-            <button onClick={() => toast.success('Export KPI Report sedang diproses.')} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5" aria-label="Export">
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              Export
+            <button onClick={() => exportCSV(
+              kpiData,
+              [
+                { header: 'KPI', accessor: (k) => k.name },
+                { header: 'Target', accessor: (k) => formatTarget(k) },
+                { header: 'Actual', accessor: (k) => formatValue(k) },
+                { header: 'Progress', accessor: (k) => `${getPercent(k.actualValue, k.targetValue)}%` },
+                { header: 'Status', accessor: (k) => statusConfig[k.status]?.label || k.status },
+              ],
+              'kpi_report',
+            )} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5" aria-label="Export CSV">
+              <span className="material-symbols-outlined text-[18px]">file_download</span>
+              Export CSV
             </button>
           </div>
         </div>

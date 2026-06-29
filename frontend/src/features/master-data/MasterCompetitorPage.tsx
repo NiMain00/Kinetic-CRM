@@ -41,7 +41,7 @@ export default function MasterCompetitorPage() {
       toast.success('Kompetitor berhasil diperbarui');
     } else {
       const id = `CP-${String(competitors.length + 1).padStart(3, '0')}`;
-      addData<MasterCompetitor>('competitors', { ...form, id } as MasterCompetitor);
+      addData<MasterCompetitor>('competitors', { code: form.name?.slice(0, 5).toUpperCase() || '', industry_id: null, bidang_usaha: '', website: '', description: form.notes || '', is_active: true, ...form, id } as MasterCompetitor);
       toast.success('Kompetitor berhasil ditambahkan');
     }
     setDrawerOpen(false);
