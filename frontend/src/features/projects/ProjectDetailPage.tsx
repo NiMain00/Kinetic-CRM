@@ -8,6 +8,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useStatusStepMap, useNextPhaseMap } from '@/hooks/useConfigData';
 import { usePermission } from '@/hooks/usePermission';
+import { useConfigStore } from '@/stores/configStore';
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -50,6 +51,19 @@ export default function ProjectDetailView({
   const NEXT_PHASE_MAP = useNextPhaseMap();
 
   const project = propProject || storeProject;
+
+  // Derive progress from current status
+  const projectPhases = useConfigStore((s) => s.projectPhases);
+  const displayProgress = React.useMemo(() => {
+    if (!project) return 0;
+    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    const idx = active.findIndex((p) => p.status === project.status);
+    if (idx < 0) return project.progress ?? 0;
+    return Math.round((idx / (active.length - 1)) * 100);
+  }, [project?.status, projectPhases]);
+
+  // Override project progress with derived value for display
+  const displayProject = project ? { ...project, progress: displayProgress } : undefined;
 
   // Cek apakah project berasal dari prospek Non Potensial (Fase 4 item 4.2)
   const sourceProspect = project?.sourceProspectId ? getProspectById(project.sourceProspectId) : undefined;
@@ -400,7 +414,7 @@ export default function ProjectDetailView({
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'Overview' && (
-            <OverviewTab project={project} onShowNotification={handleShowNotification} />
+            <OverviewTab project={displayProject} onShowNotification={handleShowNotification} />
           )}
 
           {/* Locked tab restriction */}

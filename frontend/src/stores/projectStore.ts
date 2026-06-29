@@ -11,6 +11,7 @@ import type {
   TimelineEvent,
 } from '@/types/domain';
 import { INITIAL_PROJECTS } from '@/services/mock-data';
+// NOTE: Cross-store coupling via getState() — consider refactoring to event pattern
 import { useApprovalStore } from './approvalStore';
 import { useNotificationStore } from './notificationStore';
 
@@ -154,6 +155,16 @@ export const useProjectStore = create<ProjectState>()(
           projects: s.projects.map((p) => (p.id === id ? { ...p, documents } : p)),
         })),
     }),
-    { name: 'kinetic-projects' },
+    {
+      name: 'kinetic-projects',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) {
+          return { projects: current.projects || [] };
+        }
+        return current as ProjectState;
+      },
+    },
   ),
 );

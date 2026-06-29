@@ -31,6 +31,7 @@ export interface AuditLogEntry {
   impact: 'Low' | 'Medium' | 'High';
 }
 
+/** KPI metric type used by KPI dashboard and target pages (not config). */
 export interface KpiTarget {
   id: string;
   name: string;

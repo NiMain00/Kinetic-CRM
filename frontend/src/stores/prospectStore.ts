@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Prospect } from '@/types/domain';
 import { INITIAL_PROSPECTS } from '@/services/mock-data';
+// NOTE: Cross-store coupling — consider refactoring to event pattern
 import { useApprovalStore } from './approvalStore';
 
 interface ProspectState {
@@ -31,6 +32,14 @@ export const useProspectStore = create<ProspectState>()(
       },
       getProspectById: (id) => get().prospects.find((p) => p.id === id),
     }),
-    { name: 'kinetic-prospects' },
+    {
+      name: 'kinetic-prospects',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) return { prospects: current.prospects || [] };
+        return current;
+      },
+    },
   ),
 );

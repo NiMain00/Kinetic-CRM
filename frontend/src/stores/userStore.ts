@@ -34,6 +34,14 @@ export const useUserStore = create<UserState>()(
         set((s) => ({ users: s.users.filter((u) => u.id !== id) })),
       getUserById: (id) => get().users.find((u) => u.id === id),
     }),
-    { name: 'kinetic-users' },
+    {
+      name: 'kinetic-users',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) return { users: current.users || [] };
+        return current;
+      },
+    },
   ),
 );

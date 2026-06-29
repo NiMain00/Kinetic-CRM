@@ -18,7 +18,8 @@
     "paths": {
       "@/*": [
         "./frontend/src/*"
-      ]
+      ],
+      "shared": ["./shared/src/index.ts"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true

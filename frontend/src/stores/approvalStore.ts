@@ -37,6 +37,16 @@ export const useApprovalStore = create<ApprovalState>()(
 
       removeApproval: (id) => set(removeById(id)),
     }),
-    { name: 'kinetic-approvals' },
+    {
+      name: 'kinetic-approvals',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) {
+          return { approvals: current.approvals || [] };
+        }
+        return current as ApprovalState;
+      },
+    },
   ),
 );

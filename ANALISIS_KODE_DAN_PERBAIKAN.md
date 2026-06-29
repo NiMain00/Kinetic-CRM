@@ -8,9 +8,11 @@
 ## Ringkasan
 
 - **Total file diperiksa:** ~100+ file (stores, services, routes, guards, pages, components, hooks, types, utils, shared)
-- **Issues ditemukan:** 27 (2 Critical, 8 High, 12 Medium, 5 Low)
-- **Issues diperbaiki:** 9 (langsung diperbaiki dalam sesi ini)
+- **Issues ditemukan:** 30+ (2 Critical, 8 High, 15+ Medium, 5 Low)
+- **Issues diperbaiki:** 20 (langsung diperbaiki dalam dua sesi)
 - **TypeScript lint:** ✅ Lolos (0 error)
+- **Sesi 1:** 9 fixes — auth token, mock-token, file extensions, route paths, guards, dll.
+- **Sesi 2:** 11 fixes — hook duplikasi, Axios interceptor, versioning persist, dead code, schema konsolidasi, dll.
 
 ---
 
@@ -196,40 +198,54 @@
 
 ---
 
-## ✅ Ringkasan Perbaikan yang Dilakukan
+## ✅ Ringkasan Perbaikan yang Dilakukan (20 fixes)
 
 | # | Perbaikan | File |
 |---|-----------|------|
 | 1 | Auth token baca dari Zustand store, bukan localStorage raw | `services/api-client.ts` |
 | 2 | Hardcoded `'mock-token'` diganti generate dinamis | `routes/page-adapter.tsx` |
-| 3 | Route `/project/` → `/projects/` | `routes/router.tsx`, `routes/page-adapter.tsx` |
-| 4 | PermissionRoute loading guard | `routes/guards.tsx` |
+| 3 | Route `/project/` → `/projects/` (konsisten plural) | `routes/router.tsx`, `routes/page-adapter.tsx` |
+| 4 | PermissionRoute loading guard (spinner jika roles belum siap) | `routes/guards.tsx` |
 | 5 | Comma-separated extensions dipisah + MIME types lengkap | `stores/configStore.ts` |
 | 6 | Mutasi array di migration function diperbaiki (copy + push) | `stores/masterDataStore.ts`, `stores/configStore.ts` |
-| 7 | Duplikasi approval CRUD diekstrak ke fungsi bersama | `stores/approvalStore.ts` |
-| 8 | Barrel export shared/index.ts dilengkapi | `components/shared/index.ts` |
+| 7 | Duplikasi approval CRUD diekstrak ke fungsi `removeById` | `stores/approvalStore.ts` |
+| 8 | Barrel export shared/index.ts dilengkapi (BulkActions, CalendarView, dll) | `components/shared/index.ts` |
+| 9 | **Sesi 2:** Hapus hook duplikat `queries/useConfig.ts` (11 hook, tidak ada yg import) | `hooks/queries/useConfig.ts` (deleted) |
+| 10 | **Sesi 2:** Tambah Axios response interceptor (401 → auto logout + redirect) | `services/api-client.ts` |
+| 11 | **Sesi 2:** Versioning persist store (8 store dapat `version: 1`) | authStore, themeStore, projectStore, prospectStore, approvalStore, customerStore, preferencesStore, userStore |
+| 12 | **Sesi 2:** Hapus DOM side effect dari themeStore (pindah ke App.tsx) | `stores/themeStore.ts` |
+| 13 | **Sesi 2:** Hapus dead code `enums.ts` (tidak diimport, kontradiktif) | `types/common/enums.ts` (deleted) |
+| 14 | **Sesi 2:** Hapus dead code `approval.ts` (duplikat `ApprovalItem`) | `types/domain/approval.ts` (deleted) |
+| 15 | **Sesi 2:** Hapus redundant `INITIAL_CUSTOMERS` dari types/domain/index.ts | `types/domain/index.ts` |
+| 16 | **Sesi 2:** Cross-store coupling — tambah warning comment | `stores/projectStore.ts`, `stores/prospectStore.ts` |
+| 17 | **Sesi 2:** Schema duplication — `validators.ts` re-export dari `shared/` | `utils/validators.ts`, `shared/src/index.ts` |
+| 18 | **Sesi 2:** `prospectSchema.potensiUnit` jadi required (sinkron dgn type) | `shared/src/index.ts` |
+| 19 | **Sesi 2:** `userSchema.role` jadi strict enum (sinkron dgn `UserRole`) | `shared/src/index.ts` |
+| 20 | **Sesi 2:** `slaConfigSchema` error message Indonesia di shared | `shared/src/index.ts` |
 
 ---
 
-## 📋 Rekomendasi Prioritas Berikutnya
+## 📋 Rekomendasi Masih Terbuka
 
-### Segera (High Impact):
-1. **Konsolidasi hook duplikat** — `useConfigData.ts` vs `queries/useConfig.ts`
-2. **Tambahkan Axios response interceptor** — centralized error handling (401 redirect, toast, logging)
-3. **Versioning persist store** — semua store tanpa version
-4. **Fix `KpiTarget` dual shape** — konsolidasi type definition
+### Prioritas Tinggi:
+1. **Error handling di semua service** — Tambahkan try/catch + error transformation. Butuh refactor ~15 file.
+2. **Missing type generics** — `auth.ts`, `projects.ts`, `prospects.ts` — `res.data.data` masih `any`.
+3. **Konsolidasi data user** — `userStore.ts` vs `masterDataStore.ts` — data user terpecah di 2 store dengan tipe berbeda.
+4. **`users/*` orphan pages** — `UsersPage.tsx`, `UserListPage.tsx`, `UserFormPage.tsx`, `UserDetailPage.tsx` — tidak ada route yang import.
+5. **`KPIReportPage.tsx` orphaned** — tidak di-register di router.
 
-### Medium Term:
-5. **Hapus dead code** — `enums.ts`, `users/*.tsx` (orphaned pages), `KPIReportPage.tsx`
-6. **Cross-store coupling** — refactor ke event pattern
-7. **Redirect users** — tambah tab parameter
-8. **Schema duplication** — frontend import from `shared/`
+### Prioritas Sedang:
+6. **ConfigService** (`services/config.ts`) — tidak pakai api-client, baca langsung dari Zustand store.
+7. **Users redirect** — `/users/*` → `/master-data?tab=users` (butuh dukungan tab di MasterDataPage).
+8. **Design tokens** — CalendarView, ActivityFeed, ShortcutHelpModal pakai hardcoded `bg-slate-*`.
+9. **Keyboard shortcuts buffer leak** — `useKeyboardShortcuts.ts` buffer tak pernah dibersihkan.
 
-### Perbaikan Kualitas:
-9. **Accessibility** — missing `type="button"`, `aria-hidden`, keyboard nav
-10. **Design tokens** — CalendarView, ActivityFeed, ShortcutHelpModal
-11. **`useKeyboardShortcuts` buffer leak** — tambah timeout cleanup
-12. **`themeStore` side effects** — pindah DOM ops ke komponen
+### Prioritas Rendah / Kualitas:
+10. **Accessibility** — missing `type="button"`, `aria-hidden` pada beberapa komponen.
+11. **Settings gear di Topbar** — tombol tanpa `onClick`.
+12. **`Table.tsx` renderPagination hoisting** — code smell, pindahkan ke atas return.
+13. **Duplicate hook `useAppRoles`/`useQuestionTypes` dll di `useConfigData.ts`** — masih ada alias redundan.
+14. **TypeScript strict mode** — belum diaktifkan, banyak `any` yang lolos.
 
 ---
 

@@ -11,16 +11,19 @@ export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       dark: false,
-      toggle: () => set((s) => {
-        const next = !s.dark;
-        document.documentElement.classList.toggle('dark', next);
-        return { dark: next };
-      }),
-      setDark: (v) => {
-        document.documentElement.classList.toggle('dark', v);
-        set({ dark: v });
-      },
+      toggle: () => set((s) => ({ dark: !s.dark })),
+      setDark: (v) => set({ dark: v }),
     }),
-    { name: 'kinetic-theme' },
+    {
+      name: 'kinetic-theme',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) {
+          return { dark: current.dark || false, toggle: () => {}, setDark: () => {} };
+        }
+        return current as ThemeState;
+      },
+    },
   ),
 );

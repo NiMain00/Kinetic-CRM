@@ -347,8 +347,14 @@ const INITIAL_DEPARTMENTS: MasterDepartment[] = [
 const INITIAL_USERS: MasterUser[] = [
   { id: '1', name: 'Ahmad Sulistyo', branch: 'Cabang Jakarta Pusat', username: 'asulistyo_jkp', email: 'ahmad.s@kinetic.co.id', role: 'Cabang', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-primary/10 text-primary' },
   { id: '2', name: 'Bambang Permadi', branch: 'Project Management', username: 'bambang.pm', email: 'b.permadi@kinetic.co.id', role: 'PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-purple/10 text-status-purple' },
-  { id: '3', name: 'Rina Marlina', branch: 'Operations Dept', username: 'rina.ops', email: 'rina.marlina@kinetic.co.id', role: 'Dept', roleColor: 'bg-secondary-fixed text-on-secondary-fixed-variant', active: false, avatarColor: 'bg-status-orange/10 text-status-orange' },
+  { id: '3', name: 'Rina Marlina', branch: 'Operations Dept', username: 'rina.ops', email: 'rina.marlina@kinetic.co.id', role: 'Dept', roleColor: 'bg-secondary-fixed text-on-secondary-fixed-variant', active: true, avatarColor: 'bg-status-orange/10 text-status-orange' },
   { id: '4', name: 'Doni Wahyudi', branch: 'Head Office', username: 'doni.admin', email: 'doni.w@kinetic.co.id', role: 'Admin', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
+  { id: '5', name: 'Siti Rahmawati', branch: 'Cabang Bandung', username: 'siti.cbg', email: 'siti.r@kinetic.co.id', role: 'Cabang', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-status-teal/10 text-status-teal' },
+  { id: '6', name: 'Hendra Gunawan', branch: 'Project Management', username: 'hendra.pm', email: 'hendra.g@kinetic.co.id', role: 'PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-indigo/10 text-status-indigo' },
+  { id: '7', name: 'Dewi Sartika', branch: 'Management', username: 'dewi.mgt', email: 'dewi.s@kinetic.co.id', role: 'Management', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-orange/10 text-status-orange' },
+  { id: '8', name: 'Fajar Prasetyo', branch: 'Reviewer', username: 'fajar.rev', email: 'fajar.p@kinetic.co.id', role: 'Reviewer', roleColor: 'bg-status-purple/10 text-status-purple', active: true, avatarColor: 'bg-status-blue/10 text-status-blue' },
+  { id: '9', name: 'Lestari Ningsih', branch: 'Staff Operasional', username: 'lestari.staff', email: 'lestari.n@kinetic.co.id', role: 'Staff', roleColor: 'bg-surface-variant text-on-surface-variant', active: true, avatarColor: 'bg-surface-variant text-on-surface-variant' },
+  { id: '10', name: 'Bagus Wirawan', branch: 'Branch Manager', username: 'bagus.bm', email: 'bagus.w@kinetic.co.id', role: 'Branch Manager', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
 ];
 
 const INITIAL_AUDIT_LOGS: MasterAuditLog[] = [
@@ -491,10 +497,10 @@ export const useMasterDataStore = create<MasterDataState>()(
     }),
     {
       name: 'kinetic-master-data',
-      version: 2,
+      version: 3,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0 || version === 1) {
+        if (version === 0 || version === 1 || version === 2) {
           // Merge: tambah item baru dari INITIAL_* tanpa hapus data user
           const mergeById = <T extends { id: string }>(persistedArr: T[] | undefined, initial: T[]): T[] => {
             if (!persistedArr) return initial;

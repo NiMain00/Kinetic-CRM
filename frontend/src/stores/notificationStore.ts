@@ -93,6 +93,11 @@ export const useNotificationStore = create<NotificationState>()(
     {
       name: 'kinetic-notifications',
       version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) return { notifications: current.notifications || [], unreadCount: (current.notifications || []).filter((n: any) => !n.read).length };
+        return current;
+      },
     },
   ),
 );

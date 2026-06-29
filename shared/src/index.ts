@@ -19,7 +19,7 @@ export const prospectSchema = z.object({
   estimatedValue: z.number().min(0).optional(),
   description: z.string().optional(),
   branch: z.string().min(1, 'Cabang wajib dipilih'),
-  potensiUnit: z.number().min(0).optional(),
+  potensiUnit: z.number().min(0, 'Unit potensi tidak boleh negatif'),
   projectType: z.enum(['Tender', 'Prospecting']).optional(),
 });
 
@@ -36,7 +36,7 @@ export const userSchema = z.object({
   username: z.string().min(3, 'Username minimal 3 karakter'),
   fullName: z.string().min(1, 'Nama lengkap wajib diisi'),
   email: z.string().email('Format email tidak valid'),
-  role: z.string().min(1, 'Role wajib dipilih'),
+  role: z.enum(['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], { message: 'Role tidak valid' }),
   branch: z.string().min(1, 'Cabang wajib dipilih'),
   department: z.string().min(1, 'Departemen wajib dipilih'),
   phone: z.string().min(8, 'No. telepon minimal 8 karakter'),
@@ -52,10 +52,10 @@ export const loginSchema = z.object({
 export const slaConfigSchema = z.object({
   name: z.string().min(1, 'Nama SLA wajib diisi'),
   entityType: z.enum(['prospek', 'rks', 'lphs', 'approval']),
-  warningThreshold: z.number().min(1),
-  criticalThreshold: z.number().min(1),
+  warningThreshold: z.number().min(1, 'Warning threshold minimal 1'),
+  criticalThreshold: z.number().min(1, 'Critical threshold minimal 1'),
   unit: z.enum(['hours', 'days']),
-  escalationRole: z.string().min(1),
+  escalationRole: z.string().min(1, 'Role eskalasi wajib dipilih'),
   active: z.boolean().default(true),
 });
 

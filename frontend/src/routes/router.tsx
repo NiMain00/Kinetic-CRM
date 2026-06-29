@@ -135,7 +135,7 @@ export default function AppRouter() {
         {/* Projects */}
         <Route path="projects" element={<ProjectListPage />} />
         <Route path="projects/new" element={<ProjectFormPage />} />
-        <Route path="projects/:projectId/:tab?" element={<ProjectDetailPage />} />
+        <Route path="project/:projectId/:tab?" element={<ProjectDetailPage />} />
 
         {/* Approvals */}
         <Route path="approvals" element={<ApprovalInboxPage />} />

@@ -29,6 +29,14 @@ export const useAuthStore = create<AuthState>()(
       login: (token, user) => set({ token, user, isAuthenticated: true }),
       logout: () => set({ token: null, user: null, isAuthenticated: false }),
     }),
-    { name: 'kinetic-auth' },
+    {
+      name: 'kinetic-auth',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) return { user: null, token: null, isAuthenticated: false };
+        return current;
+      },
+    },
   ),
 );

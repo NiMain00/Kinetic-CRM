@@ -30,6 +30,14 @@ export const useCustomerStore = create<CustomerState>()(
         })),
       getCustomerById: (id) => get().customers.find((c) => c.id === id),
     }),
-    { name: 'kinetic-customers' },
+    {
+      name: 'kinetic-customers',
+      version: 1,
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        if (version === 0) return { customers: current.customers || [] };
+        return current;
+      },
+    },
   ),
 );
