@@ -55,16 +55,26 @@ export default function DashboardPage() {
 
   const chartData = useMemo(() => {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN'];
-    const total = projects.length || 1;
-    const won = projects.filter((p) => p.winnerDetails?.outcome === 'menang').length;
-    const lost = projects.filter((p) => p.winnerDetails?.outcome === 'kalah').length;
-    const other = total - won - lost;
-    const winShare = Math.round((won / total) * 100);
-    const loseShare = Math.round((lost / total) * 100);
+    const monthlyWin = [0, 0, 0, 0, 0, 0];
+    const monthlyLose = [0, 0, 0, 0, 0, 0];
+
+    projects.forEach((p) => {
+      const dateStr = p.winnerDetails?.startDate || p.date;
+      if (!dateStr) return;
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return;
+      const month = d.getMonth();
+      if (month < 0 || month > 5) return;
+      if (p.winnerDetails?.outcome === 'menang') monthlyWin[month]++;
+      else if (p.winnerDetails?.outcome === 'kalah') monthlyLose[month]++;
+    });
+
+    const maxVal = Math.max(...monthlyWin.map((v, i) => v + monthlyLose[i]), 1);
+
     return months.map((m, i) => ({
       m,
-      win: Math.max(5, Math.round(winShare * (0.7 + Math.random() * 0.6))),
-      lose: Math.max(3, Math.round(loseShare * (0.7 + Math.random() * 0.6))),
+      win: Math.max(3, Math.round((monthlyWin[i] / maxVal) * 100)),
+      lose: Math.max(3, Math.round((monthlyLose[i] / maxVal) * 100)),
     }));
   }, [projects]);
 

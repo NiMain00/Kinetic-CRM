@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '@/stores/notificationStore';
 
 interface NotificationsViewProps {
@@ -15,6 +16,7 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export default function NotificationsView({ onShowNotification, onNavigateToProject }: NotificationsViewProps) {
+  const navigate = useNavigate();
   const { notifications, unreadCount, addNotification, markAsRead, markAllAsRead, removeNotification } = useNotificationStore();
 
   const [activeTab, setActiveTab] = useState<'all' | 'unread' | 'read'>('all');
@@ -257,6 +259,9 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   onClick={() => {
                     if (!n.read) {
                       markAsRead(n.id);
+                    }
+                    if (n.entityId && n.entityType) {
+                      navigate(n.entityType === 'project' ? `/project/${n.entityId}` : `/prospects/${n.entityId}`);
                     }
                   }}
                   className={`border-l-4 rounded-xl shadow-xs border border-border transition-all hover:shadow-md cursor-pointer relative overflow-hidden ${

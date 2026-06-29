@@ -5,7 +5,8 @@ import type { ApprovalItem, SlaConfig } from '../../types/domain';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
-import { useSlaConfigs } from '@/hooks/useConfigData';
+import { useSlaConfigs, useNextPhaseMap } from '@/hooks/useConfigData';
+import { useNotificationStore } from '@/stores/notificationStore';
 import { formatRelativeTime } from '@/utils/formatters';
 
 interface ApprovalInboxViewProps {
@@ -34,10 +35,12 @@ export default function ApprovalInboxView({
 }: ApprovalInboxViewProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { approvals } = useApprovalStore();
-  const { prospects } = useProspectStore();
-  const { projects } = useProjectStore();
+  const { approvals, approveItem } = useApprovalStore();
+  const { prospects, updateProspect } = useProspectStore();
+  const { projects, updateProject } = useProjectStore();
   const slaConfigs = useSlaConfigs();
+  const addNotification = useNotificationStore((s) => s.addNotification);
+  const NEXT_PHASE_MAP = useNextPhaseMap();
   const [filterType, setFilterType] = React.useState<FilterType>('Semua');
 
   const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
@@ -78,6 +81,59 @@ export default function ApprovalInboxView({
       const tab = tabMap[item.type] || 'overview';
       navigate(`/project/${item.entityId}/${tab}`);
     }
+  };
+
+  const handleInlineApprove = (item: ApprovalItem) => {
+    approveItem(item.id);
+    if (item.entityType === 'prospect' && item.entityId) {
+      const prospect = prospects.find(p => p.id === item.entityId);
+      if (prospect) {
+        updateProspect(item.entityId, { status: 'Approved' });
+        onShowNotification(`Prospek "${prospect.name}" berhasil disetujui.`, 'success');
+      }
+    } else if (item.entityType === 'project' && item.entityId) {
+      const project = projects.find(p => p.id === item.entityId);
+      if (project) {
+        const next = NEXT_PHASE_MAP[project.status];
+        if (next) {
+          updateProject(item.entityId, next);
+          onShowNotification(`Proyek "${project.name}" maju ke fase "${next.status}".`, 'success');
+        } else {
+          onShowNotification(`Proyek "${project.name}" sudah di fase terakhir.`, 'warning');
+        }
+      }
+    }
+    addNotification({
+      title: `${item.type} Disetujui`,
+      message: `${item.type} "${item.name}" telah disetujui dari Approval Inbox.`,
+      type: 'approval',
+      entityId: item.entityId,
+      entityType: item.entityType,
+    });
+  };
+
+  const handleInlineReject = (item: ApprovalItem) => {
+    approveItem(item.id);
+    if (item.entityType === 'prospect' && item.entityId) {
+      const prospect = prospects.find(p => p.id === item.entityId);
+      if (prospect) {
+        updateProspect(item.entityId, { status: 'Revision' });
+        onShowNotification(`Prospek "${prospect.name}" dikembalikan untuk revisi.`, 'error');
+      }
+    } else if (item.entityType === 'project' && item.entityId) {
+      const project = projects.find(p => p.id === item.entityId);
+      if (project) {
+        updateProject(item.entityId, { status: 'Revision' });
+        onShowNotification(`Proyek "${project.name}" dikembalikan untuk revisi.`, 'error');
+      }
+    }
+    addNotification({
+      title: `${item.type} Revisi`,
+      message: `${item.type} "${item.name}" ditolak dan memerlukan revisi.`,
+      type: 'revision',
+      entityId: item.entityId,
+      entityType: item.entityType,
+    });
   };
 
   const prospekApprovals = filteredApprovals.filter((a) => a.type === 'Prospek');
@@ -122,11 +178,25 @@ export default function ApprovalInboxView({
         <span className="text-secondary">{row.branch}</span>
         <span className="font-mono-data text-on-surface">{formatRelativeTime(row.waitingSince)}</span>
       </div>
+      <div className="flex gap-2">
+        <button
+          onClick={() => handleReview(row)}
+          className="flex-1 py-2.5 bg-primary text-white rounded-lg font-label-sm text-sm font-semibold touch-min-h"
+        >
+          Review
+        </button>
+        <button
+          onClick={() => handleInlineApprove(row)}
+          className="flex-1 py-2.5 bg-success text-white rounded-lg font-label-sm text-sm font-semibold touch-min-h"
+        >
+          Setujui
+        </button>
+      </div>
       <button
-        onClick={() => handleReview(row)}
-        className="w-full py-2.5 bg-primary text-white rounded-lg font-label-sm text-sm font-semibold touch-min-h"
+        onClick={() => handleInlineReject(row)}
+        className="w-full py-2 bg-danger/10 text-danger rounded-lg font-label-sm text-sm font-semibold touch-min-h"
       >
-        Review
+        Tolak
       </button>
     </div>
   );
@@ -160,7 +230,11 @@ export default function ApprovalInboxView({
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${slaBadgeClass(computeSlaStatus(row.waitingSince, row.type))}`}>{computeSlaStatus(row.waitingSince, row.type)}</span>
             </td>
             <td className="px-6 py-4 text-right">
-              <button onClick={() => handleReview(row)} className="bg-surface border border-border text-primary px-4 py-1.5 rounded font-label-sm text-sm hover:bg-primary hover:text-white transition-all shadow-sm font-semibold touch-min-h">Review</button>
+              <div className="flex gap-1.5 justify-end">
+                <button onClick={() => handleReview(row)} className="bg-surface border border-border text-primary px-3 py-1.5 rounded font-label-sm text-sm hover:bg-primary hover:text-white transition-all shadow-sm font-semibold touch-min-h">Review</button>
+                <button onClick={() => handleInlineApprove(row)} className="bg-success/10 border border-success/30 text-success px-3 py-1.5 rounded font-label-sm text-sm hover:bg-success hover:text-white transition-all shadow-sm font-semibold touch-min-h">Setujui</button>
+                <button onClick={() => handleInlineReject(row)} className="bg-danger/10 border border-danger/30 text-danger px-3 py-1.5 rounded font-label-sm text-sm hover:bg-danger hover:text-white transition-all shadow-sm font-semibold touch-min-h">Tolak</button>
+              </div>
             </td>
           </tr>
         ))}
