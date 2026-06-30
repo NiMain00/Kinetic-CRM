@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Project, CompetitorEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
@@ -12,15 +12,12 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
   const navigate = useNavigate();
   const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
-  const [competitors, setCompetitors] = useState<CompetitorEntry[]>(project?.competitors || []);
+  // Use project?.competitors directly as source of truth (no local state)
+  const competitors = project?.competitors || [];
   const [newCompName, setNewCompName] = useState('');
   const [newCompPrice, setNewCompPrice] = useState('');
   const [newCompAdv, setNewCompAdv] = useState('');
   const [newCompNote, setNewCompNote] = useState('');
-
-  useEffect(() => {
-    setCompetitors(project?.competitors || []);
-  }, [project?.id]);
 
   const handleAddCompetitor = () => {
     if (!project?.id) return;
@@ -36,7 +33,6 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
       notes: newCompNote || '-',
     };
     addProjectCompetitor(project.id, newItem);
-    setCompetitors([...competitors, newItem]);
     setNewCompName('');
     setNewCompPrice('');
     setNewCompAdv('');

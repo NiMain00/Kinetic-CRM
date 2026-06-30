@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
+import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency } from '@/utils/formatters';
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
 import { Button, Card } from '@/components/ui';
@@ -32,6 +33,8 @@ export default function ProjectListPage() {
 
   const projects = useProjectStore((s) => s.projects);
   const projectStatuses = useProjectStatuses();
+  const authUser = useAuthStore((s) => s.user);
+  const isFullAccess = authUser?.roleName !== 'Cabang';
 
   const statusTabs = useMemo(() => {
     const tabs = [{ id: 'all', label: 'Semua Proyek' }];
@@ -73,6 +76,12 @@ export default function ProjectListPage() {
 
   const filtered = useMemo(() => {
     let list = projects;
+
+    // User-based filtering: non-admin users only see their own projects
+    if (!isFullAccess) {
+      list = list.filter((p) => !p.createdByUserId || p.createdByUserId === authUser?.id);
+    }
+
     if (activeTab !== 'all') {
       list = list.filter((p) => {
         // Coba cocokkan langsung, lalu melalui mapping label->kode
@@ -108,7 +117,7 @@ export default function ProjectListPage() {
       if (!isNaN(max)) list = list.filter((p) => p.estimatedValue <= max);
     }
     return list;
-  }, [activeTab, search, projects, filterValues]);
+  }, [activeTab, search, projects, filterValues, isFullAccess, authUser?.id]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(

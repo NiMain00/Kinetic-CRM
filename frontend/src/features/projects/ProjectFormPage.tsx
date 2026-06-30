@@ -51,11 +51,13 @@ export default function ProjectFormPage() {
       estimatedValue: data.estimatedValue || 0,
       type: data.type as 'Tender' | 'Prospecting',
       deadlineTender: data.deadlineTender || undefined,
+      createdByUserId: user?.id,
     };
 
     addProject(newProject);
     toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
-    navigate('/projects');
+    // Force reload agar list langsung fresh dari store (Zustand persist flush async)
+    window.location.href = '/projects';
   };
 
   const fieldClass = (field: keyof ProjectFormData) =>

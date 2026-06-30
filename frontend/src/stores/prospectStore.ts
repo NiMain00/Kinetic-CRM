@@ -34,10 +34,13 @@ export const useProspectStore = create<ProspectState>()(
     }),
     {
       name: 'kinetic-prospects',
-      version: 1,
+      version: 2,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0) return { prospects: current.prospects || [] };
+        if (version < 2) {
+          // v2: Force re-init with fresh mock data that includes createdByUserId
+          return { prospects: INITIAL_PROSPECTS };
+        }
         return current;
       },
     },

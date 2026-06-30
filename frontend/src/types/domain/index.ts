@@ -37,6 +37,7 @@ export interface Prospect {
   projectType?: 'Tender' | 'Prospecting';
   isConverted?: boolean;
   projectId?: string;
+  createdByUserId?: string;
 }
 
 export interface RksData {
@@ -131,6 +132,7 @@ export interface Project {
   sourceProspectId?: string;
   providerExisting?: string;
   deadlineTender?: string;
+  createdByUserId?: string;
   pricing?: {
     value: number;
     margin: number;
@@ -170,6 +172,7 @@ export interface ApprovalItem {
   client?: string;
   entityId?: string;
   entityType?: 'prospect' | 'project';
+  assigneeUserId?: string;
 }
 
 export interface TimelineEvent {

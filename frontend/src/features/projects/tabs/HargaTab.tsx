@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Project, CompetitorEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency } from '@/utils/formatters';
-import { Card, Button, Input, Table, CurrencyInput } from '@/components/ui';
+import { Button, Input, Table, CurrencyInput } from '@/components/ui';
 import type { Column } from '@/components/ui';
 
 interface TabProps {
@@ -15,43 +15,48 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
   const navigate = useNavigate();
   const updateProjectPricing = useProjectStore((s) => s.updateProjectPricing);
   const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
-  const updateProjectCompetitors = useProjectStore((s) => s.updateProjectCompetitors);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
 
   const [hargaPenawaran, setHargaPenawaran] = useState(project?.pricing?.value || 0);
   const [marginPercentage, setMarginPercentage] = useState(project?.pricing?.margin || 0);
   const [pricingNotes, setPricingNotes] = useState(project?.pricing?.note || '');
-  const [competitors, setCompetitors] = useState<CompetitorEntry[]>(project?.competitors || []);
   const [newCompName, setNewCompName] = useState('');
   const [newCompPrice, setNewCompPrice] = useState('');
   const [newCompAdv, setNewCompAdv] = useState('');
   const [newCompNote, setNewCompNote] = useState('');
+
+  // Use project?.competitors directly as source of truth (no local state needed)
+  const competitors = project?.competitors || [];
 
   // Sync from project when switching projects
   useEffect(() => {
     setHargaPenawaran(project?.pricing?.value || 0);
     setMarginPercentage(project?.pricing?.margin || 0);
     setPricingNotes(project?.pricing?.note || '');
-    setCompetitors(project?.competitors || []);
   }, [project?.id]);
 
-  const handleSavePricing = () => {
+  // Auto-save pricing data to store whenever form fields change
+  // Uses a ref to avoid saving on initial mount (only save on user edits)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (!project?.id) return;
     updateProjectPricing(project.id, {
       value: hargaPenawaran,
       margin: marginPercentage,
       note: pricingNotes,
     });
+  }, [hargaPenawaran, marginPercentage, pricingNotes]);
+
+  const handleSavePricing = () => {
+    // Pricing auto-saves on change, this is now a no-op but kept for button compatibility
   };
 
   const handleConfirmPricing = () => {
     if (!project?.id) return;
-    // Save pricing data first
-    updateProjectPricing(project.id, {
-      value: hargaPenawaran,
-      margin: marginPercentage,
-      note: pricingNotes,
-    });
     // Add timeline event
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
@@ -79,7 +84,6 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
       notes: newCompNote || '-',
     };
     addProjectCompetitor(project.id, newItem);
-    setCompetitors(prev => [...prev, newItem]);
     setNewCompName(''); setNewCompPrice(''); setNewCompAdv(''); setNewCompNote('');
   };
 

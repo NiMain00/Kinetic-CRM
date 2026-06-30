@@ -157,11 +157,12 @@ export const useProjectStore = create<ProjectState>()(
     }),
     {
       name: 'kinetic-projects',
-      version: 1,
+      version: 3,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0) {
-          return { projects: current.projects || [] };
+        if (version < 3) {
+          // v3: Force re-init with fresh mock data that includes createdByUserId
+          return { ...current, projects: INITIAL_PROJECTS } as ProjectState;
         }
         return current as ProjectState;
       },

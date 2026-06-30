@@ -79,8 +79,8 @@ export default function Topbar({
         >
           <span className="material-symbols-outlined text-on-surface" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (
-            <span className="absolute top-2 right-2 w-3 h-3 bg-danger rounded-full ring-2 ring-surface flex items-center justify-center text-[8px] text-white font-extrabold">
-              {notificationCount}
+            <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-danger rounded-full ring-2 ring-surface">
+              <span className="text-[9px] leading-none text-white font-bold">{notificationCount > 99 ? '99+' : notificationCount}</span>
             </span>
           )}
         </button>

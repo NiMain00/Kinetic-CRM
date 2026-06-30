@@ -5,6 +5,7 @@ import { PageContainer, PageHeader } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useAuthStore } from '@/stores/authStore';
 import { useProjectStatuses } from '@/hooks/useConfigData';
 import { usePermission } from '@/hooks/usePermission';
 import { exportCSV } from '@/utils/export';
@@ -26,7 +27,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const addProject = useProjectStore((s) => s.addProject);
   const projects = useProjectStore((s) => s.projects);
+  const authUser = useAuthStore((s) => s.user);
   const { can } = usePermission();
+
+  const isFullAccess = authUser?.roleName !== 'Cabang';
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -59,6 +63,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       type: prospek.projectType || 'Prospecting',
       sourceProspectId: prospek.id,
       providerExisting: prospek.providerExisting,
+      createdByUserId: prospek.createdByUserId,
     };
 
     addProject(newProject as any);
@@ -89,6 +94,11 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   }, [projectStatuses]);
 
   const filteredProspects = prospects.filter(p => {
+    // User-based filtering: non-admin users only see their own prospects
+    if (!isFullAccess && p.createdByUserId && p.createdByUserId !== authUser?.id) {
+      return false;
+    }
+
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           p.client.toLowerCase().includes(searchQuery.toLowerCase());
     let matchesTab: boolean;

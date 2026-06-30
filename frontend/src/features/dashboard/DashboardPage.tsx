@@ -18,6 +18,8 @@ export default function DashboardPage() {
   const { projects } = useProjectStore();
   const user = useAuthStore((s) => s.user);
 
+  const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
+
   useEffect(() => {
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('id-ID', {
@@ -39,7 +41,7 @@ export default function DashboardPage() {
     return 'Normal';
   };
 
-  const pendingApprovals = approvals.slice(0, 5);
+  const pendingApprovals = userApprovals.slice(0, 5);
 
   const stats = useMemo(() => {
     const active = projects.filter((p) => p.status !== 'Selesai' && p.status !== 'Executing');
@@ -48,11 +50,11 @@ export default function DashboardPage() {
     return {
       totalActiveProjects: active.length,
       totalActiveValue: totalValue,
-      pendingApprovals: approvals.length,
+      pendingApprovals: userApprovals.length,
       criticalDeadlines: projects.filter((p) => p.deadlineTender && new Date(p.deadlineTender) <= new Date(Date.now() + 7 * 86400000)).length,
       winRate: projects.length ? Math.round((won.length / projects.length) * 100 * 10) / 10 : 0,
     };
-  }, [projects, approvals]);
+  }, [projects, userApprovals]);
 
   const chartData = useMemo(() => {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN'];

@@ -17,8 +17,8 @@ export default function AppLayout() {
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { unreadCount } = useNotificationStore();
-  const { getPendingCount } = useApprovalStore();
-  const pendingApprovalsCount = getPendingCount();
+  const { getPendingCountByUser } = useApprovalStore();
+  const pendingApprovalsCount = user?.id ? getPendingCountByUser(user.id) : 0;
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
 
@@ -88,7 +88,7 @@ export default function AppLayout() {
         <Topbar
           userName={userName}
           roleName={userRole}
-          notificationCount={unreadCount}
+          notificationCount={pendingApprovalsCount}
           onNotificationsClick={() => navigate('/notifications')}
           onProfileClick={() => navigate('/profile')}
           onMenuClick={() => setMobileSidebarOpen(true)}

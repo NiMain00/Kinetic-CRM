@@ -145,7 +145,7 @@ export default function ProspectFormPage() {
       customerType: customerMode,
       estimatedValue: formValue ?? undefined,
       description: formDesc,
-      branch: existingProspect?.branch || '',
+      branch: existingProspect?.branch || userBranch,
       potensiUnit: Number(potensiUnit) || 0,
       projectType,
     });
@@ -213,7 +213,7 @@ export default function ProspectFormPage() {
       status: autoStatus,
       prospectType,
       potensiUnit: potensi,
-      author: existingProspect?.author || 'Ahmad Faisal',
+      author: existingProspect?.author || (authUser?.name || authUser?.fullName || 'Unknown'),
       date: formDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       estimatedValue: formValue ?? undefined,
       description: formDesc,
@@ -222,6 +222,7 @@ export default function ProspectFormPage() {
       industryId: customerMode === 'existing' ? industryId : (newCustIndustryId || undefined),
       providerExisting: providerExisting || undefined,
       projectType: projectType,
+      createdByUserId: existingProspect?.createdByUserId || authUser?.id,
     };
 
     if (isEdit && existingProspect) {
@@ -244,11 +245,13 @@ export default function ProspectFormPage() {
         client: clientName,
         entityId: prospectId,
         entityType: 'prospect',
+        assigneeUserId: authUser?.id,
       });
     }
 
     toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');
-    navigate('/prospects');
+    // Force reload agar list langsung fresh dari store (Zustand persist flush async)
+    window.location.href = '/prospects';
     return true;
   };
 

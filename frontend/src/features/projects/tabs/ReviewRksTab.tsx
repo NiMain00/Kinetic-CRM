@@ -24,6 +24,8 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const canReview = userRole === 'PM' || userRole === 'Admin' || userRole === 'Super Admin';
   const addNotification = useNotificationStore((s) => s.addNotification);
   const addApproval = useApprovalStore((s) => s.addApproval);
+  const removeApproval = useApprovalStore((s) => s.removeApproval);
+  const approvals = useApprovalStore((s) => s.approvals);
 
   const [reviewNotes, setReviewNotes] = useState('');
 
@@ -47,17 +49,24 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const handleApprove = () => {
     if (!project?.id) return;
     updateProject(project.id, { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' });
+    // Hapus approval RKS yang sudah di-review
+    const rksApproval = approvals.find(a => a.entityId === project.id && a.type === 'RKS');
+    if (rksApproval) {
+      removeApproval(rksApproval.id);
+    }
+    // Buat approval LPHS untuk tahap berikutnya
     addApproval({
-      id: `app-rks-${project.id}-${Date.now()}`,
-      ref: `RKS-${project.code}`,
+      id: `app-lphs-${project.id}-${Date.now()}`,
+      ref: `LPHS-${project.code}`,
       name: project.name,
       branch: project.location,
       waitingSince: new Date().toISOString(),
       slaStatus: 'Normal',
-      type: 'RKS' as const,
+      type: 'LPHS',
       client: project.client,
       entityId: project.id,
       entityType: 'project',
+      assigneeUserId: authUser?.id,
     });
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,

@@ -13,14 +13,14 @@ export const INITIAL_CUSTOMERS: Customer[] = [
 ];
 
   export const INITIAL_PROSPECTS: Prospect[] = [
-    { id: '1', name: 'Modernization of Data Center Jakarta', client: 'PT. Telekom Nusantara', customerId: 'C002', customerType: 'existing', status: 'Potensial', prospectType: 'potensial', potensiUnit: 3, author: 'Andi Wijaya', date: 'Oct 24, 2023', estimatedValue: 1250000000, description: 'Pengadaan infrastruktur server modular untuk perluasan kapasitas regional base DC Jakarta.', branch: 'Jakarta Pusat' },
-    { id: '2', name: 'Supply of Industrial High-Voltage Cables', client: 'Energi Bangsa Corp', customerId: 'C003', customerType: 'existing', status: 'Approved', potensiUnit: 5, author: 'Siti Aminah', date: 'Oct 22, 2023', estimatedValue: 3400000000, description: 'Pengadaan kabel transmisi tegangan tinggi untuk gardu induk Sumatera Selatan.', branch: 'Surabaya' },
-    { id: '3', name: 'Surveillance System Implementation Phase 2', client: 'Secure City Group', customerId: 'C004', customerType: 'existing', status: 'Waiting PM', potensiUnit: 2, author: 'Budi Santoso', date: 'Oct 21, 2023', estimatedValue: 850000000, description: 'Instalasi pemantauan cerdas dengan IP camera berbasis AI di area komersial.', branch: 'Jakarta Selatan' },
-    { id: '4', name: 'Cloud Infrastructure Migration Strategy', client: 'Bank Artha Graha', customerId: 'C005', customerType: 'existing', status: 'Revision', potensiUnit: 1, author: 'Rina Kartika', date: 'Oct 19, 2023', estimatedValue: 1800000000, description: 'Consulting dan restrukturisasi database on-premise ke multi-cloud architecture.', branch: 'Jakarta Barat' },
-    { id: '5', name: 'Solar Panel Installation - North Branch', client: 'Lestari Eco Farms', customerType: 'new', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Andi Wijaya', date: 'Oct 18, 2023', estimatedValue: 950000000, branch: 'Bandung', customerData: { id: 'new-1', name: 'Lestari Eco Farms', code: 'LEF', type: 'swasta', city: 'Bandung', picName: 'Dewi Lestari', picPosition: 'Owner', picPhone: '0821-1234-5678', isNew: true, needsVerification: true } },
-    { id: '6', name: 'Enterprise Firewall Upgrade - Global', client: 'Defense Tech Solutions', status: 'Approved', potensiUnit: 4, author: 'Budi Santoso', date: 'Oct 15, 2023', estimatedValue: 600000000, branch: 'Jakarta Pusat' },
-    { id: '7', name: 'Network Optimization Project v3.0', client: 'Global Logistics Inc.', status: 'Waiting PM', potensiUnit: 2, author: 'Rina Kartika', date: 'Oct 14, 2023', estimatedValue: 1100000000, branch: 'Makassar' },
-    { id: '8', name: 'Warehouse Automation Consultation', client: 'Express Delivery Hub', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Siti Aminah', date: 'Oct 12, 2023', estimatedValue: 500000000, branch: 'Surabaya' },
+    { id: '1', name: 'Modernization of Data Center Jakarta', client: 'PT. Telekom Nusantara', customerId: 'C002', customerType: 'existing', status: 'Potensial', prospectType: 'potensial', potensiUnit: 3, author: 'Ahmad Sulistyo', date: 'Oct 24, 2023', estimatedValue: 1250000000, description: 'Pengadaan infrastruktur server modular untuk perluasan kapasitas regional base DC Jakarta.', branch: 'Jakarta Pusat', createdByUserId: '1' },
+    { id: '2', name: 'Supply of Industrial High-Voltage Cables', client: 'Energi Bangsa Corp', customerId: 'C003', customerType: 'existing', status: 'Approved', potensiUnit: 5, author: 'Siti Rahmawati', date: 'Oct 22, 2023', estimatedValue: 3400000000, description: 'Pengadaan kabel transmisi tegangan tinggi untuk gardu induk Sumatera Selatan.', branch: 'Cabang Bandung', createdByUserId: '5' },
+    { id: '3', name: 'Surveillance System Implementation Phase 2', client: 'Secure City Group', customerId: 'C004', customerType: 'existing', status: 'Waiting PM', potensiUnit: 2, author: 'Bambang Permadi', date: 'Oct 21, 2023', estimatedValue: 850000000, description: 'Instalasi pemantauan cerdas dengan IP camera berbasis AI di area komersial.', branch: 'Project Management', createdByUserId: '2' },
+    { id: '4', name: 'Cloud Infrastructure Migration Strategy', client: 'Bank Artha Graha', customerId: 'C005', customerType: 'existing', status: 'Revision', potensiUnit: 1, author: 'Rina Marlina', date: 'Oct 19, 2023', estimatedValue: 1800000000, description: 'Consulting dan restrukturisasi database on-premise ke multi-cloud architecture.', branch: 'Operations Dept', createdByUserId: '3' },
+    { id: '5', name: 'Solar Panel Installation - North Branch', client: 'Lestari Eco Farms', customerType: 'new', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Ahmad Sulistyo', date: 'Oct 18, 2023', estimatedValue: 950000000, branch: 'Jakarta Pusat', customerData: { id: 'new-1', name: 'Lestari Eco Farms', code: 'LEF', type: 'swasta', city: 'Bandung', picName: 'Dewi Lestari', picPosition: 'Owner', picPhone: '0821-1234-5678', isNew: true, needsVerification: true }, createdByUserId: '1' },
+    { id: '6', name: 'Enterprise Firewall Upgrade - Global', client: 'Defense Tech Solutions', status: 'Approved', potensiUnit: 4, author: 'Bambang Permadi', date: 'Oct 15, 2023', estimatedValue: 600000000, branch: 'Project Management', createdByUserId: '2' },
+    { id: '7', name: 'Network Optimization Project v3.0', client: 'Global Logistics Inc.', status: 'Waiting PM', potensiUnit: 2, author: 'Rina Marlina', date: 'Oct 14, 2023', estimatedValue: 1100000000, branch: 'Operations Dept', createdByUserId: '3' },
+    { id: '8', name: 'Warehouse Automation Consultation', client: 'Express Delivery Hub', status: 'Non Potensial', prospectType: 'non_potensial', potensiUnit: 0, author: 'Siti Rahmawati', date: 'Oct 12, 2023', estimatedValue: 500000000, branch: 'Cabang Bandung', createdByUserId: '5' },
   ];
 
 export const INITIAL_PROJECTS: Project[] = [
@@ -32,12 +32,13 @@ export const INITIAL_PROJECTS: Project[] = [
     status: 'LPHS/SIOS',
     phase: 'LPHS/SIOS',
     location: 'Gatot Subroto, Jakarta',
-    author: 'Bambang Sutejo',
+    author: 'Bambang Permadi',
     date: 'Feb 24, 2025',
     progress: 65,
     estimatedValue: 4250000000,
     type: 'Tender',
     deadlineTender: '2026-06-25',
+    createdByUserId: '2',
     pricing: {
       value: 4250000000,
       margin: 18.4,
@@ -124,12 +125,13 @@ export const INITIAL_PROJECTS: Project[] = [
     status: 'Input Harga',
     phase: 'Harga',
     location: 'Menteng, Jakarta Pusat, DKI Jakarta',
-    author: 'Alex BranchManager',
+    author: 'Ahmad Sulistyo',
     date: 'Aug 14, 2024',
     progress: 80,
     estimatedValue: 1250000000,
     type: 'Tender',
     deadlineTender: '2026-06-30',
+    createdByUserId: '1',
     pricing: {
       value: 1250000000,
       margin: 12.5,
@@ -197,12 +199,13 @@ export const INITIAL_PROJECTS: Project[] = [
     status: 'Executing',
     phase: 'Executing',
     location: 'Cengkareng, Tangerang',
-    author: 'John Doe',
+    author: 'Doni Wahyudi',
     date: 'Jan 10, 2024',
     progress: 95,
     estimatedValue: 142500000000,
     type: 'Tender',
     deadlineTender: '2026-05-30',
+    createdByUserId: '4',
     pricing: {
       value: 142500000000,
       margin: 15.2,
@@ -302,11 +305,12 @@ export const INITIAL_PROJECTS: Project[] = [
     status: 'Target Delivery',
     phase: 'Target Delivery',
     location: 'Jakarta Logistics Hub',
-    author: 'Alex Rivera',
+    author: 'Siti Rahmawati',
     date: 'May 12, 2023',
     progress: 90,
     estimatedValue: 1450000,
     type: 'Prospecting',
+    createdByUserId: '5',
     winnerDetails: {
       outcome: 'menang',
       contractValue: 1450000
@@ -329,17 +333,17 @@ export const INITIAL_PROJECTS: Project[] = [
 
 export const INITIAL_APPROVALS: ApprovalItem[] = [
   // Prospek Approvals
-  { id: 'app-1', ref: 'PR-2023-08-001', name: 'Surveillance System Implementation Phase 2', branch: 'Jakarta Selatan', waitingSince: '2026-06-23T08:00:00.000Z', slaStatus: 'Overdue', type: 'Prospek', client: 'Secure City Group', entityId: '3', entityType: 'prospect' },
-  { id: 'app-2', ref: 'PR-2023-08-005', name: 'Network Optimization Project v3.0', branch: 'Makassar', waitingSince: '2026-06-25T06:00:00.000Z', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Global Logistics Inc.', entityId: '7', entityType: 'prospect' },
+  { id: 'app-1', ref: 'PR-2023-08-001', name: 'Surveillance System Implementation Phase 2', branch: 'Jakarta Selatan', waitingSince: '2026-06-23T08:00:00.000Z', slaStatus: 'Overdue', type: 'Prospek', client: 'Secure City Group', entityId: '3', entityType: 'prospect', assigneeUserId: '1' },
+  { id: 'app-2', ref: 'PR-2023-08-005', name: 'Network Optimization Project v3.0', branch: 'Makassar', waitingSince: '2026-06-25T06:00:00.000Z', slaStatus: 'Near Deadline', type: 'Prospek', client: 'Global Logistics Inc.', entityId: '7', entityType: 'prospect', assigneeUserId: '3' },
 
   // RKS Approvals
-  { id: 'app-4', ref: 'RKS-88902-B', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '2026-06-22T12:00:00.000Z', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
-  { id: 'app-5', ref: 'RKS-89011-A', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '2026-06-25T12:00:00.000Z', slaStatus: 'Normal', type: 'RKS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' },
+  { id: 'app-4', ref: 'RKS-88902-B', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '2026-06-22T12:00:00.000Z', slaStatus: 'Overdue', type: 'RKS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project', assigneeUserId: '1' },
+  { id: 'app-5', ref: 'RKS-89011-A', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '2026-06-25T12:00:00.000Z', slaStatus: 'Normal', type: 'RKS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project', assigneeUserId: '2' },
 
   // LPHS Approvals
-  { id: 'app-6', ref: 'LPHS-PR-2025-001', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '2026-06-22T12:00:00.000Z', slaStatus: 'Near Deadline', type: 'LPHS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project' },
-  { id: 'app-7', ref: 'LPHS-PRJ-2024-0089', name: 'Modernization of Terminal 3', branch: 'Cengkareng, Tangerang', waitingSince: '2026-06-25T12:00:00.000Z', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Angkasa Pura II', entityId: 'PR-2025-003', entityType: 'project' },
-  { id: 'app-8', ref: 'LPHS-PRJ-2024-0892', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '2026-06-26T00:00:00.000Z', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project' }
+  { id: 'app-6', ref: 'LPHS-PR-2025-001', name: 'Pembangunan Infrastruktur Data Center - Tahap II', branch: 'Jakarta Pusat', waitingSince: '2026-06-22T12:00:00.000Z', slaStatus: 'Near Deadline', type: 'LPHS', client: 'PT. Telkom Indonesia Tbk.', entityId: 'PR-2025-001', entityType: 'project', assigneeUserId: '1' },
+  { id: 'app-7', ref: 'LPHS-PRJ-2024-0089', name: 'Modernization of Terminal 3', branch: 'Cengkareng, Tangerang', waitingSince: '2026-06-25T12:00:00.000Z', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Angkasa Pura II', entityId: 'PR-2025-003', entityType: 'project', assigneeUserId: '5' },
+  { id: 'app-8', ref: 'LPHS-PRJ-2024-0892', name: 'Pembangunan Infrastruktur FTTH - Cluster Menteng 2', branch: 'Jakarta Pusat', waitingSince: '2026-06-26T00:00:00.000Z', slaStatus: 'Normal', type: 'LPHS', client: 'PT. Telekom Nusantara', entityId: 'PR-2025-002', entityType: 'project', assigneeUserId: '2' }
 ];
 
 export const INITIAL_TIMELINE_EVENTS: TimelineEvent[] = [

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useApprovalStore } from '@/stores/approvalStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Stepper, type StepperStep } from '@/components/ui';
 
 interface TabProps {
@@ -22,6 +24,8 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
   const questions = useMasterDataStore((s) => s.questions);
   const questionTypes = useMasterDataStore((s) => s.questionTypes);
+  const addApproval = useApprovalStore((s) => s.addApproval);
+  const authUser = useAuthStore((s) => s.user);
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -166,6 +170,20 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
     } else {
       // Tender: tetap ke Review RKS
       updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
+      // Buat approval item untuk PM review
+      addApproval({
+        id: `app-rks-${project.id}-${Date.now()}`,
+        ref: `RKS-${project.code}`,
+        name: project.name,
+        branch: project.location,
+        waitingSince: new Date().toISOString(),
+        slaStatus: 'Normal',
+        type: 'RKS',
+        client: project.client,
+        entityId: project.id,
+        entityType: 'project',
+        assigneeUserId: authUser?.id,
+      });
       const event: TimelineEvent = {
         id: `evt-${Date.now()}`,
         title: 'RKS Disubmit ke Review',

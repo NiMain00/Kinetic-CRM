@@ -6,7 +6,9 @@ import { INITIAL_APPROVALS } from '@/services/mock-data';
 interface ApprovalState {
   approvals: ApprovalItem[];
   getPendingCount: () => number;
+  getPendingCountByUser: (userId: string) => number;
   getPendingByType: (type: ApprovalItem['type']) => ApprovalItem[];
+  getPendingByUser: (userId: string) => ApprovalItem[];
   approveItem: (id: string) => void;
   rejectItem: (id: string) => void;
   addApproval: (item: ApprovalItem) => void;
@@ -24,7 +26,11 @@ export const useApprovalStore = create<ApprovalState>()(
 
       getPendingCount: () => get().approvals.length,
 
+      getPendingCountByUser: (userId) => get().approvals.filter((a) => a.assigneeUserId === userId).length,
+
       getPendingByType: (type) => get().approvals.filter((a) => a.type === type),
+
+      getPendingByUser: (userId) => get().approvals.filter((a) => a.assigneeUserId === userId),
 
       approveItem: (id) => set(removeById(id)),
 
@@ -39,11 +45,12 @@ export const useApprovalStore = create<ApprovalState>()(
     }),
     {
       name: 'kinetic-approvals',
-      version: 1,
+      version: 2,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0) {
-          return { approvals: current.approvals || [] };
+        if (version < 2) {
+          // v2: Force re-init with fresh mock data
+          return { ...current, approvals: INITIAL_APPROVALS } as ApprovalState;
         }
         return current as ApprovalState;
       },

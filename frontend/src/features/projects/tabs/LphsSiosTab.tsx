@@ -70,7 +70,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const userRole = authUser?.roleName || '';
   const isSuperAdmin = userRole === 'Super Admin';
   const isPM = userRole === 'PM' || isSuperAdmin;
-  const isCabang = userRole === 'Branch Manager' || userRole === 'Staff' || isSuperAdmin;
+  const isCabang = userRole === 'Cabang' || userRole === 'Branch Manager' || userRole === 'Staff' || isSuperAdmin;
   const isManagement = userRole === 'Admin' || userRole === 'Management' || isSuperAdmin;
   const isDeptHead = userRole === 'Dept Head' || isSuperAdmin;
 
@@ -187,6 +187,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
       client: project.client,
       entityId: project.id,
       entityType: 'project',
+      assigneeUserId: authUser?.id,
     };
     addApproval(approvalItem);
     onShowNotification?.('Dokumen LPHS/SIOS berhasil disubmit.', 'success');
@@ -442,6 +443,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
       client: project.client,
       entityId: project.id,
       entityType: 'project',
+      assigneeUserId: authUser?.id,
     };
     addApproval(approvalItem);
     onShowNotification?.('Revisi berhasil diupload ulang.', 'success');

@@ -9,6 +9,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useSlaConfigs, useNextPhaseMap } from '@/hooks/useConfigData';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useAuthStore } from '@/stores/authStore';
 import { formatRelativeTime } from '@/utils/formatters';
 
 interface ApprovalInboxViewProps {
@@ -43,7 +44,10 @@ export default function ApprovalInboxView({
   const slaConfigs = useSlaConfigs();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const NEXT_PHASE_MAP = useNextPhaseMap();
+  const user = useAuthStore((s) => s.user);
   const [filterType, setFilterType] = React.useState<FilterType>('Semua');
+
+  const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
 
   const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
     const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
@@ -59,7 +63,7 @@ export default function ApprovalInboxView({
 
   const filteredApprovals = useMemo(() => {
     // Hanya tampilkan approval yang entity-nya masih ada
-    const validApprovals = approvals.filter((a) => {
+    const validApprovals = userApprovals.filter((a) => {
       if (a.entityType === 'prospect' && a.entityId) {
         return prospects.some((p) => p.id === a.entityId);
       }
@@ -70,7 +74,7 @@ export default function ApprovalInboxView({
     });
     if (filterType === 'Semua') return validApprovals;
     return validApprovals.filter((a) => a.type === filterType);
-  }, [approvals, filterType, prospects, projects]);
+  }, [userApprovals, filterType, prospects, projects]);
 
   const handleReview = (item: ApprovalItem) => {
     if (item.entityType === 'prospect' && item.entityId) {
@@ -242,7 +246,7 @@ export default function ApprovalInboxView({
           <div className="flex items-center gap-4">
             <span>Approval Inbox</span>
             <span className="bg-primary text-on-primary px-3 py-0.5 rounded-full font-label-sm text-xs font-semibold">
-              {approvals.length} Pending
+              {userApprovals.length} Pending
             </span>
           </div>
         }
@@ -253,7 +257,7 @@ export default function ApprovalInboxView({
         <Card padding="sm">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{approvals.length}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length}</span>
             <span className="text-success font-label-sm text-sm font-semibold">Active</span>
           </div>
         </Card>
@@ -261,7 +265,7 @@ export default function ApprovalInboxView({
         <Card padding="sm" className="border-l-4 border-l-danger">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-danger">{approvals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-danger">{userApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Requires action</span>
           </div>
         </Card>
@@ -269,7 +273,7 @@ export default function ApprovalInboxView({
         <Card padding="sm" className="border-l-4 border-l-warning">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-warning">{approvals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-warning">{userApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Next 24 hours</span>
           </div>
         </Card>
@@ -277,7 +281,7 @@ export default function ApprovalInboxView({
         <Card padding="sm">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Avg. Completion Time</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{approvals.length > 0 ? (approvals.reduce((s, a) => s + parseRelativeTime(a.waitingSince) / 3_600_000, 0) / approvals.length).toFixed(1) : '0.0'}h</span>
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length > 0 ? (userApprovals.reduce((s, a) => s + parseRelativeTime(a.waitingSince) / 3_600_000, 0) / userApprovals.length).toFixed(1) : '0.0'}h</span>
             <span className="text-success font-label-sm text-sm font-semibold">Rata-rata</span>
           </div>
         </Card>

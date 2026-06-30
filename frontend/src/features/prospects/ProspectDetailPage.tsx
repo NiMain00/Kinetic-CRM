@@ -185,6 +185,7 @@ export default function ProspectDetailPage() {
       client: prospect.client,
       entityId: prospect.id,
       entityType: 'prospect',
+      assigneeUserId: authUser?.id,
     });
     toast.success('Prospek berhasil dikirim ke review.');
     addNotification({
