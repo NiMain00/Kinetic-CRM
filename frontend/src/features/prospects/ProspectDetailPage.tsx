@@ -14,14 +14,16 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 
 const defaultAnswers: Record<string, string> = {
-  upsCapacity: 'UPS 2x3KVA',
-  isFiberOpticReady: 'Ya, Terjadwal',
-  groundingCableOption: 'Wajib menggunakan grounding tersendiri',
-  jenisPengadaan: 'Ya',
-  detailKebutuhanUnit: 'Membutuhkan 10 unit UPS 3KVA',
+  'Q-001': 'Pembelian Baru',
+  'Q-002': '',
+  'Q-003': '',
 };
 
-const questionnaireLabels: Record<string, string> = {
+// Labels resolved from master data at render time (fallback for old data)
+const legacyLabels: Record<string, string> = {
+  tipePengadaanUnit: 'Tipe Pengadaan Unit',
+  jenisUnitDibutuhkan: 'Jenis Unit yang Dibutuhkan',
+  spesifikasiPengadaanUnit: 'Spesifikasi & Detail Kebutuhan Pengadaan Unit',
   upsCapacity: 'Spesifikasi UPS di lokasi Cabang',
   isFiberOpticReady: 'Jalur FO (Fiber Optic) aktif dari ISP',
   groundingCableOption: 'Kebutuhan Proteksi Kelistrikan Ruang Server',
@@ -46,6 +48,7 @@ export default function ProspectDetailPage() {
 
   const authUser = useAuthStore((s) => s.user);
   const industries = useMasterDataStore((s) => s.industries);
+  const questions = useMasterDataStore((s) => s.questions);
   const industryMap = useMemo(
     () => Object.fromEntries(industries.map(i => [i.id, i.name])),
     [industries]
@@ -514,12 +517,17 @@ export default function ProspectDetailPage() {
                 Jawaban Pertanyaan Standar
               </h3>
               <div className="space-y-4">
-                {(prospect.answers || defaultAnswers) && Object.entries(prospect.answers || defaultAnswers).map(([key, value]) => (
-                  <div key={key} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
-                    <p className="text-xs text-outline font-semibold mb-1">{questionnaireLabels[key] || key}</p>
-                    <p className="text-sm font-semibold text-on-surface">{value}</p>
-                  </div>
-                ))}
+                {(prospect.answers || defaultAnswers) && Object.entries(prospect.answers || defaultAnswers).map(([key, value]) => {
+                  // Resolve label dari master data pertanyaan
+                  const masterQ = questions.find(q => q.id === key);
+                  const label = masterQ?.question_text || legacyLabels[key] || key;
+                  return (
+                    <div key={key} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30">
+                      <p className="text-xs text-outline font-semibold mb-1">{label}</p>
+                      <p className="text-sm font-semibold text-on-surface">{value}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>

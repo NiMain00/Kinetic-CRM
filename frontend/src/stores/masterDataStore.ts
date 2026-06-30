@@ -244,14 +244,17 @@ const INITIAL_DOC_TYPES: MasterDocType[] = [
 ];
 
 const INITIAL_QUESTIONS: MasterQuestion[] = [
-  { id: 'Q-001', question_text: 'Nama Lengkap Sesuai KTP', question_type_id: 'QT-01', context: 'prospect', category: 'Data Pribadi', is_required: true, sort_order: 1, placeholder_text: 'Masukkan nama lengkap', help_text: '', is_active: true },
-  { id: 'Q-002', question_text: 'Apakah domisili sesuai dengan domisili usaha?', question_type_id: 'QT-02', context: 'prospect', category: 'Lokasi', is_required: true, sort_order: 2, placeholder_text: '', help_text: 'Pilih Ya jika sesuai', is_active: true },
-  { id: 'Q-003', question_text: 'Jenis badan usaha', question_type_id: 'QT-03', context: 'prospect', category: 'Legalitas', is_required: true, sort_order: 3, placeholder_text: '', help_text: '', is_active: true, options: ['PT', 'CV', 'Perorangan', 'Lainnya'] },
-  { id: 'Q-004', question_text: 'Estimasi omzet bulanan', question_type_id: 'QT-01', context: 'prospect', category: 'Keuangan', is_required: false, sort_order: 4, placeholder_text: 'Contoh: Rp 500.000.000', help_text: '', is_active: true },
-  { id: 'Q-005', question_text: 'Upload foto tempat usaha', question_type_id: 'QT-02', context: 'prospect', category: 'Verifikasi Fisik', is_required: true, sort_order: 5, placeholder_text: '', help_text: '', is_active: false },
-  { id: 'Q-006', question_text: 'Apakah spesifikasi teknis dalam RKS sudah sesuai dengan kebutuhan proyek?', question_type_id: 'QT-02', context: 'rks', category: 'Teknis', is_required: true, sort_order: 1, placeholder_text: '', help_text: 'Pastikan spesifikasi sesuai dengan dokumen tender', is_active: true },
-  { id: 'Q-007', question_text: 'Apakah ada ketentuan khusus terkait jadwal pelaksanaan?', question_type_id: 'QT-02', context: 'rks', category: 'Jadwal', is_required: true, sort_order: 2, placeholder_text: '', help_text: '', is_active: true },
-  { id: 'Q-008', question_text: 'Apakah dokumen pendukung sudah lengkap?', question_type_id: 'QT-02', context: 'both', category: 'Dokumen', is_required: true, sort_order: 3, placeholder_text: '', help_text: 'Lampirkan semua dokumen yang diperlukan', is_active: true },
+  // === PROSPEK — Pengadaan Unit ===
+  { id: 'Q-001', question_text: 'Bagaimana metode pengadaan unit yang akan dilakukan?', question_type_id: 'QT-03', context: 'prospect', category: 'Pengadaan Unit', is_required: true, sort_order: 1, placeholder_text: '', help_text: 'Pilih salah satu metode pengadaan', is_active: true, options: ['Pembelian Langsung', 'Tender / Pengadaan Umum', 'Leasing / Sewa', 'Kerjasama Operasi (KSO)'] },
+  { id: 'Q-002', question_text: 'Unit apa saja yang perlu diadakan dalam proyek ini?', question_type_id: 'QT-04', context: 'prospect', category: 'Pengadaan Unit', is_required: true, sort_order: 2, placeholder_text: '', help_text: 'Pilih semua jenis unit yang relevan', is_active: true, options: ['UPS', 'Server', 'Rack Server', 'AC Pendingin', 'Networking Equipment', 'Fire Suppression', 'Generator Set', 'CCTV'] },
+  { id: 'Q-003', question_text: 'Jelaskan detail spesifikasi, jumlah, dan kebutuhan khusus untuk pengadaan unit', question_type_id: 'QT-02', context: 'prospect', category: 'Pengadaan Unit', is_required: true, sort_order: 3, placeholder_text: 'Contoh: Membutuhkan 10 unit UPS 3KVA dengan kapasitas 2 jam backup, 5 unit rack server 42U, serta AC split 2PK untuk ruang server...', help_text: 'Sertakan merek/teknologi yang diutamakan jika ada', is_active: true },
+
+  // === RKS ===
+  { id: 'Q-004', question_text: 'Apakah spesifikasi teknis dalam RKS sudah sesuai dengan kebutuhan proyek?', question_type_id: 'QT-02', context: 'rks', category: 'Teknis', is_required: true, sort_order: 1, placeholder_text: '', help_text: 'Pastikan spesifikasi sesuai dengan dokumen tender', is_active: true },
+  { id: 'Q-005', question_text: 'Apakah ada ketentuan khusus terkait jadwal pelaksanaan?', question_type_id: 'QT-02', context: 'rks', category: 'Jadwal', is_required: true, sort_order: 2, placeholder_text: '', help_text: '', is_active: true },
+
+  // === KEDUANYA ===
+  { id: 'Q-006', question_text: 'Apakah dokumen pendukung sudah lengkap?', question_type_id: 'QT-02', context: 'both', category: 'Dokumen', is_required: true, sort_order: 3, placeholder_text: '', help_text: 'Lampirkan semua dokumen yang diperlukan', is_active: true },
 ];
 
 const INITIAL_HOLIDAYS: MasterHoliday[] = [
@@ -497,42 +500,14 @@ export const useMasterDataStore = create<MasterDataState>()(
     }),
     {
       name: 'kinetic-master-data',
-      version: 3,
+      version: 5,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0 || version === 1 || version === 2) {
-          // Merge: tambah item baru dari INITIAL_* tanpa hapus data user
-          const mergeById = <T extends { id: string }>(persistedArr: T[] | undefined, initial: T[]): T[] => {
-            if (!persistedArr) return initial;
-            const map = new Map(persistedArr.map((item) => [item.id, item]));
-            const result = [...persistedArr];
-            for (const item of initial) {
-              if (!map.has(item.id)) {
-                result.push(item);
-              }
-            }
-            return result;
-          };
+        if (version < 5) {
+          // v5: Force replace pertanyaan dengan data terbaru (pengadaan unit)
           return {
             ...current,
-            categories: mergeById(current.categories, INITIAL_CATEGORIES),
-            competitors: mergeById(current.competitors, INITIAL_COMPETITORS),
-            docTypes: mergeById(current.docTypes, INITIAL_DOC_TYPES),
-            questions: mergeById(current.questions, INITIAL_QUESTIONS),
-            holidays: mergeById(current.holidays, INITIAL_HOLIDAYS),
-            lossReasons: mergeById(current.lossReasons, INITIAL_LOSS_REASONS),
-            periods: mergeById(current.periods, INITIAL_PERIODS),
-            customers: mergeById(current.customers, INITIAL_MASTER_CUSTOMERS),
-            industries: mergeById(current.industries, INITIAL_INDUSTRIES),
-            projectStatuses: mergeById(current.projectStatuses, INITIAL_PROJECT_STATUSES),
-            documentTypes: mergeById(current.documentTypes, INITIAL_DOCUMENT_TYPES),
-            questionTypes: mergeById(current.questionTypes, INITIAL_QUESTION_TYPES),
-            departments: mergeById(current.departments, INITIAL_DEPARTMENTS),
-            users: mergeById(current.users, INITIAL_USERS),
-            auditLogs: mergeById(current.auditLogs, INITIAL_AUDIT_LOGS),
-            approvalLevels: mergeById(current.approvalLevels, INITIAL_APPROVAL_LEVELS),
-            notifTemplates: mergeById(current.notifTemplates, INITIAL_NOTIF_TEMPLATES),
-            roles: mergeById(current.roles, INITIAL_ROLES),
+            questions: INITIAL_QUESTIONS,
           };
         }
         return current;

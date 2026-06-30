@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { prospectSchema } from '@/utils/validators';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -11,43 +11,11 @@ import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import CurrencyInput from '@/components/ui/CurrencyInput';
 
-const questionnaireQuestions = [
-  {
-    key: 'upsCapacity',
-    label: '1. Apakah sudah ada kepastian spesifikasi UPS di lokasi Cabang?',
-    options: ['UPS 2x3KVA', 'UPS Lainnya / Belum Ada'],
-  },
-  {
-    key: 'isFiberOpticReady',
-    label: '2. Apakah sudah ada jalur FO (Fiber Optic) aktif dari ISP di gedung tersebut?',
-    options: ['Ya, Terjadwal', 'Tidak / Belum Ada'],
-  },
-  {
-    key: 'groundingCableOption',
-    label: '3. Kebutuhan Proteksi Kelistrikan Ruang Server',
-    isText: true,
-    placeholder: 'Contoh: Wajib menggunakan grounding tersendiri',
-  },
-  {
-    key: 'jenisPengadaan',
-    label: '4. Apakah jenis pengadaan customer beli putus?',
-    options: ['Ya', 'Tidak'],
-  },
-  {
-    key: 'detailKebutuhanUnit',
-    label: '5. Sebutkan detail kebutuhan pengadaan unit',
-    isText: true,
-    placeholder: 'Contoh: Membutuhkan 10 unit UPS 3KVA, 5 unit AC, dan 2 unit rack server',
-  },
-];
-
-const defaultAnswers: Record<string, string> = {
-  upsCapacity: 'UPS 2x3KVA',
-  isFiberOpticReady: 'Ya, Terjadwal',
-  groundingCableOption: 'Wajib menggunakan grounding tersendiri',
-  jenisPengadaan: 'Ya',
-  detailKebutuhanUnit: 'Membutuhkan 10 unit UPS 3KVA',
-};
+// Resolve question_type_id ke kode render (radio/checkbox/textarea/select/text)
+function resolveTypeCode(questionTypes: Array<{ id: string; code: string }>, typeId: string): string {
+  const qt = questionTypes.find(t => t.id === typeId);
+  return qt?.code || 'text';
+}
 
 export default function ProspectFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -62,6 +30,15 @@ export default function ProspectFormPage() {
   const competitors = useMasterDataStore((s) => s.competitors);
   const addMasterData = useMasterDataStore((s) => s.addData);
   const addApproval = useApprovalStore((s) => s.addApproval);
+  const questions = useMasterDataStore((s) => s.questions);
+  const questionTypes = useMasterDataStore((s) => s.questionTypes);
+
+  // Ambil pertanyaan aktif dari master data dengan context 'prospect' atau 'both'
+  const prospectQuestions = useMemo(() => {
+    return questions
+      .filter(q => (q.context === 'prospect' || q.context === 'both') && q.is_active)
+      .sort((a, b) => a.sort_order - b.sort_order);
+  }, [questions]);
 
   const existingProspect = isEdit ? prospects.find((p) => p.id === id) : null;
 
@@ -69,8 +46,13 @@ export default function ProspectFormPage() {
   const userBranch = authUser?.branchName || 'Jakarta Pusat';
 
   // Customer selection: 'existing' | 'new'
+  // Kalau customer sudah verified, otomatis pindah ke 'existing' meskipun dulu dibuat dengan 'new'
+  const existingCustomersCheck = useCustomerStore.getState().customers;
+  const isCustomerVerified = !!(existingProspect?.customerId && existingCustomersCheck.some(
+    c => c.id === existingProspect.customerId && c.verifiedAt
+  ));
   const [customerMode, setCustomerMode] = useState<'existing' | 'new'>(
-    existingProspect?.customerType || 'existing'
+    isCustomerVerified ? 'existing' : (existingProspect?.customerType || 'existing')
   );
 
   // Existing customer fields
@@ -115,11 +97,10 @@ export default function ProspectFormPage() {
     existingProspect?.potensiUnit !== undefined ? String(existingProspect.potensiUnit) : '0'
   );
 
-  // Answers / questionnaire
-  const [answers, setAnswers] = useState<Record<string, string>>({
-    ...defaultAnswers,
-    ...(existingProspect?.answers || {}),
-  });
+  // Answers / questionnaire — initialize from existing prospect or empty
+  const [answers, setAnswers] = useState<Record<string, string>>(
+    existingProspect?.answers || {}
+  );
 
   // --- Existing customer auto-fill logic ---
   const customers = useCustomerStore((s) => s.customers);
@@ -558,30 +539,94 @@ export default function ProspectFormPage() {
               </div>
             </div>
 
-            {/* Questionnaire - "Pertanyaan Standar" */}
+            {/* Questionnaire - "Pertanyaan Standar" dari Master Data */}
             <div className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm space-y-5">
               <h3 className="font-bold text-sm text-status-teal border-b border-border pb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined">quiz</span>
                 Pertanyaan Standar
               </h3>
 
-              {questionnaireQuestions.map((q) => (
-                <div key={q.key} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-3">
-                  <p className="font-semibold text-sm text-on-surface">{q.label}</p>
-                  {q.isText ? (
-                    <input value={answers[q.key]} onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })} placeholder={q.placeholder} className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none" type="text" />
-                  ) : (
-                    <div className="flex gap-4 flex-wrap">
-                      {q.options?.map((opt) => (
-                        <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm">
-                          <input type="radio" name={q.key} value={opt} checked={answers[q.key] === opt} onChange={(e) => setAnswers({ ...answers, [q.key]: e.target.value })} className="text-primary focus:ring-primary h-4 w-4 border-outline" />
-                          {opt}
-                        </label>
-                      ))}
+              {prospectQuestions.length === 0 ? (
+                <p className="text-sm text-secondary italic">Belum ada pertanyaan standar yang aktif.</p>
+              ) : (
+                prospectQuestions.map((q) => {
+                  const typeCode = resolveTypeCode(questionTypes, q.question_type_id);
+                  const isTextarea = typeCode === 'textarea';
+                  const isCheckbox = typeCode === 'checkbox';
+                  const isSelect = typeCode === 'select';
+
+                  return (
+                    <div key={q.id} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-3">
+                      <p className="font-semibold text-sm text-on-surface">
+                        {q.question_text}
+                        {q.is_required && <span className="text-danger ml-1">*</span>}
+                      </p>
+                      {q.help_text && <p className="text-[10px] text-secondary">{q.help_text}</p>}
+
+                      {isTextarea ? (
+                        <textarea
+                          value={answers[q.id] || ''}
+                          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                          placeholder={q.placeholder_text || 'Masukkan jawaban...'}
+                          rows={4}
+                          className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none resize-none"
+                        />
+                      ) : isCheckbox ? (
+                        <div className="flex gap-4 flex-wrap">
+                          {q.options?.map((opt) => {
+                            const selectedValues = answers[q.id] ? answers[q.id].split(', ') : [];
+                            const isChecked = selectedValues.includes(opt);
+                            return (
+                              <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    const newValues = isChecked
+                                      ? selectedValues.filter(v => v !== opt)
+                                      : [...selectedValues, opt];
+                                    setAnswers({ ...answers, [q.id]: newValues.join(', ') });
+                                  }}
+                                  className="text-primary focus:ring-primary h-4 w-4 border-outline rounded"
+                                />
+                                {opt}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      ) : isSelect ? (
+                        <select
+                          value={answers[q.id] || ''}
+                          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                          className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest text-sm focus:ring-2 focus:ring-primary outline-none"
+                        >
+                          <option value="">Pilih jawaban...</option>
+                          {q.options?.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        /* Default: radio (pilihan tunggal) */
+                        <div className="flex gap-4 flex-wrap">
+                          {q.options?.map((opt) => (
+                            <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm">
+                              <input
+                                type="radio"
+                                name={q.id}
+                                value={opt}
+                                checked={answers[q.id] === opt}
+                                onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                                className="text-primary focus:ring-primary h-4 w-4 border-outline"
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>
