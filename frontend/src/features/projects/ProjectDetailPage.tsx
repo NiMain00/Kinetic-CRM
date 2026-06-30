@@ -140,7 +140,7 @@ export default function ProjectDetailView({
     // Timeline, Dokumen & Diskusi: always unlocked
     if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi') return false;
 
-    // Target Delivery: unlocked only when project outcome is menang
+    // Target Delivery: unlocked once project outcome is menang (including Executing / Selesai)
     if (tab.label === 'Target Delivery') return !isMenang;
 
     // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval (Tender)

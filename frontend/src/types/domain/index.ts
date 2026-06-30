@@ -151,9 +151,11 @@ export interface Project {
   delivery?: {
     startDate?: string;
     endDate?: string;
+    actualEndDate?: string;
     note?: string;
-    progress?: number;
-    milestones?: MilestoneEntry[];
+    isCompleted?: boolean;
+    completedAt?: string;
+    completedBy?: string;
   };
   rks?: RksData;
   lphs?: LphsData;

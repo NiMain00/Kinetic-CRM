@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import type { Project, MilestoneEntry, TimelineEvent } from '@/types/domain';
+import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { Card, Button, Badge } from '@/components/ui';
+import { Card, Button } from '@/components/ui';
 
 interface TabProps {
   project?: Project;
@@ -16,39 +16,40 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
 
   const [startDate, setStartDate] = useState(project?.delivery?.startDate || '');
   const [endDate, setEndDate] = useState(project?.delivery?.endDate || '');
+  const [actualEndDate, setActualEndDate] = useState(project?.delivery?.actualEndDate || '');
   const [deliveryNote, setDeliveryNote] = useState(project?.delivery?.note || '');
-  const [progress, setProgress] = useState(project?.delivery?.progress ?? 0);
-  const [milestones, setMilestones] = useState<MilestoneEntry[]>(project?.delivery?.milestones || []);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Sync when switching projects
   useEffect(() => {
     setStartDate(project?.delivery?.startDate || '');
     setEndDate(project?.delivery?.endDate || '');
+    setActualEndDate(project?.delivery?.actualEndDate || '');
     setDeliveryNote(project?.delivery?.note || '');
-    setProgress(project?.delivery?.progress ?? 0);
-    setMilestones(project?.delivery?.milestones || []);
+    setErrors({});
   }, [project?.id]);
 
-  const handleMilestoneToggle = (id: string) => {
-    const updated = milestones.map(m => m.id === id ? { ...m, completed: !m.completed } : m);
-    setMilestones(updated);
-    // Auto-persist on toggle
-    if (project?.id) {
-      updateProjectDelivery(project.id, { milestones: updated });
+  const validate = (): boolean => {
+    const errs: Record<string, string> = {};
+    if (!startDate) errs.startDate = 'Tanggal mulai wajib diisi';
+    if (!endDate) errs.endDate = 'Estimasi tanggal sampai wajib diisi';
+    if (startDate && endDate && endDate <= startDate) {
+      errs.endDate = 'Tanggal selesai harus setelah tanggal mulai';
     }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSave = () => {
     if (!project?.id) return;
-    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote, progress, milestones });
+    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote });
     onShowNotification?.('Draf jadwal delivery berhasil disimpan', 'success');
   };
 
   const handleConfirm = () => {
     if (!project?.id) return;
-    // Persist
-    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote, progress, milestones });
-    // Add timeline event
+    if (!validate()) return;
+    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote });
+
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
       title: 'Target Delivery Dikonfirmasi',
@@ -59,16 +60,22 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
       description: 'Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi. Proyek berpindah ke tahap Eksekusi.',
     };
     addTimelineEvent(project.id, event);
-    // Advance status to Executing
     updateProject(project.id, { status: 'Executing', phase: 'Executing' });
     onShowNotification?.('Jadwal pengiriman (Target Delivery) berhasil dikonfirmasi. Proyek memasuki tahap Eksekusi.', 'success');
   };
 
   const handleMarkComplete = () => {
     if (!project?.id) return;
-    // Persist delivery data
-    updateProjectDelivery(project.id, { startDate, endDate, note: deliveryNote, progress: 100, milestones });
-    // Add timeline event
+    const today = new Date().toISOString().slice(0, 10);
+    const finalActualEndDate = actualEndDate || today;
+
+    updateProjectDelivery(project.id, {
+      startDate, endDate, note: deliveryNote,
+      actualEndDate: finalActualEndDate,
+      isCompleted: true,
+      completedAt: new Date().toISOString(),
+    });
+
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
       title: 'Proyek Selesai',
@@ -79,18 +86,15 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
       description: 'Proyek telah selesai dan ditutup.',
     };
     addTimelineEvent(project.id, event);
-    // Mark as completed
     updateProject(project.id, { status: 'Selesai', phase: 'Selesai', progress: 100 });
     onShowNotification?.('Proyek berhasil ditandai selesai!', 'success');
   };
 
-  const completedCount = milestones.filter(m => m.completed).length;
   const isCompleted = project?.status === 'Selesai';
   const isExecuting = project?.status === 'Executing';
 
   return (
     <div className="space-y-8 animate-fade-in text-on-surface">
-      {/* Completion banner */}
       {isCompleted && (
         <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 rounded-xl">
           <span className="material-symbols-outlined text-success text-[24px]">check_circle</span>
@@ -117,50 +121,49 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Mulai Delivery</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">calendar_month</span>
-                  <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface" />
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={e => { setStartDate(e.target.value); setErrors(prev => ({ ...prev, startDate: '' })); }}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface ${errors.startDate ? 'border-danger' : 'border-border'}`}
+                    disabled={isCompleted}
+                  />
                 </div>
+                {errors.startDate && <p className="text-xs text-danger mt-1">{errors.startDate}</p>}
               </div>
               <div>
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Estimasi Tanggal Sampai</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">event_available</span>
-                  <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface" />
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={e => { setEndDate(e.target.value); setErrors(prev => ({ ...prev, endDate: '' })); }}
+                    className={`w-full pl-10 pr-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface ${errors.endDate ? 'border-danger' : 'border-border'}`}
+                    disabled={isCompleted}
+                  />
+                </div>
+                {errors.endDate && <p className="text-xs text-danger mt-1">{errors.endDate}</p>}
+              </div>
+            </div>
+
+            {isCompleted && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Selesai Aktual</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">check_calendar</span>
+                    <input
+                      type="date"
+                      value={actualEndDate}
+                      onChange={e => setActualEndDate(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface"
+                      disabled
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div>
-              <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Progress Pengiriman (%)</label>
-              <div className="flex items-center gap-4">
-                <input type="range" min={0} max={100} value={progress} onChange={e => setProgress(Number(e.target.value))} className="flex-1 accent-primary" />
-                <span className="font-bold text-sm text-primary w-10 text-right">{progress}%</span>
-              </div>
-              <div className="w-full bg-surface-container h-2 rounded-full mt-2 overflow-hidden">
-                <div className="bg-primary h-full rounded-full transition-all" style={{ width: `${progress}%` }}></div>
-              </div>
-            </div>
-
-            <div>
-              <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Progress Milestone</label>
-              <div className="space-y-2">
-                {milestones.map((m) => (
-                  <label key={m.id} className="flex items-center gap-3 p-2.5 rounded-lg border border-border hover:bg-surface-container-low cursor-pointer transition-colors">
-                    <input
-                      type="checkbox"
-                      checked={m.completed}
-                      onChange={() => handleMilestoneToggle(m.id)}
-                      className="w-4 h-4 rounded border-outline text-primary focus:ring-primary"
-                    />
-                    <div className="flex-1">
-                      <p className={`text-sm font-medium ${m.completed ? 'text-on-surface line-through opacity-60' : 'text-on-surface'}`}>{m.name}</p>
-                      {m.date && <p className="text-[10px] text-outline">{formatDate(m.date)}</p>}
-                    </div>
-                    {m.completed && <span className="material-symbols-outlined text-success text-[18px]">check_circle</span>}
-                  </label>
-                ))}
-              </div>
-              <p className="text-xs text-secondary mt-2">{completedCount} dari {milestones.length} milestone selesai</p>
-            </div>
+            )}
 
             <div>
               <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Catatan Instruksi Logistik</label>
@@ -170,6 +173,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
                 rows={6}
                 className="w-full px-4 py-3 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none text-on-surface"
                 placeholder="Masukkan rincian khusus logistik atau persyaratan khusus di lapangan..."
+                disabled={isCompleted}
               />
             </div>
           </div>
@@ -199,7 +203,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
 
         <div className="col-span-12 lg:col-span-4 space-y-6">
           <Card padding="lg">
-            <h4 className="font-heading-section text-xs font-bold text-on-surface uppercase tracking-wider mb-4">Metrik Logistik</h4>
+            <h4 className="font-heading-section text-xs font-bold text-on-surface uppercase tracking-wider mb-4">Informasi Proyek</h4>
             <div className="space-y-4">
               <div className="flex justify-between items-center text-xs pb-3 border-b border-dashed border-border">
                 <span className="text-secondary font-medium">Klien</span>
@@ -217,6 +221,12 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
                 <span className="text-secondary font-medium">Progress Overall</span>
                 <span className="font-semibold text-on-surface bg-surface-container px-2 py-0.5 rounded text-[10px]">{project?.progress || 0}%</span>
               </div>
+              {isCompleted && project?.delivery?.actualEndDate && (
+                <div className="flex justify-between items-center text-xs pt-3 border-t border-dashed border-border">
+                  <span className="text-secondary font-medium">Selesai Aktual</span>
+                  <span className="font-semibold text-success">{formatDate(project.delivery.actualEndDate)}</span>
+                </div>
+              )}
             </div>
           </Card>
         </div>

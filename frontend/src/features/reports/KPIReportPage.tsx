@@ -55,9 +55,9 @@ export default function KPIReportPage() {
       ? Math.round((projectsWithMargin.reduce((sum, p) => sum + (p.pricing?.margin || 0), 0) / projectsWithMargin.length) * 10) / 10
       : 0;
 
-    const projectsWithDelivery = projects.filter((p) => p.delivery?.milestones && p.delivery.milestones.length > 0);
+    const projectsWithDelivery = projects.filter((p) => p.delivery?.startDate);
     const slaCompliant = projectsWithDelivery.filter((p) =>
-      p.delivery!.milestones!.every((m) => m.completed)
+      p.delivery?.isCompleted
     ).length;
     const slaRate = projectsWithDelivery.length > 0
       ? Math.round((slaCompliant / projectsWithDelivery.length) * 100)

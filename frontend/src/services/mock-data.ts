@@ -221,15 +221,6 @@ export const INITIAL_PROJECTS: Project[] = [
       startDate: '2024-02-01',
       endDate: '2025-01-26',
       note: 'Pengiriman material secara bertahap sesuai jadwal kontrak.',
-      progress: 95,
-      milestones: [
-        { id: 'm1', name: 'Mobilisasi alat & material', completed: true, date: '2024-02-15' },
-        { id: 'm2', name: 'Pembangunan pondasi', completed: true, date: '2024-04-30' },
-        { id: 'm3', name: 'Instalasi struktur utama', completed: true, date: '2024-07-15' },
-        { id: 'm4', name: 'Pekerjaan MEP', completed: true, date: '2024-10-30' },
-        { id: 'm5', name: 'Finishing & komisioning', completed: false, date: '2025-01-15' },
-        { id: 'm6', name: 'Serah terima proyek', completed: false, date: '2025-01-26' },
-      ],
     },
     rks: {
       nomorTender: 'AP2/2024/T3/001',
@@ -319,14 +310,6 @@ export const INITIAL_PROJECTS: Project[] = [
       startDate: '2023-06-01',
       endDate: '2023-11-30',
       note: 'Pengiriman material secara bertahap.',
-      progress: 90,
-      milestones: [
-        { id: 'm1', name: 'Persiapan lokasi', completed: true, date: '2023-06-15' },
-        { id: 'm2', name: 'Pekerjaan pondasi', completed: true, date: '2023-07-30' },
-        { id: 'm3', name: 'Struktur utama', completed: true, date: '2023-09-15' },
-        { id: 'm4', name: 'Finishing', completed: false, date: '2023-11-01' },
-        { id: 'm5', name: 'Serah terima', completed: false, date: '2023-11-30' },
-      ],
     },
   },
 ];

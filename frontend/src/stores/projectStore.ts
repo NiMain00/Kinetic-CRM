@@ -6,7 +6,6 @@ import type {
   LphsData,
   LphsDepartmentApproval,
   CompetitorEntry,
-  MilestoneEntry,
   DocGroup,
   TimelineEvent,
 } from '@/types/domain';
@@ -32,7 +31,6 @@ interface ProjectState {
   removeProjectCompetitor: (id: string, competitorId: string) => void;
   updateProjectWinner: (id: string, winnerDetails: Partial<Project['winnerDetails']>) => void;
   updateProjectDelivery: (id: string, delivery: Partial<Project['delivery']>) => void;
-  addProjectMilestone: (id: string, milestone: MilestoneEntry) => void;
   addTimelineEvent: (id: string, event: TimelineEvent) => void;
   updateProjectDocuments: (id: string, documents: DocGroup[]) => void;
 }
@@ -134,20 +132,6 @@ export const useProjectStore = create<ProjectState>()(
           projects: s.projects.map((p) =>
             p.id === id
               ? { ...p, delivery: { ...p.delivery, ...delivery } as Project['delivery'] }
-              : p,
-          ),
-        })),
-      addProjectMilestone: (id, milestone) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id
-              ? {
-                  ...p,
-                  delivery: {
-                    ...p.delivery,
-                    milestones: [...(p.delivery?.milestones || []), milestone],
-                  } as Project['delivery'],
-                }
               : p,
           ),
         })),

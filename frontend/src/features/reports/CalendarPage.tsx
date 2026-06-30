@@ -114,18 +114,6 @@ export default function CalendarPage() {
         });
       }
 
-      // Milestones
-      p.delivery?.milestones?.forEach((m) => {
-        if (m.date) {
-          evs.push({
-            date: normalizeDate(m.date),
-            title: m.name,
-            type: 'milestone',
-            subtitle: p.name,
-          });
-        }
-      });
-
       // Timeline events
       p.timeline?.forEach((t) => {
         if (t.time) {
