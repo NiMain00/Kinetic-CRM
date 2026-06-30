@@ -138,6 +138,7 @@ export interface Project {
     margin: number;
     note: string;
     referenceUrl?: string;
+    bottomPrice?: number;
   };
   winnerDetails?: {
     outcome: 'menang' | 'kalah' | null;

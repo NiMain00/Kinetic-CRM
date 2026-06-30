@@ -29,6 +29,7 @@ interface ProjectState {
   updateProjectPricing: (id: string, pricing: Partial<Project['pricing']>) => void;
   updateProjectCompetitors: (id: string, competitors: CompetitorEntry[]) => void;
   addProjectCompetitor: (id: string, competitor: CompetitorEntry) => void;
+  removeProjectCompetitor: (id: string, competitorId: string) => void;
   updateProjectWinner: (id: string, winnerDetails: Partial<Project['winnerDetails']>) => void;
   updateProjectDelivery: (id: string, delivery: Partial<Project['delivery']>) => void;
   addProjectMilestone: (id: string, milestone: MilestoneEntry) => void;
@@ -109,6 +110,14 @@ export const useProjectStore = create<ProjectState>()(
           projects: s.projects.map((p) =>
             p.id === id
               ? { ...p, competitors: [...(p.competitors || []), competitor] }
+              : p,
+          ),
+        })),
+      removeProjectCompetitor: (id, competitorId) =>
+        set((s) => ({
+          projects: s.projects.map((p) =>
+            p.id === id
+              ? { ...p, competitors: (p.competitors || []).filter((c) => c.id !== competitorId) }
               : p,
           ),
         })),

@@ -11,6 +11,7 @@ interface TabProps {
 export default function KompetitorTab({ project, onShowNotification }: TabProps) {
   const navigate = useNavigate();
   const addProjectCompetitor = useProjectStore((s) => s.addProjectCompetitor);
+  const removeProjectCompetitor = useProjectStore((s) => s.removeProjectCompetitor);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
   // Use project?.competitors directly as source of truth (no local state)
   const competitors = project?.competitors || [];
@@ -39,6 +40,18 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
     setNewCompNote('');
     onShowNotification?.(`Kompetitor ${newItem.name} berhasil ditambahkan ke proyek.`, 'success');
   };
+
+  const handleRemoveCompetitor = (competitorId: string) => {
+    if (!project?.id) return;
+    removeProjectCompetitor(project.id, competitorId);
+    onShowNotification?.('Kompetitor berhasil dihapus.', 'success');
+  };
+
+  // Compute lowest competitor price for badge
+  const competitorPrices = competitors.filter((c) => c.estPrice > 0).map((c) => c.estPrice);
+  const lowestCompetitorPrice = competitorPrices.length > 0 ? Math.min(...competitorPrices) : 0;
+  const isLowestCompetitor = (row: CompetitorEntry) =>
+    lowestCompetitorPrice > 0 && row.estPrice === lowestCompetitorPrice;
 
   const handleConfirmCompetitor = () => {
     if (!project?.id) return;
@@ -71,19 +84,49 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                 <th className="px-6 py-3 font-semibold">Estimasi Harga (IDR)</th>
                 <th className="px-6 py-3 font-semibold">Kelebihan</th>
                 <th className="px-6 py-3 font-semibold">Keterangan / Notes</th>
+                <th className="px-6 py-3 font-semibold w-12"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {competitors.map((row) => (
+              {[...competitors].sort((a, b) => {
+                if (a.estPrice === 0) return 1;
+                if (b.estPrice === 0) return -1;
+                return a.estPrice - b.estPrice;
+              }).map((row) => (
                 <tr key={row.id} className="hover:bg-primary/5 transition-colors">
-                  <td className="px-6 py-4 font-semibold">{row.name}</td>
-                  <td className="px-6 py-4 font-mono">{row.estPrice.toLocaleString('id-ID')}</td>
                   <td className="px-6 py-4">
-                    <span className="bg-status-indigo/10 text-status-indigo px-2.5 py-0.5 rounded text-xs font-semibold badge-compact">
-                      {row.advantages.join(', ')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold">{row.name}</span>
+                      {isLowestCompetitor(row) && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 font-bold uppercase tracking-wider whitespace-nowrap">
+                          Harga Terendah
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className={`px-6 py-4 font-mono font-semibold ${isLowestCompetitor(row) ? 'text-warning' : ''}`}>
+                    {row.estPrice.toLocaleString('id-ID')}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-1">
+                      {row.advantages.map((adv, i) => (
+                        <span key={i} className="bg-status-indigo/10 text-status-indigo px-2.5 py-0.5 rounded text-xs font-semibold badge-compact flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">check_box</span>
+                          {adv}
+                        </span>
+                      ))}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-secondary text-xs">{row.notes}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleRemoveCompetitor(row.id)}
+                      className="text-outline hover:text-danger hover:bg-danger/10 rounded-lg p-1.5 transition-all"
+                      title="Hapus kompetitor"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </td>
                 </tr>
               ))}
 
