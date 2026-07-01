@@ -3,8 +3,14 @@ import { persist } from 'zustand/middleware';
 import type { ApprovalItem } from '@/types/domain';
 import { INITIAL_APPROVALS } from '@/services/mock-data';
 
+export interface ApprovalHistoryItem extends ApprovalItem {
+  resolvedAt: string;
+  action: 'approved' | 'rejected';
+}
+
 interface ApprovalState {
   approvals: ApprovalItem[];
+  approvalHistory: ApprovalHistoryItem[];
   getPendingCount: () => number;
   getPendingCountByUser: (userId: string) => number;
   getPendingByType: (type: ApprovalItem['type']) => ApprovalItem[];
@@ -23,6 +29,7 @@ export const useApprovalStore = create<ApprovalState>()(
   persist(
     (set, get) => ({
       approvals: INITIAL_APPROVALS,
+      approvalHistory: [],
 
       getPendingCount: () => get().approvals.length,
 
@@ -32,25 +39,53 @@ export const useApprovalStore = create<ApprovalState>()(
 
       getPendingByUser: (userId) => get().approvals.filter((a) => a.assigneeUserId === userId),
 
-      approveItem: (id) => set(removeById(id)),
+      approveItem: (id) =>
+        set((s) => {
+          const item = s.approvals.find((a) => a.id === id);
+          if (!item) return s;
+          return {
+            approvals: s.approvals.filter((a) => a.id !== id),
+            approvalHistory: [
+              { ...item, resolvedAt: new Date().toISOString(), action: 'approved' },
+              ...s.approvalHistory,
+            ],
+          };
+        }),
 
-      rejectItem: (id) => set(removeById(id)),
+      rejectItem: (id) =>
+        set((s) => {
+          const item = s.approvals.find((a) => a.id === id);
+          if (!item) return s;
+          return {
+            approvals: s.approvals.filter((a) => a.id !== id),
+            approvalHistory: [
+              { ...item, resolvedAt: new Date().toISOString(), action: 'rejected' },
+              ...s.approvalHistory,
+            ],
+          };
+        }),
 
       addApproval: (item) =>
-        set((s) => ({
-          approvals: [...s.approvals, item],
-        })),
+        set((s) => {
+          const existing = s.approvals.find((a) => a.entityId === item.entityId && a.entityType === item.entityType);
+          if (existing) {
+            return { approvals: s.approvals.map((a) => (a.id === existing.id ? item : a)) };
+          }
+          return { approvals: [...s.approvals, item] };
+        }),
 
       removeApproval: (id) => set(removeById(id)),
     }),
     {
       name: 'kinetic-approvals',
-      version: 2,
+      version: 3,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 2) {
-          // v2: Force re-init with fresh mock data
-          return { ...current, approvals: INITIAL_APPROVALS } as ApprovalState;
+          return { ...current, approvals: INITIAL_APPROVALS, approvalHistory: [] } as ApprovalState;
+        }
+        if (version < 3) {
+          return { ...current, approvalHistory: [] } as ApprovalState;
         }
         return current as ApprovalState;
       },

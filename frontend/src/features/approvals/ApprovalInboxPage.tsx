@@ -18,19 +18,13 @@ interface ApprovalInboxViewProps {
 
 type FilterType = 'Semua' | 'Prospek' | 'RKS' | 'LPHS';
 
-/**
- * Parse relative time strings like "3 days 4h ago", "18h 22m ago", "1d 6h ago"
- * into milliseconds elapsed since that time.
- */
-function parseRelativeTime(str: string): number {
-  let totalMs = 0;
-  const dayMatch = str.match(/(\d+)\s*(?:days?|d)\b/);
-  if (dayMatch) totalMs += parseInt(dayMatch[1], 10) * 24 * 60 * 60 * 1000;
-  const hourMatch = str.match(/(\d+)\s*(?:hours?|h)\b/);
-  if (hourMatch) totalMs += parseInt(hourMatch[1], 10) * 60 * 60 * 1000;
-  const minMatch = str.match(/(\d+)\s*(?:minutes?|m)\b/);
-  if (minMatch) totalMs += parseInt(minMatch[1], 10) * 60 * 1000;
-  return totalMs;
+function parseSlaConfig(type: string, slaConfigs: SlaConfig[]): { critH: number; warnH: number } | null {
+  const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
+  const config = slaConfigs.find(s => s.entityType === entityMap[type] && s.active);
+  if (!config) return null;
+  const critH = config.unit === 'days' ? config.criticalThreshold * 24 : config.criticalThreshold;
+  const warnH = config.unit === 'days' ? config.warningThreshold * 24 : config.warningThreshold;
+  return { critH, warnH };
 }
 
 export default function ApprovalInboxView({
@@ -38,7 +32,7 @@ export default function ApprovalInboxView({
 }: ApprovalInboxViewProps) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { approvals, approveItem } = useApprovalStore();
+  const { approvals, approvalHistory, approveItem, rejectItem } = useApprovalStore();
   const { prospects, updateProspect } = useProspectStore();
   const { projects, updateProject } = useProjectStore();
   const slaConfigs = useSlaConfigs();
@@ -50,14 +44,11 @@ export default function ApprovalInboxView({
   const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
 
   const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
-    const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
-    const config = slaConfigs.find(s => s.entityType === entityMap[type] && s.active);
-    if (!config) return 'Normal';
-    const elapsedHours = parseRelativeTime(waitingSince) / 3_600_000;
-    const critH = config.unit === 'days' ? config.criticalThreshold * 24 : config.criticalThreshold;
-    const warnH = config.unit === 'days' ? config.warningThreshold * 24 : config.warningThreshold;
-    if (elapsedHours >= critH) return 'Overdue';
-    if (elapsedHours >= warnH) return 'Near Deadline';
+    const sla = parseSlaConfig(type, slaConfigs);
+    if (!sla) return 'Normal';
+    const elapsedHours = (Date.now() - new Date(waitingSince).getTime()) / 3_600_000;
+    if (elapsedHours >= sla.critH) return 'Overdue';
+    if (elapsedHours >= sla.warnH) return 'Near Deadline';
     return 'Normal';
   };
 
@@ -119,7 +110,7 @@ export default function ApprovalInboxView({
   };
 
   const handleInlineReject = (item: ApprovalItem) => {
-    approveItem(item.id);
+    rejectItem(item.id);
     if (item.entityType === 'prospect' && item.entityId) {
       const prospect = prospects.find(p => p.id === item.entityId);
       if (prospect) {
@@ -188,7 +179,7 @@ export default function ApprovalInboxView({
         <Button variant="primary" size="sm" onClick={() => handleReview(row)} className="flex-1">
           Review
         </Button>
-        <Button variant="secondary" size="sm" onClick={() => handleInlineApprove(row)} className="flex-1 bg-success text-white border-0 hover:opacity-90">
+        <Button size="sm" onClick={() => handleInlineApprove(row)} className="flex-1 bg-success text-white border-0 hover:opacity-90">
           Setujui
         </Button>
       </div>
@@ -199,14 +190,14 @@ export default function ApprovalInboxView({
   );
 
   const renderTable = (rows: ApprovalItem[], nameLabel: string) => (
-    <table className="w-full text-left border-collapse text-sm">
+    <table className="w-full text-left border-collapse text-sm table-fixed">
       <thead>
         <tr className="bg-surface-container-low border-b border-border">
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">{nameLabel}</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Branch</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Waiting Since</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">SLA Status</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs">Action</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[30%]">{nameLabel}</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[15%]">Branch</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[17%]">Waiting Since</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[13%]">SLA Status</th>
+          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs w-[25%] sticky right-0 bg-surface-container-low shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)]">Action</th>
         </tr>
       </thead>
       <tbody className="divide-y divide-border">
@@ -226,10 +217,10 @@ export default function ApprovalInboxView({
             <td className="px-6 py-4">
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${slaBadgeClass(computeSlaStatus(row.waitingSince, row.type))}`}>{computeSlaStatus(row.waitingSince, row.type)}</span>
             </td>
-            <td className="px-6 py-4 text-right">
+            <td className="px-6 py-4 text-right sticky right-0 bg-surface-container-lowest shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)]">
               <div className="flex gap-1.5 justify-end">
                 <Button variant="outline" size="sm" onClick={() => handleReview(row)}>Review</Button>
-                <Button variant="secondary" size="sm" onClick={() => handleInlineApprove(row)} className="bg-success text-white border-0 hover:opacity-90">Setujui</Button>
+                <Button size="sm" onClick={() => handleInlineApprove(row)} className="bg-success text-white border-0 hover:opacity-90">Setujui</Button>
                 <Button variant="ghost" size="sm" onClick={() => handleInlineReject(row)} className="text-danger hover:bg-danger/10">Tolak</Button>
               </div>
             </td>
@@ -279,9 +270,9 @@ export default function ApprovalInboxView({
         </Card>
 
         <Card padding="sm">
-          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Avg. Completion Time</p>
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Rata-rata Waktu Tunggu</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length > 0 ? (userApprovals.reduce((s, a) => s + parseRelativeTime(a.waitingSince) / 3_600_000, 0) / userApprovals.length).toFixed(1) : '0.0'}h</span>
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length > 0 ? (userApprovals.reduce((s, a) => s + (Date.now() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / userApprovals.length).toFixed(1) : '0.0'}h</span>
             <span className="text-success font-label-sm text-sm font-semibold">Rata-rata</span>
           </div>
         </Card>
@@ -367,6 +358,70 @@ export default function ApprovalInboxView({
           <div className="text-center py-12">
             <span className="material-symbols-outlined text-5xl text-outline mb-4 block">inbox</span>
             <p className="text-secondary font-label-sm">Tidak ada approval yang pending.</p>
+          </div>
+        )}
+
+        {/* Approval History */}
+        {approvalHistory.length > 0 && (
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-outline">history</span>
+              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Riwayat Persetujuan <span className="text-outline font-normal ml-2">({approvalHistory.length})</span></h3>
+            </div>
+            <div className="bg-surface-container-lowest border border-border rounded-lg overflow-hidden shadow-sm">
+              {isMobile ? (
+                <div className="divide-y divide-border p-3 space-y-3">
+                  {approvalHistory.map((item) => (
+                    <div key={item.id} className="flex items-start gap-3 py-2">
+                      <span className={`material-symbols-outlined text-[20px] mt-0.5 ${item.action === 'approved' ? 'text-success' : 'text-danger'}`}>
+                        {item.action === 'approved' ? 'check_circle' : 'cancel'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
+                        <p className="text-xs text-outline">Ref: {item.ref} · {item.type}</p>
+                        <p className="text-xs text-secondary mt-0.5">
+                          {item.action === 'approved' ? 'Disetujui' : 'Ditolak'} · {formatRelativeTime(item.resolvedAt)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-surface-container-low border-b border-border">
+                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Nama</th>
+                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Tipe</th>
+                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Status</th>
+                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Waktu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {approvalHistory.map((item) => (
+                      <tr key={item.id} className="hover:bg-primary/5 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-surface">{item.name.charAt(0)}</div>
+                            <div>
+                              <p className="text-sm font-semibold text-on-surface">{item.name}</p>
+                              <p className="text-xs text-outline">Ref: {item.ref}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-secondary">{item.type}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${item.action === 'approved' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                            <span className="material-symbols-outlined text-[12px]">{item.action === 'approved' ? 'check' : 'close'}</span>
+                            {item.action === 'approved' ? 'Disetujui' : 'Ditolak'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-xs text-secondary">{formatRelativeTime(item.resolvedAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         )}
       </div>

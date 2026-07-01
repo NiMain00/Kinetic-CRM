@@ -292,8 +292,8 @@ export default function ProspectDetailPage() {
                 Edit
               </button>
 
-              {/* Tombol "Kirim ke Review" — ketika customer sudah diverifikasi & status masih draft (Potensial/Non Potensial) */}
-              {!needsVerification && customer?.verifiedAt && !isConverted &&
+              {/* Tombol "Kirim ke Review" — untuk prospek draft (Potensial/Non Potensial) yang belum dikonversi */}
+              {!isConverted &&
                (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
                 <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">send</span>
