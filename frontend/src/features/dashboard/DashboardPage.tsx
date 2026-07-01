@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button } from '@/components/ui';
-import { PageContainer, PageHeader } from '@/components/shared';
+import { PageContainer, PageHeader, ActivityFeed } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -28,6 +28,15 @@ export default function DashboardPage() {
   }, []);
 
   const slaConfigs = useSlaConfigs();
+
+  const userName = user?.name || user?.fullName || 'User';
+  const greeting = (() => {
+    const hour = new Date().getHours();
+    if (hour < 10) return 'Selamat pagi';
+    if (hour < 15) return 'Selamat siang';
+    if (hour < 18) return 'Selamat sore';
+    return 'Selamat malam';
+  })();
 
   const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
     const entityMap: Record<string, string> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
@@ -88,108 +97,109 @@ export default function DashboardPage() {
     return { inProgress, completed, postponed, total: projects.length };
   }, [projects]);
 
-  const criticalDeadlines = useMemo(() => {
-    const now = Date.now();
-    const sevenDays = 7 * 86400000;
-    return projects
-      .filter((p) => p.deadlineTender && new Date(p.deadlineTender).getTime() <= now + sevenDays)
-      .slice(0, 3)
-      .map((p) => {
-        const daysLeft = Math.ceil((new Date(p.deadlineTender!).getTime() - now) / 86400000);
-        return {
-          id: p.id,
-          name: p.name,
-          client: p.client,
-          daysLeft,
-          deadline: new Date(p.deadlineTender!).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-          severity: daysLeft <= 2 ? 'danger' as const : daysLeft <= 4 ? 'warning' as const : 'info' as const,
-        };
-      });
-  }, [projects]);
-
-  const severityBorder = { danger: 'border-danger', warning: 'border-status-orange', info: 'border-warning' };
-  const severityColor = { danger: 'text-danger', warning: 'text-status-orange', info: 'text-warning' };
-
   return (
     <PageContainer>
       <PageHeader
-        title="Pusat Monitoring"
-        description={currentDateString}
-        actions={user?.roleName === 'Super Admin' ? (
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              size="md"
-              onClick={() => navigate('/prospects')}
-              leftIcon={<span className="material-symbols-outlined text-[18px]">group</span>}
-            >
-              Daftar Prospek
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              onClick={() => navigate('/projects/new')}
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            >
-              Proyek Baru
-            </Button>
-          </div>
-        ) : undefined}
+        title={`${greeting}, ${userName}`}
+        description={`${currentDateString} · ${stats.pendingApprovals} approval menunggu · ${stats.criticalDeadlines} deadline kritis`}
       />
+
+      <div className="flex gap-2 flex-wrap">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/prospects/new')}
+          leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
+        >
+          Prospek Baru
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/projects/new')}
+          leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
+        >
+          Proyek Baru
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/approvals')}
+          leftIcon={<span className="material-symbols-outlined text-[16px]">fact_check</span>}
+        >
+          Approval
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/reports/calendar')}
+          leftIcon={<span className="material-symbols-outlined text-[16px]">calendar_month</span>}
+        >
+          Kalender
+        </Button>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card padding="md" hover>
-          <div className="flex justify-between items-start mb-4">
-            <span className="p-2.5 sm:p-3 rounded-lg bg-primary/10 text-primary">
-              <span className="material-symbols-outlined">account_balance_wallet</span>
-            </span>
-            <span className="text-success font-label-sm flex items-center gap-1 text-xs">
-              <span className="material-symbols-outlined text-[16px]">trending_up</span> +12%
-            </span>
-          </div>
-          <div>
-            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Total Proyek Aktif</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{formatCurrency(stats.totalActiveValue)}</h3>
-          </div>
+          <button onClick={() => navigate('/projects')} className="w-full text-left cursor-pointer">
+            <div className="flex justify-between items-start mb-4">
+              <span className="p-2.5 sm:p-3 rounded-lg bg-primary/10 text-primary">
+                <span className="material-symbols-outlined">account_balance_wallet</span>
+              </span>
+              <span className="text-success font-label-sm flex items-center gap-1 text-xs">
+                <span className="material-symbols-outlined text-[16px]">trending_up</span> +12%
+              </span>
+            </div>
+            <div>
+              <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Total Proyek Aktif</p>
+              <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{formatCurrency(stats.totalActiveValue)}</h3>
+            </div>
+          </button>
         </Card>
 
         <Card padding="md" hover>
-          <div className="flex justify-between items-start mb-4">
-            <span className="p-2.5 sm:p-3 rounded-lg bg-status-orange/10 text-status-orange">
-              <span className="material-symbols-outlined">fact_check</span>
-            </span>
-            <span className="text-status-orange font-label-sm text-xs">Prioritas Tinggi</span>
-          </div>
-          <div>
-            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Persetujuan Tertunda</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.pendingApprovals} Item</h3>
-          </div>
+          <button onClick={() => navigate('/approvals')} className="w-full text-left cursor-pointer">
+            <div className="flex justify-between items-start mb-4">
+              <span className="p-2.5 sm:p-3 rounded-lg bg-status-orange/10 text-status-orange">
+                <span className="material-symbols-outlined">fact_check</span>
+              </span>
+              <span className="text-status-orange font-label-sm text-xs">Prioritas Tinggi</span>
+            </div>
+            <div>
+              <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Persetujuan Tertunda</p>
+              <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.pendingApprovals} Item</h3>
+            </div>
+          </button>
         </Card>
 
         <Card padding="md" hover>
-          <div className="flex justify-between items-start mb-4">
-            <span className="p-2.5 sm:p-3 rounded-lg bg-danger/10 text-danger">
-              <span className="material-symbols-outlined">alarm</span>
-            </span>
-            <span className="text-danger font-label-sm text-xs">Tenggat &lt; 7 Hari</span>
-          </div>
-          <div>
-            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Mendekati Deadline</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.criticalDeadlines} Proyek</h3>
-          </div>
+          <button onClick={() => navigate('/projects')} className="w-full text-left cursor-pointer">
+            <div className="flex justify-between items-start mb-4">
+              <span className="p-2.5 sm:p-3 rounded-lg bg-danger/10 text-danger">
+                <span className="material-symbols-outlined">alarm</span>
+              </span>
+              <span className="text-danger font-label-sm text-xs">Mendekati Deadline</span>
+            </div>
+            <div>
+              <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Mendekati Deadline</p>
+              <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.criticalDeadlines} Proyek</h3>
+            </div>
+          </button>
         </Card>
 
         <Card padding="md" hover>
-          <div className="flex justify-between items-start mb-4">
-            <span className="p-2.5 sm:p-3 rounded-lg bg-status-indigo/10 text-status-indigo">
-              <span className="material-symbols-outlined">military_tech</span>
-            </span>
-            <span className="text-status-indigo font-label-sm text-xs">Kinerja YTD</span>
-          </div>
-          <div>
-            <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Rasio Kemenangan</p>
-            <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.winRate}%</h3>
-          </div>
+          <button onClick={() => navigate('/reports/kpi')} className="w-full text-left cursor-pointer">
+            <div className="flex justify-between items-start mb-4">
+              <span className="p-2.5 sm:p-3 rounded-lg bg-status-indigo/10 text-status-indigo">
+                <span className="material-symbols-outlined">military_tech</span>
+              </span>
+              <span className="text-status-indigo font-label-sm text-xs">Kinerja YTD</span>
+            </div>
+            <div>
+              <p className="text-secondary font-label-sm mb-1 text-xs sm:text-sm">Rasio Kemenangan</p>
+              <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.winRate}%</h3>
+            </div>
+          </button>
         </Card>
       </div>
 
@@ -348,32 +358,19 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="col-span-12 lg:col-span-5 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-4 sm:p-6 flex flex-col justify-between">
+        <div className="col-span-12 lg:col-span-5 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-4 sm:p-6 flex flex-col">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Deadline Kritis</h4>
-            <span className="material-symbols-outlined text-danger text-xl sm:text-2xl" aria-label="Peringatan">warning</span>
+            <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Aktivitas Terbaru</h4>
+            <button
+              onClick={() => navigate('/notifications')}
+              className="text-primary font-label-sm hover:underline text-xs sm:text-sm font-semibold touch-min-h flex items-center"
+            >
+              Lihat Semua
+            </button>
           </div>
-          {criticalDeadlines.length === 0 ? (
-            <p className="text-secondary text-sm text-center py-4">Tidak ada deadline kritis dalam 7 hari ke depan.</p>
-          ) : (
-            <div className="space-y-3 sm:space-y-4">
-              {criticalDeadlines.map((d) => (
-                <div key={d.id} className={`flex gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-surface-container-low border-l-4 ${severityBorder[d.severity]}`}>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-label-sm text-on-surface text-xs sm:text-sm font-medium truncate">{d.name}</p>
-                    <p className="text-secondary font-caption-xs text-xs">{d.client}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className={`font-bold text-label-sm text-xs sm:text-sm ${severityColor[d.severity]}`}>{d.daysLeft} Hari Lagi</p>
-                    <p className="text-secondary font-caption-xs text-xs">{d.deadline}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <button className="w-full mt-4 sm:mt-6 py-2.5 sm:py-3 border border-border rounded-lg font-label-sm text-secondary hover:bg-surface-container-high transition-colors text-xs sm:text-sm font-semibold touch-min-h">
-            Lihat Semua Jadwal Kritis
-          </button>
+          <div className="flex-1 overflow-y-auto max-h-[360px]">
+            <ActivityFeed maxItems={10} showFilter={false} />
+          </div>
         </div>
       </div>
     </PageContainer>

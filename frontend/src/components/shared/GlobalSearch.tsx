@@ -41,6 +41,24 @@ export default function GlobalSearch({ className = '' }: { className?: string })
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const inputEl = ref.current?.querySelector('input');
+        inputEl?.focus();
+        setIsOpen(true);
+      }
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+        const inputEl = ref.current?.querySelector('input');
+        inputEl?.blur();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleSearch = (value: string) => {
     setQuery(value);
     if (!value.trim()) { setResults([]); setIsOpen(false); return; }
@@ -60,30 +78,38 @@ export default function GlobalSearch({ className = '' }: { className?: string })
   return (
     <div ref={ref} className={`relative w-full max-w-xs ${className}`}>
       <Input
-        placeholder="Cari apa saja..."
+        placeholder="Cari apa saja... (Ctrl+K)"
         value={query}
         onChange={(e) => handleSearch(e.target.value)}
-        onFocus={() => { if (results.length) setIsOpen(true); }}
+        onFocus={() => { if (results.length || query.trim()) setIsOpen(true); }}
         leftIcon={<span className="material-symbols-outlined" aria-hidden="true">search</span>}
       />
-      {isOpen && results.length > 0 && (
+      {isOpen && (
         <div className="absolute top-full mt-2 left-0 right-0 bg-surface-container-lowest border border-border rounded-xl shadow-xl z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
-          {results.map((r, i) => (
-            <button
-              key={i}
-              onClick={() => handleSelect(r)}
-              className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container-high transition-colors"
-              role="option"
-              aria-selected={false}
-            >
-              <span className="material-symbols-outlined text-outline text-base" aria-hidden="true">{r.icon || 'search'}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-on-surface truncate">{r.label}</p>
-                <p className="text-[10px] text-outline">{r.category}</p>
-              </div>
-              <span className="text-[10px] text-outline hidden sm:inline">{r.path}</span>
-            </button>
-          ))}
+          {results.length > 0 ? (
+            results.map((r, i) => (
+              <button
+                key={i}
+                onClick={() => handleSelect(r)}
+                className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container-high transition-colors"
+                role="option"
+                aria-selected={false}
+              >
+                <span className="material-symbols-outlined text-outline text-base" aria-hidden="true">{r.icon || 'search'}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-on-surface truncate">{r.label}</p>
+                  <p className="text-[10px] text-outline">{r.category}</p>
+                </div>
+                <span className="text-[10px] text-outline hidden sm:inline">{r.path}</span>
+              </button>
+            ))
+          ) : (
+            <div className="px-4 py-6 text-center">
+              <span className="material-symbols-outlined text-2xl text-outline mb-2 block">search_off</span>
+              <p className="text-sm font-medium text-secondary">Tidak ada hasil</p>
+              <p className="text-[11px] text-outline mt-0.5">Coba kata kunci lain</p>
+            </div>
+          )}
         </div>
       )}
     </div>

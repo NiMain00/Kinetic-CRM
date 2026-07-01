@@ -4,7 +4,7 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency } from '@/utils/formatters';
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
-import { Button, Card } from '@/components/ui';
+import { Button, Card, Table, type Column } from '@/components/ui';
 import { exportCSV } from '@/utils/export';
 import FilterPanel from '@/components/shared/FilterPanel';
 import { useProjectStatuses } from '@/hooks/useConfigData';
@@ -125,6 +125,23 @@ export default function ProjectListPage() {
     currentPage * PAGE_SIZE,
   );
 
+  const projectColumns: Column<typeof projects[number]>[] = [
+    { key: 'code', header: 'Kode', sortable: true, className: 'font-mono text-xs text-outline w-[12%]', render: (p) => <span className="font-mono text-xs text-outline">{p.code}</span> },
+    { key: 'name', header: 'Nama Proyek', sortable: true, render: (p) => <span className="font-medium text-on-surface max-w-[250px] truncate block">{p.name}</span> },
+    { key: 'client', header: 'Klien', sortable: true, render: (p) => <span className="text-secondary">{p.client}</span> },
+    { key: 'status', header: 'Status', sortable: true, render: (p) => <StatusBadge status={p.status} /> },
+    { key: 'estimatedValue', header: 'Nilai', sortable: true, align: 'right', render: (p) => <span className="font-medium text-on-surface">{formatCurrency(p.estimatedValue)}</span> },
+    { key: 'progress', header: 'Progress', sortable: true, render: (p) => (
+      <div className="flex items-center gap-2">
+        <div className="w-24 h-2 bg-surface-container-high rounded-full overflow-hidden">
+          <div className={`h-full rounded-full ${progressColor(p.progress)}`} style={{ width: `${p.progress}%` }} />
+        </div>
+        <span className="text-xs text-outline font-medium">{p.progress}%</span>
+      </div>
+    )},
+    { key: 'date', header: 'Tanggal', sortable: true, render: (p) => <span className="text-outline text-xs">{p.date}</span> },
+  ];
+
   return (
     <PageContainer>
       <PageHeader
@@ -239,85 +256,19 @@ export default function ProjectListPage() {
       </div>
 
       <Card padding="none">
-        <div className="overflow-x-auto table-mobile-compact">
-          <table className="w-full text-left text-sm table-auto">
-            <thead>
-              <tr className="bg-surface-container-low border-b border-border">
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Kode</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Nama Proyek</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Klien</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Nilai</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Progress</th>
-                <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">Tanggal</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {paginated.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-outline text-sm">Tidak ada proyek ditemukan</td>
-                </tr>
-              ) : (
-                paginated.map((project) => (
-                  <tr
-                    key={project.id}
-                    onClick={() => navigate(`/project/${project.id}/overview`)}
-                    className="cursor-pointer hover:bg-primary/5 transition-colors"
-                  >
-                    <td className="px-6 py-4 font-mono text-xs text-outline">{project.code}</td>
-                    <td className="px-6 py-4 font-medium text-on-surface max-w-[250px] truncate">{project.name}</td>
-                    <td className="px-6 py-4 text-secondary">{project.client}</td>
-                    <td className="px-6 py-4"><StatusBadge status={project.status} /></td>
-                    <td className="px-6 py-4 text-on-surface font-medium">{formatCurrency(project.estimatedValue)}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-surface-container-high rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full ${progressColor(project.progress)}`} style={{ width: `${project.progress}%` }} />
-                        </div>
-                        <span className="text-xs text-outline font-medium">{project.progress}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-outline text-xs">{project.date}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <Table
+          columns={projectColumns}
+          data={paginated}
+          keyExtractor={(p) => p.id}
+          onRowClick={(p) => navigate(`/project/${p.id}/overview`)}
+          emptyState={
+            <div className="py-12 text-center">
+              <span className="material-symbols-outlined text-5xl text-outline mb-4 block">folder_off</span>
+              <p className="text-secondary text-sm">Tidak ada proyek ditemukan</p>
+            </div>
+          }
+        />
       </Card>
-
-      {/* Pagination footer */}
-      <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3 rounded-b-xl">
-        <span className="text-secondary font-caption-xs">
-          Menampilkan <span className="font-bold text-on-surface">{filtered.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> dari{' '}
-          <span className="font-bold text-on-surface">{filtered.length}</span> hasil
-        </span>
-        <div className="flex items-center gap-1">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-            className="touch-min flex items-center justify-center px-2 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            Prev
-          </button>
-          {Array.from({ length: Math.max(totalPages, 1) }, (_, i) => (
-            <button
-              key={i + 1}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`touch-min flex items-center justify-center px-2.5 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low'}`}
-            >
-              {i + 1}
-            </button>
-          ))}
-          <button
-            disabled={currentPage === totalPages || totalPages === 0}
-            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-            className="touch-min flex items-center justify-center px-2 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >
-            Next
-          </button>
-        </div>
-      </div>
     </PageContainer>
   );
 }

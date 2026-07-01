@@ -246,24 +246,6 @@ html {
   }
 }
 
-@media (max-width: 767px) {
-  .card-stack > :not([data-table]) {
-    display: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .card-stack-mobile {
-    display: none;
-  }
-}
-
-@media (max-width: 767px) {
-  .table-desktop {
-    display: none;
-  }
-}
-
 .body-scroll-lock {
   overflow: hidden;
   position: fixed;
@@ -289,39 +271,48 @@ html {
 }
 
 @media (max-width: 767px) {
+  .card-stack > :not([data-table]) {
+    display: none;
+  }
+  .table-desktop {
+    display: none;
+  }
   .table-mobile-compact {
-    font-size: 0.625rem !important;
+    font-size: 0.625rem;
   }
   .table-mobile-compact thead th,
   .table-mobile-compact tbody td {
-    padding-left: 0.375rem !important;
-    padding-right: 0.375rem !important;
-    padding-top: 0.25rem !important;
-    padding-bottom: 0.25rem !important;
-    white-space: normal !important;
-    word-break: break-word !important;
+    padding: 0.25rem 0.375rem;
+    white-space: normal;
+    word-break: break-word;
   }
   .table-mobile-compact tbody td {
-    padding-top: 0.375rem !important;
-    padding-bottom: 0.375rem !important;
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
   }
-  .table-mobile-compact .btn-compact {
-    padding: 0.25rem !important;
-    min-width: unset !important;
-    min-height: unset !important;
-    font-size: 0.625rem !important;
+  [data-mobile-table] .btn-compact {
+    padding: 0.25rem;
+    min-width: unset;
+    min-height: unset;
+    font-size: 0.625rem;
   }
-  .table-mobile-compact .icon-compact {
-    font-size: 14px !important;
+  [data-mobile-table] .icon-compact {
+    font-size: 14px;
   }
-  .table-mobile-compact .badge-compact {
-    font-size: 0.5rem !important;
-    padding: 0.1rem 0.3rem !important;
+  [data-mobile-table] .badge-compact {
+    font-size: 0.5rem;
+    padding: 0.1rem 0.3rem;
   }
-  .table-mobile-compact .avatar-compact {
-    width: 1.25rem !important;
-    height: 1.25rem !important;
-    font-size: 0.5rem !important;
+  [data-mobile-table] .avatar-compact {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .card-stack-mobile {
+    display: none;
   }
 }
 

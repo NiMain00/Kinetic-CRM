@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { ApprovalItem, TimelineEvent, SlaConfig } from '@/types/domain';
 import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 import { useSlaConfigs } from '@/hooks/useConfigData';
 import { formatRelativeTime } from '@/utils/formatters';
+import MentionTextarea from '@/components/shared/MentionTextarea';
+import { useUserStore } from '@/stores/userStore';
+import { useAuthStore } from '@/stores/authStore';
 
 interface ApprovalReviewDrawerProps {
   item: ApprovalItem;
@@ -45,6 +48,13 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
   const [comment, setComment] = useState('');
   const [timelineEvents] = useState<TimelineEvent[]>(INITIAL_TIMELINE_EVENTS);
   const slaConfigs = useSlaConfigs();
+  const users = useUserStore((s) => s.users);
+  const currentUser = useAuthStore((s) => s.user);
+  const mentionUsers = useMemo(
+    () => users.map((u) => ({ id: u.id, name: u.fullName, role: u.role })),
+    [users],
+  );
+  const currentUserId = currentUser?.id || '';
 
   const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
     const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
@@ -115,11 +125,12 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
             <label className="font-semibold text-sm text-on-surface-variant block">
               Catatan / Komentar
             </label>
-            <textarea
+            <MentionTextarea
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="w-full border border-border rounded-lg text-sm p-3 outline-none focus:ring-1 focus:ring-primary resize-none"
-              placeholder="Tulis alasan, instruksi, atau catatan opsional..."
+              onChange={setComment}
+              users={mentionUsers}
+              currentUserId={currentUserId}
+              placeholder="Tulis alasan, instruksi, atau catatan opsional... (gunakan @ untuk mention)"
               rows={3}
               aria-label="Catatan approval"
             />

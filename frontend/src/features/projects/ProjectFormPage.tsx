@@ -56,8 +56,7 @@ export default function ProjectFormPage() {
 
     addProject(newProject);
     toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
-    // Force reload agar list langsung fresh dari store (Zustand persist flush async)
-    window.location.href = '/projects';
+    navigate('/projects');
   };
 
   const fieldClass = (field: keyof ProjectFormData) =>

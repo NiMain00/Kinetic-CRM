@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button, Card } from '@/components/ui';
-import { PageContainer, PageHeader } from '@/components/shared';
+import { PageContainer, PageHeader, StatusBadge } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
-import { useProjectStatuses } from '@/hooks/useConfigData';
 import { usePermission } from '@/hooks/usePermission';
 import { exportCSV } from '@/utils/export';
 
@@ -76,23 +75,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     navigate(`/project/${newProject.id}/overview`);
   };
 
-  // Filter prospects
-  const projectStatuses = useProjectStatuses();
-
-  const statusColorMap = useMemo(() => {
-    const map: Record<string, { bg: string; text: string }> = {};
-    projectStatuses.forEach((s) => {
-      const hex = s.color_hex;
-      map[s.code] = { bg: `${hex}25`, text: hex };
-    });
-    map['Non Potensial'] = { bg: '#e2e8f0', text: '#475569' };
-    map['Potensial'] = { bg: '#d1fae5', text: '#065f46' };
-    map['Waiting PM'] = { bg: '#fef3c7', text: '#b45309' };
-    map['Revision'] = { bg: '#ffedd5', text: '#c2410c' };
-    map['Approved'] = { bg: '#d1fae5', text: '#16a34a' };
-    return map;
-  }, [projectStatuses]);
-
   const filteredProspects = prospects.filter(p => {
     // User-based filtering: non-admin users only see their own prospects
     if (!isFullAccess && p.createdByUserId && p.createdByUserId !== authUser?.id) {
@@ -121,13 +103,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
   );
-
-  const statusColor = (status: string, prospect?: typeof prospects[0]): { bg: string; text: string } => {
-    if (prospect?.customerData?.needsVerification) {
-      return { bg: '#fef3c7', text: '#b45309' };
-    }
-    return statusColorMap[status] || { bg: '#e0f2fe', text: '#0284c7' };
-  };
 
   const FILTER_TABS: FilterTab[] = ['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved', 'Perlu Verifikasi'];
   const FILTER_LABELS: Record<FilterTab, string> = {
@@ -239,12 +214,9 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           <p className="text-xs text-secondary truncate">{row.description}</p>
                         )}
                       </div>
-                      <span
-                        className="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap"
-                        style={{ backgroundColor: statusColor(row.status, row).bg, color: statusColor(row.status, row).text }}
-                      >
-                        {row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
-                      </span>
+                      <StatusBadge
+                        status={row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
+                      />
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 text-secondary">
@@ -337,12 +309,9 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         </td>
                         <td className="px-6 py-4 text-secondary truncate overflow-hidden">{row.client}</td>
                         <td className="px-6 py-4 overflow-hidden">
-                          <span
-                            className="inline-block px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap"
-                            style={{ backgroundColor: statusColor(row.status, row).bg, color: statusColor(row.status, row).text }}
-                          >
-                            {row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
-                          </span>
+                        <StatusBadge
+                          status={row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
+                        />
                         </td>
                         <td className="px-6 py-4 overflow-hidden">
                           <div className="flex items-center gap-2">

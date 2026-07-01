@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Button } from '@/components/ui';
+import { Card, Button, Modal } from '@/components/ui';
 import { PageContainer, PageHeader } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { ApprovalItem, SlaConfig } from '../../types/domain';
@@ -10,6 +10,8 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useSlaConfigs, useNextPhaseMap } from '@/hooks/useConfigData';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
+import MentionTextarea from '@/components/shared/MentionTextarea';
 import { formatRelativeTime } from '@/utils/formatters';
 
 interface ApprovalInboxViewProps {
@@ -40,6 +42,17 @@ export default function ApprovalInboxView({
   const NEXT_PHASE_MAP = useNextPhaseMap();
   const user = useAuthStore((s) => s.user);
   const [filterType, setFilterType] = React.useState<FilterType>('Semua');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [rejectTarget, setRejectTarget] = React.useState<ApprovalItem | null>(null);
+  const [rejectReason, setRejectReason] = React.useState('');
+  const [isBulkReject, setIsBulkReject] = useState(false);
+  const allUsers = useUserStore((s) => s.users);
+  const mentionUsers = useMemo(
+    () => allUsers.map((u) => ({ id: u.id, name: u.fullName, role: u.role })),
+    [allUsers],
+  );
+  const currentUserId = user?.id || '';
 
   const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
 
@@ -53,7 +66,6 @@ export default function ApprovalInboxView({
   };
 
   const filteredApprovals = useMemo(() => {
-    // Hanya tampilkan approval yang entity-nya masih ada
     const validApprovals = userApprovals.filter((a) => {
       if (a.entityType === 'prospect' && a.entityId) {
         return prospects.some((p) => p.id === a.entityId);
@@ -63,9 +75,13 @@ export default function ApprovalInboxView({
       }
       return true;
     });
-    if (filterType === 'Semua') return validApprovals;
-    return validApprovals.filter((a) => a.type === filterType);
-  }, [userApprovals, filterType, prospects, projects]);
+    const typeFiltered = filterType === 'Semua' ? validApprovals : validApprovals.filter((a) => a.type === filterType);
+    if (!searchQuery.trim()) return typeFiltered;
+    const q = searchQuery.toLowerCase();
+    return typeFiltered.filter(
+      (a) => a.name.toLowerCase().includes(q) || a.ref.toLowerCase().includes(q),
+    );
+  }, [userApprovals, filterType, searchQuery, prospects, projects]);
 
   const handleReview = (item: ApprovalItem) => {
     if (item.entityType === 'prospect' && item.entityId) {
@@ -110,6 +126,14 @@ export default function ApprovalInboxView({
   };
 
   const handleInlineReject = (item: ApprovalItem) => {
+    setRejectTarget(item);
+    setRejectReason('');
+    setIsBulkReject(false);
+  };
+
+  const confirmReject = () => {
+    if (!rejectTarget) return;
+    const item = rejectTarget;
     rejectItem(item.id);
     if (item.entityType === 'prospect' && item.entityId) {
       const prospect = prospects.find(p => p.id === item.entityId);
@@ -124,13 +148,74 @@ export default function ApprovalInboxView({
         onShowNotification(`Proyek "${project.name}" dikembalikan untuk revisi.`, 'error');
       }
     }
+    const reasonSuffix = rejectReason.trim() ? ` Alasan: ${rejectReason.trim()}` : '';
     addNotification({
       title: `${item.type} Revisi`,
-      message: `${item.type} "${item.name}" ditolak dan memerlukan revisi.`,
+      message: `${item.type} "${item.name}" ditolak dan memerlukan revisi.${reasonSuffix}`,
       type: 'revision',
       entityId: item.entityId,
       entityType: item.entityType,
     });
+    setRejectTarget(null);
+    setRejectReason('');
+  };
+
+  const isAllSelected = filteredApprovals.length > 0 && filteredApprovals.every((a) => selectedIds.has(a.id));
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredApprovals.map((a) => a.id)));
+    }
+  };
+
+  const handleBulkApprove = () => {
+    selectedIds.forEach((id) => {
+      const item = approvals.find((a) => a.id === id);
+      if (item) handleInlineApprove(item);
+    });
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkReject = () => {
+    const first = approvals.find((a) => selectedIds.has(a.id));
+    if (first) {
+      setRejectTarget(first);
+      setRejectReason('');
+      setIsBulkReject(true);
+    }
+  };
+
+  const confirmBulkReject = () => {
+    if (!rejectTarget) return;
+    selectedIds.forEach((id) => {
+      const item = approvals.find((a) => a.id === id);
+      if (item) {
+        rejectItem(item.id);
+        const reasonSuffix = rejectReason.trim() ? ` Alasan: ${rejectReason.trim()}` : '';
+        addNotification({
+          title: `${item.type} Revisi`,
+          message: `${item.type} "${item.name}" ditolak dan memerlukan revisi.${reasonSuffix}`,
+          type: 'revision',
+          entityId: item.entityId,
+          entityType: item.entityType,
+        });
+      }
+    });
+    setRejectTarget(null);
+    setRejectReason('');
+    setSelectedIds(new Set());
   };
 
   const prospekApprovals = filteredApprovals.filter((a) => a.type === 'Prospek');
@@ -155,10 +240,16 @@ export default function ApprovalInboxView({
   const renderApprovalCard = (row: ApprovalItem) => (
     <div
       key={row.id}
-      className="bg-surface-container-lowest border border-border rounded-xl p-4 space-y-3 active:scale-[0.99] transition-transform"
+      className={`bg-surface-container-lowest border border-border rounded-xl p-4 space-y-3 active:scale-[0.99] transition-transform ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
+          <input
+            type="checkbox"
+            checked={selectedIds.has(row.id)}
+            onChange={() => toggleSelect(row.id)}
+            className="rounded border-border accent-primary w-4 h-4 mt-1 shrink-0"
+          />
           <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
             {row.name.charAt(0)}
           </div>
@@ -193,6 +284,14 @@ export default function ApprovalInboxView({
     <table className="w-full text-left border-collapse text-sm table-fixed">
       <thead>
         <tr className="bg-surface-container-low border-b border-border">
+          <th className="px-4 py-3 w-10">
+            <input
+              type="checkbox"
+              checked={isAllSelected}
+              onChange={toggleSelectAll}
+              className="rounded border-border accent-primary w-4 h-4"
+            />
+          </th>
           <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[30%]">{nameLabel}</th>
           <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[15%]">Branch</th>
           <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[17%]">Waiting Since</th>
@@ -202,7 +301,15 @@ export default function ApprovalInboxView({
       </thead>
       <tbody className="divide-y divide-border">
         {rows.map(row => (
-          <tr key={row.id} className="hover:bg-primary/5 transition-colors group">
+          <tr key={row.id} className={`hover:bg-primary/5 transition-colors group ${selectedIds.has(row.id) ? 'bg-primary/5' : ''}`}>
+            <td className="px-4 py-4">
+              <input
+                type="checkbox"
+                checked={selectedIds.has(row.id)}
+                onChange={() => toggleSelect(row.id)}
+                className="rounded border-border accent-primary w-4 h-4"
+              />
+            </td>
             <td className="px-6 py-4">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">{row.name.charAt(0)}</div>
@@ -280,12 +387,27 @@ export default function ApprovalInboxView({
 
       <Card padding="sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <span className="text-secondary font-label-sm text-label-sm">Tipe Approval:</span>
+          <div className="relative w-full sm:w-64">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama atau ref..."
+              className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface">
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            )}
+          </div>
           <div className="flex gap-2 overflow-x-auto w-full sm:w-auto">
+            <span className="text-secondary font-label-sm text-label-sm whitespace-nowrap self-center">Tipe:</span>
             {(['Semua', 'Prospek', 'RKS', 'LPHS'] as FilterType[]).map((t) => (
               <button
                 key={t}
-                onClick={() => setFilterType(t)}
+                onClick={() => { setFilterType(t); setSearchQuery(''); }}
                 className={filterButtonClass(filterType === t)}
               >
                 {t}
@@ -294,6 +416,23 @@ export default function ApprovalInboxView({
           </div>
         </div>
       </Card>
+
+      {/* Bulk Action Bar */}
+      {someSelected && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border border-primary/20 rounded-lg">
+          <span className="text-sm font-semibold text-on-surface">{selectedIds.size} item dipilih</span>
+          <div className="flex-1" />
+          <Button variant="primary" size="sm" onClick={handleBulkApprove}>
+            Setujui Semua
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleBulkReject}>
+            Tolak Semua
+          </Button>
+          <button onClick={() => setSelectedIds(new Set())} className="text-sm text-outline hover:text-on-surface underline">
+            Batalkan
+          </button>
+        </div>
+      )}
 
       {/* Grouped Lists */}
       <div className="space-y-6 sm:space-y-8 pb-12">
@@ -425,6 +564,39 @@ export default function ApprovalInboxView({
           </div>
         )}
       </div>
+      {/* Reject Confirmation Modal */}
+      <Modal
+        isOpen={rejectTarget !== null}
+        onClose={() => setRejectTarget(null)}
+        title="Tolak Persetujuan"
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setRejectTarget(null)}>Batal</Button>
+            <Button variant="danger" size="md" onClick={isBulkReject ? confirmBulkReject : confirmReject}>
+              {isBulkReject ? `Tolak ${selectedIds.size} Item` : 'Tolak'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-secondary">
+            Apakah Anda yakin ingin menolak persetujuan untuk <strong>{rejectTarget?.name}</strong>?
+          </p>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-xs text-on-surface-variant">Alasan Penolakan (opsional)</label>
+            <MentionTextarea
+              value={rejectReason}
+              onChange={setRejectReason}
+              users={mentionUsers}
+              currentUserId={currentUserId}
+              placeholder="Jelaskan alasan penolakan... (gunakan @ untuk mention)"
+              rows={3}
+              aria-label="Alasan penolakan"
+            />
+          </div>
+        </div>
+      </Modal>
     </PageContainer>
   );
 }

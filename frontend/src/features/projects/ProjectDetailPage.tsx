@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
+import PhaseStepper from '@/components/shared/PhaseStepper';
 import type { Project } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
@@ -336,56 +337,22 @@ export default function ProjectDetailView({
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto">
-          {/* Dynamic Stepper: hanya di Overview */}
+          {/* Dynamic Stepper */}
           {isOverview && !(project.type === 'Prospecting' && isFromNonPotensial) && (
-            <section className="bg-surface-container-lowest px-8 py-6 border-b border-border overflow-x-auto select-none">
-              <div className="min-w-[600px] flex items-center justify-between relative">
-                <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border -translate-y-1/2 -z-0"></div>
-
-                {(() => {
-                  const currentStep = accessibleUpToIndex;
-                  return tabs.map((step, index) => {
-                  const stepNum = index + 1;
-                  const isCompleted = index < currentStep;
-                  const isActive = index === currentStep;
-                  // Unlock rules: Timeline/Dokumen always, Harga/Kompetitor/Pemenang after LPHS mgmt approval, Target Delivery after menang
-                  const isSpecialUnlocked = (
-                    step.label === 'Timeline' || step.label === 'Dokumen' ||
-                    (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved) ||
-                    (step.label === 'Target Delivery' && isMenang)
-                  );
-                  const isFuture = !isCompleted && !isActive && !isSpecialUnlocked;
-
-                  return (
-                    <div
-                      key={step.label}
-                      onClick={() => {
-                        if (!isFuture) navigate(`/project/${projectId}/${step.path}`);
-                      }}
-                      className={`relative z-10 flex flex-col items-center gap-2 bg-surface-container-lowest px-4 ${isFuture ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:scale-105'} transition-transform`}
-                    >
-                    {isCompleted ? (
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                        <span className="material-symbols-outlined text-[16px]">check</span>
-                      </div>
-                    ) : isActive ? (
-                      <div className="w-10 h-10 rounded-full bg-surface-container-lowest border-2 border-primary text-primary flex items-center justify-center font-bold text-sm shadow-md ring-4 ring-primary/10">
-                        {stepNum}
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-border text-on-surface-variant flex items-center justify-center font-bold text-sm">
-                        {stepNum}
-                      </div>
-                    )}
-                    <span className={`font-label-sm text-xs whitespace-nowrap ${isActive ? 'text-primary font-bold' : 'text-on-surface-variant'}`}>
-                      {step.label}
-                    </span>
-                  </div>
+            <PhaseStepper
+              steps={tabs}
+              currentStepIndex={currentStepIndex}
+              accessibleUpToIndex={accessibleUpToIndex}
+              onStepClick={(path) => navigate(`/project/${projectId}/${path}`)}
+              isStepUnlocked={(index) => {
+                const step = tabs[index];
+                return (
+                  step.label === 'Timeline' || step.label === 'Dokumen' ||
+                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved) ||
+                  (step.label === 'Target Delivery' && isMenang)
                 );
-                });
-              })()}
-              </div>
-            </section>
+              }}
+            />
           )}
 
           {/* Tab Navigation Bar — visible on ALL tabs */}

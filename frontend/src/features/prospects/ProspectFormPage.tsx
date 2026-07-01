@@ -21,6 +21,7 @@ export default function ProspectFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- Stores ---
   const { prospects, addProspect, updateProspect } = useProspectStore();
@@ -136,6 +137,8 @@ export default function ProspectFormPage() {
   };
 
   const saveProspect = (status: 'Non Potensial' | 'Potensial' | 'Waiting PM') => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const clientName = getClientName();
 
     const result = prospectSchema.safeParse({
@@ -151,8 +154,9 @@ export default function ProspectFormPage() {
     });
 
     if (!result.success) {
-      const messages = result.error.issues.map((i) => i.message).join(', ');
+      const messages = result.error.issues.map((i: { message: string }) => i.message).join(', ');
       toast.error(messages);
+      setIsSubmitting(false);
       return false;
     }
 
@@ -250,8 +254,8 @@ export default function ProspectFormPage() {
     }
 
     toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');
-    // Force reload agar list langsung fresh dari store (Zustand persist flush async)
-    window.location.href = '/prospects';
+    setIsSubmitting(false);
+    navigate('/prospects');
     return true;
   };
 
@@ -640,12 +644,31 @@ export default function ProspectFormPage() {
             Kembali ke Daftar
           </button>
           <div className="flex gap-3">
-            <button onClick={handleSaveDraft} className="px-6 py-2.5 bg-surface-container-lowest border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all text-sm" aria-label="Simpan Draft">
-              Simpan Draft
+            <button
+              onClick={handleSaveDraft}
+              disabled={isSubmitting}
+              className="px-6 py-2.5 bg-surface-container-lowest border border-border text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Simpan Draft"
+            >
+              {isSubmitting ? 'Menyimpan...' : 'Simpan Draft'}
             </button>
-            <button onClick={handleSubmitReview} className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:brightness-110 transition-all text-sm flex items-center gap-2" aria-label="Kirim ke Review">
-              Kirim ke Review
-              <span className="material-symbols-outlined text-[18px]">send</span>
+            <button
+              onClick={handleSubmitReview}
+              disabled={isSubmitting}
+              className="px-6 py-2.5 bg-primary text-white font-bold rounded-lg shadow-sm hover:brightness-110 transition-all text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Kirim ke Review"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4" />
+                  Mengirim...
+                </>
+              ) : (
+                <>
+                  Kirim ke Review
+                  <span className="material-symbols-outlined text-[18px]">send</span>
+                </>
+              )}
             </button>
           </div>
         </div>
