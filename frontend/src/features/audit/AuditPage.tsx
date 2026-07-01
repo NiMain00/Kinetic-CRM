@@ -9,7 +9,7 @@ const ACTION_COLORS: Record<string, string> = {
   DELETE: 'bg-danger/10 text-danger',
   APPROVE: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400',
   REJECT: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400',
-  REVISE: 'bg-warning/10 text-warning',
+  REVISE: 'bg-gold/10 text-gold',
   UPLOAD: 'bg-status-teal/10 text-status-teal',
   LOGIN: 'bg-primary/10 text-primary',
   LOGOUT: 'bg-surface-container text-on-surface-variant',
@@ -50,7 +50,7 @@ export default function AuditPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Audit Trail
@@ -69,14 +69,14 @@ export default function AuditPage() {
             { header: 'Dampak', accessor: (l) => l.impact },
           ],
           'audit_trail',
-        )} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-border bg-surface-container-lowest text-on-surface hover:bg-surface-container-low transition-colors font-semibold text-xs cursor-pointer shadow-xs">
+        )} className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-border/60 bg-white text-on-surface hover:bg-surface-container transition-colors font-semibold text-xs cursor-pointer shadow-xs">
           <span className="material-symbols-outlined text-[16px]">file_download</span> Export CSV
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
@@ -96,7 +96,7 @@ export default function AuditPage() {
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-white border border-border/60 rounded-2xl shadow-xs overflow-hidden">
             <div className="overflow-x-auto table-mobile-compact">
               <table className="w-full text-xs text-left table-auto">
                 <thead>
@@ -115,7 +115,7 @@ export default function AuditPage() {
                     <tr><td colSpan={7} className="px-6 py-12 text-center text-outline italic">Tidak ada audit log ditemukan.</td></tr>
                   ) : (
                     filteredLogs.map(l => (
-                      <tr key={l.id} className="hover:bg-surface-container-low/65 transition-colors">
+                      <tr key={l.id} className="hover:bg-surface-container/65 transition-colors">
                         <td className="px-6 py-4 text-[10px] font-mono text-secondary">{l.timestamp}</td>
                         <td className="px-6 py-4"><span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${ACTION_COLORS[l.action] || ''}`}>{l.action}</span></td>
                         <td className="px-6 py-4">
@@ -131,7 +131,7 @@ export default function AuditPage() {
                         <td className="px-6 py-4 text-on-surface-variant max-w-xs truncate">{l.summary}</td>
                         <td className="px-6 py-4 text-center">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${
-                            l.impact === 'High' ? 'bg-danger/10 text-danger' : l.impact === 'Medium' ? 'bg-warning/10 text-warning' : 'bg-surface-container text-secondary'
+                            l.impact === 'High' ? 'bg-danger/10 text-danger' : l.impact === 'Medium' ? 'bg-gold/10 text-gold' : 'bg-surface-container text-secondary'
                           }`}>{l.impact}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -153,7 +153,7 @@ export default function AuditPage() {
 
       {detailOpen && selectedLog && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
-          <div className="w-full max-w-lg bg-surface-container-lowest h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
+          <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
             <div className="p-6 border-b border-border bg-surface-container-low flex items-center justify-between">
               <div>
                 <h3 className="font-display-title text-sm font-extrabold text-on-surface">Audit Event Detail</h3>
@@ -191,12 +191,12 @@ export default function AuditPage() {
               <div className="flex items-center gap-2">
                 <span className="text-outline uppercase font-mono text-[9px]">Impact Level:</span>
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  selectedLog.impact === 'High' ? 'bg-danger/10 text-danger' : selectedLog.impact === 'Medium' ? 'bg-warning/10 text-warning' : 'bg-surface-container text-secondary'
+                  selectedLog.impact === 'High' ? 'bg-danger/10 text-danger' : selectedLog.impact === 'Medium' ? 'bg-gold/10 text-gold' : 'bg-surface-container text-secondary'
                 }`}>{selectedLog.impact}</span>
               </div>
             </div>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end">
-              <button onClick={() => setDetailOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Tutup</button>
+              <button onClick={() => setDetailOpen(false)} className="px-4 py-2 rounded-xl border border-border/60 bg-white text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Tutup</button>
             </div>
           </div>
         </div>

@@ -105,9 +105,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-surface-dim to-primary/5 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-green-800 to-green-950 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-surface-container-lowest rounded-2xl shadow-xl border border-border p-8">
+        <div className="bg-white rounded-2xl shadow-xl border border-border/60 p-8">
           <div className="text-center mb-8">
             <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <span className="material-symbols-outlined text-primary text-3xl">corporate_fare</span>
@@ -125,7 +125,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Masukkan username"
-                className="w-full px-3 py-2.5 bg-surface-container-low border border-border rounded-lg text-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="w-full px-3 py-2.5 bg-surface-container-low border border-border/60 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 autoFocus
                 aria-required="true"
               />
@@ -145,7 +145,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan password"
-                  className="w-full px-3 py-2.5 bg-surface-container-low border border-border rounded-lg text-sm focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
+                  className="w-full px-3 py-2.5 bg-surface-container-low border border-border/60 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
                   aria-required="true"
                 />
                 <button
@@ -200,8 +200,8 @@ export default function LoginPage() {
                     onClick={() => selectAccount(acct)}
                     className={`flex items-center gap-2.5 p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left ${
                       isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border bg-surface-container-low hover:border-primary/30 hover:bg-surface-container-lowest'
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-surface-container hover:border-primary/30 hover:bg-surface-container-lowest'
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center shrink-0`}>

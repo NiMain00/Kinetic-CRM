@@ -259,8 +259,8 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
         </div>
 
         <div className="lg:col-span-4 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col justify-between">
-          <div className="bg-primary-container p-6 text-on-primary-container">
-            <h4 className="font-semibold uppercase tracking-widest text-xs opacity-80 mb-2">Ringkasan Finansial</h4>
+          <div className="bg-gradient-to-br from-emerald-600 to-green-800 p-6 text-white">
+            <h4 className="font-semibold uppercase tracking-widest text-xs text-white/90 mb-2">Ringkasan Finansial</h4>
             <div className="text-3xl font-display-title font-bold text-white">{formatCurrency(hargaPenawaran)}</div>
             <p className="text-xs mt-1 italic text-white/80">*Belum termasuk pajak PPN</p>
           </div>

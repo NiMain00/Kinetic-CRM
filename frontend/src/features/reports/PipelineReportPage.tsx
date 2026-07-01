@@ -146,7 +146,7 @@ export default function PipelineReportPage() {
               { header: 'Est. Close', accessor: (r) => r.estClose },
             ],
             'pipeline_report',
-          )} className="px-4 py-2 border border-border rounded-lg text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-all flex items-center gap-1.5" aria-label="Export CSV">
+          )} className="px-4 py-2 border border-border/60 rounded-xl text-sm font-semibold text-on-surface hover:bg-surface-container transition-all flex items-center gap-1.5" aria-label="Export CSV">
             <span className="material-symbols-outlined text-[18px] text-primary">file_download</span>
             Export CSV
           </button>
@@ -154,8 +154,8 @@ export default function PipelineReportPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <span className="material-symbols-outlined text-2xl">account_balance_wallet</span>
             </div>
             <div>
@@ -163,8 +163,8 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-on-surface text-base">{formatCurrency(totalPipelineValue)}</p>
             </div>
           </div>
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center text-teal-600 shrink-0">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center text-teal-600 shrink-0">
               <span className="material-symbols-outlined text-2xl">assignment</span>
             </div>
             <div>
@@ -172,8 +172,8 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-on-surface text-base">{totalActiveProjects}</p>
             </div>
           </div>
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 shrink-0">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 shrink-0">
               <span className="material-symbols-outlined text-2xl">trending_up</span>
             </div>
             <div>
@@ -181,8 +181,8 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-indigo-600 text-base">{growthForecast}</p>
             </div>
           </div>
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shrink-0">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shrink-0">
               <span className="material-symbols-outlined text-2xl">event_available</span>
             </div>
             <div>
@@ -193,8 +193,8 @@ export default function PipelineReportPage() {
         </div>
 
         {/* Funnel Visualization */}
-        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-border flex items-center justify-between">
+        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+          <div className="p-5 border-b border-border/60 flex items-center justify-between">
             <h3 className="font-bold text-sm text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">filter_center_focus</span>
               Pipeline Stages
@@ -207,7 +207,7 @@ export default function PipelineReportPage() {
           <div className="p-6 bg-surface-container-low/50 space-y-2 min-h-[240px] flex flex-col justify-center">
             {funnelSteps.map((step) => (
               <div key={step.id} className={`${step.scale} mx-auto transition-all duration-300 hover:-translate-y-0.5`}>
-                <div className={`${step.color} hover:brightness-110 p-3.5 flex justify-between items-center text-white shadow-sm rounded-lg cursor-pointer`}>
+                <div className={`${step.color} hover:bg-primary-light p-3.5 flex justify-between items-center text-white shadow-card rounded-xl cursor-pointer`}>
                   <div className="flex items-center gap-2.5">
                     <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-bold text-[10px]">{step.id}</span>
                     <span className="font-bold text-xs">{step.name}</span>
@@ -223,17 +223,17 @@ export default function PipelineReportPage() {
         </div>
 
         {/* Pipeline Table */}
-        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 px-6 border-b border-border bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+          <div className="p-4 px-6 border-b border-border/60 bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <h3 className="font-bold text-sm text-on-surface">Pipeline Details</h3>
             <div className="flex gap-3">
-              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border rounded-lg px-3 py-1.5 text-sm bg-surface-container-lowest outline-none" aria-label="Filter cabang">
+              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border/60 rounded-xl px-3 py-1.5 text-sm bg-white outline-none" aria-label="Filter cabang">
                 <option value="All">Semua Cabang</option>
                 {branchOptions.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
-                <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-surface-container-lowest outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek..." aria-label="Cari" />
+                <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-white outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek..." aria-label="Cari" />
               </div>
             </div>
           </div>
@@ -253,7 +253,7 @@ export default function PipelineReportPage() {
                   <tr><td colSpan={5} className="px-6 py-12 text-center text-secondary italic">Tidak ada data ditemukan.</td></tr>
                 ) : (
                   filtered.map((r) => (
-                    <tr key={r.id} className="hover:bg-surface-container-low transition-colors">
+                    <tr key={r.id} className="hover:bg-surface-container transition-colors">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-on-surface">{r.name}</p>
                         <p className="text-[10px] text-outline">{r.id}</p>
@@ -263,7 +263,7 @@ export default function PipelineReportPage() {
                         <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold badge-compact ${
                           r.stage === 'RKS / Prospek' ? 'bg-primary/10 text-primary' :
                           r.stage === 'LPHS' ? 'bg-status-teal/10 text-status-teal' :
-                          r.stage === 'Negosiasi Harga' ? 'bg-warning/10 text-warning' :
+                          r.stage === 'Negosiasi Harga' ? 'bg-gold/10 text-gold' :
                           r.stage === 'Management Apprv' ? 'bg-status-purple/10 text-status-purple' :
                           'bg-success/10 text-success'
                         }`}>{r.stage}</span>

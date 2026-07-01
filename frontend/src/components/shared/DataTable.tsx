@@ -14,18 +14,13 @@ interface DataTableProps<T> {
   mobileCardRenderer?: (row: T) => React.ReactNode;
   pageSize?: number;
   showPagination?: boolean;
-  // Row selection
   selectedRows?: Set<string>;
   onSelectionChange?: (selected: Set<string>) => void;
-  // Bulk actions
   onBatchDelete?: () => void;
   onBatchUpdate?: () => void;
   onBatchExport?: () => void;
-  // Sticky header
   stickyHeader?: boolean;
-  // Column visibility
   hideableColumns?: boolean;
-  // CSV export
   exportable?: boolean;
   exportFilename?: string;
 }
@@ -109,19 +104,19 @@ export default function DataTable<T>({
         <div />
         <div className="flex items-center gap-2">
           {exportable && data.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={exportCSV} leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}>
+            <Button variant="secondary" size="sm" onClick={exportCSV} leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}>
               Export CSV
             </Button>
           )}
           {hideableColumns && (
             <div className="relative" ref={menuRef}>
-              <Button variant="ghost" size="sm" onClick={() => setShowColumnMenu(!showColumnMenu)} leftIcon={<span className="material-symbols-outlined text-[16px]">view_column</span>}>
+              <Button variant="secondary" size="sm" onClick={() => setShowColumnMenu(!showColumnMenu)} leftIcon={<span className="material-symbols-outlined text-[16px]">view_column</span>}>
                 Kolom
               </Button>
               {showColumnMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-surface-container-lowest border border-border rounded-xl shadow-lg p-2 min-w-45 z-20">
+                <div className="absolute right-0 top-full mt-1 bg-white border border-border/60 rounded-2xl shadow-elevated p-2 min-w-45 z-20">
                   {columns.map((col) => (
-                    <label key={col.key} className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-container-low rounded-lg cursor-pointer text-sm">
+                    <label key={col.key} className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-container rounded-lg cursor-pointer text-sm transition-colors">
                       <input
                         type="checkbox"
                         checked={visibleKeys.has(col.key)}

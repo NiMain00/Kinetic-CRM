@@ -42,8 +42,8 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-surface-container-lowest rounded-2xl shadow-2xl border border-border overflow-hidden">
-        <div className="p-6 border-b border-border flex items-center justify-between bg-surface-container-low">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-modal border border-border/60 overflow-hidden">
+        <div className="p-6 border-b border-border/60 flex items-center justify-between bg-surface-container-low">
           <div>
             <h3 className="font-display-title text-sm font-extrabold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-[20px] text-primary">keyboard</span>
@@ -53,7 +53,7 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl flex items-center justify-center text-outline hover:bg-surface-container hover:text-on-surface transition-colors cursor-pointer"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -69,10 +69,10 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
                 {group.shortcuts.map((s) => (
                   <div
                     key={s.keys}
-                    className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-surface-container-low transition-colors"
+                    className="flex items-center justify-between py-1.5 px-2 rounded-xl hover:bg-surface-container-low transition-colors"
                   >
                     <span className="text-xs text-on-surface-variant">{s.description}</span>
-                    <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-surface-container border border-border rounded-md text-[11px] font-mono font-bold text-on-surface shadow-xs">
+                    <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-surface-container border border-border/60 rounded-lg text-[11px] font-mono font-bold text-on-surface shadow-xs">
                       {s.keys.split(' + ').map((part, i) => (
                         <React.Fragment key={part}>
                           {i > 0 && <span className="text-outline">+</span>}
@@ -87,10 +87,10 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
           ))}
         </div>
 
-        <div className="px-6 py-4 bg-surface-container-low border-t border-border flex justify-end">
+        <div className="px-6 py-4 bg-surface-container-low border-t border-border/60 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-primary-light transition-colors cursor-pointer"
           >
             Tutup
           </button>

@@ -38,7 +38,7 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
 
   if (variant === 'pills') {
     return (
-      <div ref={tabListRef} className="flex bg-surface-container-low p-1 rounded-lg border border-border" role="tablist" onKeyDown={onKeyDown}>
+      <div ref={tabListRef} className="flex bg-surface-container-high p-1 rounded-xl border border-border/60" role="tablist" onKeyDown={onKeyDown}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -47,8 +47,8 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
             aria-controls={`tabpanel-${tab.id}`}
             tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => onChange(tab.id)}
-            className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
-              activeTab === tab.id ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:text-primary'
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              activeTab === tab.id ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:text-primary hover:bg-surface-container-low'
             }`}
           >
             {tab.icon && <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{tab.icon}</span>}
@@ -61,7 +61,7 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
   }
 
   return (
-    <nav ref={tabListRef} className="flex border-b border-border overflow-x-auto" role="tablist" onKeyDown={onKeyDown} aria-label="Tab navigasi">
+    <nav ref={tabListRef} className="flex border-b border-border/60 overflow-x-auto" role="tablist" onKeyDown={onKeyDown} aria-label="Tab navigasi">
       {tabs.map((tab) => (
         <button
           key={tab.id}

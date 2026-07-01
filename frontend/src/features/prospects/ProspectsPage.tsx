@@ -156,16 +156,16 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       />
 
         {/* Filter Bar */}
-        <div className="bg-surface-container-lowest p-4 sm:p-5 rounded-xl border border-border shadow-sm space-y-4">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-            <div className="flex gap-2 p-1 bg-surface-container-low rounded-lg border border-border overflow-x-auto w-full sm:w-auto">
+            <div className="flex gap-2 p-1 bg-surface-container rounded-xl border border-border/60 overflow-x-auto w-full sm:w-auto">
               {FILTER_TABS.map(tab => (
                 <button
                   key={tab}
                   onClick={() => { setActiveFilter(tab); setCurrentPage(1); }}
-                  className={`px-3 sm:px-4 py-1.5 rounded-md text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
                     activeFilter === tab
-                      ? 'bg-surface-container-lowest text-primary shadow-sm border border-border font-bold'
+                      ? 'bg-white text-primary shadow-sm border border-border/60 font-bold'
                       : 'text-secondary hover:bg-surface-container-high'
                   }`}
                 >
@@ -182,7 +182,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <input
                   value={searchQuery}
                   onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  className="pl-10 pr-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-1"
+                  className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-white focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   placeholder="Cari prospek atau klien..."
                   type="text"
                 />
@@ -271,7 +271,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm table-fixed">
-                <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border sticky top-0 z-10 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.08)]">
+                <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border/60 sticky top-0 z-10 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.08)]">
                   <tr>
                     <th className="px-6 py-4 font-semibold w-[50px]">No</th>
                     <th className="px-6 py-4 font-semibold w-[26%]">Nama Prospek</th>
@@ -294,7 +294,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     paginatedProspects.map((row, index) => {
                       const globalIndex = (currentPage - 1) * PAGE_SIZE + index + 1;
                       return (
-                      <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors group">
+                      <tr key={row.id} className="border-b border-border/60 hover:bg-primary/5 transition-colors group">
                         <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{globalIndex}</td>
                         <td className="px-6 py-4 overflow-hidden">
                           <div
@@ -363,7 +363,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           )}
 
           {/* Pagination footer */}
-          <div className="px-4 sm:px-6 py-4 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3">
+          <div className="px-4 sm:px-6 py-4 border-t border-border/60 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface-container-low text-xs gap-3">
             <span className="text-secondary font-caption-xs">
               Menampilkan <span className="font-bold text-on-surface">{filteredProspects.length === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filteredProspects.length)}</span> dari{' '}
               <span className="font-bold text-on-surface">{filteredProspects.length}</span> hasil
@@ -372,7 +372,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="touch-min flex items-center justify-center px-2 py-1 rounded-lg bg-white border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Prev
               </button>
@@ -380,7 +380,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low'}`}
+                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded-lg font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border/60 text-secondary hover:bg-surface-container'}`}
                 >
                   {i + 1}
                 </button>
@@ -388,7 +388,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <button
                 disabled={currentPage === totalPages || totalPages === 0}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className="touch-min flex items-center justify-center px-2 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="touch-min flex items-center justify-center px-2 py-1 rounded-lg bg-white border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Next
               </button>

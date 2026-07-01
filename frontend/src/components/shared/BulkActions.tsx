@@ -35,7 +35,7 @@ export default function BulkActions({
 
   return (
     <>
-      <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl px-4 py-2.5 animate-fade-in">
+      <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-2xl px-4 py-2.5 animate-fade-in">
         <span className="text-xs font-semibold text-primary whitespace-nowrap">
           {selectedCount} terpilih
         </span>

@@ -16,13 +16,13 @@ interface ApprovalReviewDrawerProps {
 
 const slaStatusColor: Record<string, string> = {
   Overdue: 'text-danger',
-  'Near Deadline': 'text-warning',
+  'Near Deadline': 'text-gold',
   Normal: 'text-success',
 };
 
 const slaStatusBg: Record<string, string> = {
   Overdue: 'bg-danger/10',
-  'Near Deadline': 'bg-warning/10',
+  'Near Deadline': 'bg-gold/10',
   Normal: 'bg-success/10',
 };
 
@@ -73,9 +73,9 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Panel review persetujuan">
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-surface-container-lowest shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
         {/* Header */}
-        <div className="p-6 border-b border-border flex justify-between items-center bg-surface-container-lowest shrink-0">
+        <div className="p-6 border-b border-border/60 flex justify-between items-center bg-white shrink-0">
           <div>
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Review Persetujuan</span>
             <h4 className="text-lg font-extrabold text-on-surface mt-0.5">Review Permintaan Persetujuan</h4>
@@ -179,7 +179,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
         <div className="p-6 bg-surface-container-low border-t border-border grid grid-cols-2 gap-4 shrink-0">
           <button
             onClick={() => onReject(item, comment)}
-            className="py-2.5 border border-danger text-danger font-bold rounded-lg hover:bg-danger hover:text-white transition-all text-sm"
+            className="py-2.5 border border-danger text-danger font-bold rounded-xl hover:bg-danger hover:text-white transition-all text-sm"
             aria-label="Tolak revisi"
           >
             <span className="material-symbols-outlined text-[18px] align-middle mr-1">close</span>
@@ -187,7 +187,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
           </button>
           <button
             onClick={() => onApprove(item, comment)}
-            className="py-2.5 bg-success text-white font-bold rounded-lg hover:opacity-90 transition-all text-sm"
+            className="py-2.5 bg-success text-white font-bold rounded-xl hover:opacity-90 transition-all text-sm"
             aria-label="Setujui"
           >
             <span className="material-symbols-outlined text-[18px] align-middle mr-1">check</span>

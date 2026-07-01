@@ -111,7 +111,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             User Management
@@ -119,7 +119,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
           </h2>
           <p className="text-[11px] text-outline mt-0.5">Kelola pengguna, peran, dan hak akses sistem.</p>
         </div>
-        <button onClick={handleOpenCreate} className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white hover:brightness-110 transition-all font-bold text-xs cursor-pointer shadow-sm">
+        <button onClick={handleOpenCreate} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-white hover:bg-primary-light transition-all font-bold text-xs cursor-pointer shadow-card">
           <span className="material-symbols-outlined text-[16px]">add</span>
           Tambah Pengguna
         </button>
@@ -127,7 +127,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
@@ -146,7 +146,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest border border-border rounded-xl shadow-xs overflow-hidden">
+          <div className="bg-white border border-border/60 rounded-2xl shadow-xs overflow-hidden">
             <div className="overflow-x-auto table-mobile-compact">
               <table className="w-full text-xs text-left table-auto">
                 <thead>
@@ -165,7 +165,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                     <tr><td colSpan={7} className="px-6 py-12 text-center text-outline italic">Tidak ada pengguna ditemukan.</td></tr>
                   ) : (
                     filteredUsers.map(u => (
-                      <tr key={u.id} className="hover:bg-surface-container-low/65 transition-colors">
+                      <tr key={u.id} className="hover:bg-surface-container/65 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs avatar-compact">{u.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}</div>
@@ -196,7 +196,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                 </tbody>
               </table>
             </div>
-            <div className="p-4 bg-surface-container-low border-t border-border flex justify-between items-center text-[10px] text-outline">
+            <div className="p-4 bg-surface-container-low border-t border-border/60 flex justify-between items-center text-[10px] text-outline">
               <span>Showing {filteredUsers.length} of {users.length} users</span>
               <span>Static sandbox environment</span>
             </div>
@@ -206,8 +206,8 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
 
       {drawerOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
-          <div className="w-full max-w-lg bg-surface-container-lowest h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
-            <div className="p-6 border-b border-border bg-surface-container-low flex items-center justify-between">
+          <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
+            <div className="p-6 border-b border-border/60 bg-surface-container-low flex items-center justify-between">
               <div>
                 <h3 className="font-display-title text-sm font-extrabold text-on-surface">{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h3>
                 <p className="text-[10px] text-outline mt-1">{editingUser ? `UID: ${editingUser.id}` : 'Buat akun pengguna baru'}</p>
@@ -262,8 +262,8 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               </div>
             </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingUser ? 'Simpan Perubahan' : 'Buat Pengguna'}</button>
+              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-xl border border-border/60 bg-white text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
+              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-card hover:bg-primary-light transition-colors cursor-pointer">{editingUser ? 'Simpan Perubahan' : 'Buat Pengguna'}</button>
             </div>
           </div>
         </div>

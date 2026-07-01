@@ -28,7 +28,7 @@ const actionVariant: Record<string, 'info' | 'success' | 'warning' | 'danger' | 
 const impactColor = (impact: string) => {
   switch (impact) {
     case 'High': return 'text-danger bg-danger/10';
-    case 'Medium': return 'text-warning bg-warning/10';
+    case 'Medium': return 'text-gold bg-gold/10';
     default: return 'text-info bg-info/10';
   }
 };

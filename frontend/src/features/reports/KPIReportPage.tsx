@@ -140,7 +140,7 @@ export default function KPIReportPage() {
             <p className="text-sm text-secondary mt-1">Key Performance Indicators - Target vs Realisasi.</p>
           </div>
           <div className="flex items-center gap-3">
-            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border border-border rounded-lg px-4 py-2 text-sm bg-surface-container-lowest outline-none" aria-label="Periode">
+            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border border-border/60 rounded-xl px-4 py-2 text-sm bg-white outline-none" aria-label="Periode">
               <option>2024</option>
               <option>2025</option>
               <option>2026</option>
@@ -155,7 +155,7 @@ export default function KPIReportPage() {
                 { header: 'Status', accessor: (k) => statusConfig[k.status]?.label || k.status },
               ],
               'kpi_report',
-            )} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5" aria-label="Export CSV">
+            )} className="px-4 py-2 bg-primary text-on-primary rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5" aria-label="Export CSV">
               <span className="material-symbols-outlined text-[18px]">file_download</span>
               Export CSV
             </button>
@@ -167,7 +167,7 @@ export default function KPIReportPage() {
           {kpiData.slice(0, 4).map((kpi) => {
             const cfg = statusConfig[kpi.status] || statusConfig.on_track;
             return (
-              <div key={kpi.id} className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
+              <div key={kpi.id} className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">{kpi.name}</p>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${cfg.class}`}>{cfg.label}</span>
@@ -185,7 +185,7 @@ export default function KPIReportPage() {
         </div>
 
         {/* Full KPI Table */}
-        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
+        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
           <div className="p-5 border-b border-border">
             <h3 className="font-bold text-sm text-on-surface">Detail KPI Metrics</h3>
           </div>
@@ -205,7 +205,7 @@ export default function KPIReportPage() {
                   const cfg = statusConfig[kpi.status] || statusConfig.on_track;
                   const pct = getPercent(kpi.actualValue, kpi.targetValue);
                   return (
-                    <tr key={kpi.id} className="hover:bg-surface-container-low transition-colors">
+                    <tr key={kpi.id} className="hover:bg-surface-container transition-colors">
                       <td className="px-6 py-4 font-semibold text-on-surface">{kpi.name}</td>
                       <td className="px-6 py-4 text-right font-mono text-secondary">{formatTarget(kpi)}</td>
                       <td className="px-6 py-4 text-right font-mono font-bold text-on-surface">{formatValue(kpi)}</td>

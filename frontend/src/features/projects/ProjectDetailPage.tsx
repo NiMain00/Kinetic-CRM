@@ -250,7 +250,7 @@ export default function ProjectDetailView({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
-      <section className="bg-surface-container-lowest border-b border-border px-8 py-3.5 shadow-sm z-30">
+      <section className="bg-white border-b border-border/60 px-8 py-3.5 shadow-card z-30">
         {/* Dynamic Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-xs text-secondary mb-2 flex-wrap">
           <button
@@ -283,7 +283,7 @@ export default function ProjectDetailView({
           <div className="flex items-center gap-3">
             <button
               onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/project/${projectId}/overview`)}
-              className="p-1.5 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center border border-border bg-surface-container-lowest"
+              className="p-1.5 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-white"
             >
               <span className="material-symbols-outlined text-primary text-[20px]">arrow_back</span>
             </button>
@@ -302,7 +302,7 @@ export default function ProjectDetailView({
             {can('proyek_delete') && (
             <button
               onClick={handleDeleteProject}
-              className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all flex items-center gap-1.5"
+              className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all flex items-center gap-1.5"
             >
               <span className="material-symbols-outlined text-[16px]">delete</span>
               Hapus
@@ -311,7 +311,7 @@ export default function ProjectDetailView({
             {can('proyek_edit') && (
             <button
               onClick={handleRevision}
-              className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-lg hover:bg-danger/5 transition-all"
+              className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all"
             >
               Revisi
             </button>
@@ -319,7 +319,7 @@ export default function ProjectDetailView({
             {can('approval_process') && (
             <button
               onClick={handleApproveProject}
-              className="px-5 py-1.5 bg-success text-white font-semibold text-xs rounded-lg hover:opacity-90 shadow-sm transition-all flex items-center gap-2"
+              className="px-5 py-1.5 bg-success text-white font-semibold text-xs rounded-xl hover:opacity-90 shadow-card transition-all flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[16px]">check_circle</span>
               Approve
@@ -356,7 +356,7 @@ export default function ProjectDetailView({
           )}
 
           {/* Tab Navigation Bar — visible on ALL tabs */}
-          <nav className="bg-surface-container-lowest border-b border-border px-8 overflow-x-auto select-none">
+          <nav className="bg-white border-b border-border/60 px-8 overflow-x-auto select-none">
             <div className="flex items-center gap-8 min-w-max">
               {tabs.map((tab, index) => {
                 const locked = isTabLocked(index);

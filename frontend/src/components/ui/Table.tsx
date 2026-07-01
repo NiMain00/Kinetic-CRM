@@ -24,10 +24,8 @@ interface TableProps<T> {
   pageSize?: number;
   showPagination?: boolean;
   ariaLabel?: string;
-  // Row selection
   selectedRows?: Set<string>;
   onSelectionChange?: (selected: Set<string>) => void;
-  // Sticky header
   stickyHeader?: boolean;
 }
 
@@ -130,11 +128,11 @@ export default function Table<T = Record<string, unknown>>({
     return isMobile ? (
       <div className="space-y-3" role="status" aria-label="Memuat data">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-surface-container-lowest border border-border rounded-xl p-4 space-y-3">
+          <div key={i} className="bg-white border border-border/60 rounded-2xl p-4 space-y-3 shadow-card">
             {columns.filter(c => !c.hideOnMobile).map((col) => (
               <div key={col.key}>
-                <div className="h-3 w-20 bg-surface-container-high rounded skeleton mb-1.5"></div>
-                <div className="h-4 w-3/4 bg-surface-container-high rounded skeleton"></div>
+                <div className="h-3 w-20 bg-surface-container-high rounded-lg skeleton mb-1.5"></div>
+                <div className="h-4 w-3/4 bg-surface-container-high rounded-lg skeleton"></div>
               </div>
             ))}
           </div>
@@ -144,7 +142,7 @@ export default function Table<T = Record<string, unknown>>({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm" aria-label={ariaLabel} role="table">
           <thead>
-            <tr className="bg-surface-container-low border-b border-border">
+            <tr className="bg-surface-container-low border-b border-border/60">
               {columns.map((col) => (
                 <th key={col.key} className={`px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}>
                   {col.header}
@@ -154,9 +152,9 @@ export default function Table<T = Record<string, unknown>>({
           </thead>
           <tbody>
             {[1, 2, 3, 4, 5].map((i) => (
-              <tr key={i} className="border-b border-border">
+              <tr key={i} className="border-b border-border/60">
                 {columns.map((col) => (
-                  <td key={col.key} className="px-6 py-4"><div className="h-4 bg-surface-container-high rounded skeleton w-3/4"></div></td>
+                  <td key={col.key} className="px-6 py-4"><div className="h-4 bg-surface-container-high rounded-lg skeleton w-3/4"></div></td>
                 ))}
               </tr>
             ))}
@@ -187,7 +185,7 @@ export default function Table<T = Record<string, unknown>>({
           <div
             key={keyExtractor(row)}
             onClick={() => onRowClick?.(row)}
-            className={`bg-surface-container-lowest border border-border rounded-xl overflow-hidden ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+            className={`bg-white border border-border/60 rounded-2xl overflow-hidden shadow-card ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
             role="listitem"
           >
             {mobileCardRenderer(row)}
@@ -203,7 +201,7 @@ export default function Table<T = Record<string, unknown>>({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm" aria-label={ariaLabel} role="table">
           <thead>
-            <tr className={`bg-surface-container-low border-b border-border ${stickyHeader ? 'sticky top-0 z-10' : ''}`}>
+            <tr className={`bg-surface-container-low border-b border-border/60 ${stickyHeader ? 'sticky top-0 z-10' : ''}`}>
               {displayColumns.map((col) => (
                 <th
                   key={col.key}
@@ -239,7 +237,7 @@ export default function Table<T = Record<string, unknown>>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border/60">
             {pagedData.map((row) => (
               <tr
                 key={keyExtractor(row)}
@@ -262,7 +260,7 @@ export default function Table<T = Record<string, unknown>>({
 
   function renderPagination() {
     return (
-      <nav className="flex items-center justify-between px-2 py-3 border-t border-border" aria-label="Navigasi halaman">
+      <nav className="flex items-center justify-between px-2 py-3 border-t border-border/60" aria-label="Navigasi halaman">
         <span className="text-xs text-secondary">
           {page * pageSize + 1}–{Math.min((page + 1) * pageSize, sortedData.length)} dari {sortedData.length}
         </span>
@@ -270,7 +268,7 @@ export default function Table<T = Record<string, unknown>>({
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="p-1.5 rounded-lg hover:bg-surface-container-high disabled:opacity-30 disabled:cursor-not-allowed text-secondary"
+            className="p-1.5 rounded-xl hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed text-secondary transition-colors"
             aria-label="Halaman sebelumnya"
           >
             <span className="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
@@ -283,7 +281,7 @@ export default function Table<T = Record<string, unknown>>({
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`w-7 h-7 rounded-lg text-xs font-semibold ${p === page ? 'bg-primary text-white' : 'text-secondary hover:bg-surface-container-high'}`}
+                className={`w-7 h-7 rounded-xl text-xs font-semibold transition-colors ${p === page ? 'bg-primary text-white' : 'text-secondary hover:bg-surface-container'}`}
                 aria-label={`Halaman ${p + 1}`}
                 aria-current={p === page ? 'page' : undefined}
               >
@@ -294,7 +292,7 @@ export default function Table<T = Record<string, unknown>>({
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="p-1.5 rounded-lg hover:bg-surface-container-high disabled:opacity-30 disabled:cursor-not-allowed text-secondary"
+            className="p-1.5 rounded-xl hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed text-secondary transition-colors"
             aria-label="Halaman selanjutnya"
           >
             <span className="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>

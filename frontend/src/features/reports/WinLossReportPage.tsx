@@ -92,7 +92,7 @@ export default function WinLossReportPage() {
             <p className="text-sm text-secondary mt-1">Analisis performa tender dan proyek yang dimenangkan atau dikalahkan.</p>
           </div>
           <div className="flex gap-2">
-            <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="border border-border rounded-lg px-4 py-2 text-sm bg-surface-container-lowest outline-none" aria-label="Rentang tanggal">
+            <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="border border-border/60 rounded-xl px-4 py-2 text-sm bg-white outline-none" aria-label="Rentang tanggal">
               <option>Current Month</option>
               <option>Last 3 Months</option>
               <option>Year to Date</option>
@@ -109,7 +109,7 @@ export default function WinLossReportPage() {
                 { header: 'Tanggal', accessor: (r) => r.date },
               ],
               'win_loss_report',
-            )} className="px-4 py-2 border border-border rounded-lg text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-all flex items-center gap-1.5" aria-label="Export CSV">
+            )} className="px-4 py-2 border border-border/60 rounded-xl text-sm font-semibold text-on-surface hover:bg-surface-container transition-all flex items-center gap-1.5" aria-label="Export CSV">
               <span className="material-symbols-outlined text-[18px] text-primary">file_download</span>
               Export CSV
             </button>
@@ -118,9 +118,9 @@ export default function WinLossReportPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-xl">trending_up</span>
               </div>
               <div className="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
@@ -130,27 +130,27 @@ export default function WinLossReportPage() {
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Win Rate</p>
             <h3 className="font-extrabold text-on-surface text-xl mt-1">{winRate}%</h3>
           </div>
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600">
                 <span className="material-symbols-outlined text-xl">check_circle</span>
               </div>
             </div>
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Won</p>
             <h3 className="font-extrabold text-emerald-600 text-xl mt-1">{totalWon}</h3>
           </div>
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500">
+              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500">
                 <span className="material-symbols-outlined text-xl">cancel</span>
               </div>
             </div>
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Lost</p>
             <h3 className="font-extrabold text-red-600 dark:text-red-400 text-xl mt-1">{totalLost}</h3>
           </div>
-          <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-sm">
+          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-primary">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-xl">payments</span>
               </div>
             </div>
@@ -160,7 +160,7 @@ export default function WinLossReportPage() {
         </div>
 
         {/* Chart */}
-        <div className="bg-surface-container-lowest border border-border rounded-xl p-6 shadow-sm">
+        <div className="bg-white border border-border/60 rounded-2xl p-6 shadow-card">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-sm text-on-surface">Monthly Win vs Loss Trends</h3>
             <div className="flex gap-4 text-xs text-secondary">
@@ -172,8 +172,8 @@ export default function WinLossReportPage() {
             {monthlyChart.map((d, i) => (
               <div key={i} className="flex-1 flex flex-col items-center h-full justify-end group">
                 <div className="w-full flex items-end justify-center gap-1 h-[80%]">
-                  <div className="w-1/2 bg-primary rounded-t-xs transition-all group-hover:brightness-110" style={{ height: `${d.win}%` }} title={`Win: ${d.win}`} />
-                  <div className="w-1/2 bg-red-50 dark:bg-red-950/300 rounded-t-xs transition-all group-hover:brightness-110" style={{ height: `${d.loss}%` }} title={`Loss: ${d.loss}`} />
+                  <div className="w-1/2 bg-primary rounded-t-xs transition-all group-hover:bg-primary-light" style={{ height: `${d.win}%` }} title={`Win: ${d.win}`} />
+                  <div className="w-1/2 bg-red-50 dark:bg-red-950/300 rounded-t-xs transition-all group-hover:bg-primary-light" style={{ height: `${d.loss}%` }} title={`Loss: ${d.loss}`} />
                 </div>
                 <span className="mt-2 text-[10px] font-bold text-outline">{d.label}</span>
               </div>
@@ -182,12 +182,12 @@ export default function WinLossReportPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="p-4 px-6 border-b border-border bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+          <div className="p-4 px-6 border-b border-border/60 bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <h3 className="font-bold text-sm text-on-surface">Detail Records</h3>
             <div className="relative w-full sm:w-64">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border rounded-lg text-sm bg-surface-container-lowest outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek atau client..." aria-label="Cari" />
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-white outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek atau client..." aria-label="Cari" />
             </div>
           </div>
           <div className="overflow-x-auto table-mobile-compact">
@@ -207,7 +207,7 @@ export default function WinLossReportPage() {
                   <tr><td colSpan={6} className="px-6 py-12 text-center text-secondary italic">Tidak ada data ditemukan.</td></tr>
                 ) : (
                   filtered.map((r) => (
-                    <tr key={r.id} className="hover:bg-surface-container-low transition-colors">
+                    <tr key={r.id} className="hover:bg-surface-container transition-colors">
                       <td className="px-6 py-4">
                         <p className="font-semibold text-on-surface">{r.name}</p>
                         <p className="text-[10px] text-outline">{r.id}</p>

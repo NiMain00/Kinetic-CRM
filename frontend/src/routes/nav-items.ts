@@ -9,12 +9,12 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['dashboard_view'] },
-  { label: 'Prospek', path: '/prospects', icon: 'travel_explore', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['prospek_view'] },
-  { label: 'Proyek', path: '/projects', icon: 'folder', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['proyek_view'] },
-  { label: 'Persetujuan', path: '/approvals', icon: 'approval', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer'], permissions: ['approval_view'] },
-  { label: 'Laporan', path: '/reports', icon: 'report', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management'], permissions: ['laporan_view'] },
-  { label: 'Kalender', path: '/reports/calendar', icon: 'calendar_month', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['laporan_view'] },
-  { label: 'Master Data', path: '/master-data', icon: 'database', roles: ['Super Admin', 'Admin'], permissions: ['master_data'] },
+  { label: 'Prospek', path: '/prospects', icon: 'person', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['prospek_view'] },
+  { label: 'Proyek', path: '/projects', icon: 'work', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['proyek_view'] },
+  { label: 'Persetujuan', path: '/approvals', icon: 'how_to_reg', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer'], permissions: ['approval_view'] },
+  { label: 'Laporan', path: '/reports', icon: 'pie_chart', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management'], permissions: ['laporan_view'] },
+  { label: 'Kalender', path: '/reports/calendar', icon: 'calendar_today', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['laporan_view'] },
+  { label: 'Master Data', path: '/master-data', icon: 'layers', roles: ['Super Admin', 'Admin'], permissions: ['master_data'] },
   { label: 'Notifikasi', path: '/notifications', icon: 'notifications', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'] },
   { label: 'Konfigurasi', path: '/config', icon: 'settings', permissions: ['config_access'] },
 ];

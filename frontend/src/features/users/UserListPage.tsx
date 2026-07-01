@@ -51,7 +51,7 @@ export default function UserListPage() {
             <h1 className="text-xl font-extrabold text-on-surface">User Management</h1>
           </div>
           {can('users_manage') && (
-            <button onClick={() => navigate('/users/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-sm hover:brightness-110 transition-all" aria-label="Tambah Pengguna Baru">
+            <button onClick={() => navigate('/users/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-card hover:bg-primary-light transition-all" aria-label="Tambah Pengguna Baru">
               <span className="material-symbols-outlined text-[20px]">add</span>
               Add User
             </button>
@@ -59,7 +59,7 @@ export default function UserListPage() {
         </div>
 
         {/* Filter */}
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-border shadow-sm">
+        <div className="bg-white p-5 rounded-2xl border border-border/60 shadow-card">
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 min-w-[200px]">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
@@ -73,7 +73,7 @@ export default function UserListPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm overflow-hidden flex flex-col">
+        <div className="bg-white rounded-2xl border border-border/60 shadow-card overflow-hidden flex flex-col">
           <div className="overflow-x-auto table-mobile-compact">
             <table className="w-full text-left text-sm table-auto" aria-label="Daftar Pengguna">
               <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border">
@@ -132,11 +132,11 @@ export default function UserListPage() {
               Menampilkan <span className="font-bold text-on-surface">{(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filtered.length)}</span> dari <span className="font-bold text-on-surface">{filtered.length}</span> hasil
             </span>
             <div className="flex items-center gap-1">
-              <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-3 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman sebelumnya">Prev</button>
+              <button disabled={currentPage === 1} onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} className="px-3 py-1 rounded bg-white border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman sebelumnya">Prev</button>
               {Array.from({ length: totalPages }, (_, i) => (
-                <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`px-3 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low'}`}>{i + 1}</button>
+                <button key={i + 1} onClick={() => setCurrentPage(i + 1)} className={`px-3 py-1 rounded font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border/60 text-secondary hover:bg-surface-container'}`}>{i + 1}</button>
               ))}
-              <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-3 py-1 rounded bg-surface-container-lowest border border-border text-secondary hover:bg-surface-container-low disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman selanjutnya">Next</button>
+              <button disabled={currentPage === totalPages || totalPages === 0} onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} className="px-3 py-1 rounded bg-white border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all" aria-label="Halaman selanjutnya">Next</button>
             </div>
           </div>
         </div>

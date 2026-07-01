@@ -620,9 +620,9 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
         </Card>
 
         {/* Ringkasan */}
-        <div className="bg-primary-container text-on-primary-container rounded-xl p-5 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-emerald-600 to-green-800 text-white rounded-xl p-5 relative overflow-hidden">
           <h4 className="font-semibold text-sm mb-1">Ringkasan LPHS/SIOS</h4>
-          <div className="text-xs opacity-80 space-y-1">
+          <div className="text-xs text-white/90 space-y-1">
             <p>Status: <strong>{STATUS_LABEL[lphs.overallStatus] || lphs.overallStatus}</strong></p>
             <p>PM: <strong>{STATUS_LABEL[lphs.pmStatus]}</strong></p>
             <p>Management: <strong>{STATUS_LABEL[lphs.mgmtStatus]}</strong></p>

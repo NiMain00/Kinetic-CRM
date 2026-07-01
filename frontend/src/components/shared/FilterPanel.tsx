@@ -56,7 +56,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
   const activeCount = Object.values(values).filter(Boolean).length;
 
   return (
-    <div className="bg-surface-container-low rounded-xl border border-border p-5 space-y-4">
+    <div className="bg-white rounded-2xl border border-border/60 p-5 space-y-4 shadow-card">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-outline text-sm" aria-hidden="true">filter_alt</span>
@@ -98,13 +98,13 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
               const toKey = `${field.key}_to`;
               return (
                 <div key={field.key} className="space-y-1">
-                  <label className="text-xs font-semibold text-secondary block">{field.label}</label>
+                  <label className="text-xs font-semibold text-on-surface block">{field.label}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
                       value={values[fromKey] || ''}
                       onChange={(e) => onChange(fromKey, e.target.value)}
-                      className="w-full rounded-lg border border-border p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-xl border border-border p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       aria-label={`${field.label} dari`}
                     />
                     <span className="text-outline text-xs">s/d</span>
@@ -112,7 +112,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
                       type="date"
                       value={values[toKey] || ''}
                       onChange={(e) => onChange(toKey, e.target.value)}
-                      className="w-full rounded-lg border border-border p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-xl border border-border p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       aria-label={`${field.label} sampai`}
                     />
                   </div>
@@ -124,14 +124,14 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
               const maxKey = `${field.key}_max`;
               return (
                 <div key={field.key} className="space-y-1">
-                  <label className="text-xs font-semibold text-secondary block">{field.label}</label>
+                  <label className="text-xs font-semibold text-on-surface block">{field.label}</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
                       value={values[minKey] || ''}
                       onChange={(e) => onChange(minKey, e.target.value)}
                       placeholder="Min"
-                      className="w-full rounded-lg border border-border p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-xl border border-border p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       aria-label={`${field.label} minimal`}
                     />
                     <span className="text-outline text-xs">—</span>
@@ -140,7 +140,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
                       value={values[maxKey] || ''}
                       onChange={(e) => onChange(maxKey, e.target.value)}
                       placeholder="Max"
-                      className="w-full rounded-lg border border-border p-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-xl border border-border p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                       aria-label={`${field.label} maksimal`}
                     />
                   </div>
@@ -213,11 +213,11 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
 
   return (
     <div className="relative space-y-1" ref={ref}>
-      <label className="text-xs font-semibold text-secondary block">{label}</label>
+      <label className="text-xs font-semibold text-on-surface block">{label}</label>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between rounded-lg border border-border p-2 text-xs bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+        className="w-full flex items-center justify-between rounded-xl border border-border p-2.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all"
       >
         <span className={selected.length === 0 ? 'text-outline' : 'text-on-surface'}>
           {selected.length === 0 ? (placeholder || 'Semua') : `${selected.length} dipilih`}
@@ -225,11 +225,11 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
         <span className="material-symbols-outlined text-[16px] text-outline">{open ? 'expand_less' : 'expand_more'}</span>
       </button>
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-surface-container-lowest border border-border rounded-lg shadow-lg p-2 z-20 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-xl shadow-elevated p-2 z-20 max-h-48 overflow-y-auto">
           {options.map((opt) => (
             <label
               key={opt.value}
-              className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-container-low rounded-lg cursor-pointer text-xs"
+              className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-container rounded-lg cursor-pointer text-xs transition-colors"
             >
               <input
                 type="checkbox"

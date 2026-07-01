@@ -61,21 +61,21 @@ export default function OverviewTab({ project }: TabProps) {
           </div>
         </Card>
 
-        <Card padding="lg" className="bg-primary-container text-on-primary-container overflow-hidden relative">
+        <Card padding="lg" className="bg-gradient-to-br from-emerald-500 to-green-700 text-white overflow-hidden relative">
           <div className="relative z-10">
             <h3 className="font-heading-section text-heading-section text-white mb-2">Progress Proyek</h3>
             <div className="flex items-end gap-2 mb-4">
               <span className="text-4xl font-bold text-white">{project?.progress}%</span>
-              <span className="font-caption-xs mb-1 opacity-80 text-white/90 text-sm">Tahap {project?.phase}</span>
+              <span className="font-caption-xs mb-1 text-white/90 text-sm">Tahap {project?.phase}</span>
             </div>
-            <div className="w-full bg-surface-container-lowest/20 h-2.5 rounded-full overflow-hidden">
-              <div className="bg-surface-container-lowest h-full rounded-full" style={{ width: `${project?.progress || 0}%` }}></div>
+            <div className="w-full bg-black/20 h-2.5 rounded-full overflow-hidden">
+              <div className="bg-white h-full rounded-full" style={{ width: `${project?.progress || 0}%` }}></div>
             </div>
-            <p className="mt-4 font-caption-xs text-white/70 text-xs">
+            <p className="mt-4 font-caption-xs text-white/90 text-xs">
               {project && project.progress < 100 ? 'Lanjut ke tahap berikutnya setelah persetujuan' : 'Proyek selesai'}
             </p>
           </div>
-          <span className="material-symbols-outlined text-[130px] opacity-10 absolute -right-6 -bottom-6 text-white select-none">trending_up</span>
+          <span className="material-symbols-outlined text-[130px] opacity-20 absolute -right-6 -bottom-6 text-white select-none">trending_up</span>
         </Card>
       </div>
 

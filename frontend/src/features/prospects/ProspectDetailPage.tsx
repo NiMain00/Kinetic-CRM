@@ -255,7 +255,7 @@ export default function ProspectDetailPage() {
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
@@ -287,7 +287,7 @@ export default function ProspectDetailPage() {
               </div>
             </div>
             <div className="flex gap-2 flex-wrap">
-              <button onClick={() => navigate(`/prospects/${prospect.id}/edit`)} className="px-4 py-2 border border-border rounded-lg text-sm font-semibold text-on-surface hover:bg-surface-container-low transition-all flex items-center gap-1.5">
+              <button onClick={() => navigate(`/prospects/${prospect.id}/edit`)} className="px-4 py-2 border border-border/60 rounded-xl text-sm font-semibold text-on-surface hover:bg-surface-container transition-all flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[18px]">edit</span>
                 Edit
               </button>
@@ -295,7 +295,7 @@ export default function ProspectDetailPage() {
               {/* Tombol "Kirim ke Review" — untuk prospek draft (Potensial/Non Potensial) yang belum dikonversi */}
               {!isConverted &&
                (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
-                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
+                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">send</span>
                   Kirim ke Review
                 </button>
@@ -303,7 +303,7 @@ export default function ProspectDetailPage() {
 
               {/* Kondisional: "Buat Proyek" untuk Approved + Potensial saja */}
               {prospect.status === 'Approved' && !isConverted && isPotensial && (
-                <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5">
+                <button onClick={handleBuatProyek} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">add_business</span>
                   Buat Proyek
                 </button>
@@ -321,7 +321,7 @@ export default function ProspectDetailPage() {
               {isConverted && (
                 <button
                   onClick={() => navigate(`/project/${prospect.projectId}/overview`)}
-                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5"
+                  className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5"
                 >
                   <span className="material-symbols-outlined text-[18px]">visibility</span>
                   Lihat Proyek
@@ -330,11 +330,11 @@ export default function ProspectDetailPage() {
 
               {prospect.status === 'Waiting PM' && (
                 <>
-                  <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
+                  <button onClick={handleApprove} className="px-4 py-2 bg-success text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Setujui prospek">
                     <span className="material-symbols-outlined text-[18px]">check_circle</span>
                     Setujui
                   </button>
-                  <button onClick={handleRequestRevision} className="px-4 py-2 bg-warning text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Minta revisi">
+                  <button onClick={handleRequestRevision} className="px-4 py-2 bg-gold text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all flex items-center gap-1.5" aria-label="Minta revisi">
                     <span className="material-symbols-outlined text-[18px]">edit_note</span>
                     Revisi
                   </button>
@@ -342,13 +342,13 @@ export default function ProspectDetailPage() {
               )}
 
               {prospect.status === 'Revision' && (
-                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:brightness-110 transition-all flex items-center gap-1.5" aria-label="Kirim ulang ke PM">
+                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5" aria-label="Kirim ulang ke PM">
                   <span className="material-symbols-outlined text-[18px]">refresh</span>
                   Kirim Ulang ke PM
                 </button>
               )}
 
-              <button onClick={handleDelete} className="px-4 py-2 border border-danger text-danger rounded-lg text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
+              <button onClick={handleDelete} className="px-4 py-2 border border-danger/30 text-danger rounded-xl text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
                 <span className="material-symbols-outlined text-[18px]">delete</span>
               </button>
             </div>
@@ -359,7 +359,7 @@ export default function ProspectDetailPage() {
           {/* Main Detail */}
           <div className="lg:col-span-7 space-y-6">
             {/* Overview Section */}
-            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">overview</span>
                 Overview Prospek
@@ -417,7 +417,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Customer Info Card */}
-            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">business</span>
                 Informasi Customer
@@ -501,7 +501,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">description</span>
                 Deskripsi
@@ -512,7 +512,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Dynamic Questionnaire Answers */}
-            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">quiz</span>
                 Jawaban Pertanyaan Standar
@@ -535,7 +535,7 @@ export default function ProspectDetailPage() {
 
           {/* Sidebar - Status Timeline */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">timeline</span>
                 Riwayat Status

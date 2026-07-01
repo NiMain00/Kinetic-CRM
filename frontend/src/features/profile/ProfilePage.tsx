@@ -74,7 +74,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       
       {/* Top action header info */}
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Profil Pengguna
@@ -91,7 +91,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Left Card - Primary profile details */}
-            <div className="md:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-xs p-6 sm:p-8">
+            <div className="md:col-span-8 bg-white border border-border/60 rounded-2xl shadow-xs p-6 sm:p-8">
               
               <form onSubmit={handleSaveProfile} className="space-y-6">
                 
@@ -109,7 +109,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                       <button
                         type="button"
                         onClick={handlePhotoCameraClick}
-                        className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-md hover:brightness-110 active:scale-95 transition-all text-xs flex items-center justify-center cursor-pointer"
+                        className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-md hover:bg-primary-light active:scale-95 transition-all text-xs flex items-center justify-center cursor-pointer"
                         title="Gulir simulasi foto"
                       >
                         <span className="material-symbols-outlined text-[16px]">photo_camera</span>
@@ -203,13 +203,13 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                       setEmail(currentUser?.email || 'a.pierce@kinetic-corp.com');
                       onShowNotification('Formulir isian di-reset ke data semula.', 'warning');
                     }}
-                    className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-secondary text-xs font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-border/60 bg-white text-secondary text-xs font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
                   >
                     Atur Ulang Formulir
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-all cursor-pointer"
+                    className="px-6 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-card hover:bg-primary-light transition-all cursor-pointer"
                   >
                     Simpan Perubahan
                   </button>
@@ -223,7 +223,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
             <div className="md:col-span-4 space-y-6">
               
               {/* Security Actions */}
-              <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs">
+              <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
                 <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-[18px]">security</span>
                   Keamanan Akun
@@ -250,7 +250,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
               </div>
 
               {/* Session logs details */}
-              <div className="bg-surface-container-lowest border border-border rounded-xl p-5 shadow-xs">
+              <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
                 <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-4 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-[18px]">monitoring</span>
                   Sesi Aktif
@@ -382,13 +382,13 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                 <button
                   type="button"
                   onClick={() => setIsPasswordModalOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-secondary font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-border bg-white text-secondary font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-primary text-white font-bold rounded-lg hover:brightness-110 shadow-sm transition-all cursor-pointer"
+                  className="px-5 py-2 bg-primary text-white font-bold rounded-xl hover:bg-primary-light shadow-card transition-all cursor-pointer"
                 >
                   Simpan Kata Sandi Baru
                 </button>

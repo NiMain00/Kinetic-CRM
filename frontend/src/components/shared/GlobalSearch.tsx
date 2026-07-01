@@ -76,7 +76,7 @@ export default function GlobalSearch({ className = '' }: { className?: string })
   };
 
   return (
-    <div ref={ref} className={`relative w-full max-w-xs ${className}`}>
+    <div ref={ref} className={`relative w-full max-w-md ${className}`}>
       <Input
         placeholder="Cari apa saja... (Ctrl+K)"
         value={query}
@@ -85,13 +85,13 @@ export default function GlobalSearch({ className = '' }: { className?: string })
         leftIcon={<span className="material-symbols-outlined" aria-hidden="true">search</span>}
       />
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 right-0 bg-surface-container-lowest border border-border rounded-xl shadow-xl z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
+        <div className="absolute top-full mt-2 left-0 right-0 bg-white border border-border/60 rounded-2xl shadow-elevated z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
           {results.length > 0 ? (
             results.map((r, i) => (
               <button
                 key={i}
                 onClick={() => handleSelect(r)}
-                className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container-high transition-colors"
+                className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container transition-colors"
                 role="option"
                 aria-selected={false}
               >

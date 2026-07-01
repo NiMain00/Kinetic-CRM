@@ -12,7 +12,7 @@ import { usePermission } from '@/hooks/usePermission';
 
 const progressColor = (pct: number) => {
   if (pct >= 80) return 'bg-success';
-  if (pct >= 50) return 'bg-warning';
+  if (pct >= 50) return 'bg-gold';
   return 'bg-primary';
 };
 
@@ -183,7 +183,7 @@ export default function ProjectListPage() {
         }
       />
 
-      <nav className="flex border-b border-border overflow-x-auto">
+      <nav className="flex border-b border-border/60 overflow-x-auto">
         {statusTabs.map((tab) => (
           <button
             key={tab.id}
@@ -207,13 +207,13 @@ export default function ProjectListPage() {
               placeholder="Cari nama, klien, kode..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-9 pr-3 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-primary outline-none focus:ring-1"
+              className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-white focus:ring-primary outline-none focus:ring-1"
               aria-label="Cari proyek"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-lg border transition-colors ${showFilters ? 'bg-primary/10 text-primary border-primary' : 'border-border text-secondary hover:bg-surface-container-low'}`}
+            className={`p-2 rounded-xl border transition-colors ${showFilters ? 'bg-primary/10 text-primary border-primary' : 'border-border/60 text-secondary hover:bg-surface-container'}`}
             title="Filter"
           >
             <span className="material-symbols-outlined text-sm">filter_alt</span>

@@ -38,7 +38,7 @@ export default function UserDetailPage() {
           <span className="material-symbols-outlined text-6xl text-outline">search_off</span>
           <h2 className="text-xl font-bold text-on-surface">Pengguna Tidak Ditemukan</h2>
           <p className="text-secondary text-sm">Pengguna dengan ID {id} tidak tersedia.</p>
-          <button onClick={() => navigate('/users')} className="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-semibold text-sm hover:brightness-110 transition-all">Kembali ke Daftar</button>
+          <button onClick={() => navigate('/users')} className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-semibold text-sm hover:bg-primary-light transition-all">Kembali ke Daftar</button>
         </div>
       </div>
     );
@@ -59,7 +59,7 @@ export default function UserDetailPage() {
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Profile Card */}
-        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
             <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl shrink-0">{initials}</div>
             <div className="flex-1 space-y-2">
@@ -95,7 +95,7 @@ export default function UserDetailPage() {
                 </div>
               </div>
             </div>
-            <button onClick={() => navigate(`/users/${user.id}/edit`)} className="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-semibold text-sm hover:brightness-110 transition-all flex items-center gap-2 shrink-0" aria-label="Edit pengguna">
+            <button onClick={() => navigate(`/users/${user.id}/edit`)} className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-semibold text-sm hover:bg-primary-light transition-all flex items-center gap-2 shrink-0" aria-label="Edit pengguna">
               <span className="material-symbols-outlined text-[18px]">edit</span>
               Edit
             </button>
@@ -103,7 +103,7 @@ export default function UserDetailPage() {
         </div>
 
         {/* Activity Log */}
-        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
           <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[20px]">history</span>
             Aktivitas Terbaru
@@ -121,7 +121,7 @@ export default function UserDetailPage() {
               </thead>
               <tbody className="divide-y divide-border">
                 {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-surface-container-low transition-colors">
+                    <tr key={log.id} className="hover:bg-surface-container transition-colors">
                     <td className="px-4 py-3 font-mono text-outline">{log.timestamp}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${actionBadge[log.action] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{log.action}</span>

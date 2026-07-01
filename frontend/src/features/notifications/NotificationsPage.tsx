@@ -109,7 +109,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       {/* Search Header and Action line */}
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Pusat Notifikasi
@@ -143,7 +143,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
               markAllAsRead();
               onShowNotification('Semua notifikasi ditandai telah dibaca.', 'success');
             }}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-border bg-surface-container-lowest text-secondary hover:bg-surface-container-low transition-colors font-semibold text-xs cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-border/60 bg-white text-secondary hover:bg-surface-container transition-colors font-semibold text-xs cursor-pointer shadow-xs"
           >
             <span className="material-symbols-outlined text-[16px] text-outline">checklist</span>
             Tandai Dibaca
@@ -157,7 +157,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
           {/* Left filter side card column */}
           <div className="lg:col-span-3 space-y-6">
-            <div className="bg-surface-container-lowest p-5 border border-border rounded-xl shadow-xs">
+            <div className="bg-white p-5 border border-border/60 rounded-2xl shadow-xs">
               <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-4">Lihat</h3>
 
               <div className="space-y-1">
@@ -223,7 +223,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
             </div>
 
             {/* Info card */}
-            <div className="bg-primary hover:brightness-110 text-white p-5 rounded-xl shadow-md overflow-hidden relative group transition-all">
+            <div className="bg-primary hover:bg-primary-light text-white p-5 rounded-2xl shadow-md overflow-hidden relative group transition-all">
               <div className="relative z-10">
                 <h4 className="font-bold text-sm mb-1.5 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[18px]">notifications</span>
@@ -242,7 +242,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
           {/* Right main feed column */}
           <div className="lg:col-span-9 space-y-4">
             {filteredNotifications.length === 0 ? (
-              <div className="bg-surface-container-lowest p-12 text-center border border-border rounded-xl shadow-xs text-outline">
+              <div className="bg-white p-12 text-center border border-border/60 rounded-2xl shadow-xs text-outline">
                 <span className="material-symbols-outlined text-5xl mb-3 text-outline">notifications_off</span>
                 <p className="font-bold text-sm text-secondary mb-1">Tidak ada notifikasi</p>
                 <p className="text-xs">Tidak ada notifikasi yang sesuai dengan filter saat ini.</p>
@@ -260,7 +260,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                     }
                   }}
                   className={`border-l-4 rounded-xl shadow-xs border border-border transition-all hover:shadow-md cursor-pointer relative overflow-hidden ${
-                    n.read ? 'bg-surface-container-low/50 opacity-80' : 'bg-surface-container-lowest'
+                    n.read                   ? 'bg-surface-container-low/50 opacity-80' : 'bg-white'
                   } ${typeBorderColor(n.type)}`}
                 >
                   <div className="p-5 flex items-start gap-4">

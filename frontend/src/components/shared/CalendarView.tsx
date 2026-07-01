@@ -141,7 +141,7 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
         </div>
 
         {/* Day Headers */}
-        <div className="grid grid-cols-7 border-b border-border">
+        <div className="grid grid-cols-7 border-b border-l border-border">
           {DAYS.map((day) => (
             <div
               key={day}
@@ -153,10 +153,10 @@ export default function CalendarView({ events, onDateClick }: CalendarViewProps)
         </div>
 
         {/* Day Cells */}
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-7 border-l border-border">
           {calendarDays.map((day, i) => {
             if (day === null) {
-              return <div key={`empty-${i}`} className="min-h-[90px] bg-surface-container-low/30" />;
+              return <div key={`empty-${i}`} className="min-h-[90px] bg-surface-container-low/30 border-b border-r border-border" />;
             }
 
             const key = formatDateKey(day);

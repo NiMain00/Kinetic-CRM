@@ -44,12 +44,12 @@ export default function Topbar({
   }, [mobileSearchOpen]);
 
   return (
-    <header className="w-full h-16 bg-surface sticky top-0 z-40 border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0">
+    <header className="w-full h-16 bg-white border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         {/* Hamburger menu - mobile only */}
         <button
           onClick={onMenuClick}
-          className="md:hidden flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
+          className="md:hidden flex items-center justify-center touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer"
           aria-label="Buka/tutup menu sidebar"
         >
           <span className="material-symbols-outlined text-on-surface" aria-hidden="true">menu</span>
@@ -63,53 +63,51 @@ export default function Topbar({
         {/* Mobile search icon */}
         <button
           onClick={() => setMobileSearchOpen(true)}
-          className="md:hidden flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer ml-auto"
+          className="md:hidden flex items-center justify-center touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer ml-auto"
           aria-label="Buka pencarian"
         >
           <span className="material-symbols-outlined text-on-surface" aria-hidden="true">search</span>
         </button>
       </div>
 
-      <div className="flex items-center gap-2 lg:gap-4">
+      <div className="flex items-center gap-2 lg:gap-3">
         {/* Notification Bell */}
         <button
           onClick={onNotificationsClick}
-          className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all relative cursor-pointer"
+          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all relative cursor-pointer"
           aria-label={`Notifikasi${notificationCount > 0 ? `, ${notificationCount} belum dibaca` : ''}`}
         >
-          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">notifications</span>
+          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 bg-danger rounded-full ring-2 ring-surface">
+            <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 bg-gold rounded-full ring-2 ring-white">
               <span className="text-[9px] leading-none text-white font-bold">{notificationCount > 99 ? '99+' : notificationCount}</span>
             </span>
           )}
         </button>
 
-        {/* Global Settings Gear */}
+        {/* Messages */}
         <button
-          className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
-          aria-label="Pengaturan"
+          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer"
+          aria-label="Pesan"
         >
-          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">settings</span>
+          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">chat</span>
         </button>
 
-        {/* Keyboard Shortcut Help */}
+        {/* Global Settings Gear */}
         <button
-          onClick={onHelpClick}
-          className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
-          aria-label="Pintasan keyboard"
-          title="Pintasan Keyboard (Shift + ?)"
+          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer"
+          aria-label="Pengaturan"
         >
-          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">keyboard</span>
+          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">settings</span>
         </button>
 
         {/* Dark Mode Toggle */}
         <button
           onClick={toggle}
-          className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
+          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer"
           aria-label={dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
         >
-          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
+          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
         </button>
 
         <div className="h-8 w-[1px] bg-border mx-1 lg:mx-2"></div>
@@ -118,7 +116,7 @@ export default function Topbar({
         <button
           type="button"
           onClick={onProfileClick}
-          className="flex items-center gap-3 hover:bg-surface-variant p-1.5 rounded-lg transition-all text-left cursor-pointer outline-none touch-min-h"
+          className="flex items-center gap-3 hover:bg-surface-container p-2 rounded-xl transition-all text-left cursor-pointer outline-none touch-min-h"
           aria-label="Profil pengguna"
         >
           <div className="text-right hidden sm:block">
@@ -126,7 +124,7 @@ export default function Topbar({
             <p className="font-caption-xs text-caption-xs text-outline mt-1">{roleName}</p>
           </div>
           <img
-            className="w-10 h-10 rounded-full border border-border object-cover"
+            className="w-10 h-10 rounded-full border-2 border-primary/20 object-cover"
             alt="Foto profil pengguna"
             src={avatarUrl}
             referrerPolicy="no-referrer"
@@ -138,12 +136,12 @@ export default function Topbar({
       {mobileSearchOpen && (
         <div
           ref={searchContainerRef}
-          className="fixed inset-0 z-50 bg-surface md:hidden animate-in fade-in slide-in-from-top-2"
+          className="fixed inset-0 z-50 bg-white md:hidden animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-center gap-3 p-4 border-b border-border">
             <button
               onClick={() => setMobileSearchOpen(false)}
-              className="flex items-center justify-center touch-min rounded-full hover:bg-surface-variant transition-all cursor-pointer"
+              className="flex items-center justify-center touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer"
               aria-label="Tutup pencarian"
             >
               <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
@@ -154,7 +152,7 @@ export default function Topbar({
               </span>
               <input
                 ref={searchInputRef}
-                className="bg-surface-container-low border-none rounded-lg pl-10 pr-4 py-3 w-full focus:ring-2 focus:ring-primary/20 transition-all text-body-main text-sm outline-none"
+                className="bg-surface-container-low border border-border rounded-xl pl-10 pr-4 py-3 w-full focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-main text-sm outline-none"
                 placeholder="Cari proyek, prospek, persetujuan..."
                 type="text"
                 aria-label="Cari"

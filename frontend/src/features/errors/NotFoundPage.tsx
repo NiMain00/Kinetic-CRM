@@ -18,13 +18,13 @@ export default function NotFoundPage() {
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="px-6 py-2.5 border border-border rounded-lg font-label-sm text-sm text-secondary hover:bg-surface-container-high transition-all"
+            className="px-6 py-2.5 border border-border/60 rounded-xl font-label-sm text-sm text-secondary hover:bg-surface-container-high transition-all"
           >
             Kembali
           </button>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-2.5 bg-primary text-on-primary rounded-lg font-label-sm text-sm hover:bg-primary-container transition-all"
+            className="px-6 py-2.5 bg-primary text-on-primary rounded-xl font-label-sm text-sm hover:bg-primary-container transition-all"
           >
             Dashboard
           </button>

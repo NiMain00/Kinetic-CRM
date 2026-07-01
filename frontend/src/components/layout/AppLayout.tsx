@@ -37,7 +37,6 @@ export default function AppLayout() {
   const roleConfig = useMasterDataStore((s) => s.roles).find((r) => r.name === userRole);
   const userPermissions = roleConfig?.permissions || [];
 
-  // Full-bleed detection: chat pages fill entire content area without padding
   const isFullBleed = location.pathname.includes('/diskusi');
 
   const handleNavigate = (path: string) => {
@@ -51,8 +50,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface">
-      {/* Mobile sidebar overlay */}
+    <div className="flex h-screen overflow-hidden bg-background">
       {mobileSidebarOpen && (
         <Sidebar
           activeTab={location.pathname}
@@ -69,7 +67,6 @@ export default function AppLayout() {
         />
       )}
 
-      {/* Desktop sidebar */}
       <div className={`hidden md:flex ${sidebarOpen ? 'w-72' : 'w-20'} transition-all duration-300 shrink-0`}>
         <Sidebar
           activeTab={location.pathname}
@@ -96,11 +93,11 @@ export default function AppLayout() {
         />
         <Breadcrumb />
         <ShortcutHelpModal isOpen={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />
-        <main className="flex-1 flex flex-col min-h-0 bg-surface-container-low">
+        <main className="flex-1 flex flex-col min-h-0 bg-background">
           {isFullBleed ? (
             <Outlet />
           ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-2 sm:px-3 lg:px-3">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6">
               <Outlet />
             </div>
           )}

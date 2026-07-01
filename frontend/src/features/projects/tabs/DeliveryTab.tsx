@@ -152,7 +152,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Selesai Aktual</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">check_calendar</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">calendar_month</span>
                     <input
                       type="date"
                       value={actualEndDate}

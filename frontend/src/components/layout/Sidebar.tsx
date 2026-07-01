@@ -73,7 +73,6 @@ export default function Sidebar({
     const activeSeg = activeTab.split('/')[1];
     const itemSeg = itemPath.split('/')[1];
     if (activeSeg === 'project' && itemSeg === 'projects') return true;
-    // Only match via startsWith if no other nav item is a more specific child
     if (itemPath !== '/' && activeTab.startsWith(itemPath + '/')) {
       const hasChildItem = navItems.some(
         (other) => other.path !== itemPath && other.path.startsWith(itemPath + '/'),
@@ -107,19 +106,19 @@ export default function Sidebar({
       <button
         key={item.path}
         onClick={() => handleNavigate(item.path)}
-        className={`w-full flex items-center gap-3 px-4 py-3 md:py-2.5 rounded-lg transition-all text-left font-label-sm text-label-sm touch-min-h ${
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h ${
           isActive
-            ? 'text-primary font-bold border-l-4 border-primary bg-surface-container-high'
-            : 'text-secondary hover:bg-surface-container-high hover:text-primary'
+            ? 'bg-green-50 text-green-700 font-semibold'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
         }`}
         aria-label={item.label}
       >
-        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-secondary'}`} aria-hidden="true">
+        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
           {item.icon}
         </span>
         {!collapsed && <span className="truncate">{item.label}</span>}
         {!collapsed && badge !== undefined && badge > 0 && (
-          <span className="ml-auto bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full" aria-label={`${badge} notifikasi`}>
+          <span className="ml-auto bg-orange-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full" aria-label={`${badge} notifikasi`}>
             {badge}
           </span>
         )}
@@ -129,11 +128,10 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-surface-container-lowest border-r border-border shadow-sm shrink-0 ${
+      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-white border-r border-gray-200 shrink-0 ${
         collapsed ? (mobile ? 'w-72' : 'w-20') : 'w-72'
       } ${mobile ? 'slide-in-left' : 'transition-all duration-300'}`}
     >
-      {/* Mobile overlay */}
       {mobile && (
         <div
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
@@ -143,55 +141,62 @@ export default function Sidebar({
       )}
 
       <div
-        className={`relative z-10 flex flex-col h-full bg-surface-container-lowest py-8 ${mobile ? 'w-72 shadow-2xl' : ''}`}
+        className={`relative z-10 flex flex-col h-full py-6 ${mobile ? 'w-72 shadow-2xl' : ''}`}
         {...(mobile ? swipeHandlers : {})}
       >
         {/* Brand Header */}
         <div className={`px-6 mb-8 transition-opacity duration-200 ${collapsed && !mobile ? 'text-center' : ''}`}>
-          <h1 className="font-display-title text-display-title text-primary tracking-tight truncate">
-            {collapsed && !mobile ? 'K' : 'Kinetic CRM'}
-          </h1>
-          {!collapsed && (
-            <p className="font-caption-xs text-caption-xs text-secondary-fixed-variant uppercase tracking-widest mt-1">
-              Operasi Perusahaan
-            </p>
-          )}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-2xl">K</span>
+            </div>
+            {(!collapsed || mobile) && (
+              <div>
+                <h1 className="font-display-title text-gray-800 text-lg tracking-tight truncate">
+                  Kinetic CRM
+                </h1>
+                <p className="font-caption-xs text-gray-400 uppercase tracking-widest text-[10px]">
+                  OPERASI PERUSAHAAN
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Navigation list */}
-        <nav ref={navListRef} className="flex-1 px-4 space-y-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
+        <nav ref={navListRef} className="flex-1 px-3 space-y-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
           {allowedNavItems.map(renderNavItem)}
         </nav>
 
         {/* Logout button */}
         {onLogout && (
-          <div className="px-4 mb-2">
+          <div className="px-3 mb-2">
             <button
               onClick={onLogout}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-danger hover:bg-danger/5 hover:text-danger transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h ${
                 collapsed && !mobile ? 'justify-center' : ''
               }`}
               title="Keluar"
               aria-label="Keluar"
             >
-              <span className="material-symbols-outlined text-[22px] text-danger">logout</span>
-              {(!collapsed || mobile) && <span className="font-bold">Keluar</span>}
+              <span className="material-symbols-outlined text-[22px]">logout</span>
+              {(!collapsed || mobile) && <span className="font-semibold">Keluar</span>}
             </button>
           </div>
         )}
 
         {/* Collapse button (desktop only) */}
         {!mobile && (
-          <div className="px-4 mt-auto">
+          <div className="px-3 mt-auto">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-secondary font-label-sm text-label-sm border border-border rounded-lg hover:bg-surface-container-low transition-all touch-min-h"
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-gray-400 font-label-sm text-label-sm border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all touch-min-h"
               aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             >
               <span className="material-symbols-outlined text-lg transition-transform duration-300">
-                {collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
+                {collapsed ? 'keyboard_double_arrow_right' : 'chevron_left'}
               </span>
-              {!collapsed && <span>Ciutkan</span>}
+              {!collapsed && <span>Ciutkan Menu</span>}
             </button>
           </div>
         )}
