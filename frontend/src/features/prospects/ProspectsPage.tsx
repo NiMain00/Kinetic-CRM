@@ -240,7 +240,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         )}
                       </div>
                       <span
-                        className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                        className="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap"
                         style={{ backgroundColor: statusColor(row.status, row).bg, color: statusColor(row.status, row).text }}
                       >
                         {row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
@@ -298,16 +298,16 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-sm">
-                <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border sticky top-0 z-10">
+              <table className="w-full text-left border-collapse text-sm table-fixed">
+                <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border sticky top-0 z-10 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.08)]">
                   <tr>
-                    <th className="px-6 py-4 font-semibold w-16">No</th>
-                    <th className="px-6 py-4 font-semibold">Nama Prospek</th>
-                    <th className="px-6 py-4 font-semibold">Customer</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">Dibuat Oleh</th>
-                    <th className="px-6 py-4 font-semibold">Tgl Dibuat</th>
-                    <th className="px-6 py-4 font-semibold text-right">Aksi</th>
+                    <th className="px-6 py-4 font-semibold w-[50px]">No</th>
+                    <th className="px-6 py-4 font-semibold w-[26%]">Nama Prospek</th>
+                    <th className="px-6 py-4 font-semibold w-[15%]">Customer</th>
+                    <th className="px-6 py-4 font-semibold w-[14%]">Status</th>
+                    <th className="px-6 py-4 font-semibold w-[14%]">Dibuat Oleh</th>
+                    <th className="px-6 py-4 font-semibold w-[12%]">Tgl Dibuat</th>
+                    <th className="px-6 py-4 font-semibold text-right w-[15%]">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -324,35 +324,35 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       return (
                       <tr key={row.id} className="border-b border-border hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors group">
                         <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{globalIndex}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 overflow-hidden">
                           <div
                             onClick={() => navigate(`/prospects/${row.id}`)}
-                            className="font-label-sm text-on-surface group-hover:text-primary transition-colors cursor-pointer font-medium"
+                            className="font-label-sm text-on-surface group-hover:text-primary transition-colors cursor-pointer font-medium truncate"
                           >
                             {row.name}
                           </div>
                           {row.description && (
-                            <p className="text-xs text-secondary truncate max-w-md">{row.description}</p>
+                            <p className="text-xs text-secondary truncate">{row.description}</p>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-secondary">{row.client}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-secondary truncate overflow-hidden">{row.client}</td>
+                        <td className="px-6 py-4 overflow-hidden">
                           <span
-                            className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                            className="inline-block px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap"
                             style={{ backgroundColor: statusColor(row.status, row).bg, color: statusColor(row.status, row).text }}
                           >
                             {row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 overflow-hidden">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">
+                            <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
                               {row.author.charAt(0)}
                             </div>
-                            <span className="text-on-surface text-xs">{row.author}</span>
+                            <span className="text-on-surface text-xs truncate">{row.author}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-xs text-secondary">{row.date}</td>
+                        <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden">{row.date}</td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-1">
                             {row.status === 'Approved' && !row.isConverted && (
