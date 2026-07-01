@@ -165,7 +165,7 @@ export default function AppRouter() {
         <Route path="master-data/holidays" element={<MasterHolidayPage />} />
         <Route path="master-data/loss-reasons" element={<MasterLossReasonPage />} />
         <Route path="master-data/periods" element={<MasterPeriodPage />} />
-        <Route path="master-data/users" element={<Navigate to="/master-data" replace />} />
+        <Route path="master-data/:entity" element={<MasterDataPage />} />
 
         {/* Users - pindah ke dalam Master Data sebagai tab */}
         <Route path="users" element={<Navigate to="/master-data" replace />} />
