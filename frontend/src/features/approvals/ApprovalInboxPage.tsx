@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Modal } from '@/components/ui';
 import { PageContainer, PageHeader } from '@/components/shared';
-import { useIsMobile } from '@/hooks/useMediaQuery';
 import type { ApprovalItem, SlaConfig } from '../../types/domain';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useProspectStore } from '@/stores/prospectStore';
@@ -12,7 +11,7 @@ import { useNotificationStore } from '@/stores/notificationStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import MentionTextarea from '@/components/shared/MentionTextarea';
-import { formatRelativeTime } from '@/utils/formatters';
+import { formatRelativeTime, formatCurrencyShort } from '@/utils/formatters';
 
 interface ApprovalInboxViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -29,10 +28,15 @@ function parseSlaConfig(type: string, slaConfigs: SlaConfig[]): { critH: number;
   return { critH, warnH };
 }
 
+const TYPE_ICONS: Record<string, string> = {
+  Prospek: 'person_search',
+  RKS: 'description',
+  LPHS: 'assignment_turned_in',
+};
+
 export default function ApprovalInboxView({
   onShowNotification,
 }: ApprovalInboxViewProps) {
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { approvals, approvalHistory, approveItem, rejectItem } = useApprovalStore();
   const { prospects, updateProspect } = useProspectStore();
@@ -66,6 +70,18 @@ export default function ApprovalInboxView({
     return 'Normal';
   };
 
+  const getEntityMeta = (item: ApprovalItem) => {
+    if (item.entityType === 'prospect' && item.entityId) {
+      const p = prospects.find(pr => pr.id === item.entityId);
+      return { client: p?.client, value: p?.estimatedValue, author: p?.author };
+    }
+    if (item.entityType === 'project' && item.entityId) {
+      const p = projects.find(pr => pr.id === item.entityId);
+      return { client: p?.client, value: p?.estimatedValue, author: p?.author };
+    }
+    return {};
+  };
+
   const filteredApprovals = useMemo(() => {
     const validApprovals = userApprovals.filter((a) => {
       if (a.entityType === 'prospect' && a.entityId) {
@@ -80,7 +96,7 @@ export default function ApprovalInboxView({
     if (!searchQuery.trim()) return typeFiltered;
     const q = searchQuery.toLowerCase();
     return typeFiltered.filter(
-      (a) => a.name.toLowerCase().includes(q) || a.ref.toLowerCase().includes(q),
+      (a) => a.name.toLowerCase().includes(q) || a.ref.toLowerCase().includes(q) || a.client?.toLowerCase().includes(q),
     );
   }, [userApprovals, filterType, searchQuery, prospects, projects]);
 
@@ -225,9 +241,17 @@ export default function ApprovalInboxView({
 
   const slaBadgeClass = (status: string) => {
     switch (status) {
-      case 'Overdue': return 'bg-danger/10 text-danger';
-      case 'Near Deadline': return 'bg-gold/10 text-gold';
+      case 'Overdue': return 'bg-danger text-white';
+      case 'Near Deadline': return 'bg-warning text-white';
       default: return 'bg-success/10 text-success';
+    }
+  };
+
+  const slaBorderClass = (status: string) => {
+    switch (status) {
+      case 'Overdue': return 'border-l-danger';
+      case 'Near Deadline': return 'border-l-gold';
+      default: return 'border-l-success';
     }
   };
 
@@ -238,105 +262,91 @@ export default function ApprovalInboxView({
         : 'bg-surface border border-border/60 text-on-surface hover:bg-surface-container'
     }`;
 
-  const renderApprovalCard = (row: ApprovalItem) => (
-    <div
-      key={row.id}
-      className={`bg-surface border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-transform ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <input
-            type="checkbox"
-            checked={selectedIds.has(row.id)}
-            onChange={() => toggleSelect(row.id)}
-            className="rounded border-border accent-primary w-4 h-4 mt-1 shrink-0"
-          />
-          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-            {row.name.charAt(0)}
-          </div>
-          <div className="min-w-0">
-            <p className="font-label-sm text-label-sm text-on-surface font-semibold truncate">{row.name}</p>
-            <p className="font-caption-xs text-caption-xs text-outline">Ref: {row.ref}</p>
-          </div>
-        </div>
-        <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${slaBadgeClass(computeSlaStatus(row.waitingSince, row.type))}`}>
-          {computeSlaStatus(row.waitingSince, row.type)}
-        </span>
-      </div>
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-secondary">{row.branch}</span>
-        <span className="font-mono-data text-on-surface">{formatRelativeTime(row.waitingSince)}</span>
-      </div>
-      <div className="flex gap-2">
-        <Button variant="primary" size="sm" onClick={() => handleReview(row)} className="flex-1">
-          Review
-        </Button>
-        <Button size="sm" onClick={() => handleInlineApprove(row)} className="flex-1 bg-success text-white border-0 hover:opacity-90">
-          Setujui
-        </Button>
-      </div>
-      <Button variant="ghost" size="sm" onClick={() => handleInlineReject(row)} className="w-full text-danger hover:bg-danger/10">
-        Tolak
-      </Button>
-    </div>
-  );
-
-  const renderTable = (rows: ApprovalItem[], nameLabel: string) => (
-    <table className="w-full text-left border-collapse text-sm table-fixed">
-      <thead>
-        <tr className="bg-surface-container-low border-b border-border">
-          <th className="px-4 py-3 w-10">
+  const renderApprovalCard = (row: ApprovalItem) => {
+    const slaStatus = computeSlaStatus(row.waitingSince, row.type);
+    const meta = getEntityMeta(row);
+    return (
+      <div
+        key={row.id}
+        className={`bg-surface border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-all border-l-4 ${slaBorderClass(slaStatus)} ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <input
               type="checkbox"
-              checked={isAllSelected}
-              onChange={toggleSelectAll}
-              className="rounded border-border accent-primary w-4 h-4"
+              checked={selectedIds.has(row.id)}
+              onChange={() => toggleSelect(row.id)}
+              className="rounded border-border accent-primary w-4 h-4 mt-0.5 shrink-0"
             />
-          </th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[30%]">{nameLabel}</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[15%]">Branch</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[17%]">Waiting Since</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs w-[13%]">SLA Status</th>
-          <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs w-[25%] sticky right-0 bg-surface-container-low shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)]">Action</th>
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-border">
-        {rows.map(row => (
-          <tr key={row.id} className={`hover:bg-primary/5 transition-colors group ${selectedIds.has(row.id) ? 'bg-primary/5' : ''}`}>
-            <td className="px-4 py-4">
-              <input
-                type="checkbox"
-                checked={selectedIds.has(row.id)}
-                onChange={() => toggleSelect(row.id)}
-                className="rounded border-border accent-primary w-4 h-4"
-              />
-            </td>
-            <td className="px-6 py-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">{row.name.charAt(0)}</div>
-                <div>
-                  <p className="font-label-sm text-label-sm text-on-surface font-semibold">{row.name}</p>
-                  <p className="font-caption-xs text-caption-xs text-outline">Ref: {row.ref}</p>
-                </div>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0 ${
+              row.type === 'Prospek' ? 'bg-primary' : row.type === 'RKS' ? 'bg-status-purple' : 'bg-status-orange'
+            }`}>
+              <span className="material-symbols-outlined text-[18px]">{TYPE_ICONS[row.type]}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-label-sm text-label-sm text-on-surface font-semibold truncate">{row.name}</p>
+                <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${slaBadgeClass(slaStatus)}`}>
+                  {slaStatus === 'Overdue' ? 'OVERDUE' : slaStatus === 'Near Deadline' ? 'KRITIS' : 'NORMAL'}
+                </span>
               </div>
-            </td>
-            <td className="px-6 py-4 text-secondary">{row.branch}</td>
-            <td className="px-6 py-4 font-mono-data text-mono-data text-on-surface">{formatRelativeTime(row.waitingSince)}</td>
-            <td className="px-6 py-4">
-              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${slaBadgeClass(computeSlaStatus(row.waitingSince, row.type))}`}>{computeSlaStatus(row.waitingSince, row.type)}</span>
-            </td>
-            <td className="px-6 py-4 text-right sticky right-0 bg-surface-container-lowest shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)]">
-              <div className="flex gap-1.5 justify-end">
-                <Button variant="outline" size="sm" onClick={() => handleReview(row)}>Review</Button>
-                <Button size="sm" onClick={() => handleInlineApprove(row)} className="bg-success text-white border-0 hover:opacity-90">Setujui</Button>
-                <Button variant="ghost" size="sm" onClick={() => handleInlineReject(row)} className="text-danger hover:bg-danger/10">Tolak</Button>
-              </div>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+              <p className="text-xs text-outline">Ref: {row.ref}</p>
+              {meta.client && <p className="text-xs text-secondary mt-0.5 truncate">{meta.client}</p>}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-secondary min-w-0">
+            <span className="material-symbols-outlined text-[14px] shrink-0">schedule</span>
+            <span>{formatRelativeTime(row.waitingSince)}</span>
+          </div>
+          {meta.value ? (
+            <span className="font-medium text-on-surface text-xs" title={meta.value !== undefined ? `Rp ${meta.value.toLocaleString('id-ID')}` : ''}>
+              {formatCurrencyShort(meta.value)}
+            </span>
+          ) : (
+            <span className="text-xs text-outline">{row.branch}</span>
+          )}
+        </div>
+        <div className="flex gap-2 pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleReview(row)}
+            className="flex-1"
+          >
+            Review
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleInlineApprove(row)}
+            className="flex-1 bg-success text-white border-0 hover:opacity-90"
+          >
+            Setujui
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleInlineReject(row)}
+            className="flex-1 border-danger text-danger hover:bg-danger hover:text-white hover:border-danger"
+          >
+            Tolak
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const groupSections: Array<{
+    label: string;
+    icon: string;
+    iconColor: string;
+    items: ApprovalItem[];
+  }> = [
+    { label: 'Prospek Approvals', icon: 'person_search', iconColor: 'text-primary', items: prospekApprovals },
+    { label: 'RKS (Rencana Kerja Syarat)', icon: 'description', iconColor: 'text-status-purple', items: rksApprovals },
+    { label: 'LPHS (Laporan Hasil Survey)', icon: 'assignment_turned_in', iconColor: 'text-status-orange', items: lphsApprovals },
+  ];
 
   return (
     <PageContainer>
@@ -394,7 +404,7 @@ export default function ApprovalInboxView({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari nama atau ref..."
+              placeholder="Cari nama, ref, klien..."
               className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-surface focus:ring-2 focus:ring-primary outline-none"
             />
             {searchQuery && (
@@ -435,64 +445,19 @@ export default function ApprovalInboxView({
         </div>
       )}
 
-      {/* Grouped Lists */}
+      {/* Card-based Approval Lists */}
       <div className="space-y-6 sm:space-y-8 pb-12">
-        {/* Category: Prospek */}
-        {prospekApprovals.length > 0 && (
-          <div className="space-y-4">
+        {groupSections.map(section => section.items.length > 0 && (
+          <div key={section.label} className="space-y-4">
             <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary">person_search</span>
-              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Prospek Approvals <span className="text-outline font-normal ml-2">({prospekApprovals.length})</span></h3>
+              <span className={`material-symbols-outlined ${section.iconColor}`}>{section.icon}</span>
+              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">{section.label} <span className="text-outline font-normal ml-2">({section.items.length})</span></h3>
             </div>
-            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
-              {isMobile ? (
-                <div className="divide-y divide-border p-3 space-y-3">
-                  {prospekApprovals.map(renderApprovalCard)}
-                </div>
-              ) : (
-                <div className="overflow-x-auto">{renderTable(prospekApprovals, 'Candidate Name')}</div>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {section.items.map(renderApprovalCard)}
             </div>
           </div>
-        )}
-
-        {/* Category: RKS */}
-        {rksApprovals.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-status-purple">description</span>
-              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">RKS (Rencana Kerja Syarat) <span className="text-outline font-normal ml-2">({rksApprovals.length})</span></h3>
-            </div>
-            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
-              {isMobile ? (
-                <div className="divide-y divide-border p-3 space-y-3">
-                  {rksApprovals.map(renderApprovalCard)}
-                </div>
-              ) : (
-                <div className="overflow-x-auto">{renderTable(rksApprovals, 'Project Name')}</div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Category: LPHS */}
-        {lphsApprovals.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="material-symbols-outlined text-status-orange">assignment_turned_in</span>
-              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">LPHS (Laporan Hasil Survey) <span className="text-outline font-normal ml-2">({lphsApprovals.length})</span></h3>
-            </div>
-            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
-              {isMobile ? (
-                <div className="divide-y divide-border p-3 space-y-3">
-                  {lphsApprovals.map(renderApprovalCard)}
-                </div>
-              ) : (
-                <div className="overflow-x-auto">{renderTable(lphsApprovals, 'Survey Site')}</div>
-              )}
-            </div>
-          </div>
-        )}
+        ))}
 
         {filteredApprovals.length === 0 && (
           <div className="text-center py-12">
@@ -508,63 +473,26 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-outline">history</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Riwayat Persetujuan <span className="text-outline font-normal ml-2">({approvalHistory.length})</span></h3>
             </div>
-            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
-              {isMobile ? (
-                <div className="divide-y divide-border p-3 space-y-3">
-                  {approvalHistory.map((item) => (
-                    <div key={item.id} className="flex items-start gap-3 py-2">
-                      <span className={`material-symbols-outlined text-[20px] mt-0.5 ${item.action === 'approved' ? 'text-success' : 'text-danger'}`}>
-                        {item.action === 'approved' ? 'check_circle' : 'cancel'}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
-                        <p className="text-xs text-outline">Ref: {item.ref} · {item.type}</p>
-                        <p className="text-xs text-secondary mt-0.5">
-                          {item.action === 'approved' ? 'Disetujui' : 'Ditolak'} · {formatRelativeTime(item.resolvedAt)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {approvalHistory.map((item) => (
+                <div key={item.id} className="bg-surface border border-border/60 rounded-xl p-4 flex items-start gap-3">
+                  <span className={`material-symbols-outlined text-[20px] mt-0.5 ${item.action === 'approved' ? 'text-success' : 'text-danger'}`}>
+                    {item.action === 'approved' ? 'check_circle' : 'cancel'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
+                    <p className="text-xs text-outline">Ref: {item.ref} · {item.type}</p>
+                    <p className="text-xs text-secondary mt-0.5">
+                      {item.action === 'approved' ? 'Disetujui' : 'Ditolak'} · {formatRelativeTime(item.resolvedAt)}
+                    </p>
+                  </div>
                 </div>
-              ) : (
-                <table className="w-full text-left border-collapse text-sm">
-                  <thead>
-                    <tr className="bg-surface-container-low border-b border-border">
-                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Nama</th>
-                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Tipe</th>
-                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Status</th>
-                      <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Waktu</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {approvalHistory.map((item) => (
-                      <tr key={item.id} className="hover:bg-primary/5 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-surface">{item.name.charAt(0)}</div>
-                            <div>
-                              <p className="text-sm font-semibold text-on-surface">{item.name}</p>
-                              <p className="text-xs text-outline">Ref: {item.ref}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-secondary">{item.type}</td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${item.action === 'approved' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
-                            <span className="material-symbols-outlined text-[12px]">{item.action === 'approved' ? 'check' : 'close'}</span>
-                            {item.action === 'approved' ? 'Disetujui' : 'Ditolak'}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-xs text-secondary">{formatRelativeTime(item.resolvedAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+              ))}
             </div>
           </div>
         )}
       </div>
+
       {/* Reject Confirmation Modal */}
       <Modal
         isOpen={rejectTarget !== null}
