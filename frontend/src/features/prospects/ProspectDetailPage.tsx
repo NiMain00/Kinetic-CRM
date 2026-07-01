@@ -172,7 +172,11 @@ export default function ProspectDetailPage() {
     });
   };
 
+  const [resubmitting, setResubmitting] = useState(false);
+
   const handleResubmit = () => {
+    if (resubmitting) return;
+    setResubmitting(true);
     updateProspect(prospect.id, { status: 'Waiting PM' });
     addApproval({
       id: `app-prospect-${prospect.id}`,
@@ -195,6 +199,7 @@ export default function ProspectDetailPage() {
       entityId: prospect.id,
       entityType: 'prospect',
     });
+    setResubmitting(false);
   };
 
   const handleDelete = () => {
@@ -255,7 +260,7 @@ export default function ProspectDetailPage() {
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
+        <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
           <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
@@ -295,9 +300,9 @@ export default function ProspectDetailPage() {
               {/* Tombol "Kirim ke Review" — untuk prospek draft (Potensial/Non Potensial) yang belum dikonversi */}
               {!isConverted &&
                (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
-                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5">
+                <button onClick={handleResubmit} disabled={resubmitting} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
                   <span className="material-symbols-outlined text-[18px]">send</span>
-                  Kirim ke Review
+                  {resubmitting ? 'Mengirim...' : 'Kirim ke Review'}
                 </button>
               )}
 
@@ -342,9 +347,9 @@ export default function ProspectDetailPage() {
               )}
 
               {prospect.status === 'Revision' && (
-                <button onClick={handleResubmit} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5" aria-label="Kirim ulang ke PM">
+                <button onClick={handleResubmit} disabled={resubmitting} className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary-light transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Kirim ulang ke PM">
                   <span className="material-symbols-outlined text-[18px]">refresh</span>
-                  Kirim Ulang ke PM
+                  {resubmitting ? 'Mengirim...' : 'Kirim Ulang ke PM'}
                 </button>
               )}
 
@@ -359,7 +364,7 @@ export default function ProspectDetailPage() {
           {/* Main Detail */}
           <div className="lg:col-span-7 space-y-6">
             {/* Overview Section */}
-            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">overview</span>
                 Overview Prospek
@@ -417,7 +422,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Customer Info Card */}
-            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">business</span>
                 Informasi Customer
@@ -501,7 +506,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">description</span>
                 Deskripsi
@@ -512,7 +517,7 @@ export default function ProspectDetailPage() {
             </div>
 
             {/* Dynamic Questionnaire Answers */}
-            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">quiz</span>
                 Jawaban Pertanyaan Standar
@@ -535,7 +540,7 @@ export default function ProspectDetailPage() {
 
           {/* Sidebar - Status Timeline */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-2xl border border-border/60 shadow-card p-6">
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
               <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">timeline</span>
                 Riwayat Status

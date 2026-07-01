@@ -207,7 +207,7 @@ export default function ProjectListPage() {
               placeholder="Cari nama, klien, kode..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-              className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-white focus:ring-primary outline-none focus:ring-1"
+              className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-surface focus:ring-primary outline-none focus:ring-1"
               aria-label="Cari proyek"
             />
           </div>

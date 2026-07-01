@@ -10,10 +10,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants = {
   primary: 'bg-primary text-white hover:bg-primary-light shadow-sm hover:shadow-md',
-  secondary: 'bg-white text-on-surface border border-border hover:bg-surface-container',
+  secondary: 'bg-surface text-on-surface border border-border hover:bg-surface-container',
   ghost: 'text-secondary hover:bg-surface-container hover:text-primary',
   danger: 'bg-danger text-white hover:opacity-90 shadow-sm',
-  outline: 'bg-white text-primary border border-primary/20 hover:bg-primary/5',
+  outline: 'bg-surface text-primary border border-primary/20 hover:bg-primary/5',
   success: 'bg-success text-white hover:opacity-90 shadow-sm',
   warning: 'bg-gold text-white hover:opacity-90 shadow-sm',
 };

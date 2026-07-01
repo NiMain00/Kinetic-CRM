@@ -111,7 +111,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             User Management
@@ -127,7 +127,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
@@ -146,7 +146,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
             </div>
           </div>
 
-          <div className="bg-white border border-border/60 rounded-2xl shadow-xs overflow-hidden">
+          <div className="bg-surface border border-border/60 rounded-2xl shadow-xs overflow-hidden">
             <div className="overflow-x-auto table-mobile-compact">
               <table className="w-full text-xs text-left table-auto">
                 <thead>
@@ -206,7 +206,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
 
       {drawerOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex justify-end animate-fade-in">
-          <div className="w-full max-w-lg bg-white h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
+          <div className="w-full max-w-lg bg-surface h-full shadow-2xl flex flex-col justify-between transform transition-transform duration-300 animate-slide-in">
             <div className="p-6 border-b border-border/60 bg-surface-container-low flex items-center justify-between">
               <div>
                 <h3 className="font-display-title text-sm font-extrabold text-on-surface">{editingUser ? 'Edit Pengguna' : 'Tambah Pengguna Baru'}</h3>
@@ -262,7 +262,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               </div>
             </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-xl border border-border/60 bg-white text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
+              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-xl border border-border/60 bg-surface text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
               <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-card hover:bg-primary-light transition-colors cursor-pointer">{editingUser ? 'Simpan Perubahan' : 'Buat Pengguna'}</button>
             </div>
           </div>

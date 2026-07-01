@@ -44,13 +44,13 @@ export default function Drawer({
       <div
         ref={focusTrapRef}
         onClick={(e) => e.stopPropagation()}
-        className={`absolute ${position === 'right' ? 'right-0' : 'left-0'} top-0 h-full w-full ${width} bg-white shadow-elevated flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : position === 'right' ? 'translate-x-full' : '-translate-x-full'}`}
+        className={`absolute ${position === 'right' ? 'right-0' : 'left-0'} top-0 h-full w-full ${width} bg-surface shadow-elevated flex flex-col transition-transform duration-300 ${isOpen ? 'translate-x-0' : position === 'right' ? 'translate-x-full' : '-translate-x-full'}`}
         role="dialog"
         aria-modal="true"
         aria-label={title || 'Panel'}
       >
         {title && (
-          <div className="px-6 py-5 border-b border-border/60 flex items-center justify-between bg-white">
+          <div className="px-6 py-5 border-b border-border/60 flex items-center justify-between bg-surface">
             <div>
               <h3 className="font-heading-section text-base text-on-surface">{title}</h3>
               {subtitle && <p className="text-xs text-outline mt-0.5">{subtitle}</p>}

@@ -85,7 +85,7 @@ export default function GlobalSearch({ className = '' }: { className?: string })
         leftIcon={<span className="material-symbols-outlined" aria-hidden="true">search</span>}
       />
       {isOpen && (
-        <div className="absolute top-full mt-2 left-0 right-0 bg-white border border-border/60 rounded-2xl shadow-elevated z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
+        <div className="absolute top-full mt-2 left-0 right-0 bg-surface border border-border/60 rounded-2xl shadow-elevated z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
           {results.length > 0 ? (
             results.map((r, i) => (
               <button

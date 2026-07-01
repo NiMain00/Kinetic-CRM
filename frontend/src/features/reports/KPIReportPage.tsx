@@ -140,7 +140,7 @@ export default function KPIReportPage() {
             <p className="text-sm text-secondary mt-1">Key Performance Indicators - Target vs Realisasi.</p>
           </div>
           <div className="flex items-center gap-3">
-            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border border-border/60 rounded-xl px-4 py-2 text-sm bg-white outline-none" aria-label="Periode">
+            <select value={period} onChange={(e) => setPeriod(e.target.value)} className="border border-border/60 rounded-xl px-4 py-2 text-sm bg-surface outline-none" aria-label="Periode">
               <option>2024</option>
               <option>2025</option>
               <option>2026</option>
@@ -167,7 +167,7 @@ export default function KPIReportPage() {
           {kpiData.slice(0, 4).map((kpi) => {
             const cfg = statusConfig[kpi.status] || statusConfig.on_track;
             return (
-              <div key={kpi.id} className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
+              <div key={kpi.id} className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">{kpi.name}</p>
                   <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${cfg.class}`}>{cfg.label}</span>
@@ -185,7 +185,7 @@ export default function KPIReportPage() {
         </div>
 
         {/* Full KPI Table */}
-        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+        <div className="bg-surface border border-border/60 rounded-2xl shadow-card overflow-hidden">
           <div className="p-5 border-b border-border">
             <h3 className="font-bold text-sm text-on-surface">Detail KPI Metrics</h3>
           </div>

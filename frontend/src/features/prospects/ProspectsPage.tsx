@@ -156,7 +156,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       />
 
         {/* Filter Bar */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card space-y-4">
+        <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
             <div className="flex gap-2 p-1 bg-surface-container rounded-xl border border-border/60 overflow-x-auto w-full sm:w-auto">
               {FILTER_TABS.map(tab => (
@@ -165,7 +165,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   onClick={() => { setActiveFilter(tab); setCurrentPage(1); }}
                   className={`px-3 sm:px-4 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
                     activeFilter === tab
-                      ? 'bg-white text-primary shadow-sm border border-border/60 font-bold'
+                      ? 'bg-surface text-primary shadow-sm border border-border/60 font-bold'
                       : 'text-secondary hover:bg-surface-container-high'
                   }`}
                 >
@@ -182,7 +182,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <input
                   value={searchQuery}
                   onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                  className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-white focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                   placeholder="Cari prospek atau klien..."
                   type="text"
                 />
@@ -372,7 +372,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="touch-min flex items-center justify-center px-2 py-1 rounded-lg bg-white border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="touch-min flex items-center justify-center px-2 py-1 rounded-lg bg-surface border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Prev
               </button>
@@ -380,7 +380,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <button
                   key={i + 1}
                   onClick={() => setCurrentPage(i + 1)}
-                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded-lg font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-white border border-border/60 text-secondary hover:bg-surface-container'}`}
+                  className={`touch-min flex items-center justify-center px-2.5 py-1 rounded-lg font-semibold transition-all ${currentPage === i + 1 ? 'bg-primary text-white' : 'bg-surface border border-border/60 text-secondary hover:bg-surface-container'}`}
                 >
                   {i + 1}
                 </button>
@@ -388,7 +388,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <button
                 disabled={currentPage === totalPages || totalPages === 0}
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                className="touch-min flex items-center justify-center px-2 py-1 rounded-lg bg-white border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="touch-min flex items-center justify-center px-2 py-1 rounded-lg bg-surface border border-border/60 text-secondary hover:bg-surface-container disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Next
               </button>

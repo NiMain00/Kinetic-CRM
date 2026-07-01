@@ -108,12 +108,12 @@ export default function Sidebar({
         onClick={() => handleNavigate(item.path)}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h ${
           isActive
-            ? 'bg-green-50 text-green-700 font-semibold'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+            ? 'bg-primary-container/20 text-primary font-semibold'
+            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
         }`}
         aria-label={item.label}
       >
-        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
+        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
           {item.icon}
         </span>
         {!collapsed && <span className="truncate">{item.label}</span>}
@@ -128,7 +128,7 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-white border-r border-gray-200 shrink-0 ${
+      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-surface border-r border-border shrink-0 ${
         collapsed ? (mobile ? 'w-72' : 'w-20') : 'w-72'
       } ${mobile ? 'slide-in-left' : 'transition-all duration-300'}`}
     >
@@ -152,10 +152,10 @@ export default function Sidebar({
             </div>
             {(!collapsed || mobile) && (
               <div>
-                <h1 className="font-display-title text-gray-800 text-lg tracking-tight truncate">
+                <h1 className="font-display-title text-on-surface text-lg tracking-tight truncate">
                   Kinetic CRM
                 </h1>
-                <p className="font-caption-xs text-gray-400 uppercase tracking-widest text-[10px]">
+                <p className="font-caption-xs text-outline uppercase tracking-widest text-[10px]">
                   OPERASI PERUSAHAAN
                 </p>
               </div>
@@ -173,7 +173,7 @@ export default function Sidebar({
           <div className="px-3 mb-2">
             <button
               onClick={onLogout}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-danger-container/20 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h ${
                 collapsed && !mobile ? 'justify-center' : ''
               }`}
               title="Keluar"
@@ -190,7 +190,7 @@ export default function Sidebar({
           <div className="px-3 mt-auto">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-gray-400 font-label-sm text-label-sm border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all touch-min-h"
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-outline font-label-sm text-label-sm border border-border rounded-xl hover:bg-surface-container hover:text-on-surface-variant transition-all touch-min-h"
               aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             >
               <span className="material-symbols-outlined text-lg transition-transform duration-300">

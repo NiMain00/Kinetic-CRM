@@ -21,7 +21,7 @@ export default function DatePicker({ label, value, onChange, error, min, max }: 
         onChange={(e) => onChange?.(e.target.value)}
         min={min}
         max={max}
-        className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary ${error ? 'border-danger focus:ring-danger/20' : 'border-border hover:border-outline'}`}
+        className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-surface outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary ${error ? 'border-danger focus:ring-danger/20' : 'border-border hover:border-outline'}`}
       />
       {error && <p className="text-xs text-danger font-medium" role="alert">{error}</p>}
     </div>

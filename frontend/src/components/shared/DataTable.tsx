@@ -114,7 +114,7 @@ export default function DataTable<T>({
                 Kolom
               </Button>
               {showColumnMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-border/60 rounded-2xl shadow-elevated p-2 min-w-45 z-20">
+                <div className="absolute right-0 top-full mt-1 bg-surface border border-border/60 rounded-2xl shadow-elevated p-2 min-w-45 z-20">
                   {columns.map((col) => (
                     <label key={col.key} className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-container rounded-lg cursor-pointer text-sm transition-colors">
                       <input

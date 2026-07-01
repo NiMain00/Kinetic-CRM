@@ -17,12 +17,11 @@ export const useThemeStore = create<ThemeState>()(
     {
       name: 'kinetic-theme',
       version: 1,
+      partialize: (state) => ({ dark: state.dark }),
+      merge: (persisted, current) => ({ ...current, ...(persisted as Partial<ThemeState>) }),
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0) {
-          return { dark: current.dark || false, toggle: () => {}, setDark: () => {} };
-        }
-        return current as ThemeState;
+        return { dark: current.dark || false } as ThemeState;
       },
     },
   ),

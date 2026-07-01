@@ -56,7 +56,7 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
   const activeCount = Object.values(values).filter(Boolean).length;
 
   return (
-    <div className="bg-white rounded-2xl border border-border/60 p-5 space-y-4 shadow-card">
+    <div className="bg-surface rounded-2xl border border-border/60 p-5 space-y-4 shadow-card">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-outline text-sm" aria-hidden="true">filter_alt</span>
@@ -217,7 +217,7 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between rounded-xl border border-border p-2.5 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all"
+        className="w-full flex items-center justify-between rounded-xl border border-border p-2.5 text-xs bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary cursor-pointer transition-all"
       >
         <span className={selected.length === 0 ? 'text-outline' : 'text-on-surface'}>
           {selected.length === 0 ? (placeholder || 'Semua') : `${selected.length} dipilih`}
@@ -225,7 +225,7 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
         <span className="material-symbols-outlined text-[16px] text-outline">{open ? 'expand_less' : 'expand_more'}</span>
       </button>
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-xl shadow-elevated p-2 z-20 max-h-48 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-border rounded-xl shadow-elevated p-2 z-20 max-h-48 overflow-y-auto">
           {options.map((opt) => (
             <label
               key={opt.value}

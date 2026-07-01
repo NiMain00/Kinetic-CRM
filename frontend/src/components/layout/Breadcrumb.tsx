@@ -52,7 +52,7 @@ export default function Breadcrumb() {
   if (segments.length === 0) return null;
 
   return (
-    <nav className="px-4 lg:px-8 py-3 bg-white border-b border-border/60 flex items-center gap-1 text-xs" aria-label="Navigasi halaman">
+    <nav className="px-4 lg:px-8 py-3 bg-surface border-b border-border/60 flex items-center gap-1 text-xs" aria-label="Navigasi halaman">
       <Link to="/dashboard" className="text-outline hover:text-primary transition-colors" aria-label="Beranda">
         <span className="material-symbols-outlined text-sm" aria-hidden="true">home</span>
       </Link>

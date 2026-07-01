@@ -101,7 +101,7 @@ export default function CurrencyInput({
           disabled={disabled}
           readOnly={readOnly}
           aria-invalid={!!error}
-          className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary ${error ? 'border-danger focus:ring-danger/20' : 'border-border hover:border-outline'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+          className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary ${error ? 'border-danger focus:ring-danger/20' : 'border-border hover:border-outline'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
         />
       </div>
       {error && <p id={`${inputId}-error`} className="text-xs text-danger font-medium" role="alert">{error}</p>}

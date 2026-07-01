@@ -67,7 +67,7 @@ export const useApprovalStore = create<ApprovalState>()(
 
       addApproval: (item) =>
         set((s) => {
-          const existing = s.approvals.find((a) => a.entityId === item.entityId && a.entityType === item.entityType);
+          const existing = s.approvals.find((a) => a.id === item.id || (a.entityId === item.entityId && a.entityType === item.entityType));
           if (existing) {
             return { approvals: s.approvals.map((a) => (a.id === existing.id ? item : a)) };
           }

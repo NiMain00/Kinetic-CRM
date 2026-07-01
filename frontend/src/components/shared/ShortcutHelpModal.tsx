@@ -42,7 +42,7 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[60] flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-modal border border-border/60 overflow-hidden">
+      <div className="w-full max-w-lg bg-surface rounded-2xl shadow-modal border border-border/60 overflow-hidden">
         <div className="p-6 border-b border-border/60 flex items-center justify-between bg-surface-container-low">
           <div>
             <h3 className="font-display-title text-sm font-extrabold text-on-surface flex items-center gap-2">

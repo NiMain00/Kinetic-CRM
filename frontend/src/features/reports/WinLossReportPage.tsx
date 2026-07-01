@@ -92,7 +92,7 @@ export default function WinLossReportPage() {
             <p className="text-sm text-secondary mt-1">Analisis performa tender dan proyek yang dimenangkan atau dikalahkan.</p>
           </div>
           <div className="flex gap-2">
-            <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="border border-border/60 rounded-xl px-4 py-2 text-sm bg-white outline-none" aria-label="Rentang tanggal">
+            <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="border border-border/60 rounded-xl px-4 py-2 text-sm bg-surface outline-none" aria-label="Rentang tanggal">
               <option>Current Month</option>
               <option>Last 3 Months</option>
               <option>Year to Date</option>
@@ -118,7 +118,7 @@ export default function WinLossReportPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-xl">trending_up</span>
@@ -130,7 +130,7 @@ export default function WinLossReportPage() {
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Win Rate</p>
             <h3 className="font-extrabold text-on-surface text-xl mt-1">{winRate}%</h3>
           </div>
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600">
                 <span className="material-symbols-outlined text-xl">check_circle</span>
@@ -139,7 +139,7 @@ export default function WinLossReportPage() {
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Won</p>
             <h3 className="font-extrabold text-emerald-600 text-xl mt-1">{totalWon}</h3>
           </div>
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500">
                 <span className="material-symbols-outlined text-xl">cancel</span>
@@ -148,7 +148,7 @@ export default function WinLossReportPage() {
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Lost</p>
             <h3 className="font-extrabold text-red-600 dark:text-red-400 text-xl mt-1">{totalLost}</h3>
           </div>
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
               <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-xl">payments</span>
@@ -160,7 +160,7 @@ export default function WinLossReportPage() {
         </div>
 
         {/* Chart */}
-        <div className="bg-white border border-border/60 rounded-2xl p-6 shadow-card">
+        <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-sm text-on-surface">Monthly Win vs Loss Trends</h3>
             <div className="flex gap-4 text-xs text-secondary">
@@ -182,12 +182,12 @@ export default function WinLossReportPage() {
         </div>
 
         {/* Table */}
-        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+        <div className="bg-surface border border-border/60 rounded-2xl shadow-card overflow-hidden">
           <div className="p-4 px-6 border-b border-border/60 bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <h3 className="font-bold text-sm text-on-surface">Detail Records</h3>
             <div className="relative w-full sm:w-64">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
-              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-white outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek atau client..." aria-label="Cari" />
+              <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-surface outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek atau client..." aria-label="Cari" />
             </div>
           </div>
           <div className="overflow-x-auto table-mobile-compact">

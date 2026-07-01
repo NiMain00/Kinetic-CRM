@@ -126,7 +126,7 @@ export default function DashboardPage() {
   return (
     <PageContainer>
       {/* Header */}
-      <div className="rounded-2xl bg-white border border-border/60 shadow-card p-6 sm:p-8 mb-6">
+      <div className="rounded-2xl bg-surface border border-border/60 shadow-card p-6 sm:p-8 mb-6">
         <h1 className="font-display-title text-display-title text-on-surface mb-1">
           {greeting}, <span className="text-primary">{userName}</span>
         </h1>
@@ -182,7 +182,7 @@ export default function DashboardPage() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {/* Total Proyek Aktif */}
-        <div className="relative bg-white rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
           <div className="flex justify-between items-start mb-3">
             <span className="p-2.5 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">account_balance_wallet</span>
@@ -203,7 +203,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Persetujuan Tertunda */}
-        <div className="relative bg-white rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/approvals')}>
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/approvals')}>
           <div className="flex justify-between items-start mb-3">
             <span className="p-2.5 rounded-xl bg-warning-container text-warning">
               <span className="material-symbols-outlined">fact_check</span>
@@ -221,7 +221,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Mendekati Deadline */}
-        <div className="relative bg-white rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
           <div className="flex justify-between items-start mb-3">
             <span className="p-2.5 rounded-xl bg-danger-container text-danger">
               <span className="material-symbols-outlined">alarm</span>
@@ -239,7 +239,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Rasio Kemenangan */}
-        <div className="relative bg-white rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/reports/kpi')}>
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/reports/kpi')}>
           <div className="flex justify-between items-start mb-3">
             <span className="p-2.5 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">military_tech</span>
@@ -260,7 +260,7 @@ export default function DashboardPage() {
       {/* Charts Row */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6 mb-6">
         {/* Trend Win/Loss */}
-        <div className="col-span-12 lg:col-span-8 bg-white rounded-2xl border border-border/60 shadow-card p-4 sm:p-6">
+        <div className="col-span-12 lg:col-span-8 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
             <div>
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Trend Win/Loss</h4>
@@ -327,7 +327,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Proyek per Status */}
-        <div className="col-span-12 lg:col-span-4 bg-white rounded-2xl border border-border/60 shadow-card p-4 sm:p-6 flex flex-col">
+        <div className="col-span-12 lg:col-span-4 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6 flex flex-col">
           <h4 className="font-heading-section text-heading-section text-sm sm:text-base mb-4">Proyek per Status</h4>
 
           <div className="flex flex-1 items-center gap-4 py-4">
@@ -385,7 +385,7 @@ export default function DashboardPage() {
       {/* Bottom Section: Proyek Terbaru + Aktivitas Terbaru */}
       <div className="grid grid-cols-12 gap-4 sm:gap-6">
         {/* Proyek Terbaru */}
-        <div className="col-span-12 lg:col-span-7 bg-white rounded-2xl border border-border/60 shadow-card overflow-hidden">
+        <div className="col-span-12 lg:col-span-7 bg-surface rounded-2xl border border-border/60 shadow-card overflow-hidden">
           <div className="p-4 sm:p-6 border-b border-border/60 flex justify-between items-center bg-surface-container-low">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-xl">folder</span>
@@ -455,7 +455,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Aktivitas Terbaru */}
-        <div className="col-span-12 lg:col-span-5 bg-white rounded-2xl border border-border/60 shadow-card p-4 sm:p-6 flex flex-col">
+        <div className="col-span-12 lg:col-span-5 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6 flex flex-col">
           <div className="flex justify-between items-center mb-4 sm:mb-6">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-xl">history</span>

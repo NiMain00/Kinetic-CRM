@@ -44,7 +44,7 @@ export default function Topbar({
   }, [mobileSearchOpen]);
 
   return (
-    <header className="w-full h-16 bg-white border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0">
+    <header className="w-full h-16 bg-surface border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         {/* Hamburger menu - mobile only */}
         <button
@@ -79,7 +79,7 @@ export default function Topbar({
         >
           <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (
-            <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 bg-gold rounded-full ring-2 ring-white">
+            <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 bg-gold rounded-full ring-2 ring-surface">
               <span className="text-[9px] leading-none text-white font-bold">{notificationCount > 99 ? '99+' : notificationCount}</span>
             </span>
           )}
@@ -136,7 +136,7 @@ export default function Topbar({
       {mobileSearchOpen && (
         <div
           ref={searchContainerRef}
-          className="fixed inset-0 z-50 bg-white md:hidden animate-in fade-in slide-in-from-top-2"
+          className="fixed inset-0 z-50 bg-surface md:hidden animate-in fade-in slide-in-from-top-2"
         >
           <div className="flex items-center gap-3 p-4 border-b border-border">
             <button

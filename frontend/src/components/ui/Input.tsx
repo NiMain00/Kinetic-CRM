@@ -38,7 +38,7 @@ export default function Input({
           id={inputId}
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
-          className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${error ? 'border-danger focus:ring-danger/20 focus:border-danger' : 'border-border hover:border-outline'} ${className}`}
+          className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${error ? 'border-danger focus:ring-danger/20 focus:border-danger' : 'border-border hover:border-outline'} ${className}`}
           {...props}
         />
         {rightIcon && (

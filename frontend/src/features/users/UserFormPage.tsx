@@ -78,7 +78,7 @@ export default function UserFormPage() {
           <p className="text-sm text-secondary mt-1">{isEdit ? 'Perbarui informasi akun pengguna.' : 'Buat akun pengguna baru untuk akses sistem.'}</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
           <div className="space-y-1.5">
             <label className="font-semibold text-sm text-on-surface-variant">Nama Lengkap *</label>
             <input
@@ -121,7 +121,7 @@ export default function UserFormPage() {
               <label className="font-semibold text-sm text-on-surface-variant">Role *</label>
               <select
                 {...register('role')}
-                className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
+                className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-surface"
                 aria-label="Role"
               >
                 {roleOptions.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -132,7 +132,7 @@ export default function UserFormPage() {
               <label className="font-semibold text-sm text-on-surface-variant">Cabang *</label>
               <select
                 {...register('branch')}
-                className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-white"
+                className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-surface"
                 aria-label="Cabang"
               >
                 <option value="">Pilih Cabang</option>
@@ -147,7 +147,7 @@ export default function UserFormPage() {
               <label className="font-semibold text-sm text-on-surface-variant">Departemen *</label>
               <select
                 {...register('department')}
-                className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-white"
+                className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-surface"
                 aria-label="Departemen"
               >
                 <option value="">Pilih Departemen</option>

@@ -235,13 +235,13 @@ export default function ApprovalInboxView({
     `px-3 py-1 rounded-full text-caption-xs font-semibold touch-min-h whitespace-nowrap transition-all ${
       active
         ? 'bg-primary text-on-primary'
-        : 'bg-white border border-border/60 text-on-surface hover:bg-surface-container'
+        : 'bg-surface border border-border/60 text-on-surface hover:bg-surface-container'
     }`;
 
   const renderApprovalCard = (row: ApprovalItem) => (
     <div
       key={row.id}
-      className={`bg-white border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-transform ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
+      className={`bg-surface border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-transform ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -395,7 +395,7 @@ export default function ApprovalInboxView({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama atau ref..."
-              className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-white focus:ring-2 focus:ring-primary outline-none"
+              className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-surface focus:ring-2 focus:ring-primary outline-none"
             />
             {searchQuery && (
               <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface">
@@ -444,7 +444,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-primary">person_search</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Prospek Approvals <span className="text-outline font-normal ml-2">({prospekApprovals.length})</span></h3>
             </div>
-            <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-card">
+            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {prospekApprovals.map(renderApprovalCard)}
@@ -463,7 +463,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-status-purple">description</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">RKS (Rencana Kerja Syarat) <span className="text-outline font-normal ml-2">({rksApprovals.length})</span></h3>
             </div>
-            <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-card">
+            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {rksApprovals.map(renderApprovalCard)}
@@ -482,7 +482,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-status-orange">assignment_turned_in</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">LPHS (Laporan Hasil Survey) <span className="text-outline font-normal ml-2">({lphsApprovals.length})</span></h3>
             </div>
-            <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-card">
+            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {lphsApprovals.map(renderApprovalCard)}
@@ -508,7 +508,7 @@ export default function ApprovalInboxView({
               <span className="material-symbols-outlined text-outline">history</span>
               <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Riwayat Persetujuan <span className="text-outline font-normal ml-2">({approvalHistory.length})</span></h3>
             </div>
-            <div className="bg-white border border-border/60 rounded-xl overflow-hidden shadow-card">
+            <div className="bg-surface border border-border/60 rounded-xl overflow-hidden shadow-card">
               {isMobile ? (
                 <div className="divide-y divide-border p-3 space-y-3">
                   {approvalHistory.map((item) => (

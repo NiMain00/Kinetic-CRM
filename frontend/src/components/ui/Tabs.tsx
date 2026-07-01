@@ -53,7 +53,7 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
           >
             {tab.icon && <span className="material-symbols-outlined text-[16px]" aria-hidden="true">{tab.icon}</span>}
             {tab.label}
-            {tab.count !== undefined && <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${activeTab === tab.id ? 'bg-white/20' : 'bg-surface-container-high'}`} aria-label={`${tab.count} item`}>{tab.count}</span>}
+            {tab.count !== undefined && <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${activeTab === tab.id ? 'bg-surface/20' : 'bg-surface-container-high'}`} aria-label={`${tab.count} item`}>{tab.count}</span>}
           </button>
         ))}
       </div>

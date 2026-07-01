@@ -128,7 +128,7 @@ export default function Table<T = Record<string, unknown>>({
     return isMobile ? (
       <div className="space-y-3" role="status" aria-label="Memuat data">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white border border-border/60 rounded-2xl p-4 space-y-3 shadow-card">
+          <div key={i} className="bg-surface border border-border/60 rounded-2xl p-4 space-y-3 shadow-card">
             {columns.filter(c => !c.hideOnMobile).map((col) => (
               <div key={col.key}>
                 <div className="h-3 w-20 bg-surface-container-high rounded-lg skeleton mb-1.5"></div>
@@ -185,7 +185,7 @@ export default function Table<T = Record<string, unknown>>({
           <div
             key={keyExtractor(row)}
             onClick={() => onRowClick?.(row)}
-            className={`bg-white border border-border/60 rounded-2xl overflow-hidden shadow-card ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+            className={`bg-surface border border-border/60 rounded-2xl overflow-hidden shadow-card ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
             role="listitem"
           >
             {mobileCardRenderer(row)}

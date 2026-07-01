@@ -283,7 +283,7 @@ export default function ProspectFormPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT COLUMN: Customer Info */}
-          <div className="lg:col-span-6 bg-white border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+          <div className="lg:col-span-6 bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
             <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
               <span className="material-symbols-outlined">business</span>
               Data Customer
@@ -483,7 +483,7 @@ export default function ProspectFormPage() {
           {/* RIGHT COLUMN: Prospect Info + Questionnaire */}
           <div className="lg:col-span-6 space-y-6">
             {/* Basic Prospect Info */}
-            <div className="bg-white border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+            <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
               <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined">assignment</span>
                 Informasi Prospek
@@ -547,7 +547,7 @@ export default function ProspectFormPage() {
             </div>
 
             {/* Questionnaire - "Pertanyaan Standar" dari Master Data */}
-            <div className="bg-white border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+            <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
               <h3 className="font-bold text-sm text-status-teal border-b border-border pb-3 flex items-center gap-2">
                 <span className="material-symbols-outlined">quiz</span>
                 Pertanyaan Standar
@@ -639,15 +639,15 @@ export default function ProspectFormPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-between items-center bg-white border border-border/60 p-4 rounded-2xl shadow-card">
-          <button onClick={() => navigate('/prospects')} className="px-6 py-2.5 bg-white border border-border/60 text-on-surface font-semibold rounded-xl hover:bg-surface-container transition-all text-sm">
+        <div className="flex justify-between items-center bg-surface border border-border/60 p-4 rounded-2xl shadow-card">
+          <button onClick={() => navigate('/prospects')} className="px-6 py-2.5 bg-surface border border-border/60 text-on-surface font-semibold rounded-xl hover:bg-surface-container transition-all text-sm">
             Kembali ke Daftar
           </button>
           <div className="flex gap-3">
             <button
               onClick={handleSaveDraft}
               disabled={isSubmitting}
-              className="px-6 py-2.5 bg-white border border-border/60 text-primary font-bold rounded-xl hover:bg-surface-container transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 bg-surface border border-border/60 text-primary font-bold rounded-xl hover:bg-surface-container transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Simpan Draft"
             >
               {isSubmitting ? 'Menyimpan...' : 'Simpan Draft'}

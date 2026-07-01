@@ -73,9 +73,9 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex justify-end" onClick={onClose} aria-label="Panel review persetujuan">
-      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
+      <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg h-full bg-surface shadow-2xl flex flex-col" style={{ animation: 'slideIn 0.3s ease-out' }}>
         {/* Header */}
-        <div className="p-6 border-b border-border/60 flex justify-between items-center bg-white shrink-0">
+        <div className="p-6 border-b border-border/60 flex justify-between items-center bg-surface shrink-0">
           <div>
             <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Review Persetujuan</span>
             <h4 className="text-lg font-extrabold text-on-surface mt-0.5">Review Permintaan Persetujuan</h4>

@@ -142,7 +142,7 @@ export default function CalendarPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-white border-b border-border/60 px-6 py-2.5 shrink-0 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-6 py-2.5 shrink-0 shadow-card z-10">
         <h2 className="font-display-title text-sm font-extrabold text-on-surface">
           Kalender Proyek
         </h2>

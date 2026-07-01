@@ -127,7 +127,8 @@ export default function ProjectDetailView({
 
   const phaseLabel = STATUS_STEP_MAP[project.status] || 'RKS';
   const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
-  const accessibleUpToIndex = currentStepIndex >= 0 ? currentStepIndex : 0;
+  const isTerminal = project.status === 'Selesai' || project.status === 'Kalah' || project.status === 'Completed';
+  const accessibleUpToIndex = isTerminal ? tabs.length - 1 : (currentStepIndex >= 0 ? currentStepIndex : 0);
   const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
   const isMenang = project.winnerDetails?.outcome === 'menang';
 
@@ -250,7 +251,7 @@ export default function ProjectDetailView({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
-      <section className="bg-white border-b border-border/60 px-8 py-3.5 shadow-card z-30">
+      <section className="bg-surface border-b border-border/60 px-8 py-3.5 shadow-card z-30">
         {/* Dynamic Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-xs text-secondary mb-2 flex-wrap">
           <button
@@ -283,7 +284,7 @@ export default function ProjectDetailView({
           <div className="flex items-center gap-3">
             <button
               onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/project/${projectId}/overview`)}
-              className="p-1.5 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-white"
+              className="p-1.5 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-surface"
             >
               <span className="material-symbols-outlined text-primary text-[20px]">arrow_back</span>
             </button>
@@ -356,7 +357,7 @@ export default function ProjectDetailView({
           )}
 
           {/* Tab Navigation Bar — visible on ALL tabs */}
-          <nav className="bg-white border-b border-border/60 px-8 overflow-x-auto select-none">
+          <nav className="bg-surface border-b border-border/60 px-8 overflow-x-auto select-none">
             <div className="flex items-center gap-8 min-w-max">
               {tabs.map((tab, index) => {
                 const locked = isTabLocked(index);

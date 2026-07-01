@@ -33,7 +33,7 @@ export default function Select({
       <select
         id={selectId}
         aria-invalid={!!error}
-        className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-white outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary ${error ? 'border-danger focus:ring-danger/20' : 'border-border hover:border-outline'} ${className}`}
+        className={`w-full px-4 py-2.5 border rounded-xl text-sm bg-surface outline-none transition-all focus:ring-2 focus:ring-primary/20 focus:border-primary ${error ? 'border-danger focus:ring-danger/20' : 'border-border hover:border-outline'} ${className}`}
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}

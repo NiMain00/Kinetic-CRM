@@ -74,7 +74,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       
       {/* Top action header info */}
-      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Profil Pengguna
@@ -91,7 +91,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Left Card - Primary profile details */}
-            <div className="md:col-span-8 bg-white border border-border/60 rounded-2xl shadow-xs p-6 sm:p-8">
+            <div className="md:col-span-8 bg-surface border border-border/60 rounded-2xl shadow-xs p-6 sm:p-8">
               
               <form onSubmit={handleSaveProfile} className="space-y-6">
                 
@@ -203,7 +203,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                       setEmail(currentUser?.email || 'a.pierce@kinetic-corp.com');
                       onShowNotification('Formulir isian di-reset ke data semula.', 'warning');
                     }}
-                    className="px-4 py-2 rounded-xl border border-border/60 bg-white text-secondary text-xs font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-border/60 bg-surface text-secondary text-xs font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
                   >
                     Atur Ulang Formulir
                   </button>
@@ -223,7 +223,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
             <div className="md:col-span-4 space-y-6">
               
               {/* Security Actions */}
-              <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
+              <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-xs">
                 <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-[18px]">security</span>
                   Keamanan Akun
@@ -250,7 +250,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
               </div>
 
               {/* Session logs details */}
-              <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-xs">
+              <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-xs">
                 <h3 className="font-bold text-on-surface text-xs uppercase tracking-wider mb-4 flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-primary text-[18px]">monitoring</span>
                   Sesi Aktif
@@ -382,7 +382,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                 <button
                   type="button"
                   onClick={() => setIsPasswordModalOpen(false)}
-                    className="px-4 py-2 rounded-xl border border-border bg-white text-secondary font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
+                    className="px-4 py-2 rounded-xl border border-border bg-surface text-secondary font-semibold hover:bg-surface-container-high transition-colors cursor-pointer"
                 >
                   Batal
                 </button>

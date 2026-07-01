@@ -154,7 +154,7 @@ export default function PipelineReportPage() {
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <span className="material-symbols-outlined text-2xl">account_balance_wallet</span>
             </div>
@@ -163,7 +163,7 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-on-surface text-base">{formatCurrency(totalPipelineValue)}</p>
             </div>
           </div>
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center text-teal-600 shrink-0">
               <span className="material-symbols-outlined text-2xl">assignment</span>
             </div>
@@ -172,7 +172,7 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-on-surface text-base">{totalActiveProjects}</p>
             </div>
           </div>
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 shrink-0">
               <span className="material-symbols-outlined text-2xl">trending_up</span>
             </div>
@@ -181,7 +181,7 @@ export default function PipelineReportPage() {
               <p className="font-extrabold text-indigo-600 text-base">{growthForecast}</p>
             </div>
           </div>
-          <div className="bg-white border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
+          <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shrink-0">
               <span className="material-symbols-outlined text-2xl">event_available</span>
             </div>
@@ -193,7 +193,7 @@ export default function PipelineReportPage() {
         </div>
 
         {/* Funnel Visualization */}
-        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+        <div className="bg-surface border border-border/60 rounded-2xl shadow-card overflow-hidden">
           <div className="p-5 border-b border-border/60 flex items-center justify-between">
             <h3 className="font-bold text-sm text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">filter_center_focus</span>
@@ -209,7 +209,7 @@ export default function PipelineReportPage() {
               <div key={step.id} className={`${step.scale} mx-auto transition-all duration-300 hover:-translate-y-0.5`}>
                 <div className={`${step.color} hover:bg-primary-light p-3.5 flex justify-between items-center text-white shadow-card rounded-xl cursor-pointer`}>
                   <div className="flex items-center gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-bold text-[10px]">{step.id}</span>
+                    <span className="w-6 h-6 rounded-full bg-surface/20 flex items-center justify-center font-bold text-[10px]">{step.id}</span>
                     <span className="font-bold text-xs">{step.name}</span>
                   </div>
                   <div className="text-right">
@@ -223,17 +223,17 @@ export default function PipelineReportPage() {
         </div>
 
         {/* Pipeline Table */}
-        <div className="bg-white border border-border/60 rounded-2xl shadow-card overflow-hidden">
+        <div className="bg-surface border border-border/60 rounded-2xl shadow-card overflow-hidden">
           <div className="p-4 px-6 border-b border-border/60 bg-surface-container-low flex flex-col sm:flex-row justify-between sm:items-center gap-3">
             <h3 className="font-bold text-sm text-on-surface">Pipeline Details</h3>
             <div className="flex gap-3">
-              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border/60 rounded-xl px-3 py-1.5 text-sm bg-white outline-none" aria-label="Filter cabang">
+              <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)} className="border border-border/60 rounded-xl px-3 py-1.5 text-sm bg-surface outline-none" aria-label="Filter cabang">
                 <option value="All">Semua Cabang</option>
                 {branchOptions.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
-                <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-white outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek..." aria-label="Cari" />
+                <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-surface outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek..." aria-label="Cari" />
               </div>
             </div>
           </div>

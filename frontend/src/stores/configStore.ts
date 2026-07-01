@@ -71,7 +71,7 @@ const INITIAL_CONNECTORS: Connector[] = [
 ];
 
 const INITIAL_PHASES: ProjectPhase[] = [
-  { id: 'PH-01', status: 'Prospecting', phase: 'RKS', order: 1, isActive: true },
+  { id: 'PH-01', status: 'Prospecting', phase: 'Overview', order: 1, isActive: true },
   { id: 'PH-02', status: 'RKS', phase: 'RKS', order: 2, isActive: true },
   { id: 'PH-03', status: 'Review RKS', phase: 'Review RKS', order: 3, isActive: true },
   { id: 'PH-04', status: 'LPHS/SIOS', phase: 'LPHS/SIOS', order: 4, isActive: true },

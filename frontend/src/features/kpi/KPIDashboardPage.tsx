@@ -80,7 +80,7 @@ export default function KPIDashboardPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-white border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Dashboard</h2>
           <p className="text-[11px] text-outline mt-0.5">Ringkasan kinerja indikator utama organisasi secara real-time.</p>
@@ -114,7 +114,7 @@ export default function KPIDashboardPage() {
               const config = STATUS_CONFIG[kpi.status] || STATUS_CONFIG.on_track;
               const borderColor = kpi.status === 'behind' ? 'border-l-danger' : kpi.status === 'at_risk' ? 'border-l-warning' : 'border-l-success';
               return (
-                <div key={kpi.id} className={`bg-white border border-border/60 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow border-l-4 ${borderColor}`} role="listitem" aria-label={`KPI ${kpi.name}`}>
+                <div key={kpi.id} className={`bg-surface border border-border/60 rounded-2xl p-5 shadow-xs hover:shadow-md transition-shadow border-l-4 ${borderColor}`} role="listitem" aria-label={`KPI ${kpi.name}`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                       <span className={`material-symbols-outlined text-lg ${kpi.status === 'behind' ? 'text-danger' : kpi.status === 'at_risk' ? 'text-warning' : 'text-success'}`} aria-hidden="true">{KPI_ICONS[kpi.category] || 'monitoring'}</span>
@@ -136,7 +136,7 @@ export default function KPIDashboardPage() {
           </div>)}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7 bg-white border border-border/60 rounded-2xl p-6 shadow-xs">
+            <div className="lg:col-span-7 bg-surface border border-border/60 rounded-2xl p-6 shadow-xs">
               <h4 className="font-bold text-on-surface text-xs mb-6">Win Rate Trend (YTD)</h4>
               <div className="h-56 flex items-end justify-between gap-3 px-2 border-b border-border" aria-label="Grafik tren win rate">
                 {MONTHLY_DATA.map((d, i) => (
@@ -155,7 +155,7 @@ export default function KPIDashboardPage() {
               </div>
             </div>
 
-            <div className="lg:col-span-5 bg-white border border-border/60 rounded-2xl p-6 shadow-xs">
+            <div className="lg:col-span-5 bg-surface border border-border/60 rounded-2xl p-6 shadow-xs">
               <h4 className="font-bold text-on-surface text-xs mb-4">Department Performance Scores</h4>
               <div className="space-y-4" role="list" aria-label="Skor performa departemen">
                 {DEPARTMENT_SCORES.map(d => (

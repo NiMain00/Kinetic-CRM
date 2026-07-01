@@ -41,7 +41,7 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
       aria-modal="true"
       aria-label={title || 'Dialog'}
     >
-      <div ref={focusTrapRef} className={`bg-white rounded-2xl shadow-modal w-full ${sizes[size]} max-h-[90vh] flex flex-col animate-in zoom-in-95 fade-in duration-200`}>
+      <div ref={focusTrapRef} className={`bg-surface rounded-2xl shadow-modal w-full ${sizes[size]} max-h-[90vh] flex flex-col animate-in zoom-in-95 fade-in duration-200`}>
         {title && (
           <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
             <h3 className="font-heading-section text-base text-on-surface">{title}</h3>
