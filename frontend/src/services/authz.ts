@@ -102,8 +102,8 @@ class AuthorizationEngine {
     activeDepartmentId?: string,
   ): StageAccessLevel {
     const store = useRbacStore.getState();
-    const rule = STAGE_RULES[currentStageCode];
-    if (!rule) return 'none';
+    const stage = store.workflowStages.find((s) => s.code === currentStageCode);
+    if (!stage) return 'none';
 
     if (!activeDepartmentId) return 'none';
 
@@ -111,10 +111,10 @@ class AuthorizationEngine {
     if (!userDept) return 'none';
 
     // Owner department → write access
-    if (userDept.code === rule.owner) return 'write';
+    if (userDept.code === stage.ownerDepartmentCode) return 'write';
 
     // Previous department → read access
-    if (rule.prev && userDept.code === rule.prev) return 'read';
+    if (stage.prevDepartmentCode && userDept.code === stage.prevDepartmentCode) return 'read';
 
     return 'none';
   }

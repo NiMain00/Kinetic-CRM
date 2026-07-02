@@ -138,6 +138,9 @@ const SEED_ROLE_PERMISSIONS: RbacRolePermission[] = [
   { id: 'rp-staff-dept-1', roleId: 'role-staff', permissionId: 'perm-prospect-read', scopeType: 'department', accessLevel: 'read' },
   { id: 'rp-staff-dept-2', roleId: 'role-staff', permissionId: 'perm-project-read', scopeType: 'department', accessLevel: 'read' },
   { id: 'rp-staff-dept-3', roleId: 'role-staff', permissionId: 'perm-pengadaan-read', scopeType: 'department', accessLevel: 'read' },
+  // ── Staff Procurement tambahan ──
+  { id: 'rp-staff-prc-1', roleId: 'role-staff', permissionId: 'perm-pengadaan-create', scopeType: 'department', scopeId: 'dept-procurement', accessLevel: 'write' },
+  { id: 'rp-staff-prc-2', roleId: 'role-staff', permissionId: 'perm-pengadaan-write', scopeType: 'department', scopeId: 'dept-procurement', accessLevel: 'write' },
   // ── Staff Marketing tambahan ──
   { id: 'rp-staff-mkt-1', roleId: 'role-staff', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
   // ── Manager (department) — inherits all staff permissions via individual role-permission ──
@@ -152,7 +155,7 @@ const SEED_ROLE_PERMISSIONS: RbacRolePermission[] = [
   { id: 'rp-mgr-dept-4', roleId: 'role-manager', permissionId: 'perm-project-manage-scope', scopeType: 'department', accessLevel: 'write' },
   { id: 'rp-mgr-dept-5', roleId: 'role-manager', permissionId: 'perm-report-view-dept', scopeType: 'department', accessLevel: 'read' },
   { id: 'rp-mgr-dept-6', roleId: 'role-manager', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
-  { id: 'rp-staff-mkt-2', roleId: 'role-staff', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
+  { id: 'rp-staff-mkt-2', roleId: 'role-staff', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
   // ── Admin (all permissions, global scope) — full access ──
   { id: 'rp-admin-global-1', roleId: 'role-admin', permissionId: 'perm-prospect-read', scopeType: 'global', accessLevel: 'write' },
   { id: 'rp-admin-global-2', roleId: 'role-admin', permissionId: 'perm-prospect-write-prospecting', scopeType: 'global', accessLevel: 'write' },
@@ -426,7 +429,7 @@ export const useRbacStore = create<RbacState>()(
     }),
     {
       name: 'kinetic-rbac',
-      version: 5,
+      version: 6,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 2) {
@@ -448,7 +451,7 @@ export const useRbacStore = create<RbacState>()(
             rolePermissions: [
               ...(current.rolePermissions || []),
               { id: 'rp-mgr-dept-6', roleId: 'role-manager', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
-              { id: 'rp-staff-mkt-2', roleId: 'role-staff', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
+              { id: 'rp-staff-mkt-2', roleId: 'role-staff', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
             ],
           };
           return updated;
@@ -490,6 +493,26 @@ export const useRbacStore = create<RbacState>()(
           }
 
           return { ...current, permissions, rolePermissions: rolePerms };
+        }
+        if (version < 6) {
+          // v6: add procurement staff permissions, fix staff-mkt-2 scopeId
+          const rolePerms = [...(current.rolePermissions || [])];
+
+          // Fix rp-staff-mkt-2: add scopeId 'dept-marketing'
+          const mkt2Idx = rolePerms.findIndex((rp: any) => rp.id === 'rp-staff-mkt-2');
+          if (mkt2Idx >= 0) {
+            rolePerms[mkt2Idx] = { ...rolePerms[mkt2Idx], scopeId: 'dept-marketing' };
+          }
+
+          // Add rp-staff-prc-1 if missing (pengadaan:create for procurement staff)
+          if (!rolePerms.find((rp: any) => rp.id === 'rp-staff-prc-1')) {
+            rolePerms.push(
+              { id: 'rp-staff-prc-1', roleId: 'role-staff', permissionId: 'perm-pengadaan-create', scopeType: 'department', scopeId: 'dept-procurement', accessLevel: 'write' },
+              { id: 'rp-staff-prc-2', roleId: 'role-staff', permissionId: 'perm-pengadaan-write', scopeType: 'department', scopeId: 'dept-procurement', accessLevel: 'write' },
+            );
+          }
+
+          return { ...current, rolePermissions: rolePerms };
         }
         return current;
       },

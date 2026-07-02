@@ -304,7 +304,6 @@ INSERT INTO permissions (code, name, module) VALUES
 | Marketing Staff | `prospect:write:prospecting` | department |
 | Marketing Staff | `prospect:approve:transition` | department |
 | PM Staff | `prospect:read` | department |
-| PM Staff | `prospect:approve:transition` | department |
 
 Dengan ini, Marketing dan PM sama-sama bisa read prospect, tapi cuma Marketing yang bisa write di stage prospecting. PM bisa write pas sudah di stage `waiting_pm` atau `in_project`.
 
@@ -888,9 +887,15 @@ INSERT INTO role_permissions (role_id, permission_id, scope_type) VALUES
 (1, 6, 'department'), -- project:read
 (1, 11, 'department'); -- pengadaan:read
 
--- Staff Marketing (tambah permission menulis prospect)
-INSERT INTO role_permissions (role_id, permission_id, scope_type) VALUES
-(1, 5, 'department'); -- prospect:write:prospecting
+-- Staff Marketing (tambah permission menulis & approve prospect)
+INSERT INTO role_permissions (role_id, permission_id, scope_type, scope_id) VALUES
+(1, 5, 'department', 'dept-marketing'), -- prospect:write:prospecting
+(1, 6, 'department', 'dept-marketing'); -- prospect:approve:transition
+
+-- Staff Procurement (tambah permission create & write pengadaan)
+INSERT INTO role_permissions (role_id, permission_id, scope_type, scope_id) VALUES
+(1, 12, 'department', 'dept-procurement'), -- pengadaan:create
+(1, 13, 'department', 'dept-procurement'); -- pengadaan:write
 
 -- Manager (tambah approve)
 INSERT INTO role_permissions (role_id, permission_id, scope_type) VALUES

@@ -25,13 +25,13 @@ export const configNavItems: NavItem[] = [
   { label: 'Status Proyek', path: '/config/status', icon: 'settings', permissions: ['config:access'] },
   { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', permissions: ['config:access'] },
   { label: 'SLA', path: '/config/sla', icon: 'alarm', permissions: ['config:access'] },
-  { label: 'Peran', path: '/config/roles', icon: 'badge', permissions: ['config:access'] },
   { label: 'Target', path: '/config/targets', icon: 'track_changes', permissions: ['config:access'] },
   { label: 'Alur Kerja', path: '/config/workflow', icon: 'alt_route', permissions: ['config:access'] },
   { label: 'Integrasi', path: '/config/integration', icon: 'api', permissions: ['config:access'] },
   { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', permissions: ['config:access'] },
   { label: 'Periode', path: '/config/period', icon: 'calendar_month', permissions: ['config:access'] },
   { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', permissions: ['config:access'] },
+  { label: 'Access Control', path: '/config/access-control', icon: 'security', permissions: ['config:access'] },
 ];
 
 export function filterNavItems(items: NavItem[], role: string, userPermissions?: string[]): NavItem[] {

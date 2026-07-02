@@ -100,7 +100,7 @@ const ConfigOrgPage = LazyLoadPermission(lazy(() => import('@/features/config/Co
 const ConfigStatusPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigStatusPage')), ['config:access']);
 const ConfigNotifTemplatePage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigNotifTemplatePage')), ['config:access']);
 const ConfigSlaPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigSlaPage')), ['config:access']);
-const ConfigRolesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigRolesPage')), ['config:access']);
+const ConfigAccessControlPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigAccessControlPage')), ['config:access']);
 const ConfigTargetsPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigTargetsPage')), ['config:access']);
 const ConfigWorkflowPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigWorkflowPage')), ['config:access']);
 const ConfigIntegrationPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigIntegrationPage')), ['config:access']);
@@ -198,13 +198,14 @@ export default function AppRouter() {
         <Route path="config/status" element={<ConfigStatusPage />} />
         <Route path="config/notifications" element={<ConfigNotifTemplatePage />} />
         <Route path="config/sla" element={<ConfigSlaPage />} />
-        <Route path="config/roles" element={<ConfigRolesPage />} />
+        <Route path="config/roles" element={<Navigate to="/config/access-control" replace />} />
         <Route path="config/targets" element={<ConfigTargetsPage />} />
         <Route path="config/workflow" element={<ConfigWorkflowPage />} />
         <Route path="config/integration" element={<ConfigIntegrationPage />} />
         <Route path="config/upload" element={<ConfigUploadPage />} />
         <Route path="config/period" element={<ConfigPeriodPage />} />
         <Route path="config/question-types" element={<ConfigQuestionTypesPage />} />
+        <Route path="config/access-control" element={<ConfigAccessControlPage />} />
 
         {/* Error pages */}
         <Route path="403" element={<ForbiddenPage />} />
