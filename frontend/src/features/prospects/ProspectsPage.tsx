@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { exportCSV } from '@/utils/export';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import type { Prospect } from '@/types/domain';
 
 interface ProspectsViewProps {
@@ -15,21 +16,9 @@ interface ProspectsViewProps {
   onNavigatePage: (page: string) => void;
 }
 
-type FilterTab = 'All' | 'Butuh Approval' | 'Non Potensial' | 'Potensial' | 'Revision' | 'Approved';
+type SortField = 'name' | 'client' | 'status' | 'author' | 'date';
 
 const PAGE_SIZE = 10;
-
-const FILTER_TABS: FilterTab[] = ['All', 'Butuh Approval', 'Non Potensial', 'Potensial', 'Revision', 'Approved'];
-const FILTER_LABELS: Record<FilterTab, string> = {
-  All: 'Semua',
-  'Butuh Approval': 'Butuh Approval',
-  'Non Potensial': 'Non Potensial',
-  Potensial: 'Potensial',
-  Revision: 'Revisi',
-  Approved: 'Disetujui',
-};
-
-type SortField = 'name' | 'client' | 'status' | 'author' | 'date';
 
 export default function ProspectsView({ onShowNotification, onNavigatePage }: ProspectsViewProps) {
   const isMobile = useIsMobile();
@@ -41,7 +30,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const { can } = useAuthz();
   const { isStaffOnly, userId } = useOwnerFilter();
 
-  const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
+  const [activeFilter, setActiveFilter] = useState<string>('All');
+  const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -76,7 +66,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   });
 
   const tabCounts = useMemo(() => {
-    return FILTER_TABS.map(tab => {
+    return prospectFilterTabOptions.map(opt => {
+      const tab = opt.value;
       let count: number;
       if (tab === 'All') {
         count = visibleProspects.length;
@@ -91,7 +82,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       }
       return count;
     });
-  }, [visibleProspects]);
+  }, [visibleProspects, prospectFilterTabOptions]);
 
 
 
@@ -190,7 +181,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     setSelectedRows(new Set());
   };
 
-  const handleTabChange = (tab: FilterTab) => {
+  const handleTabChange = (tab: string) => {
     setActiveFilter(tab);
     setCurrentPage(1);
     setSelectedRows(new Set());
@@ -240,19 +231,19 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex gap-1 p-1 bg-surface-container rounded-xl border border-border/60 flex-wrap shrink-0">
-            {FILTER_TABS.map((tab, idx) => (
+            {prospectFilterTabOptions.map((opt, idx) => (
               <button
-                key={tab}
-                onClick={() => handleTabChange(tab)}
+                key={opt.value}
+                onClick={() => handleTabChange(opt.value)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h flex items-center gap-1.5 ${
-                  activeFilter === tab
+                  activeFilter === opt.value
                     ? 'bg-surface text-primary shadow-sm border border-border/60 font-bold'
                     : 'text-secondary hover:bg-surface-container-high'
                 }`}
               >
-                {FILTER_LABELS[tab]}
+                {opt.label}
                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                  activeFilter === tab
+                  activeFilter === opt.value
                     ? 'bg-primary/10 text-primary'
                     : 'bg-surface-container-high text-secondary'
                 }`}>
