@@ -4,21 +4,31 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore, type MasterUser } from '@/stores/masterDataStore';
+import { authz } from '@/services/authz';
+import { useRbacStore } from '@/stores/rbacStore';
 
 const ACCOUNT_ICONS: Record<string, string> = {
   admin: 'shield',
-  Cabang: 'account_balance',
-  PM: 'assignment',
-  Dept: 'group',
-  Admin: 'admin_panel_settings',
+  'Staff Marketing': 'person',
+  'Manager PM': 'assignment',
+  'Staff PM': 'assignment',
+  'Staff Procurement': 'inventory_2',
+  'Admin IT': 'admin_panel_settings',
+  Director: 'visibility',
+  'Staff IT': 'terminal',
+  'Manager Marketing': 'group',
 };
 
 const ACCOUNT_COLORS: Record<string, string> = {
   admin: 'bg-red-50 dark:bg-red-950/300',
-  Cabang: 'bg-blue-50 dark:bg-blue-950/300',
-  PM: 'bg-emerald-50 dark:bg-emerald-950/300',
-  Dept: 'bg-amber-50 dark:bg-amber-950/300',
-  Admin: 'bg-purple-50 dark:bg-purple-950/300',
+  'Staff Marketing': 'bg-blue-50 dark:bg-blue-950/300',
+  'Manager PM': 'bg-emerald-50 dark:bg-emerald-950/300',
+  'Staff PM': 'bg-teal-50 dark:bg-teal-950/300',
+  'Staff Procurement': 'bg-amber-50 dark:bg-amber-950/300',
+  'Admin IT': 'bg-purple-50 dark:bg-purple-950/300',
+  Director: 'bg-rose-50 dark:bg-rose-950/300',
+  'Staff IT': 'bg-cyan-50 dark:bg-cyan-950/300',
+  'Manager Marketing': 'bg-orange-50 dark:bg-orange-950/300',
 };
 
 const ADMIN_ACCOUNT = {
@@ -34,6 +44,7 @@ const ADMIN_ACCOUNT = {
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
+  const logout = useAuthStore((s) => s.logout);
   const masterUsers = useMasterDataStore((s) => s.users);
 
   const [username, setUsername] = useState('');
@@ -41,6 +52,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [showDepartmentPicker, setShowDepartmentPicker] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
 
   // Gabungkan admin bawaan + semua user dari master data (termasuk non-aktif)
   const demoAccounts = useMemo(() => {
@@ -86,9 +99,46 @@ export default function LoginPage() {
 
       const matched = demoAccounts.find((a) => a.username === username);
       if (matched && password === username) {
-        login('mock-token', getUserAuthPayload(matched));
-        navigate('/dashboard');
-        toast.success(`Selamat datang, ${matched.name}!`);
+        const userId = matched.id;
+        const userRoles = useRbacStore.getState().userRoles.filter((ur) => ur.userId === userId);
+        const hasGlobalRole = userRoles.some((ur) => ur.scopeType === 'global');
+
+        if (hasGlobalRole) {
+          // Global role (admin/director) — login tanpa department
+          const globalRole = userRoles.find((ur) => ur.scopeType === 'global');
+          login('mock-token', {
+            ...getUserAuthPayload(matched),
+            roleId: globalRole?.roleId,
+            scopeType: 'global',
+          });
+          navigate('/dashboard');
+          toast.success(`Selamat datang, ${matched.name}!`);
+        } else {
+          // Department-scoped user — cek departemen yang bisa diakses
+          const depts = authz.getAccessibleDepartments(userId);
+
+          if (depts.length === 1) {
+            // Single department — auto-select
+            const dept = depts[0];
+            const activeRole = userRoles.find((ur) => ur.scopeId === dept.id);
+            login('mock-token', {
+              ...getUserAuthPayload(matched),
+              departmentId: dept.id,
+              departmentCode: dept.code,
+              departmentName: dept.name,
+              roleId: activeRole?.roleId,
+              scopeType: activeRole?.scopeType,
+              scopeId: activeRole?.scopeId,
+            });
+            useAuthStore.getState().setActiveDepartment(dept.id);
+            navigate('/dashboard');
+            toast.success(`Selamat datang, ${matched.name}!`);
+          } else {
+            // Multiple departments — show picker
+            setPendingUserId(userId);
+            setShowDepartmentPicker(true);
+          }
+        }
       } else {
         toast.error('Username atau password salah.');
       }
@@ -183,6 +233,72 @@ export default function LoginPage() {
               {isLoading ? 'Memproses...' : 'Masuk'}
             </Button>
           </form>
+
+          {/* Department Picker Modal */}
+          {showDepartmentPicker && pendingUserId && (
+            <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-surface rounded-2xl shadow-modal w-full max-w-sm p-6 animate-in zoom-in-95 fade-in">
+                <h3 className="font-heading-section text-base text-on-surface mb-1">Pilih Department</h3>
+                <p className="text-sm text-secondary mb-4">Pilih department yang akan diakses:</p>
+                <div className="space-y-2">
+                  {authz.getAccessibleDepartments(pendingUserId).map((dept) => {
+                    const userRoles = useRbacStore.getState().userRoles.filter(
+                      (ur) => ur.userId === pendingUserId && ur.scopeType === 'department' && ur.scopeId === dept.id,
+                    );
+                    const roleName = userRoles.length > 0
+                      ? useRbacStore.getState().roles.find((r) => r.id === userRoles[0].roleId)?.name
+                      : 'staff';
+                    return (
+                      <button
+                        key={dept.id}
+                        type="button"
+                        onClick={() => {
+                          const matchedUser = demoAccounts.find((a) => a.id === pendingUserId);
+                          if (!matchedUser) return;
+                          const activeRole = userRoles[0];
+                          const deptRole = activeRole
+                            ? useRbacStore.getState().roles.find((r) => r.id === activeRole.roleId)
+                            : undefined;
+                          login('mock-token', {
+                            ...getUserAuthPayload(matchedUser),
+                            departmentId: dept.id,
+                            departmentCode: dept.code,
+                            departmentName: dept.name,
+                            roleId: activeRole?.roleId,
+                            scopeType: activeRole?.scopeType,
+                            scopeId: activeRole?.scopeId,
+                          });
+                          useAuthStore.getState().setActiveDepartment(dept.id);
+                          setShowDepartmentPicker(false);
+                          navigate('/dashboard');
+                          toast.success(`Selamat datang, ${matchedUser.name} (${dept.name})`);
+                        }}
+                        className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-border bg-surface-container hover:border-primary/30 hover:bg-surface-container-lowest transition-all cursor-pointer text-left"
+                      >
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-primary text-xl">business</span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-on-surface truncate">{dept.name}</p>
+                          <p className="text-[10px] text-secondary uppercase tracking-wider">{dept.code} · {roleName}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDepartmentPicker(false);
+                    setPendingUserId(null);
+                  }}
+                  className="mt-4 w-full py-2 text-center text-sm text-secondary hover:text-on-surface transition-colors"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 pt-4 border-t border-border">
             <p className="text-caption-xs text-secondary text-center mb-3">

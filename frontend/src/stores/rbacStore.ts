@@ -53,6 +53,8 @@ export interface WorkflowStage {
   module: string;
   sequence: number;
   ownerDepartmentCode: string;
+  /** Previous department code that gets read-only access (nullable) */
+  prevDepartmentCode?: string | null;
 }
 
 export interface ProjectDeptRecord {
@@ -108,14 +110,16 @@ const SEED_PERMISSIONS: RbacPermission[] = [
   { id: 'perm-pengadaan-write', code: 'pengadaan:write', name: 'Edit Pengadaan', module: 'pengadaan' },
   { id: 'perm-report-view-dept', code: 'report:view:department', name: 'View Department Report', module: 'report' },
   { id: 'perm-report-view-crossdept', code: 'report:view:crossdept', name: 'View Cross-Dept Report', module: 'report' },
+  { id: 'perm-config-access', code: 'config:access', name: 'Access Configuration', module: 'config' },
 ];
 
 const SEED_WORKFLOW_STAGES: WorkflowStage[] = [
-  { id: 'stage-prospecting', code: 'prospecting', name: 'Prospecting', module: 'prospect', sequence: 1, ownerDepartmentCode: 'MARKETING' },
-  { id: 'stage-waiting-pm', code: 'waiting_pm', name: 'Waiting PM', module: 'prospect', sequence: 2, ownerDepartmentCode: 'PM' },
-  { id: 'stage-in-project', code: 'in_project', name: 'In Project', module: 'project', sequence: 3, ownerDepartmentCode: 'PM' },
-  { id: 'stage-pengadaan', code: 'pengadaan', name: 'Pengadaan', module: 'pengadaan', sequence: 4, ownerDepartmentCode: 'PROCUREMENT' },
-  { id: 'stage-delivery', code: 'delivery', name: 'Delivery', module: 'project', sequence: 5, ownerDepartmentCode: 'PM' },
+  { id: 'stage-prospecting', code: 'prospecting', name: 'Prospecting', module: 'prospect', sequence: 1, ownerDepartmentCode: 'MARKETING', prevDepartmentCode: null },
+  { id: 'stage-supervisor-review', code: 'supervisor_review', name: 'Supervisor Review', module: 'prospect', sequence: 1.5, ownerDepartmentCode: 'MARKETING', prevDepartmentCode: 'MARKETING' },
+  { id: 'stage-waiting-pm', code: 'waiting_pm', name: 'Waiting PM', module: 'prospect', sequence: 2, ownerDepartmentCode: 'PM', prevDepartmentCode: 'MARKETING' },
+  { id: 'stage-in-project', code: 'in_project', name: 'In Project', module: 'project', sequence: 3, ownerDepartmentCode: 'PM', prevDepartmentCode: 'MARKETING' },
+  { id: 'stage-pengadaan', code: 'pengadaan', name: 'Pengadaan', module: 'pengadaan', sequence: 4, ownerDepartmentCode: 'PROCUREMENT', prevDepartmentCode: 'PM' },
+  { id: 'stage-delivery', code: 'delivery', name: 'Delivery', module: 'project', sequence: 5, ownerDepartmentCode: 'PM', prevDepartmentCode: 'PROCUREMENT' },
 ];
 
 // Role-Permission mappings (roleId → permissionId[])
@@ -135,18 +139,41 @@ const SEED_ROLE_PERMISSIONS: RbacRolePermission[] = [
   { id: 'rp-staff-dept-2', roleId: 'role-staff', permissionId: 'perm-project-read', scopeType: 'department', accessLevel: 'read' },
   { id: 'rp-staff-dept-3', roleId: 'role-staff', permissionId: 'perm-pengadaan-read', scopeType: 'department', accessLevel: 'read' },
   // ── Staff Marketing tambahan ──
-  { id: 'rp-staff-mkt-1', roleId: 'role-staff', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', accessLevel: 'write' },
-  // ── Manager (department) ──
+  { id: 'rp-staff-mkt-1', roleId: 'role-staff', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
+  // ── Manager (department) — inherits all staff permissions via individual role-permission ──
+  { id: 'rp-mgr-dept-00a', roleId: 'role-manager', permissionId: 'perm-prospect-read', scopeType: 'department', accessLevel: 'read' },
+  // Marketing manager also gets prospect write
+  { id: 'rp-mgr-mkt-write', roleId: 'role-manager', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
+  { id: 'rp-mgr-dept-0b', roleId: 'role-manager', permissionId: 'perm-project-read', scopeType: 'department', accessLevel: 'read' },
+  { id: 'rp-mgr-dept-0c', roleId: 'role-manager', permissionId: 'perm-pengadaan-read', scopeType: 'department', accessLevel: 'read' },
   { id: 'rp-mgr-dept-1', roleId: 'role-manager', permissionId: 'perm-project-create', scopeType: 'department', accessLevel: 'write' },
   { id: 'rp-mgr-dept-2', roleId: 'role-manager', permissionId: 'perm-project-write', scopeType: 'department', accessLevel: 'write' },
   { id: 'rp-mgr-dept-3', roleId: 'role-manager', permissionId: 'perm-project-manage-members', scopeType: 'department', accessLevel: 'write' },
-  { id: 'rp-mgr-dept-4', roleId: 'role-manager', permissionId: 'perm-report-view-dept', scopeType: 'department', accessLevel: 'read' },
-  // ── Admin inherits all staff + manager through detection logic ──
+  { id: 'rp-mgr-dept-4', roleId: 'role-manager', permissionId: 'perm-project-manage-scope', scopeType: 'department', accessLevel: 'write' },
+  { id: 'rp-mgr-dept-5', roleId: 'role-manager', permissionId: 'perm-report-view-dept', scopeType: 'department', accessLevel: 'read' },
+  { id: 'rp-mgr-dept-6', roleId: 'role-manager', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
+  { id: 'rp-staff-mkt-2', roleId: 'role-staff', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
+  // ── Admin (all permissions, global scope) — full access ──
+  { id: 'rp-admin-global-1', roleId: 'role-admin', permissionId: 'perm-prospect-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-2', roleId: 'role-admin', permissionId: 'perm-prospect-write-prospecting', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-3', roleId: 'role-admin', permissionId: 'perm-prospect-approve-transition', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-4', roleId: 'role-admin', permissionId: 'perm-project-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-5', roleId: 'role-admin', permissionId: 'perm-project-create', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-6', roleId: 'role-admin', permissionId: 'perm-project-write', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-7', roleId: 'role-admin', permissionId: 'perm-project-manage-members', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-8', roleId: 'role-admin', permissionId: 'perm-project-manage-scope', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-9', roleId: 'role-admin', permissionId: 'perm-pengadaan-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-10', roleId: 'role-admin', permissionId: 'perm-pengadaan-create', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-11', roleId: 'role-admin', permissionId: 'perm-pengadaan-write', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-12', roleId: 'role-admin', permissionId: 'perm-report-view-dept', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-13', roleId: 'role-admin', permissionId: 'perm-report-view-crossdept', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-admin-global-14', roleId: 'role-admin', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'write' },
   // ── Director (global bypass) ──
   { id: 'rp-dir-global-1', roleId: 'role-director', permissionId: 'perm-prospect-read', scopeType: 'global', accessLevel: 'read' },
   { id: 'rp-dir-global-2', roleId: 'role-director', permissionId: 'perm-project-read', scopeType: 'global', accessLevel: 'read' },
   { id: 'rp-dir-global-3', roleId: 'role-director', permissionId: 'perm-pengadaan-read', scopeType: 'global', accessLevel: 'read' },
   { id: 'rp-dir-global-4', roleId: 'role-director', permissionId: 'perm-report-view-crossdept', scopeType: 'global', accessLevel: 'read' },
+  { id: 'rp-dir-global-5', roleId: 'role-director', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'read' },
   // ── Project roles (project scope — assigned per-project) ──
   { id: 'rp-pv-project', roleId: 'role-pv', permissionId: 'perm-project-read', scopeType: 'project', accessLevel: 'read' },
   { id: 'rp-pc-project-1', roleId: 'role-pc', permissionId: 'perm-project-read', scopeType: 'project', accessLevel: 'read' },
@@ -183,6 +210,8 @@ const SEED_USER_ROLES: RbacUserRole[] = [
   { id: 'ur-9', userId: '9', roleId: 'role-staff', scopeType: 'department', scopeId: 'dept-procurement' },
   // Bagus (user 10) → manager di Marketing
   { id: 'ur-10', userId: '10', roleId: 'role-manager', scopeType: 'department', scopeId: 'dept-marketing' },
+  // Super Admin (usr-admin) → admin global (all permissions, all departments)
+  { id: 'ur-admin', userId: 'usr-admin', roleId: 'role-admin', scopeType: 'global' },
 ];
 
 // ── RBAC Store Interface ──
@@ -397,9 +426,10 @@ export const useRbacStore = create<RbacState>()(
     }),
     {
       name: 'kinetic-rbac',
-      version: 1,
+      version: 5,
       migrate: (persisted: unknown, version: number) => {
-        if (version === 0) {
+        const current = (persisted || {}) as any;
+        if (version < 2) {
           return {
             departments: SEED_DEPARTMENTS,
             roles: SEED_ROLES,
@@ -411,7 +441,57 @@ export const useRbacStore = create<RbacState>()(
             projectMembers: [],
           };
         }
-        return (persisted || {}) as RbacState;
+        if (version < 3) {
+          // v3: add prospect:approve:transition to role-manager and role-staff
+          const updated = {
+            ...current,
+            rolePermissions: [
+              ...(current.rolePermissions || []),
+              { id: 'rp-mgr-dept-6', roleId: 'role-manager', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
+              { id: 'rp-staff-mkt-2', roleId: 'role-staff', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', accessLevel: 'write' },
+            ],
+          };
+          return updated;
+        }
+        if (version < 4) {
+          // v4: add supervisor_review stage, fix staff-mkt scopeId, add manager prospect write
+          const rolePerms = [...(current.rolePermissions || [])];
+          // Fix rp-staff-mkt-1 scopeId to restrict to Marketing dept
+          const fixIdx = rolePerms.findIndex((rp: any) => rp.id === 'rp-staff-mkt-1');
+          if (fixIdx >= 0) rolePerms[fixIdx] = { ...rolePerms[fixIdx], scopeId: 'dept-marketing' };
+
+          // Add manager prospect write permission (Marketing dept) if missing
+          if (!rolePerms.find((rp: any) => rp.id === 'rp-mgr-mkt-write')) {
+            rolePerms.push({ id: 'rp-mgr-mkt-write', roleId: 'role-manager', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' });
+          }
+
+          return {
+            ...current,
+            workflowStages: SEED_WORKFLOW_STAGES,
+            rolePermissions: rolePerms,
+          };
+        }
+        if (version < 5) {
+          // v5: add config:access permission for admin/director
+          const rolePerms = [...(current.rolePermissions || [])];
+          const permissions = [...(current.permissions || [])];
+
+          // Add config:access permission if missing
+          if (!permissions.find((p: any) => p.code === 'config:access')) {
+            permissions.push({ id: 'perm-config-access', code: 'config:access', name: 'Access Configuration', module: 'config' });
+          }
+
+          // Add role-permissions if missing
+          if (!rolePerms.find((rp: any) => rp.id === 'rp-admin-global-14')) {
+            rolePerms.push({ id: 'rp-admin-global-14', roleId: 'role-admin', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'write' });
+          }
+          if (!rolePerms.find((rp: any) => rp.id === 'rp-dir-global-5')) {
+            rolePerms.push({ id: 'rp-dir-global-5', roleId: 'role-director', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'read' });
+          }
+
+          return { ...current, permissions, rolePermissions: rolePerms };
+        }
+        return current;
       },
     },
   ),

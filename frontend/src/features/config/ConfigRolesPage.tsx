@@ -17,68 +17,68 @@ interface ModuleGroup {
 const MODULE_GROUPS: ModuleGroup[] = [
   {
     name: 'Dashboard',
-    perms: [{ key: 'dashboard_view', label: 'Lihat Dashboard', shortLabel: 'Lihat' }],
+    perms: [{ key: 'dashboard:view', label: 'Lihat Dashboard', shortLabel: 'Lihat' }],
   },
   {
     name: 'Prospek',
     perms: [
-      { key: 'prospek_view', label: 'Lihat Prospek', shortLabel: 'Lihat' },
-      { key: 'prospek_create', label: 'Buat Prospek', shortLabel: 'Buat' },
-      { key: 'prospek_edit', label: 'Edit Prospek', shortLabel: 'Sunting' },
-      { key: 'prospek_delete', label: 'Hapus Prospek', shortLabel: 'Hapus' },
+      { key: 'prospect:read', label: 'Lihat Prospek', shortLabel: 'Lihat' },
+      { key: 'prospect:create', label: 'Buat Prospek', shortLabel: 'Buat' },
+      { key: 'prospect:edit', label: 'Edit Prospek', shortLabel: 'Sunting' },
+      { key: 'prospect:delete', label: 'Hapus Prospek', shortLabel: 'Hapus' },
     ],
   },
   {
     name: 'Proyek',
     perms: [
-      { key: 'proyek_view', label: 'Lihat Proyek', shortLabel: 'Lihat' },
-      { key: 'proyek_create', label: 'Buat Proyek', shortLabel: 'Buat' },
-      { key: 'proyek_edit', label: 'Edit Proyek', shortLabel: 'Sunting' },
-      { key: 'proyek_delete', label: 'Hapus Proyek', shortLabel: 'Hapus' },
+      { key: 'project:read', label: 'Lihat Proyek', shortLabel: 'Lihat' },
+      { key: 'project:create', label: 'Buat Proyek', shortLabel: 'Buat' },
+      { key: 'project:edit', label: 'Edit Proyek', shortLabel: 'Sunting' },
+      { key: 'project:delete', label: 'Hapus Proyek', shortLabel: 'Hapus' },
     ],
   },
   {
     name: 'Pengadaan',
     perms: [
-      { key: 'procurement_view', label: 'Lihat Pengadaan', shortLabel: 'Lihat' },
-      { key: 'procurement_create', label: 'Buat Pengadaan', shortLabel: 'Buat' },
-      { key: 'procurement_edit', label: 'Edit Pengadaan', shortLabel: 'Sunting' },
-      { key: 'procurement_delete', label: 'Hapus Pengadaan', shortLabel: 'Hapus' },
+      { key: 'pengadaan:read', label: 'Lihat Pengadaan', shortLabel: 'Lihat' },
+      { key: 'pengadaan:create', label: 'Buat Pengadaan', shortLabel: 'Buat' },
+      { key: 'pengadaan:write', label: 'Edit Pengadaan', shortLabel: 'Sunting' },
+      { key: 'pengadaan:delete', label: 'Hapus Pengadaan', shortLabel: 'Hapus' },
     ],
   },
   {
     name: 'Persetujuan',
     perms: [
-      { key: 'approval_process', label: 'Proses Persetujuan', shortLabel: 'Proses' },
-      { key: 'approval_view', label: 'Lihat Persetujuan', shortLabel: 'Lihat' },
+      { key: 'prospect:approve:transition', label: 'Proses Persetujuan', shortLabel: 'Proses' },
+      { key: 'approval:view', label: 'Lihat Persetujuan', shortLabel: 'Lihat' },
     ],
   },
   {
     name: 'KPI',
     perms: [
-      { key: 'kpi_view', label: 'Lihat KPI', shortLabel: 'Lihat' },
-      { key: 'kpi_manage', label: 'Kelola KPI', shortLabel: 'Kelola' },
+      { key: 'kpi:view', label: 'Lihat KPI', shortLabel: 'Lihat' },
+      { key: 'kpi:manage', label: 'Kelola KPI', shortLabel: 'Kelola' },
     ],
   },
   {
     name: 'Laporan',
-    perms: [      { key: 'laporan_view', label: 'Lihat Laporan', shortLabel: 'Lihat' }],
+    perms: [      { key: 'report:view:department', label: 'Lihat Laporan', shortLabel: 'Lihat' }],
   },
   {
     name: 'Data Master',
-    perms: [      { key: 'master_data', label: 'Akses Data Master', shortLabel: 'Akses' }],
+    perms: [      { key: 'config:access', label: 'Akses Data Master', shortLabel: 'Akses' }],
   },
   {
     name: 'Pengguna',
-    perms: [      { key: 'users_manage', label: 'Kelola Pengguna', shortLabel: 'Kelola' }],
+    perms: [      { key: 'users:manage', label: 'Kelola Pengguna', shortLabel: 'Kelola' }],
   },
   {
     name: 'Konfigurasi',
-    perms: [      { key: 'config_access', label: 'Akses Konfigurasi', shortLabel: 'Akses' }],
+    perms: [      { key: 'config:access', label: 'Akses Konfigurasi', shortLabel: 'Akses' }],
   },
   {
     name: 'Audit',
-    perms: [      { key: 'audit_view', label: 'Lihat Audit', shortLabel: 'Lihat' }],
+    perms: [      { key: 'audit:view', label: 'Lihat Audit', shortLabel: 'Lihat' }],
   },
 ];
 

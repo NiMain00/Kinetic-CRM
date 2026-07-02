@@ -11,6 +11,7 @@ export function createProcurementFromProject(project: Project): Procurement {
   const procurement = store.addProcurement({
     sourceProjectId: project.id,
     sourceProjectCode: project.code,
+    sourceProjectName: project.name,
     client: project.client,
     contractValue: project.winnerDetails?.contractValue || project.estimatedValue || 0,
     location: project.location,

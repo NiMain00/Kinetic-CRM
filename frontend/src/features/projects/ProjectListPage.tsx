@@ -7,7 +7,8 @@ import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
 import { Button, Card, Table, Modal, type Column } from '@/components/ui';
 import { exportCSV } from '@/utils/export';
 import FilterPanel from '@/components/shared/FilterPanel';
-import { usePermission } from '@/hooks/usePermission';
+import { useAuthz } from '@/hooks/useAuthz';
+import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 
 type PipelineTab = 'all' | 'aktif' | 'menang' | 'kalah' | 'selesai';
 
@@ -37,7 +38,7 @@ const PIPELINE_TABS: { id: PipelineTab; label: string }[] = [
 
 export default function ProjectListPage() {
   const navigate = useNavigate();
-  const { can } = usePermission();
+  const { can } = useAuthz();
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState<PipelineTab>('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,7 +52,7 @@ export default function ProjectListPage() {
 
   const projects = useProjectStore((s) => s.projects);
   const authUser = useAuthStore((s) => s.user);
-  const isFullAccess = authUser?.roleName !== 'Cabang';
+  const { isStaffOnly, userId } = useOwnerFilter();
 
   const uniqueClients = useMemo(() => {
     return [...new Set(projects.map((p) => p.client))].sort();
@@ -66,8 +67,9 @@ export default function ProjectListPage() {
   const filtered = useMemo(() => {
     let list = projects;
 
-    if (!isFullAccess) {
-      list = list.filter((p) => !p.createdByUserId || p.createdByUserId === authUser?.id);
+    // Staff: hanya lihat proyek milik sendiri
+    if (isStaffOnly && userId) {
+      list = list.filter((p) => !p.ownerUserId || p.ownerUserId === userId);
     }
 
     if (activeTab === 'aktif') {
@@ -105,7 +107,7 @@ export default function ProjectListPage() {
       if (!isNaN(max)) list = list.filter((p) => p.estimatedValue <= max);
     }
     return list;
-  }, [activeTab, search, projects, filterValues, isFullAccess, authUser?.id]);
+  }, [activeTab, search, projects, filterValues, isStaffOnly, userId]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(
@@ -200,7 +202,7 @@ export default function ProjectListPage() {
       className: 'w-[40px]',
       render: (p) => (
         <div className="flex items-center justify-end gap-1">
-          {can('proyek_edit') && (
+          {can('project:write') && (
             <button
               onClick={(e) => { e.stopPropagation(); navigate(`/project/${p.id}/edit`); }}
               className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all"
@@ -242,7 +244,7 @@ export default function ProjectListPage() {
             >
               Export CSV
             </Button>
-            {can('proyek_create') && (
+            {can('project:create') && (
             <Button
               variant="primary"
               size="md"

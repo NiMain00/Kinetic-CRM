@@ -33,6 +33,10 @@ interface ProjectState {
   updateProjectDelivery: (id: string, delivery: Partial<Project['delivery']>) => void;
   addTimelineEvent: (id: string, event: TimelineEvent) => void;
   updateProjectDocuments: (id: string, documents: DocGroup[]) => void;
+
+  // RBAC: scope & stage management
+  updateProjectScope: (id: string, scopeDepartments: string[]) => void;
+  updateProjectStage: (id: string, stageId: string) => void;
 }
 
 export const useProjectStore = create<ProjectState>()(
@@ -147,15 +151,35 @@ export const useProjectStore = create<ProjectState>()(
         set((s) => ({
           projects: s.projects.map((p) => (p.id === id ? { ...p, documents } : p)),
         })),
+      updateProjectScope: (id, scopeDepartments) =>
+        set((s) => ({
+          projects: s.projects.map((p) => (p.id === id ? { ...p, scopeDepartments } : p)),
+        })),
+      updateProjectStage: (id, stageId) =>
+        set((s) => ({
+          projects: s.projects.map((p) => (p.id === id ? { ...p, currentStageId: stageId } : p)),
+        })),
     }),
     {
       name: 'kinetic-projects',
-      version: 3,
+      version: 4,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 3) {
           // v3: Force re-init with fresh mock data that includes createdByUserId
           return { ...current, projects: INITIAL_PROJECTS } as ProjectState;
+        }
+        if (version < 4) {
+          // v4: Add RBAC fields (scopeDepartments, currentStageId, departmentId) with defaults
+          return {
+            ...current,
+            projects: (current.projects || []).map((p: any) => ({
+              ...p,
+              scopeDepartments: p.scopeDepartments || [],
+              currentStageId: p.currentStageId || 'stage-in-project',
+              departmentId: p.departmentId || 'dept-pm',
+            })),
+          } as ProjectState;
         }
         return current as ProjectState;
       },

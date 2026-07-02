@@ -8,8 +8,9 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useStatusStepMap, useNextPhaseMap } from '@/hooks/useConfigData';
-import { usePermission } from '@/hooks/usePermission';
+import { useAuthz } from '@/hooks/useAuthz';
 import { useConfigStore } from '@/stores/configStore';
+import { useRbacStore } from '@/stores/rbacStore';
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -46,7 +47,7 @@ export default function ProjectDetailView({
   const getProspectById = useProspectStore((s) => s.getProspectById);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const { approvals, approveItem } = useApprovalStore();
-  const { can } = usePermission();
+  const { can, canWrite } = useAuthz();
   const STATUS_STEP_MAP = useStatusStepMap();
   const NEXT_PHASE_MAP = useNextPhaseMap();
 
@@ -68,6 +69,16 @@ export default function ProjectDetailView({
   // Cek apakah project berasal dari prospek Non Potensial (Fase 4 item 4.2)
   const sourceProspect = project?.sourceProspectId ? getProspectById(project.sourceProspectId) : undefined;
   const isFromNonPotensial = sourceProspect?.prospectType === 'non_potensial' || sourceProspect?.status === 'Non Potensial';
+
+  // Stage-based access: derive stage code from project's currentStageId
+  const workflowStages = useRbacStore((s) => s.workflowStages);
+  const canWriteProject = React.useMemo(() => {
+    if (!project?.currentStageId || !project.departmentId) return can('project:write');
+    const stage = workflowStages.find((s) => s.id === project.currentStageId);
+    if (!stage?.code) return can('project:write');
+    return canWrite('project:write', stage.code, project.departmentId);
+  }, [project?.currentStageId, project?.departmentId, workflowStages, can, canWrite]);
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   if (!project) {
@@ -130,8 +141,8 @@ export default function ProjectDetailView({
     // Terminal states (Selesai, Kalah): all tabs unlocked
     if (project.status === 'Selesai' || project.status === 'Kalah') return false;
 
-    // Timeline, Dokumen & Diskusi: always unlocked
-    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi') return false;
+    // Timeline, Dokumen, Diskusi & RKS: always unlocked
+    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi' || tab.label === 'RKS') return false;
 
     // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval (Tender)
     // atau langsung unlocked untuk Prospecting (tidak perlu LPHS)
@@ -288,7 +299,7 @@ export default function ProjectDetailView({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            {can('proyek_delete') && (
+            {canWriteProject && (
             <button
               onClick={handleDeleteProject}
               className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all flex items-center gap-1.5"
@@ -297,7 +308,7 @@ export default function ProjectDetailView({
               Hapus
             </button>
             )}
-            {can('proyek_edit') && (
+            {canWriteProject && (
             <button
               onClick={handleRevision}
               className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all"
@@ -305,7 +316,7 @@ export default function ProjectDetailView({
               Revisi
             </button>
             )}
-            {can('approval_process') && (
+            {canWriteProject && (
             <button
               onClick={handleApproveProject}
               className="px-5 py-1.5 bg-success text-white font-semibold text-xs rounded-xl hover:opacity-90 shadow-card transition-all flex items-center gap-2"
@@ -336,7 +347,7 @@ export default function ProjectDetailView({
               isStepUnlocked={(index) => {
                 const step = tabs[index];
                 return (
-                  (step.label === 'Timeline' || step.label === 'Dokumen' ||
+                  (step.label === 'Timeline' || step.label === 'Dokumen' || step.label === 'Scope & Tim' ||
                   (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved))
                 );
               }}
@@ -433,7 +444,7 @@ export default function ProjectDetailView({
             <TimelineTab project={project} onShowNotification={handleShowNotification} />
           )}
 
-          {/* TAB 10: DOKUMEN */}
+          {/* TAB 9: DOKUMEN */}
           {activeTab === 'Dokumen' && (
             <DokumenTab project={project} onShowNotification={handleShowNotification} />
           )}

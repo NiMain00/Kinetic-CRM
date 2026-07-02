@@ -1,5 +1,8 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { navItems, filterNavItems, type NavItem } from '@/routes/nav-items';
+import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
+import { authz } from '@/services/authz';
 
 interface SidebarProps {
   activeTab: string;
@@ -53,6 +56,13 @@ export default function Sidebar({
 }: SidebarProps) {
   const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole, userPermissions), [userRole, userPermissions]);
   const swipeHandlers = useSwipe(onClose);
+  const [showDeptSwitch, setShowDeptSwitch] = React.useState(false);
+  const authUser = useAuthStore((s) => s.user);
+  const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (authUser as any)?.departmentId;
+  const rbacDepartments = useRbacStore((s) => s.departments);
+  const activeDept = rbacDepartments.find((d) => d.id === activeDeptId);
+  const deptName = activeDept?.name || (authUser as any)?.departmentName || '';
+  const deptCode = activeDept?.code || (authUser as any)?.departmentCode || '';
 
   useEffect(() => {
     if (mobile) {
@@ -162,6 +172,63 @@ export default function Sidebar({
             )}
           </div>
         </div>
+
+        {/* Active Department Badge */}
+        {(!collapsed || mobile) && deptName && (
+          <div className="px-3 mb-3">
+            <div className="flex items-center gap-2 px-3 py-2 bg-primary-container/20 rounded-xl border border-primary/10">
+              <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary text-[16px]">business</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold text-primary truncate">{deptName}</p>
+                <p className="text-[9px] text-outline uppercase tracking-wider">{deptCode}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Department Switcher (multiple departments) */}
+        {(!collapsed || mobile) && (() => {
+          const uid = (authUser as { id?: string })?.id;
+          if (!uid) return null;
+          const allDepts = authz.getAccessibleDepartments(uid);
+          if (allDepts.length <= 1) return null;
+          const otherDepts = allDepts.filter((d) => d.id !== activeDeptId);
+          if (otherDepts.length === 0) return null;
+          return (
+            <div className="px-3 mb-3">
+              <button
+                onClick={() => setShowDeptSwitch(!showDeptSwitch)}
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] text-outline hover:text-on-surface transition-colors"
+              >
+                <span>Ganti Department</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  {showDeptSwitch ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
+              {showDeptSwitch && (
+                <div className="mt-1 space-y-1">
+                  {otherDepts.map((dept) => (
+                    <button
+                      key={dept.id}
+                      onClick={() => {
+                        useAuthStore.getState().setActiveDepartment(dept.id);
+                        setShowDeptSwitch(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs text-on-surface-variant hover:bg-surface-container transition-colors"
+                    >
+                      <div className="w-5 h-5 rounded bg-surface-container-low flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[12px]">business</span>
+                      </div>
+                      <span className="truncate">{dept.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Navigation list */}
         <nav ref={navListRef} className="flex-1 px-3 space-y-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>

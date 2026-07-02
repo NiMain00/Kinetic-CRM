@@ -60,7 +60,9 @@ export default function OverviewTab({ procurement }: Props) {
           <div>
             <p className="text-secondary font-medium">Proyek Asal</p>
             <p className="text-on-surface font-semibold mt-0.5">
-              {procurement.sourceProjectCode || 'Manual'}
+              {procurement.sourceProjectCode
+                ? `${procurement.sourceProjectName || procurement.sourceProjectCode} (${procurement.sourceProjectCode})`
+                : 'Manual'}
             </p>
           </div>
           <div>

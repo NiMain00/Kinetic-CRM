@@ -42,47 +42,47 @@ const ForgotPasswordPage = LazyLoad(lazy(() => import('@/features/auth/ForgotPas
 const ResetPasswordPage = LazyLoad(lazy(() => import('@/features/auth/ResetPasswordPage')));
 
 // Dashboard
-const DashboardPage = LazyLoadPermission(lazy(() => import('@/features/dashboard/DashboardPage')), ['dashboard_view']);
+const DashboardPage = LazyLoadPermission(lazy(() => import('@/features/dashboard/DashboardPage')), ['dashboard:view']);
 
 // Prospects
-const ProspectsPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectsPage')), ['prospek_view']);
-const ProspectFormPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectFormPage')), ['prospek_view']);
-const ProspectDetailPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectDetailPage')), ['prospek_view']);
+const ProspectsPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectsPage')), ['prospect:read']);
+const ProspectFormPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectFormPage')), ['prospect:read']);
+const ProspectDetailPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectDetailPage')), ['prospect:read']);
 
 // Projects
-const ProjectListPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectListPage')), ['proyek_view']);
-const ProjectFormPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectFormPage')), ['proyek_view']);
-const ProjectDetailPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectDetailPage')), ['proyek_view']);
+const ProjectListPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectListPage')), ['project:read']);
+const ProjectFormPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectFormPage')), ['project:create']);
+const ProjectDetailPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectDetailPage')), ['project:read']);
 
 // Procurement
-const ProcurementListPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementListPage')), ['procurement_view']);
-const ProcurementFormPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementFormPage')), ['procurement_edit']);
-const ProcurementDetailPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementDetailPage')), ['procurement_view']);
+const ProcurementListPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementListPage')), ['pengadaan:read']);
+const ProcurementFormPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementFormPage')), ['pengadaan:create']);
+const ProcurementDetailPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementDetailPage')), ['pengadaan:read']);
 
 // Approvals
-const ApprovalInboxPage = LazyLoadPermission(lazy(() => import('@/features/approvals/ApprovalInboxPage')), ['approval_view']);
+const ApprovalInboxPage = LazyLoadPermission(lazy(() => import('@/features/approvals/ApprovalInboxPage')), ['prospect:approve:transition']);
 
 // KPI → moved under Reports
-const KPIDashboardPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIDashboardPage')), ['laporan_view']);
-const KPIProgressPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIProgressPage')), ['laporan_view']);
-const KPITargetsPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPITargetsPage')), ['laporan_view']);
+const KPIDashboardPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIDashboardPage')), ['report:view:department']);
+const KPIProgressPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPIProgressPage')), ['report:view:department']);
+const KPITargetsPage = LazyLoadPermission(lazy(() => import('@/features/kpi/KPITargetsPage')), ['report:view:department']);
 
 // Reports
-const WinLossReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/WinLossReportPage')), ['laporan_view']);
-const PipelineReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/PipelineReportPage')), ['laporan_view']);
-const ReportsIndexPage = LazyLoadPermission(lazy(() => import('@/features/reports/ReportsIndexPage')), ['laporan_view']);
-const CalendarPage = LazyLoadPermission(lazy(() => import('@/features/reports/CalendarPage')), ['laporan_view']);
+const WinLossReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/WinLossReportPage')), ['report:view:department']);
+const PipelineReportPage = LazyLoadPermission(lazy(() => import('@/features/reports/PipelineReportPage')), ['report:view:department']);
+const ReportsIndexPage = LazyLoadPermission(lazy(() => import('@/features/reports/ReportsIndexPage')), ['report:view:department']);
+const CalendarPage = LazyLoadPermission(lazy(() => import('@/features/reports/CalendarPage')), ['report:view:department']);
 
 // Master Data
-const MasterDataPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDataPage')), ['master_data']);
-const MasterCustomerPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCustomerPage')), ['master_data']);
-const MasterCompetitorPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCompetitorPage')), ['master_data']);
-const MasterCategoryPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCategoryPage')), ['master_data']);
-const MasterDocTypePage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDocTypePage')), ['master_data']);
-const MasterQuestionPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterQuestionPage')), ['master_data']);
-const MasterHolidayPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterHolidayPage')), ['master_data']);
-const MasterLossReasonPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterLossReasonPage')), ['master_data']);
-const MasterPeriodPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterPeriodPage')), ['master_data']);
+const MasterDataPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDataPage')), ['config:access']);
+const MasterCustomerPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCustomerPage')), ['config:access']);
+const MasterCompetitorPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCompetitorPage')), ['config:access']);
+const MasterCategoryPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterCategoryPage')), ['config:access']);
+const MasterDocTypePage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterDocTypePage')), ['config:access']);
+const MasterQuestionPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterQuestionPage')), ['config:access']);
+const MasterHolidayPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterHolidayPage')), ['config:access']);
+const MasterLossReasonPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterLossReasonPage')), ['config:access']);
+const MasterPeriodPage = LazyLoadPermission(lazy(() => import('@/features/master-data/MasterPeriodPage')), ['config:access']);
 
 // Audit — hanya Super Admin
 const AuditPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/audit/AuditPage')), ['Super Admin']);
@@ -94,19 +94,19 @@ const NotificationsPage = LazyLoad(lazy(() => import('@/features/notifications/N
 // Profile
 const ProfilePage = LazyLoad(lazy(() => import('@/features/profile/ProfilePage')));
 
-// Config — hanya Super Admin
-const ConfigDashboardPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigDashboardPage')), ['config_access']);
-const ConfigOrgPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigOrgPage')), ['config_access']);
-const ConfigStatusPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigStatusPage')), ['config_access']);
-const ConfigNotifTemplatePage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigNotifTemplatePage')), ['config_access']);
-const ConfigSlaPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigSlaPage')), ['config_access']);
-const ConfigRolesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigRolesPage')), ['config_access']);
-const ConfigTargetsPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigTargetsPage')), ['config_access']);
-const ConfigWorkflowPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigWorkflowPage')), ['config_access']);
-const ConfigIntegrationPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigIntegrationPage')), ['config_access']);
-const ConfigUploadPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigUploadPage')), ['config_access']);
-const ConfigPeriodPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigPeriodPage')), ['config_access']);
-const ConfigQuestionTypesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigQuestionTypesPage')), ['config_access']);
+// Config — hanya admin/director dengan RBAC config:access
+const ConfigDashboardPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigDashboardPage')), ['config:access']);
+const ConfigOrgPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigOrgPage')), ['config:access']);
+const ConfigStatusPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigStatusPage')), ['config:access']);
+const ConfigNotifTemplatePage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigNotifTemplatePage')), ['config:access']);
+const ConfigSlaPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigSlaPage')), ['config:access']);
+const ConfigRolesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigRolesPage')), ['config:access']);
+const ConfigTargetsPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigTargetsPage')), ['config:access']);
+const ConfigWorkflowPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigWorkflowPage')), ['config:access']);
+const ConfigIntegrationPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigIntegrationPage')), ['config:access']);
+const ConfigUploadPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigUploadPage')), ['config:access']);
+const ConfigPeriodPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigPeriodPage')), ['config:access']);
+const ConfigQuestionTypesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigQuestionTypesPage')), ['config:access']);
 
 // Error pages
 const ForbiddenPage = LazyLoad(lazy(() => import('@/features/errors/ForbiddenPage')));
@@ -192,7 +192,7 @@ export default function AppRouter() {
         {/* Notifications */}
         <Route path="notifications" element={<NotificationsPage />} />
 
-        {/* Configuration — berdasarkan permission config_access */}
+        {/* Configuration — berdasarkan permission config:access */}
         <Route path="config" element={<ConfigDashboardPage />} />
         <Route path="config/org" element={<ConfigOrgPage />} />
         <Route path="config/status" element={<ConfigStatusPage />} />

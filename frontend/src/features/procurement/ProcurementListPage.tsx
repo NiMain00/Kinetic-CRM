@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProcurementStore } from './procurementStore';
-import { usePermission } from '@/hooks/usePermission';
+import { useProjectStore } from '@/stores/projectStore';
+import { useAuthz } from '@/hooks/useAuthz';
 import { formatCurrency } from '@/utils/formatters';
 import type { ProcurementStatus } from '@/types/domain/procurement';
 
@@ -19,7 +20,7 @@ const STATUS_COLORS: Record<ProcurementStatus, string> = {
 export default function ProcurementListPage() {
   const navigate = useNavigate();
   const procurements = useProcurementStore((s) => s.procurements);
-  const { can } = usePermission();
+  const { can } = useAuthz();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProcurementStatus | 'all'>('all');
 
@@ -29,17 +30,36 @@ export default function ProcurementListPage() {
         if (statusFilter !== 'all' && p.status !== statusFilter) return false;
         if (search) {
           const q = search.toLowerCase();
+          const projectName = getProjectName(p);
           return (
             p.code.toLowerCase().includes(q) ||
             p.client.toLowerCase().includes(q) ||
             p.prNumber?.toLowerCase().includes(q) ||
-            p.poNumber?.toLowerCase().includes(q)
+            p.poNumber?.toLowerCase().includes(q) ||
+            projectName?.toLowerCase().includes(q) ||
+            p.sourceProjectCode?.toLowerCase().includes(q)
           );
         }
         return true;
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [procurements, statusFilter, search]);
+
+  const projectNameMap = useMemo(() => {
+    const projects = useProjectStore.getState().projects;
+    const map = new Map<string, string>();
+    projects.forEach((p) => {
+      if (p.id) map.set(p.id, p.name);
+      if (p.code) map.set(p.code, p.name);
+    });
+    return map;
+  }, []);
+
+  const getProjectName = (p: { sourceProjectId?: string; sourceProjectCode?: string; sourceProjectName?: string }): string | undefined => {
+    return p.sourceProjectName
+      || (p.sourceProjectId && projectNameMap.get(p.sourceProjectId))
+      || (p.sourceProjectCode && projectNameMap.get(p.sourceProjectCode));
+  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
@@ -54,7 +74,7 @@ export default function ProcurementListPage() {
               Kelola seluruh aktivitas pengadaan barang/jasa
             </p>
           </div>
-          {can('procurement_edit') && (
+          {can('pengadaan:write') && (
             <button
               onClick={() => navigate('/procurement/new')}
               className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold hover:brightness-110 transition-all flex items-center gap-2"
@@ -113,7 +133,7 @@ export default function ProcurementListPage() {
                 ? 'Tidak ada pengadaan yang sesuai filter.'
                 : 'Pengadaan akan muncul setelah proyek dinyatakan MENANG, atau Anda dapat membuat manual.'}
             </p>
-            {can('procurement_edit') && !search && statusFilter === 'all' && (
+            {can('pengadaan:write') && !search && statusFilter === 'all' && (
               <button
                 onClick={() => navigate('/procurement/new')}
                 className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold"
@@ -129,13 +149,10 @@ export default function ProcurementListPage() {
                 <thead>
                   <tr className="bg-surface-container border-b border-border">
                     <th className="text-left px-4 py-3 font-semibold text-secondary">
-                      Kode
+                      Nama Proyek
                     </th>
                     <th className="text-left px-4 py-3 font-semibold text-secondary">
                       Klien
-                    </th>
-                    <th className="text-left px-4 py-3 font-semibold text-secondary">
-                      Asal Proyek
                     </th>
                     <th className="text-right px-4 py-3 font-semibold text-secondary">
                       Nilai Kontrak
@@ -158,23 +175,20 @@ export default function ProcurementListPage() {
                       onClick={() => navigate(`/procurement/${p.id}`)}
                       className="border-b border-border/50 hover:bg-surface-container/50 cursor-pointer transition-colors"
                     >
-                      <td className="px-4 py-3 font-semibold text-on-surface">
-                        {p.code}
+                      <td className="px-4 py-3 text-on-surface-variant truncate max-w-60">
+                        {(() => {
+                          const projectName = getProjectName(p);
+                          return projectName ? (
+                            <span className="text-on-surface font-medium leading-tight">{projectName}</span>
+                          ) : p.sourceProjectCode ? (
+                            <span className="text-outline italic">{p.sourceProjectCode}</span>
+                          ) : (
+                            <span className="text-outline italic">Manual</span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 text-on-surface-variant">
                         {p.client}
-                      </td>
-                      <td className="px-4 py-3 text-on-surface-variant">
-                        {p.sourceProjectCode ? (
-                          <span className="inline-flex items-center gap-1 text-primary">
-                            <span className="material-symbols-outlined text-[12px]">
-                              open_in_new
-                            </span>
-                            {p.sourceProjectCode}
-                          </span>
-                        ) : (
-                          <span className="text-outline italic">Manual</span>
-                        )}
                       </td>
                       <td className="px-4 py-3 text-right font-mono-data text-on-surface">
                         {formatCurrency(p.contractValue)}

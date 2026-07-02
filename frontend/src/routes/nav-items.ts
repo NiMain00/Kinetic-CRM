@@ -8,30 +8,30 @@ export interface NavItem {
 }
 
 export const navItems: NavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['dashboard_view'] },
-  { label: 'Prospek', path: '/prospects', icon: 'person', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['prospek_view'] },
-  { label: 'Proyek', path: '/projects', icon: 'work', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['proyek_view'] },
-  { label: 'Proses Pengadaan', path: '/procurement', icon: 'inventory_2', permissions: ['procurement_view'] },
-  { label: 'Persetujuan', path: '/approvals', icon: 'how_to_reg', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer'], permissions: ['approval_view'] },
-  { label: 'Laporan', path: '/reports', icon: 'pie_chart', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management'], permissions: ['laporan_view'] },
-  { label: 'Kalender', path: '/reports/calendar', icon: 'calendar_today', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['laporan_view'] },
-  { label: 'Master Data', path: '/master-data', icon: 'layers', roles: ['Super Admin', 'Admin'], permissions: ['master_data'] },
-  { label: 'Notifikasi', path: '/notifications', icon: 'notifications', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'] },
-  { label: 'Konfigurasi', path: '/config', icon: 'settings', permissions: ['config_access'] },
+  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', permissions: ['dashboard:view'] },
+  { label: 'Prospek', path: '/prospects', icon: 'person', permissions: ['prospect:read'] },
+  { label: 'Proyek', path: '/projects', icon: 'work', permissions: ['project:read'] },
+  { label: 'Pengadaan', path: '/procurement', icon: 'inventory_2', permissions: ['pengadaan:read'] },
+  { label: 'Persetujuan', path: '/approvals', icon: 'how_to_reg', permissions: ['prospect:approve:transition'] },
+  { label: 'Laporan', path: '/reports', icon: 'pie_chart', permissions: ['report:view:department'] },
+  { label: 'Kalender', path: '/reports/calendar', icon: 'calendar_today', permissions: ['report:view:department'] },
+  { label: 'Master Data', path: '/master-data', icon: 'layers', permissions: ['config:access'] },
+  { label: 'Notifikasi', path: '/notifications', icon: 'notifications', permissions: ['notification:read'] },
+  { label: 'Konfigurasi', path: '/config', icon: 'settings', permissions: ['config:access'] },
 ];
 
 export const configNavItems: NavItem[] = [
-  { label: 'Organisasi', path: '/config/org', icon: 'account_tree', permissions: ['config_access'] },
-  { label: 'Status Proyek', path: '/config/status', icon: 'settings', permissions: ['config_access'] },
-  { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', permissions: ['config_access'] },
-  { label: 'SLA', path: '/config/sla', icon: 'alarm', permissions: ['config_access'] },
-  { label: 'Peran', path: '/config/roles', icon: 'badge', permissions: ['config_access'] },
-  { label: 'Target', path: '/config/targets', icon: 'track_changes', permissions: ['config_access'] },
-  { label: 'Alur Kerja', path: '/config/workflow', icon: 'alt_route', permissions: ['config_access'] },
-  { label: 'Integrasi', path: '/config/integration', icon: 'api', permissions: ['config_access'] },
-  { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', permissions: ['config_access'] },
-  { label: 'Periode', path: '/config/period', icon: 'calendar_month', permissions: ['config_access'] },
-  { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', permissions: ['config_access'] },
+  { label: 'Organisasi', path: '/config/org', icon: 'account_tree', permissions: ['config:access'] },
+  { label: 'Status Proyek', path: '/config/status', icon: 'settings', permissions: ['config:access'] },
+  { label: 'Notifikasi', path: '/config/notifications', icon: 'notifications_active', permissions: ['config:access'] },
+  { label: 'SLA', path: '/config/sla', icon: 'alarm', permissions: ['config:access'] },
+  { label: 'Peran', path: '/config/roles', icon: 'badge', permissions: ['config:access'] },
+  { label: 'Target', path: '/config/targets', icon: 'track_changes', permissions: ['config:access'] },
+  { label: 'Alur Kerja', path: '/config/workflow', icon: 'alt_route', permissions: ['config:access'] },
+  { label: 'Integrasi', path: '/config/integration', icon: 'api', permissions: ['config:access'] },
+  { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', permissions: ['config:access'] },
+  { label: 'Periode', path: '/config/period', icon: 'calendar_month', permissions: ['config:access'] },
+  { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', permissions: ['config:access'] },
 ];
 
 export function filterNavItems(items: NavItem[], role: string, userPermissions?: string[]): NavItem[] {

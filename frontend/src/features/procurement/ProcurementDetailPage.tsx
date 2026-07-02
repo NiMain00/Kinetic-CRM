@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
 import PhaseStepper from '@/components/shared/PhaseStepper';
 import { useProcurementStore } from './procurementStore';
-import { usePermission } from '@/hooks/usePermission';
+import { useAuthz } from '@/hooks/useAuthz';
 import { PROCUREMENT_PHASES } from '@/types/domain/procurement';
 
 // Tab imports
@@ -29,7 +29,7 @@ export default function ProcurementDetailView() {
   const procurement = procurementId
     ? store.procurements.find((p) => p.id === procurementId)
     : undefined;
-  const { can } = usePermission();
+  const { can } = useAuthz();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const activePhases = useMemo(
@@ -187,7 +187,7 @@ export default function ProcurementDetailView() {
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            {can('procurement_delete') && (
+            {can('pengadaan:write') && (
               <button
                 onClick={() => setShowDeleteModal(true)}
                 className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all flex items-center gap-1.5"

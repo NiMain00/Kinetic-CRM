@@ -11,6 +11,7 @@ interface ProspectState {
   updateProspect: (id: string, data: Partial<Prospect>) => void;
   deleteProspect: (id: string) => void;
   getProspectById: (id: string) => Prospect | undefined;
+  updateProspectStage: (id: string, stageId: string) => void;
 }
 
 export const useProspectStore = create<ProspectState>()(
@@ -31,15 +32,31 @@ export const useProspectStore = create<ProspectState>()(
         return set((s) => ({ prospects: s.prospects.filter((p) => p.id !== id) }));
       },
       getProspectById: (id) => get().prospects.find((p) => p.id === id),
+      updateProspectStage: (id, stageId) =>
+        set((s) => ({
+          prospects: s.prospects.map((p) => (p.id === id ? { ...p, currentStageId: stageId } : p)),
+        })),
     }),
     {
       name: 'kinetic-prospects',
-      version: 2,
+      version: 3,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 2) {
           // v2: Force re-init with fresh mock data that includes createdByUserId
           return { prospects: INITIAL_PROSPECTS };
+        }
+        if (version < 3) {
+          // v3: Add RBAC fields (currentStageId, departmentId, ownerUserId) with defaults
+          return {
+            ...current,
+            prospects: (current.prospects || []).map((p: any) => ({
+              ...p,
+              currentStageId: p.currentStageId || 'stage-prospecting',
+              departmentId: p.departmentId || 'dept-marketing',
+              ownerUserId: p.ownerUserId || p.createdByUserId || '',
+            })),
+          };
         }
         return current;
       },

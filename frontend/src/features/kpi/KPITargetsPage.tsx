@@ -181,7 +181,7 @@ export default function KPITargetsPage() {
       header: '',
       align: 'right',
       render: row => (
-        can('kpi_manage') ? (
+        can('kpi:manage') ? (
           <button
             onClick={() => handleDelete(row.id)}
             className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-outline hover:text-danger transition-colors cursor-pointer"
@@ -202,7 +202,7 @@ export default function KPITargetsPage() {
           <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Target Setting</h2>
           <p className="text-[11px] text-outline mt-0.5">Atur dan kelola target KPI untuk setiap periode.</p>
         </div>
-        {can('kpi_manage') && (
+        {can('kpi:manage') && (
           <Button
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}

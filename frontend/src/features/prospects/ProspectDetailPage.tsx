@@ -13,6 +13,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useAuthz } from '@/hooks/useAuthz';
+import { useRbacStore } from '@/stores/rbacStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 
 const legacyLabels: Record<string, string> = {
@@ -107,14 +109,14 @@ export default function ProspectDetailPage() {
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
   const getCustomerById = useCustomerStore((s) => s.getCustomerById);
-  const addProject = useProjectStore((s) => s.addProject);
+  const getProjectById = useProjectStore((s) => s.getProjectById);
   const deleteProject = useProjectStore((s) => s.deleteProject);
-  const projects = useProjectStore((s) => s.projects);
   const { approvals, approveItem, addApproval } = useApprovalStore();
 
   const authUser = useAuthStore((s) => s.user);
-  const industries = useMasterDataStore((s) => s.industries);
+  const { can, stageAccess } = useAuthz();
   const questions = useMasterDataStore((s) => s.questions);
+  const industries = useMasterDataStore((s) => s.industries);
   const industryMap = useMemo(
     () => Object.fromEntries(industries.map(i => [i.id, i.name])),
     [industries]
@@ -220,10 +222,10 @@ export default function ProspectDetailPage() {
 
   const relatedProject = useMemo(() => {
     if (prospect?.isConverted && prospect?.projectId) {
-      return projects.find(p => p.id === prospect.projectId);
+      return getProjectById(prospect.projectId);
     }
     return null;
-  }, [projects, prospect]);
+  }, [getProjectById, prospect]);
 
   if (!prospect) {
     return (
@@ -323,31 +325,7 @@ export default function ProspectDetailPage() {
   };
 
   const handleBuatProyek = () => {
-    const newProject = {
-      id: `PRJ-${Date.now()}`,
-      code: `PRJ-${new Date().getFullYear()}-${String(projects.length + 1).padStart(4, '0')}`,
-      name: prospect.name,
-      client: prospect.client,
-      status: 'Prospecting',
-      phase: 'Overview',
-      location: prospect.branch || '-',
-      author: prospect.author,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      progress: 0,
-      estimatedValue: prospect.estimatedValue || 0,
-      type: prospect.projectType || 'Prospecting' as const,
-      sourceProspectId: prospect.id,
-      providerExisting: prospect.providerExisting,
-    };
-
-    addProject(newProject);
-    updateProspect(prospect.id, {
-      isConverted: true,
-      projectId: newProject.id,
-    });
-
-    toast.success('Prospek berhasil dikonversi ke proyek!');
-    navigate(`/project/${newProject.id}/overview`);
+    navigate('/projects/new', { state: { fromProspect: prospect } });
   };
 
   const handleVerifikasi = () => {
@@ -376,6 +354,12 @@ export default function ProspectDetailPage() {
   };
 
   const renderActionButtons = () => {
+    // Determine current workflow stage code from the stage ID
+    const stageCode = useRbacStore.getState().workflowStages.find(
+      (s) => s.id === prospect.currentStageId
+    )?.code || 'prospecting';
+    const access = stageAccess(stageCode, prospect.departmentId || '');
+
     return (
       <div className="flex gap-2 flex-wrap justify-end">
         {!isConverted && (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
@@ -384,7 +368,7 @@ export default function ProspectDetailPage() {
           </Button>
         )}
 
-        {prospect.status === 'Approved' && !isConverted && isPotensial && (
+        {prospect.status === 'Approved' && !isConverted && isPotensial && can('project:create') && (
           <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">add_business</span>} onClick={handleBuatProyek}>
             Buat Proyek
           </Button>
@@ -403,7 +387,7 @@ export default function ProspectDetailPage() {
           </Button>
         )}
 
-        {prospect.status === 'Waiting PM' && (
+        {prospect.status === 'Waiting PM' && access === 'write' && (
           <>
             <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>} onClick={handleApprove}>
               Setujui
@@ -420,13 +404,18 @@ export default function ProspectDetailPage() {
           </Button>
         )}
 
-        <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>} onClick={() => navigate(`/prospects/${prospect.id}/edit`)}>
-          Edit
-        </Button>
+        {/* Edit & Delete: hanya jika user punya akses write di stage ini */}
+        {access === 'write' && (
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>} onClick={() => navigate(`/prospects/${prospect.id}/edit`)}>
+            Edit
+          </Button>
+        )}
 
-        <button onClick={handleDelete} className="px-3 py-1.5 border border-danger/30 text-danger rounded-xl text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
-          <span className="material-symbols-outlined text-[18px]">delete</span>
-        </button>
+        {access === 'write' && (
+          <button onClick={handleDelete} className="px-3 py-1.5 border border-danger/30 text-danger rounded-xl text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
+            <span className="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        )}
       </div>
     );
   };

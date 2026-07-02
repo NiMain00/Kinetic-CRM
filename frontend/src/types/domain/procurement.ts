@@ -15,6 +15,7 @@ export interface Procurement {
   code: string;
   sourceProjectId?: string;
   sourceProjectCode?: string;
+  sourceProjectName?: string;
 
   // Inherited from project
   client: string;

@@ -4,9 +4,9 @@ import { Modal, Button, Card } from '@/components/ui';
 import { PageContainer, PageHeader, StatusBadge, BulkActions } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
-import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
-import { usePermission } from '@/hooks/usePermission';
+import { useAuthz } from '@/hooks/useAuthz';
+import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { exportCSV } from '@/utils/export';
 import type { Prospect } from '@/types/domain';
 
@@ -37,12 +37,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const prospects = useProspectStore((s) => s.prospects);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const updateProspect = useProspectStore((s) => s.updateProspect);
-  const addProject = useProjectStore((s) => s.addProject);
-  const projects = useProjectStore((s) => s.projects);
   const authUser = useAuthStore((s) => s.user);
-  const { can } = usePermission();
+  const { can } = useAuthz();
+  const { isStaffOnly, userId } = useOwnerFilter();
 
-  const isFullAccess = authUser?.roleName !== 'Cabang';
   const [activeFilter, setActiveFilter] = useState<FilterTab>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,36 +62,14 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   };
 
   const handleBuatProyek = (prospek: typeof prospects[0]) => {
-    const newProject = {
-      id: `PRJ-${Date.now()}`,
-      code: `PRJ-${new Date().getFullYear()}-${String(projects.length + 1).padStart(4, '0')}`,
-      name: prospek.name,
-      client: prospek.client,
-      status: 'Prospecting',
-      phase: 'Overview',
-      location: prospek.branch || '-',
-      author: prospek.author,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      progress: 0,
-      estimatedValue: prospek.estimatedValue || 0,
-      type: prospek.projectType || 'Prospecting',
-      sourceProspectId: prospek.id,
-      providerExisting: prospek.providerExisting,
-      createdByUserId: prospek.createdByUserId,
-    };
-
-    addProject(newProject as any);
-    updateProspect(prospek.id, {
-      isConverted: true,
-      projectId: newProject.id,
+    navigate('/projects/new', {
+      state: { fromProspect: prospek },
     });
-
-    onShowNotification('Prospek berhasil dikonversi ke proyek!', 'success');
-    navigate(`/project/${newProject.id}/overview`);
   };
 
   const visibleProspects = prospects.filter(p => {
-    if (!isFullAccess && p.createdByUserId && p.createdByUserId !== authUser?.id) {
+    // Staff: hanya lihat milik sendiri
+    if (isStaffOnly && userId && p.ownerUserId && p.ownerUserId !== userId) {
       return false;
     }
     return true;
@@ -246,7 +222,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             >
               Export CSV
             </Button>
-            {can('prospek_create') && (
+            {can('prospect:write:prospecting') && (
               <Button
                 variant="primary"
                 size="md"
@@ -287,7 +263,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            {can('prospek_delete') && (
+            {can('prospect:write:prospecting') && (
               <button
                 onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
                 className={`touch-min flex items-center justify-center p-2 rounded-xl border transition-all ${
@@ -383,7 +359,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       <span className="text-on-surface text-xs truncate" title={row.author}>{row.author}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      {row.status === 'Approved' && !row.isConverted && can('proyek_create') && (
+                      {row.status === 'Approved' && !row.isConverted && can('project:create') && (
                         <button
                           onClick={() => handleBuatProyek(row)}
                           className="touch-min flex items-center justify-center text-success hover:text-success hover:bg-success/10 rounded-lg transition-all"
@@ -392,7 +368,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           <span className="material-symbols-outlined text-[20px]">add_business</span>
                         </button>
                       )}
-                      {can('prospek_edit') && (
+                      {can('prospect:write:prospecting') && (
                         <button
                           onClick={() => navigate(`/prospects/${row.id}/edit`)}
                           className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
@@ -402,7 +378,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           <span className="material-symbols-outlined text-[20px]">edit</span>
                         </button>
                       )}
-                      {can('prospek_delete') && (
+                      {can('prospect:write:prospecting') && (
                         <button
                           onClick={() => handleDelete(row.id)}
                           className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
@@ -556,7 +532,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                               <span className="material-symbols-outlined text-[20px]">add_business</span>
                             </button>
                           )}
-                          {can('prospek_edit') && (
+                          {can('prospect:write:prospecting') && (
                             <button
                               onClick={() => navigate(`/prospects/${row.id}/edit`)}
                               className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
@@ -565,7 +541,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                               <span className="material-symbols-outlined text-[20px]">edit</span>
                             </button>
                           )}
-                          {can('prospek_delete') && (
+                          {can('prospect:write:prospecting') && (
                             <button
                               onClick={() => handleDelete(row.id)}
                               className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"

@@ -50,7 +50,7 @@ export default function UserListPage() {
             </nav>
             <h1 className="text-xl font-extrabold text-on-surface">User Management</h1>
           </div>
-          {can('users_manage') && (
+          {can('users:manage') && (
             <button onClick={() => navigate('/users/new')} className="bg-primary text-on-primary px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-card hover:bg-primary-light transition-all" aria-label="Tambah Pengguna Baru">
               <span className="material-symbols-outlined text-[20px]">add</span>
               Add User

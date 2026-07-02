@@ -10,6 +10,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { authz } from '@/services/authz';
 
 export default function AppLayout() {
   const location = useLocation();
@@ -35,7 +36,19 @@ export default function AppLayout() {
   const userRole = (user as { roleName?: string })?.roleName || 'Staff';
   const userName = (user as { name?: string })?.name || (user as { fullName?: string })?.fullName || 'Alexander Pierce';
   const roleConfig = useMasterDataStore((s) => s.roles).find((r) => r.name === userRole);
-  const userPermissions = roleConfig?.permissions || [];
+  const oldPermissions = roleConfig?.permissions || [];
+  const userId = (user as { id?: string })?.id;
+  const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (user as any)?.departmentId;
+  // Combine old + new permissions for backward-compatible sidebar filtering
+  const newRbacPerms = userId
+    ? ['dashboard:view', 'notification:read', 'profile:manage', 'prospect:read', 'prospect:write:prospecting',
+       'prospect:approve:transition', 'project:read', 'project:create', 'project:write', 'project:manage:members',
+       'project:manage:scope', 'pengadaan:read', 'pengadaan:create', 'pengadaan:write',
+       'report:view:department', 'report:view:crossdept', 'config:access'].filter((p) => {
+         return authz.hasPermission(userId, p, { departmentId: activeDeptId });
+       })
+    : [];
+  const userPermissions = [...new Set([...oldPermissions, ...newRbacPerms])];
 
   const isFullBleed = location.pathname.includes('/diskusi');
 

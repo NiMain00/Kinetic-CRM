@@ -39,6 +39,7 @@ export default function ProcurementFormPage() {
     const procurement = addProcurement({
       sourceProjectId: sourceProjectId || undefined,
       sourceProjectCode: selectedProject?.code,
+      sourceProjectName: selectedProject?.name,
       client,
       contractValue,
       location,

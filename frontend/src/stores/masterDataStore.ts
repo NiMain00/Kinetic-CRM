@@ -348,16 +348,17 @@ const INITIAL_DEPARTMENTS: MasterDepartment[] = [
 ];
 
 const INITIAL_USERS: MasterUser[] = [
-  { id: '1', name: 'Ahmad Sulistyo', branch: 'Cabang Jakarta Pusat', username: 'asulistyo_jkp', email: 'ahmad.s@kinetic.co.id', role: 'Cabang', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-primary/10 text-primary' },
-  { id: '2', name: 'Bambang Permadi', branch: 'Project Management', username: 'bambang.pm', email: 'b.permadi@kinetic.co.id', role: 'PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-purple/10 text-status-purple' },
-  { id: '3', name: 'Rina Marlina', branch: 'Operations Dept', username: 'rina.ops', email: 'rina.marlina@kinetic.co.id', role: 'Dept', roleColor: 'bg-secondary-fixed text-on-secondary-fixed-variant', active: true, avatarColor: 'bg-status-orange/10 text-status-orange' },
-  { id: '4', name: 'Doni Wahyudi', branch: 'Head Office', username: 'doni.admin', email: 'doni.w@kinetic.co.id', role: 'Admin', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
-  { id: '5', name: 'Siti Rahmawati', branch: 'Cabang Bandung', username: 'siti.cbg', email: 'siti.r@kinetic.co.id', role: 'Cabang', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-status-teal/10 text-status-teal' },
-  { id: '6', name: 'Hendra Gunawan', branch: 'Project Management', username: 'hendra.pm', email: 'hendra.g@kinetic.co.id', role: 'PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-indigo/10 text-status-indigo' },
-  { id: '7', name: 'Dewi Sartika', branch: 'Management', username: 'dewi.mgt', email: 'dewi.s@kinetic.co.id', role: 'Management', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-orange/10 text-status-orange' },
-  { id: '8', name: 'Fajar Prasetyo', branch: 'Reviewer', username: 'fajar.rev', email: 'fajar.p@kinetic.co.id', role: 'Reviewer', roleColor: 'bg-status-purple/10 text-status-purple', active: true, avatarColor: 'bg-status-blue/10 text-status-blue' },
-  { id: '9', name: 'Lestari Ningsih', branch: 'Staff Operasional', username: 'lestari.staff', email: 'lestari.n@kinetic.co.id', role: 'Staff', roleColor: 'bg-surface-variant text-on-surface-variant', active: true, avatarColor: 'bg-surface-variant text-on-surface-variant' },
-  { id: '10', name: 'Bagus Wirawan', branch: 'Branch Manager', username: 'bagus.bm', email: 'bagus.w@kinetic.co.id', role: 'Branch Manager', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
+  // User ID 1-10 matching RBAC seed
+  { id: '1', name: 'Ahmad Sulistyo', branch: 'Marketing - Jakarta', username: 'ahmad', email: 'ahmad.s@kinetic.co.id', role: 'Staff Marketing', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-primary/10 text-primary' },
+  { id: '2', name: 'Bambang Permadi', branch: 'Project Management', username: 'bambang', email: 'b.permadi@kinetic.co.id', role: 'Manager PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-purple/10 text-status-purple' },
+  { id: '3', name: 'Rina Marlina', branch: 'Procurement', username: 'rina', email: 'rina.marlina@kinetic.co.id', role: 'Staff Procurement', roleColor: 'bg-secondary-fixed text-on-secondary-fixed-variant', active: true, avatarColor: 'bg-status-orange/10 text-status-orange' },
+  { id: '4', name: 'Doni Wahyudi', branch: 'IT - Head Office', username: 'doni', email: 'doni.w@kinetic.co.id', role: 'Admin IT', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
+  { id: '5', name: 'Siti Rahmawati', branch: 'Marketing - Bandung', username: 'siti', email: 'siti.r@kinetic.co.id', role: 'Staff Marketing', roleColor: 'bg-secondary-container text-on-secondary-container', active: true, avatarColor: 'bg-status-teal/10 text-status-teal' },
+  { id: '6', name: 'Hendra Gunawan', branch: 'Project Management', username: 'hendra', email: 'hendra.g@kinetic.co.id', role: 'Staff PM', roleColor: 'bg-primary-container text-on-primary-container', active: true, avatarColor: 'bg-status-indigo/10 text-status-indigo' },
+  { id: '7', name: 'Dewi Sartika', branch: 'Director Office', username: 'dewi', email: 'dewi.s@kinetic.co.id', role: 'Director', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-orange/10 text-status-orange' },
+  { id: '8', name: 'Fajar Prasetyo', branch: 'IT Support', username: 'fajar', email: 'fajar.p@kinetic.co.id', role: 'Staff IT', roleColor: 'bg-status-purple/10 text-status-purple', active: true, avatarColor: 'bg-status-blue/10 text-status-blue' },
+  { id: '9', name: 'Lestari Ningsih', branch: 'Procurement Staff', username: 'lestari', email: 'lestari.n@kinetic.co.id', role: 'Staff Procurement', roleColor: 'bg-surface-variant text-on-surface-variant', active: true, avatarColor: 'bg-surface-variant text-on-surface-variant' },
+  { id: '10', name: 'Bagus Wirawan', branch: 'Marketing Manager', username: 'bagus', email: 'bagus.w@kinetic.co.id', role: 'Manager Marketing', roleColor: 'bg-status-maroon/10 text-status-maroon', active: true, avatarColor: 'bg-status-maroon/10 text-status-maroon' },
 ];
 
 const INITIAL_AUDIT_LOGS: MasterAuditLog[] = [
@@ -374,39 +375,38 @@ const INITIAL_APPROVAL_LEVELS: MasterApprovalLevel[] = [
 ];
 
 const ALL_PERMISSIONS = [
-  { key: 'dashboard_view', label: 'Dashboard' },
-  { key: 'prospek_view', label: 'Prospek - Lihat' },
-  { key: 'prospek_create', label: 'Prospek - Buat' },
-  { key: 'prospek_edit', label: 'Prospek - Edit' },
-  { key: 'prospek_delete', label: 'Prospek - Hapus' },
-  { key: 'proyek_view', label: 'Proyek - Lihat' },
-  { key: 'proyek_create', label: 'Proyek - Buat' },
-  { key: 'proyek_edit', label: 'Proyek - Edit' },
-  { key: 'proyek_delete', label: 'Proyek - Hapus' },
-  { key: 'approval_process', label: 'Approval - Proses' },
-  { key: 'approval_view', label: 'Approval - Lihat' },
-  { key: 'kpi_view', label: 'KPI - Lihat' },
-  { key: 'kpi_manage', label: 'KPI - Kelola' },
-  { key: 'laporan_view', label: 'Laporan - Lihat' },
-  { key: 'master_data', label: 'Master Data' },
-  { key: 'procurement_view', label: 'Pengadaan - Lihat' },
-  { key: 'procurement_create', label: 'Pengadaan - Buat' },
-  { key: 'procurement_edit', label: 'Pengadaan - Edit' },
-  { key: 'procurement_delete', label: 'Pengadaan - Hapus' },
-  { key: 'users_manage', label: 'Pengguna - Kelola' },
-  { key: 'config_access', label: 'Konfigurasi - Akses' },
-  { key: 'audit_view', label: 'Audit - Lihat' },
+  { key: 'dashboard:view', label: 'Dashboard' },
+  { key: 'prospect:read', label: 'Prospek - Lihat' },
+  { key: 'prospect:create', label: 'Prospek - Buat' },
+  { key: 'prospect:edit', label: 'Prospek - Edit' },
+  { key: 'prospect:delete', label: 'Prospek - Hapus' },
+  { key: 'project:read', label: 'Proyek - Lihat' },
+  { key: 'project:create', label: 'Proyek - Buat' },
+  { key: 'project:edit', label: 'Proyek - Edit' },
+  { key: 'project:delete', label: 'Proyek - Hapus' },
+  { key: 'prospect:approve:transition', label: 'Approval - Proses' },
+  { key: 'approval:view', label: 'Approval - Lihat' },
+  { key: 'kpi:view', label: 'KPI - Lihat' },
+  { key: 'kpi:manage', label: 'KPI - Kelola' },
+  { key: 'report:view:department', label: 'Laporan - Lihat' },
+  { key: 'config:access', label: 'Master Data / Konfigurasi' },
+  { key: 'pengadaan:read', label: 'Pengadaan - Lihat' },
+  { key: 'pengadaan:create', label: 'Pengadaan - Buat' },
+  { key: 'pengadaan:write', label: 'Pengadaan - Edit' },
+  { key: 'pengadaan:delete', label: 'Pengadaan - Hapus' },
+  { key: 'users:manage', label: 'Pengguna - Kelola' },
+  { key: 'audit:view', label: 'Audit - Lihat' },
 ];
 
 const INITIAL_ROLES: MasterRole[] = [
   { id: 'R-01', name: 'Super Admin', description: 'Akses penuh ke seluruh sistem', permissions: ALL_PERMISSIONS.map(p => p.key) },
-  { id: 'R-02', name: 'Admin', description: 'Kelola master data, pengguna, dan konfigurasi', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'prospek_delete', 'proyek_view', 'proyek_create', 'proyek_edit', 'proyek_delete', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view', 'procurement_view', 'procurement_create', 'procurement_edit', 'master_data', 'users_manage', 'config_access', 'audit_view'] },
-  { id: 'R-03', name: 'PM', description: 'Kelola proyek dan prospek', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-04', name: 'Branch Manager', description: 'Kelola cabang dan approval', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-05', name: 'Dept Head', description: 'Oversight departemen', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-06', name: 'Management', description: 'Approval level management dan review', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view'] },
-  { id: 'R-07', name: 'Reviewer', description: 'Review dan validasi', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_view', 'laporan_view'] },
-  { id: 'R-08', name: 'Staff', description: 'Akses dasar operasional', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view'] },
+  { id: 'R-02', name: 'Admin', description: 'Kelola master data, pengguna, dan konfigurasi', permissions: ['dashboard:view', 'prospect:read', 'prospect:create', 'prospect:edit', 'prospect:delete', 'project:read', 'project:create', 'project:edit', 'project:delete', 'prospect:approve:transition', 'approval:view', 'kpi:view', 'kpi:manage', 'report:view:department', 'pengadaan:read', 'pengadaan:create', 'pengadaan:write', 'config:access', 'users:manage', 'audit:view'] },
+  { id: 'R-03', name: 'PM', description: 'Kelola proyek dan prospek', permissions: ['dashboard:view', 'prospect:read', 'prospect:create', 'prospect:edit', 'project:read', 'project:create', 'project:edit', 'pengadaan:read', 'prospect:approve:transition', 'approval:view', 'kpi:view', 'report:view:department'] },
+  { id: 'R-04', name: 'Branch Manager', description: 'Kelola cabang dan approval', permissions: ['dashboard:view', 'prospect:read', 'prospect:create', 'project:read', 'pengadaan:read', 'prospect:approve:transition', 'approval:view', 'kpi:view', 'report:view:department'] },
+  { id: 'R-05', name: 'Dept Head', description: 'Oversight departemen', permissions: ['dashboard:view', 'prospect:read', 'project:read', 'pengadaan:read', 'prospect:approve:transition', 'approval:view', 'kpi:view', 'report:view:department'] },
+  { id: 'R-06', name: 'Management', description: 'Approval level management dan review', permissions: ['dashboard:view', 'prospect:read', 'prospect:create', 'prospect:edit', 'project:read', 'project:create', 'project:edit', 'pengadaan:read', 'prospect:approve:transition', 'approval:view', 'kpi:view', 'kpi:manage', 'report:view:department'] },
+  { id: 'R-07', name: 'Reviewer', description: 'Review dan validasi', permissions: ['dashboard:view', 'prospect:read', 'project:read', 'approval:view', 'report:view:department'] },
+  { id: 'R-08', name: 'Staff', description: 'Akses dasar operasional', permissions: ['dashboard:view', 'prospect:read', 'prospect:create', 'project:read'] },
 ];
 
 const INITIAL_NOTIF_TEMPLATES: MasterNotifTemplate[] = [
@@ -504,7 +504,7 @@ export const useMasterDataStore = create<MasterDataState>()(
     }),
     {
       name: 'kinetic-master-data',
-      version: 6,
+      version: 8,
       migrate: (persisted: unknown, version: number) => {
         let current = (persisted || {}) as any;
         if (version < 5) {
@@ -513,6 +513,14 @@ export const useMasterDataStore = create<MasterDataState>()(
         }
         if (version < 6) {
           // v6: Refresh roles with procurement permissions
+          current = { ...current, roles: INITIAL_ROLES };
+        }
+        if (version < 7) {
+          // v7: Refresh users with RBAC-aligned demo accounts
+          current = { ...current, users: INITIAL_USERS };
+        }
+        if (version < 8) {
+          // v8: Refresh permissions keys — underscore → colon (RBAC alignment)
           current = { ...current, roles: INITIAL_ROLES };
         }
         return current;

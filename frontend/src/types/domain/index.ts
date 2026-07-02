@@ -140,6 +140,7 @@ export interface Project {
   currentStageId?: string;
   ownerUserId?: string;
   scopeDepartments?: string[];
+  branch?: string;
   pricing?: {
     value: number;
     margin: number;
