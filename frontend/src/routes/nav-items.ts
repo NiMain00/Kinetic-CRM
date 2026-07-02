@@ -32,6 +32,7 @@ export const configNavItems: NavItem[] = [
   { label: 'Periode', path: '/config/period', icon: 'calendar_month', permissions: ['config:access'] },
   { label: 'Tipe Pertanyaan', path: '/config/question-types', icon: 'help_outline', permissions: ['config:access'] },
   { label: 'Access Control', path: '/config/access-control', icon: 'security', permissions: ['config:access'] },
+  { label: 'Konfigurasi Input', path: '/config/input-options', icon: 'checklist', permissions: ['config:access'] },
 ];
 
 export function filterNavItems(items: NavItem[], role: string, userPermissions?: string[]): NavItem[] {

@@ -107,6 +107,7 @@ const ConfigIntegrationPage = LazyLoadPermission(lazy(() => import('@/features/c
 const ConfigUploadPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigUploadPage')), ['config:access']);
 const ConfigPeriodPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigPeriodPage')), ['config:access']);
 const ConfigQuestionTypesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigQuestionTypesPage')), ['config:access']);
+const ConfigInputPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigInputPage')), ['config:access']);
 
 // Error pages
 const ForbiddenPage = LazyLoad(lazy(() => import('@/features/errors/ForbiddenPage')));
@@ -206,6 +207,7 @@ export default function AppRouter() {
         <Route path="config/period" element={<ConfigPeriodPage />} />
         <Route path="config/question-types" element={<ConfigQuestionTypesPage />} />
         <Route path="config/access-control" element={<ConfigAccessControlPage />} />
+        <Route path="config/input-options" element={<ConfigInputPage />} />
 
         {/* Error pages */}
         <Route path="403" element={<ForbiddenPage />} />
