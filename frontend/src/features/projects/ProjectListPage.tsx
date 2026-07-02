@@ -6,11 +6,10 @@ import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatt
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
 import { Button, Card, Table, Modal, type Column } from '@/components/ui';
 import { exportCSV } from '@/utils/export';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import FilterPanel from '@/components/shared/FilterPanel';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useOwnerFilter } from '@/hooks/useOwnerFilter';
-
-type PipelineTab = 'all' | 'aktif' | 'menang' | 'kalah' | 'selesai';
 
 const PAGE_SIZE = 20;
 
@@ -28,19 +27,12 @@ function getDeadlineInfo(dateStr?: string): { label: string; variant: 'success' 
   return { label: `${diffDays} hari lagi`, variant: 'success' };
 }
 
-const PIPELINE_TABS: { id: PipelineTab; label: string }[] = [
-  { id: 'all', label: 'Semua Proyek' },
-  { id: 'aktif', label: 'Aktif' },
-  { id: 'menang', label: 'Menang' },
-  { id: 'kalah', label: 'Kalah' },
-  { id: 'selesai', label: 'Selesai' },
-];
-
 export default function ProjectListPage() {
   const navigate = useNavigate();
   const { can } = useAuthz();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<PipelineTab>('all');
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const pipelineTabOptions = useActiveOptions('pipeline_tabs');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [drawerProject, setDrawerProject] = useState<typeof projects[number] | null>(null);
@@ -115,7 +107,7 @@ export default function ProjectListPage() {
     currentPage * PAGE_SIZE,
   );
 
-  const handleTabClick = (tab: PipelineTab) => {
+  const handleTabClick = (tab: string) => {
     setActiveTab(tab);
     setCurrentPage(1);
   };
@@ -259,17 +251,17 @@ export default function ProjectListPage() {
       />
 
       <nav className="flex flex-wrap gap-1 p-1 bg-surface-container rounded-xl border border-border/60">
-        {PIPELINE_TABS.map((tab) => (
+        {pipelineTabOptions.map((opt) => (
           <button
-            key={tab.id}
-            onClick={() => handleTabClick(tab.id)}
+            key={opt.value}
+            onClick={() => handleTabClick(opt.value)}
             className={`px-4 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
-              activeTab === tab.id
+              activeTab === opt.value
                 ? 'bg-surface text-primary shadow-sm border border-border/60 font-bold'
                 : 'text-secondary hover:bg-surface-container-high'
             }`}
           >
-            {tab.label}
+            {opt.label}
           </button>
         ))}
       </nav>
