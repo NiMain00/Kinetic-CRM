@@ -80,7 +80,7 @@ export default function KPIDashboardPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Dashboard</h2>
           <p className="text-[11px] text-outline mt-0.5">Ringkasan kinerja indikator utama organisasi secara real-time.</p>
@@ -135,7 +135,7 @@ export default function KPIDashboardPage() {
             })}
           </div>)}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
             <div className="lg:col-span-7 bg-surface border border-border/60 rounded-2xl p-6 shadow-xs">
               <h4 className="font-bold text-on-surface text-xs mb-6">Win Rate Trend (YTD)</h4>
               <div className="h-56 flex items-end justify-between gap-3 px-2 border-b border-border" aria-label="Grafik tren win rate">

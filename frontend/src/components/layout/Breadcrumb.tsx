@@ -58,9 +58,9 @@ export default function Breadcrumb() {
   if (segments.length === 0) return null;
 
   return (
-    <nav className="px-4 lg:px-8 py-3 bg-surface border-b border-border/60 flex items-center gap-1 text-xs" aria-label="Navigasi halaman">
-      <Link to="/dashboard" className="text-outline hover:text-primary transition-colors" aria-label="Beranda">
-        <span className="material-symbols-outlined text-sm" aria-hidden="true">home</span>
+    <nav className="px-3 sm:px-4 lg:px-8 py-2 sm:py-3 bg-surface border-b border-border/60 flex items-center gap-1 text-xs overflow-x-auto scrollbar-none" aria-label="Navigasi halaman">
+      <Link to="/dashboard" className="text-outline hover:text-primary transition-colors shrink-0 touch-min-h flex items-center" aria-label="Beranda">
+        <span className="material-symbols-outlined text-sm sm:text-base" aria-hidden="true">home</span>
       </Link>
       {segments.map((seg, i) => {
         const path = '/' + segments.slice(0, i + 1).join('/');
@@ -69,11 +69,11 @@ export default function Breadcrumb() {
 
         return (
           <React.Fragment key={path}>
-            <span className="material-symbols-outlined text-outline text-xs" aria-hidden="true">chevron_right</span>
+            <span className="material-symbols-outlined text-outline text-xs shrink-0" aria-hidden="true">chevron_right</span>
             {isLast ? (
-              <span className="text-on-surface font-semibold truncate max-w-[200px]" aria-current="page">{label}</span>
+              <span className="text-on-surface font-semibold truncate max-w-[120px] sm:max-w-[200px] whitespace-nowrap" aria-current="page">{label}</span>
             ) : (
-              <Link to={path} className="text-outline hover:text-primary transition-colors truncate max-w-[200px]">
+              <Link to={path} className="text-outline hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-[200px] whitespace-nowrap touch-min-h flex items-center py-1">
                 {label}
               </Link>
             )}

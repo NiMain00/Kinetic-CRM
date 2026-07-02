@@ -60,7 +60,7 @@ export default function UserDetailPage() {
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Profile Card */}
         <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
             <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl shrink-0">{initials}</div>
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-3 flex-wrap">
@@ -108,7 +108,7 @@ export default function UserDetailPage() {
             <span className="material-symbols-outlined text-primary text-[20px]">history</span>
             Aktivitas Terbaru
           </h3>
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-left text-xs table-auto" aria-label="Aktivitas pengguna">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">

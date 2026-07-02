@@ -407,7 +407,7 @@ export default function ProspectDetailPage() {
 
         {/* ─── HEADER CARD ─── */}
         <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
-          <div className="flex flex-col lg:flex-row lg:items-start gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl font-extrabold text-on-surface truncate">{prospect.name}</h1>
@@ -461,7 +461,7 @@ export default function ProspectDetailPage() {
         </div>
 
         {/* ─── STAT CARDS ─── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { icon: 'inventory_2', label: 'Potensi Unit', value: `${prospect.potensiUnit} Unit` },
             { icon: 'category', label: 'Tipe Prospek', value: isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : prospect.status },
@@ -481,7 +481,7 @@ export default function ProspectDetailPage() {
         </div>
 
         {/* ─── MAIN 2-COLUMN CONTENT ─── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
 
           {/* LEFT: Tabs Content */}
           <div className="lg:col-span-8 space-y-6">
@@ -690,7 +690,7 @@ export default function ProspectDetailPage() {
                             </div>
                             <StatusBadge status={relatedProject.status} />
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                             <div>
                               <p className="text-xs text-secondary">Nama Proyek</p>
                               <p className="font-semibold text-on-surface">{relatedProject.name}</p>

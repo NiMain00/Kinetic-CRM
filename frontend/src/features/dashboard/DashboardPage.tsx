@@ -351,7 +351,7 @@ export default function DashboardPage() {
                 ))}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-3xl font-bold text-on-surface leading-none">{statusDistribution.total}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-on-surface leading-none">{statusDistribution.total}</p>
                 <p className="text-secondary text-[10px] uppercase tracking-wider mt-1">TOTAL</p>
               </div>
             </div>
@@ -422,7 +422,7 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scrollbar-none">
               <table className="w-full text-left text-sm">
                 <thead className="bg-surface-container-low text-secondary font-caption-xs uppercase border-b border-border/60">
                   <tr>

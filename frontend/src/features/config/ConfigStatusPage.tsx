@@ -109,8 +109,8 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
       </div>
 
       {/* Bento Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-1 flex flex-col gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="lg:col-span-1 flex flex-col gap-4 sm:gap-6">
           <div className="bg-surface-container-lowest p-6 rounded-xl border border-border shadow-sm">
             <p className="text-secondary font-label-sm text-label-sm mb-1 uppercase tracking-wider text-xs">Total Status</p>
             <h3 className="font-display-title text-display-title text-primary text-2xl">{statuses.length}</h3>
@@ -154,7 +154,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             <h4 className="font-heading-section text-heading-section text-on-surface text-base">Daftar Status</h4>
           </div>
 
-          <div className="overflow-x-auto text-sm table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none text-sm table-mobile-compact">
             <table className="w-full text-left border-collapse table-auto">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">
@@ -235,7 +235,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-6 flex-grow overflow-y-auto">
+          <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-4 sm:gap-6 flex-grow overflow-y-auto">
             <div className="space-y-1.5 text-sm">
               <label className="font-semibold text-on-surface-variant block">Kode Status *</label>
               <input
@@ -261,7 +261,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="space-y-1.5">
                 <label className="font-semibold text-on-surface-variant block">Urutan</label>
                 <input

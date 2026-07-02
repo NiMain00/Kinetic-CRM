@@ -189,7 +189,7 @@ export default function KPIReportPage() {
           <div className="p-5 border-b border-border">
             <h3 className="font-bold text-sm text-on-surface">Detail KPI Metrics</h3>
           </div>
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-left text-sm table-auto" aria-label="KPI Metrics">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">

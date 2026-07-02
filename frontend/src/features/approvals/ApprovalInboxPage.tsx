@@ -362,7 +362,7 @@ export default function ApprovalInboxView({
         description="Operations"
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <Card padding="sm">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</p>
           <div className="flex items-baseline gap-2 mt-2">
@@ -413,7 +413,7 @@ export default function ApprovalInboxView({
               </button>
             )}
           </div>
-          <div className="flex gap-2 overflow-x-auto w-full sm:w-auto">
+          <div className="flex gap-2 overflow-x-auto scrollbar-none w-full sm:w-auto">
             <span className="text-secondary font-label-sm text-label-sm whitespace-nowrap self-center">Tipe:</span>
             {(['Semua', 'Prospek', 'RKS', 'LPHS'] as FilterType[]).map((t) => (
               <button

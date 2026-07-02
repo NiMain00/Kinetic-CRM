@@ -105,7 +105,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
         </div>
       )}
 
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8">
         <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm p-8 space-y-8">
           <div>
             <h3 className="font-heading-section text-base font-bold text-on-surface mb-2 flex items-center">
@@ -116,7 +116,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
           </div>
 
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Mulai Delivery</label>
                 <div className="relative">
@@ -148,7 +148,7 @@ export default function DeliveryTab({ project, onShowNotification }: TabProps) {
             </div>
 
             {isCompleted && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Tanggal Selesai Aktual</label>
                   <div className="relative">

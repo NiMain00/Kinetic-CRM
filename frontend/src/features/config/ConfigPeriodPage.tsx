@@ -58,7 +58,7 @@ export default function ConfigPeriodPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">Konfigurasi Periode</h2>
           <p className="text-[11px] text-outline mt-0.5">Kelola periode fiskal untuk pelaporan dan target.</p>
@@ -95,7 +95,7 @@ export default function ConfigPeriodPage() {
           )}
 
           <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
@@ -145,7 +145,7 @@ export default function ConfigPeriodPage() {
             <label className="font-semibold text-on-surface block">Nama Periode *</label>
             <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Q1 2026" required />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="font-semibold text-on-surface block">Tanggal Mulai *</label>
               <input type="date" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required />

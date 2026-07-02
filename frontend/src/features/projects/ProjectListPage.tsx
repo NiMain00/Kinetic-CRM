@@ -304,7 +304,7 @@ export default function ProjectListPage() {
         />
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <button onClick={() => handleTabClick('all')} className="text-left">
           <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
             <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Proyek</p>
@@ -368,7 +368,7 @@ export default function ProjectListPage() {
         }
       >
         {drawerProject && (
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
             <div>
               <p className="text-[11px] text-outline uppercase tracking-wider font-semibold mb-1">Kode Proyek</p>
               <p className="text-sm font-medium text-on-surface font-mono">{drawerProject.code}</p>

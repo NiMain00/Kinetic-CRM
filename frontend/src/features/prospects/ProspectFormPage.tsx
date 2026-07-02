@@ -281,7 +281,7 @@ export default function ProspectFormPage() {
           <p className="text-sm text-secondary mt-1">Lengkapi informasi prospek, data customer, dan pertanyaan standar di bawah ini.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           {/* LEFT COLUMN: Customer Info */}
           <div className="lg:col-span-6 bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
             <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">

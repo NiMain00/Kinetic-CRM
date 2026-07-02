@@ -55,7 +55,7 @@ export default function ConfigDashboardPage() {
             onClick={() => navigate(item.path)}
             className="bg-surface-container-lowest border border-border rounded-xl p-6 text-left hover:border-primary hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
           >
-            <div className="flex items-start gap-4">
+            <div className="flex items-start gap-4 flex-wrap">
               <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
                 <span className="material-symbols-outlined text-2xl">{ICON_MAP[item.label] || 'settings'}</span>
               </div>

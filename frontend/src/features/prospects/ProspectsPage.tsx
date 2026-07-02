@@ -420,7 +420,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-none">
             <table className="w-full text-left border-collapse text-sm table-fixed">
               <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border/60 sticky top-0 z-10 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.08)]">
                 <tr>

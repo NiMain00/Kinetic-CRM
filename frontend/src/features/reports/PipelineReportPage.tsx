@@ -237,7 +237,7 @@ export default function PipelineReportPage() {
               </div>
             </div>
           </div>
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-left text-sm table-auto" aria-label="Pipeline Records">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">

@@ -353,6 +353,58 @@ html {
   }
 }
 
+/* Hide scrollbar for overflowing nav/phase stepper */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile tap highlight reset */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent layout shift on mobile when sidebar opens */
+@media (max-width: 767px) {
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+  }
+}
+
+/* Responsive container padding helper */
+.responsive-pad {
+  padding-left: clamp(0.75rem, 4vw, 2rem);
+  padding-right: clamp(0.75rem, 4vw, 2rem);
+}
+
+/* Mobile-first card row: single column on small screens */
+.responsive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(var(--grid-cols, 4), 1fr);
+  }
+}
+
+@supports (scrollbar-gutter: stable) {
+  .scrollbar-gutter-stable {
+    scrollbar-gutter: stable;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .slide-in-left,
   .slide-out-left {

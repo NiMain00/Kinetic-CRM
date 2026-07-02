@@ -232,7 +232,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 <p className="text-secondary text-xs">Identitas nomor tender dan nama paket di portal e-proc.</p>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               <div className="flex flex-col gap-2">
                 <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Nomor Tender</label>
                 <input
@@ -339,7 +339,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 <div className="flex flex-col gap-2">
                   <label className="font-label-sm text-xs font-semibold text-on-surface-variant">Lokasi Pelaksanaan Pekerjaan Resmi</label>
                   <input

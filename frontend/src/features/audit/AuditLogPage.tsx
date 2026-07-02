@@ -99,7 +99,7 @@ export default function AuditLogPage() {
       </Card>
 
       <Card padding="none">
-        <div className="overflow-x-auto table-mobile-compact">
+        <div className="overflow-x-auto scrollbar-none table-mobile-compact">
           <table className="w-full text-left text-sm table-auto">
             <thead>
               <tr className="bg-surface-container-low border-b border-border">

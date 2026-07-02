@@ -89,7 +89,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
 
   return (
     <div className="space-y-8 animate-fade-in text-on-surface">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         <section className="lg:col-span-5 bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6">
           <h3 className="font-heading-section text-base font-bold text-on-surface mb-6 flex items-center">
             <span className="material-symbols-outlined mr-2 text-primary">gavel</span>
@@ -98,7 +98,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
           <div className="space-y-6">
             <div>
               <label className="font-label-sm text-xs font-semibold text-secondary mb-3 block">Hasil Tender</label>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => setOutcome('menang')}
@@ -155,7 +155,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
                 Detail Kontrak Pemenang
               </h3>
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="col-span-2">
                     <CurrencyInput
                       label="Nilai Kontrak Akhir"

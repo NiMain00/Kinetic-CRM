@@ -286,7 +286,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
         {filteredEvents.map((event) => {
           const colors = eventColors[event.type];
           return (
-            <div key={event.id} className="relative z-10 grid grid-cols-12 gap-4">
+            <div key={event.id} className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4">
               <div className="col-span-12 lg:col-span-1 flex justify-center lg:justify-start">
                 <div className={`w-8 h-8 rounded-full ${colors.bg} border-2 ${colors.border} flex items-center justify-center ${colors.text} shadow-sm shrink-0`}>
                   <span className="material-symbols-outlined text-[18px]">{eventIcons[event.type]}</span>

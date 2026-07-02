@@ -63,7 +63,7 @@ export default function MasterHolidayPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Master Hari Libur
@@ -91,7 +91,7 @@ export default function MasterHolidayPage() {
           </Card>
 
           <Card padding="none">
-            <div className="overflow-x-auto table-mobile-compact">
+            <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Hari Libur">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">

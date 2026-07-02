@@ -61,7 +61,7 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
   }
 
   return (
-    <nav ref={tabListRef} className="flex border-b border-border/60 overflow-x-auto" role="tablist" onKeyDown={onKeyDown} aria-label="Tab navigasi">
+    <nav ref={tabListRef} className="flex border-b border-border/60 overflow-x-auto scrollbar-none" role="tablist" onKeyDown={onKeyDown} aria-label="Tab navigasi">
       {tabs.map((tab) => (
         <button
           key={tab.id}

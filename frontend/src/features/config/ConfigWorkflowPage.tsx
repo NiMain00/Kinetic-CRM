@@ -41,7 +41,7 @@ export default function ConfigWorkflowPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-5 shrink-0 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-5 shrink-0 shadow-sm z-10">
         <h2 className="font-display-title text-base font-extrabold text-on-surface">Konfigurasi Workflow</h2>
         <p className="text-[11px] text-outline mt-0.5">Atur alur kerja untuk setiap entitas dalam sistem.</p>
       </div>
@@ -73,7 +73,7 @@ export default function ConfigWorkflowPage() {
                   const cfg = STATUS_CONFIG[step.status];
                   const isLast = idx === steps.length - 1;
                   return (
-                    <div key={step.id} className="flex items-start gap-5 relative pb-8">
+                    <div key={step.id} className="flex items-start gap-3 sm:gap-5 relative pb-8">
                       {!isLast && (
                         <div className={`absolute left-[15px] top-8 w-0.5 h-full -translate-x-1/2 ${step.status === 'completed' ? 'bg-success' : 'bg-surface-container-high'}`} />
                       )}

@@ -50,7 +50,7 @@ export default function ConfigUploadPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-5 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">Konfigurasi Upload File</h2>
           <p className="text-[11px] text-outline mt-0.5">Atur batas dan pengaturan upload file di sistem.</p>
@@ -76,7 +76,7 @@ export default function ConfigUploadPage() {
 
           <Card header={<h3 className="font-bold text-sm text-on-surface">Pengaturan Upload</h3>} padding="lg">
             <div className="space-y-6 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Maksimum Ukuran File (MB) *</label>
                   <input type="number" value={formMaxSize} onChange={e => setFormMaxSize(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={1} max={100} />

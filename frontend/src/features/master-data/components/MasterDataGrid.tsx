@@ -29,9 +29,8 @@ function SectionCard({ entry, getCount, getActiveCount, onCardClick }: {
   );
 }
 
-function SectionGroup({ label, color, entries, getCount, getActiveCount, onCardClick }: {
+function SectionGroup({ label, entries, getCount, getActiveCount, onCardClick }: {
   label: string;
-  color: string;
   entries: MasterDataEntry[];
   getCount: (e: MasterDataEntry) => number;
   getActiveCount?: (e: MasterDataEntry) => number;
@@ -42,13 +41,10 @@ function SectionGroup({ label, color, entries, getCount, getActiveCount, onCardC
   return (
     <div>
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-1 h-5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+        <div className="w-1 h-5 rounded-full shrink-0 bg-gray-300 dark:bg-gray-600" />
         <h3 className="text-xs font-bold text-outline tracking-wide">{label}</h3>
         <div className="flex-1 border-t border-border/30" />
-        <span
-          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold leading-tight"
-          style={{ backgroundColor: `${color}15`, color }}
-        >
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold leading-tight bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
           <span className="material-symbols-outlined text-[10px] leading-none">database</span>
           {total} Records
         </span>
@@ -100,15 +96,15 @@ export default function MasterDataGrid({ entries, getCount, getActiveCount, onCa
       {frequent.length > 0 && (
         <div>
           <div className="flex items-center gap-3 mb-3">
-            <span className="material-symbols-outlined text-sm text-amber-500 shrink-0">star</span>
+            <span className="material-symbols-outlined text-sm text-green-600 shrink-0">star</span>
             <h3 className="text-xs font-bold text-outline tracking-wide">Sering Digunakan</h3>
             <div className="flex-1 border-t border-border/30" />
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold leading-tight bg-amber-500/10 text-amber-600">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold leading-tight bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               <span className="material-symbols-outlined text-[10px] leading-none">database</span>
               {frequentTotal} Records
             </span>
           </div>
-          <div className={`grid grid-cols-2 gap-3 ${frequent.length === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
+          <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${frequent.length === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
             {frequent.map((entry) => (
               <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} onCardClick={onCardClick} />
             ))}
@@ -123,7 +119,6 @@ export default function MasterDataGrid({ entries, getCount, getActiveCount, onCa
           <SectionGroup
             key={cat.key}
             label={cat.label}
-            color={cat.color}
             entries={catEntries}
             getCount={getCount}
             getActiveCount={getActiveCount}

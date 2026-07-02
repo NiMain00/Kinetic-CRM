@@ -63,7 +63,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">Konfigurasi SLA & Eskalasi</h2>
           <p className="text-[11px] text-outline mt-0.5">Atur batas waktu layanan (SLA) dan aturan eskalasi untuk setiap jenis persetujuan.</p>
@@ -83,7 +83,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
           </div>
 
           <div className="bg-surface-container-lowest border border-border rounded-xl shadow-xs overflow-hidden">
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
@@ -145,7 +145,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
                   <option value="approval">General Approval</option>
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Ambang Peringatan *</label>
                   <input type="number" value={formWarning} onChange={e => setFormWarning(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required min={1} />
@@ -155,7 +155,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
                   <input type="number" value={formCritical} onChange={e => setFormCritical(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required min={1} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Unit Waktu</label>
                   <select value={formUnit} onChange={e => setFormUnit(e.target.value as 'hours' | 'days')} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">

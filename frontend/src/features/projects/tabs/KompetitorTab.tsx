@@ -76,7 +76,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
         {competitors.length === 0 && (
           <p className="text-sm text-secondary mb-4">Belum ada data kompetitor. Tambahkan kompetitor di bawah.</p>
         )}
-        <div className="overflow-x-auto table-mobile-compact">
+        <div className="overflow-x-auto scrollbar-none table-mobile-compact">
           <table className="w-full text-left text-sm border-collapse table-auto">
             <thead className="bg-surface-container-low text-on-surface border-b border-border">
               <tr>

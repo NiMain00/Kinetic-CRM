@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CalendarView from '@/components/shared/CalendarView';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -15,6 +16,7 @@ function normalizeDate(d: string): string {
 }
 
 export default function CalendarPage() {
+  const navigate = useNavigate();
   const holidays = useMasterDataStore((s) => s.holidays);
   const projects = useProjectStore((s) => s.projects);
 
@@ -153,7 +155,7 @@ export default function CalendarPage() {
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto">
-          <CalendarView events={events} />
+          <CalendarView events={events} onAddEvent={() => navigate('/projects/new')} />
         </div>
       </div>
     </div>

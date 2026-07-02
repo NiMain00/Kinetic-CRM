@@ -163,7 +163,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       {/* Header bar */}
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Notification Configuration
@@ -193,7 +193,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
       <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar space-y-8 text-left">
 
         {/* Statistics Widgets */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
 
           <div className="bg-surface-container-lowest border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
             <div>
@@ -300,7 +300,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           </div>
 
           {/* Records Table */}
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
@@ -454,7 +454,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               {/* Roles Selection */}
               <div className="space-y-2">
                 <label className="font-semibold text-on-surface block">Recipient Role Target Audience</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {['ADMIN', 'PM', 'CREATOR', 'EXECUTIVE', 'ALL'].map((r) => {
                     const isChecked = editingRecipients.includes(r);
                     return (

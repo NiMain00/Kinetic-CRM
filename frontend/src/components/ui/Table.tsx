@@ -139,12 +139,12 @@ export default function Table<T = Record<string, unknown>>({
         ))}
       </div>
     ) : (
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-none">
         <table className="w-full text-left text-sm" aria-label={ariaLabel} role="table">
           <thead>
             <tr className="bg-surface-container-low border-b border-border/60">
               {columns.map((col) => (
-                <th key={col.key} className={`px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}>
+                <th key={col.key} className={`px-3 sm:px-4 lg:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}`}>
                   {col.header}
                 </th>
               ))}
@@ -154,7 +154,7 @@ export default function Table<T = Record<string, unknown>>({
             {[1, 2, 3, 4, 5].map((i) => (
               <tr key={i} className="border-b border-border/60">
                 {columns.map((col) => (
-                  <td key={col.key} className="px-6 py-4"><div className="h-4 bg-surface-container-high rounded-lg skeleton w-3/4"></div></td>
+                  <td key={col.key} className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4"><div className="h-4 bg-surface-container-high rounded-lg skeleton w-3/4"></div></td>
                 ))}
               </tr>
             ))}
@@ -198,7 +198,7 @@ export default function Table<T = Record<string, unknown>>({
 
   return (
     <div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto scrollbar-none">
         <table className="w-full text-left text-sm" aria-label={ariaLabel} role="table">
           <thead>
             <tr className={`bg-surface-container-low border-b border-border/60 ${stickyHeader ? 'sticky top-0 z-10' : ''}`}>
@@ -212,7 +212,7 @@ export default function Table<T = Record<string, unknown>>({
                   aria-checked={col.key === '_selection' ? allSelected : undefined}
                   aria-sort={col.key !== '_selection' && sortKey === (col.sortKey || col.key) ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                   aria-label={col.key === '_selection' ? 'Pilih semua' : getSortLabel(col)}
-                  className={`px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.key === '_selection' ? 'cursor-pointer' : col.sortable ? 'cursor-pointer hover:text-primary select-none' : ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}
+                  className={`px-3 sm:px-4 lg:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider ${col.key === '_selection' ? 'cursor-pointer' : col.sortable ? 'cursor-pointer hover:text-primary select-none' : ''} ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}
                 >
                   <div className="flex items-center gap-1">
                     {col.key === '_selection' ? (
@@ -245,7 +245,7 @@ export default function Table<T = Record<string, unknown>>({
                 className={`${onRowClick ? 'cursor-pointer hover:bg-primary/5' : 'hover:bg-surface-container-low'} transition-colors`}
               >
                 {displayColumns.map((col) => (
-                  <td key={col.key} className={`px-6 py-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}>
+                  <td key={col.key} className={`px-3 sm:px-4 lg:px-6 py-3 sm:py-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}>
                     {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                   </td>
                 ))}
@@ -260,7 +260,7 @@ export default function Table<T = Record<string, unknown>>({
 
   function renderPagination() {
     return (
-      <nav className="flex items-center justify-between px-2 py-3 border-t border-border/60" aria-label="Navigasi halaman">
+      <nav className="flex items-center justify-between px-2 sm:px-4 py-3 border-t border-border/60" aria-label="Navigasi halaman">
         <span className="text-xs text-secondary">
           {page * pageSize + 1}–{Math.min((page + 1) * pageSize, sortedData.length)} dari {sortedData.length}
         </span>

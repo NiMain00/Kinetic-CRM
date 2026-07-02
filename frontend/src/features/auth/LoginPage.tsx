@@ -188,7 +188,7 @@ export default function LoginPage() {
             <p className="text-caption-xs text-secondary text-center mb-3">
               Pilih akun demo untuk masuk otomatis
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {demoAccounts.map((acct) => {
                 const isSelected = username === acct.username;
                 const color = acct.username === 'admin' ? ACCOUNT_COLORS.admin : (ACCOUNT_COLORS[acct.role] || 'bg-surface-container-low0');

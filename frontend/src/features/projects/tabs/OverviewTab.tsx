@@ -16,11 +16,11 @@ export default function OverviewTab({ project }: TabProps) {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
       <div className="md:col-span-2 space-y-6">
         <Card padding="lg">
           <h3 className="font-heading-section text-heading-section mb-4">Informasi Proyek</h3>
-          <div className="grid grid-cols-2 gap-y-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 text-sm">
             <div>
               <p className="text-secondary text-xs uppercase tracking-wider">Kode Proyek</p>
               <p className="font-semibold text-on-surface text-base">{project?.code}</p>

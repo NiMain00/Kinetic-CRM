@@ -98,7 +98,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
               </span>
             </div>
             <h5 className="text-base font-extrabold text-on-surface">{item.name}</h5>
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-[10px] text-outline uppercase font-bold block">Cabang</span>
                 <p className="font-semibold text-on-surface">{item.branch}</p>
@@ -176,7 +176,7 @@ export default function ApprovalReviewDrawer({ item, onClose, onApprove, onRejec
         </div>
 
         {/* Footer Actions */}
-        <div className="p-6 bg-surface-container-low border-t border-border grid grid-cols-2 gap-4 shrink-0">
+        <div className="p-6 bg-surface-container-low border-t border-border grid grid-cols-1 sm:grid-cols-2 gap-4 shrink-0">
           <button
             onClick={() => onReject(item, comment)}
             className="py-2.5 border border-danger text-danger font-bold rounded-xl hover:bg-danger hover:text-white transition-all text-sm"

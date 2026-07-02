@@ -74,7 +74,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       
       {/* Top action header info */}
-      <div className="bg-surface border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Profil Pengguna
@@ -88,14 +88,14 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
         <div className="max-w-5xl mx-auto space-y-8 text-left">
           
           {/* Main profile layout bento grid */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
             
             {/* Left Card - Primary profile details */}
             <div className="md:col-span-8 bg-surface border border-border/60 rounded-2xl shadow-xs p-6 sm:p-8">
               
               <form onSubmit={handleSaveProfile} className="space-y-6">
                 
-                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 border-b border-border pb-6">
+                <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-8 border-b border-border pb-6">
                   
                   {/* Camera trigger avatar */}
                   <div className="flex flex-col items-center gap-2 group shrink-0">
@@ -288,7 +288,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
 
           {/* Regional preferences preferences block */}
           <div className="bg-surface-container-low border border-border rounded-xl p-5 sm:p-6 shadow-xs">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
               
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-surface-container-lowest rounded-full border border-border flex items-center justify-center text-primary shrink-0 shade-md">

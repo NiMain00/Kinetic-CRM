@@ -146,7 +146,7 @@ export default function MasterQuestionPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface-container-lowest border-b border-border px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Master Pertanyaan
@@ -161,7 +161,7 @@ export default function MasterQuestionPage() {
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="md">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-              <div className="flex gap-2 p-1 bg-surface-container rounded-lg border border-border overflow-x-auto w-full sm:w-auto">
+              <div className="flex gap-2 p-1 bg-surface-container rounded-lg border border-border overflow-x-auto scrollbar-none w-full sm:w-auto">
                 {(['all', 'prospect', 'rks', 'both'] as const).map(tab => (
                   <button
                     key={tab}
@@ -184,7 +184,7 @@ export default function MasterQuestionPage() {
           </Card>
 
           <Card padding="none">
-            <div className="overflow-x-auto table-mobile-compact">
+            <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Pertanyaan">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
@@ -246,7 +246,7 @@ export default function MasterQuestionPage() {
                 <label className="font-semibold text-on-surface block">Teks Pertanyaan *</label>
                 <textarea value={form.question_text || ''} onChange={e => setForm({ ...form, question_text: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Masukkan teks pertanyaan" required />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Tipe Jawaban</label>
                   <select value={form.question_type_id || 'QT-01'} onChange={e => setForm({ ...form, question_type_id: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
@@ -274,7 +274,7 @@ export default function MasterQuestionPage() {
               })()}
 
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Kategori</label>
                   <select value={form.category || 'Data Pribadi'} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
@@ -286,7 +286,7 @@ export default function MasterQuestionPage() {
                   <input type="number" value={form.sort_order || 0} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Teks Petunjuk</label>
                   <input type="text" value={form.placeholder_text || ''} onChange={e => setForm({ ...form, placeholder_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks petunjuk input" />

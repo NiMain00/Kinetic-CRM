@@ -217,9 +217,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
       </div>
 
       {/* Duel Pane Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-start">
         {/* Left Side: Tree panel */}
-        <div className="lg:col-span-4 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[550px]">
+        <div className="lg:col-span-4 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[550px]">
           <div className="p-4 border-b border-border bg-surface-bright flex justify-between items-center shrink-0">
             <h3 className="font-label-sm text-primary text-sm font-bold">STRUKTUR HIERARKI</h3>
             <div className="flex gap-1 text-secondary">
@@ -238,7 +238,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
         </div>
 
         {/* Right Side: Form Editor */}
-        <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-[550px]">
+        <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[550px]">
           {/* Editor Header */}
           <div className="p-6 border-b border-border bg-surface-container-lowest flex justify-between items-center shrink-0">
             <div className="flex items-center gap-4">
@@ -272,7 +272,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
 
           {/* Form Fields body */}
           <div className="flex-grow overflow-y-auto p-6 space-y-6">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="space-y-1.5">
                 <label className="font-semibold text-on-surface-variant block">Nama Unit</label>
                 <input
@@ -392,7 +392,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
             <label className="font-semibold text-on-surface-variant block">Kode Unit *</label>
             <input value={addCode} onChange={e => setAddCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="CONTOH_001" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="font-semibold text-on-surface-variant block">Tipe Unit</label>
               <select value={addType} onChange={e => setAddType(e.target.value as OrgUnit['unitType'])} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
@@ -404,7 +404,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               <input className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-secondary" value={addParentId ? (orgUnits.find(u => u.id === addParentId)?.name || addParentId) : '(Root)'} disabled />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="font-semibold text-on-surface-variant block">Kota</label>
               <input value={addCity} onChange={e => setAddCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />

@@ -251,55 +251,55 @@ export default function ProjectDetailView({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
-      <section className="bg-surface border-b border-border/60 px-8 py-3.5 shadow-card z-30">
+      <section className="bg-surface border-b border-border/60 px-4 sm:px-8 py-2.5 sm:py-3.5 shadow-card z-30">
         {/* Dynamic Breadcrumbs */}
-        <nav className="flex items-center gap-1.5 text-xs text-secondary mb-2 flex-wrap">
+        <nav className="flex items-center gap-1 text-xs text-secondary mb-2 flex-wrap">
           <button
             type="button"
             onClick={() => onNavigatePage('projects')}
-            className="hover:text-primary transition-colors font-medium flex items-center gap-1 text-secondary"
+            className="hover:text-primary transition-colors font-medium flex items-center gap-1 text-secondary touch-min-h"
           >
-            <span className="material-symbols-outlined text-[16px] text-outline">tactic</span>
-            Projects
+            <span className="material-symbols-outlined text-[14px] sm:text-[16px] text-outline">tactic</span>
+            <span className="hidden sm:inline">Projects</span>
           </button>
-          <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
+          <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-outline">chevron_right</span>
           <button
             type="button"
             onClick={() => navigate(`/project/${projectId}/overview`)}
-            className="hover:text-primary transition-colors font-semibold text-on-surface-variant"
+            className="hover:text-primary transition-colors font-semibold text-xs sm:text-sm text-on-surface-variant truncate max-w-[80px] sm:max-w-none"
           >
             {project.code}
           </button>
           {!isOverview && (
             <>
-              <span className="material-symbols-outlined text-[14px] text-outline">chevron_right</span>
-              <span className="text-primary font-bold bg-primary/5 px-2 py-0.5 rounded border border-primary/20">
+              <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-outline">chevron_right</span>
+              <span className="text-primary font-bold bg-primary/5 px-1.5 sm:px-2 py-0.5 rounded border border-primary/20 text-xs truncate max-w-[80px] sm:max-w-none">
                 {activeTab}
               </span>
             </>
           )}
         </nav>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
               onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/project/${projectId}/overview`)}
-              className="p-1.5 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-surface"
+              className="p-1 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-surface shrink-0 touch-min"
             >
-              <span className="material-symbols-outlined text-primary text-[20px]">arrow_back</span>
+              <span className="material-symbols-outlined text-primary text-[18px] sm:text-[20px]">arrow_back</span>
             </button>
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="font-display-title text-xl font-bold tracking-tight">{project.code}</h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-status-indigo/10 text-status-indigo font-semibold text-xs border border-status-indigo/20">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+                <h2 className="font-display-title text-base sm:text-xl font-bold tracking-tight truncate">{project.code}</h2>
+                <span className="px-2 py-0.5 rounded-full bg-status-indigo/10 text-status-indigo font-semibold text-[10px] sm:text-xs border border-status-indigo/20 whitespace-nowrap">
                   {project.status}
                 </span>
               </div>
-              <p className="text-secondary text-sm line-clamp-1">{project.name}</p>
+              <p className="text-secondary text-xs sm:text-sm line-clamp-1 truncate">{project.name}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {can('proyek_delete') && (
             <button
               onClick={handleDeleteProject}
@@ -357,8 +357,8 @@ export default function ProjectDetailView({
           )}
 
           {/* Tab Navigation Bar — visible on ALL tabs */}
-          <nav className="bg-surface border-b border-border/60 px-8 overflow-x-auto select-none">
-            <div className="flex items-center gap-8 min-w-max">
+          <nav className="bg-surface border-b border-border/60 px-3 sm:px-8 overflow-x-auto select-none scrollbar-none">
+            <div className="flex items-center gap-4 sm:gap-8 min-w-max">
               {tabs.map((tab, index) => {
                 const locked = isTabLocked(index);
                 return (
@@ -366,7 +366,7 @@ export default function ProjectDetailView({
                     key={tab.label}
                     onClick={() => { if (!locked) handleTabChange(tab.path); }}
                     title={locked ? `Selesaikan tahap "${tabs[Math.min(accessibleUpToIndex, tabs.length - 1)]?.label}" terlebih dahulu` : tab.label}
-                    className={`py-4 font-label-sm text-sm transition-all relative flex items-center gap-1 ${
+                    className={`py-3 sm:py-4 font-label-sm text-xs sm:text-sm transition-all relative flex items-center gap-1 whitespace-nowrap ${
                       activeTab === tab.label
                         ? 'text-primary font-bold border-b-2 border-primary'
                         : locked
@@ -374,7 +374,7 @@ export default function ProjectDetailView({
                           : 'text-on-surface-variant hover:text-primary'
                     }`}
                   >
-                    {locked && <span className="material-symbols-outlined text-[16px]">lock</span>}
+                    {locked && <span className="material-symbols-outlined text-[14px] sm:text-[16px]">lock</span>}
                     {tab.label}
                   </button>
                 );
@@ -383,8 +383,8 @@ export default function ProjectDetailView({
           </nav>
 
           {/* Tab Panel Content */}
-          <div className="p-8">
-            <div className="max-w-6xl mx-auto space-y-6">
+          <div className="p-3 sm:p-6 lg:p-8">
+            <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'Overview' && (

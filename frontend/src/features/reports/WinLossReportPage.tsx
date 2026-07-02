@@ -190,7 +190,7 @@ export default function WinLossReportPage() {
               <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-3 py-1.5 border border-border/60 rounded-xl text-sm bg-surface outline-none focus:ring-1 focus:ring-primary" placeholder="Cari proyek atau client..." aria-label="Cari" />
             </div>
           </div>
-          <div className="overflow-x-auto table-mobile-compact">
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-left text-sm table-auto" aria-label="Win/Loss Records">
               <thead>
                 <tr className="bg-surface-container-low border-b border-border">

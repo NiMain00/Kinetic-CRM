@@ -50,7 +50,7 @@ export default function AuditPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface border-b border-border/60 px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Audit Trail
@@ -97,7 +97,7 @@ export default function AuditPage() {
           </div>
 
           <div className="bg-surface border border-border/60 rounded-2xl shadow-xs overflow-hidden">
-            <div className="overflow-x-auto table-mobile-compact">
+            <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-border text-secondary uppercase font-mono tracking-wider">
@@ -171,7 +171,7 @@ export default function AuditPage() {
                 <span className={`ml-auto px-2 py-0.5 rounded text-[10px] font-bold ${ACTION_COLORS[selectedLog.action] || ''}`}>{selectedLog.action}</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-3 bg-surface-container-low rounded-lg border border-border"><p className="text-outline uppercase font-mono text-[9px] mb-1">Entity Type</p><p className="font-bold text-on-surface">{selectedLog.entityType}</p></div>
                 <div className="p-3 bg-surface-container-low rounded-lg border border-border"><p className="text-outline uppercase font-mono text-[9px] mb-1">Entity ID</p><p className="font-bold text-on-surface font-mono">{selectedLog.entityId}</p></div>
               </div>
@@ -181,11 +181,11 @@ export default function AuditPage() {
 
               <div className="space-y-2">
                 <p className="font-bold text-on-surface">Data Sebelumnya (Before)</p>
-                <pre className="bg-slate-900 text-green-400 p-3 rounded-lg text-[10px] font-mono overflow-x-auto whitespace-pre-wrap">{selectedLog.before || 'null'}</pre>
+                <pre className="bg-slate-900 text-green-400 p-3 rounded-lg text-[10px] font-mono overflow-x-auto scrollbar-none whitespace-pre-wrap">{selectedLog.before || 'null'}</pre>
               </div>
               <div className="space-y-2">
                 <p className="font-bold text-on-surface">Data Sesudah (After)</p>
-                <pre className="bg-slate-900 text-green-400 p-3 rounded-lg text-[10px] font-mono overflow-x-auto whitespace-pre-wrap">{selectedLog.after || 'null'}</pre>
+                <pre className="bg-slate-900 text-green-400 p-3 rounded-lg text-[10px] font-mono overflow-x-auto scrollbar-none whitespace-pre-wrap">{selectedLog.after || 'null'}</pre>
               </div>
 
               <div className="flex items-center gap-2">

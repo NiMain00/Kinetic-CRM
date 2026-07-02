@@ -157,14 +157,14 @@ export default function DokumenTab({ project, onShowNotification }: TabProps) {
                 <div className="border-t border-border bg-surface-container-lowest">
                   {group.documents.length > 0 ? (
                     <div className="divide-y divide-border">
-                      <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-surface-container-low text-[10px] font-bold uppercase tracking-wider text-outline border-b border-border">
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 px-6 py-3 bg-surface-container-low text-[10px] font-bold uppercase tracking-wider text-outline border-b border-border">
                         <div className="col-span-8 sm:col-span-6">Nama File</div>
-                        <div className="hidden sm:block col-span-2 text-center">Versi</div>
+                        <div className="hidden sm:block sm:col-span-2 text-center">Versi</div>
                         <div className="col-span-2 hidden sm:block">Pengunggah</div>
                         <div className="col-span-4 sm:col-span-2 text-right">Aksi</div>
                       </div>
                       {group.documents.map((doc) => (
-                        <div key={doc.id} className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-surface-container-low/60 transition-all">
+                        <div key={doc.id} className="px-6 py-4 grid grid-cols-1 sm:grid-cols-12 gap-4 items-center hover:bg-surface-container-low/60 transition-all">
                           <div className="col-span-8 sm:col-span-6 flex items-center gap-3 truncate">
                             <span className={`material-symbols-outlined ${doc.iconColor} text-3xl shrink-0`}>{doc.icon}</span>
                             <div className="truncate">

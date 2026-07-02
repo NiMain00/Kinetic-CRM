@@ -159,10 +159,10 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm p-6 space-y-6">
           <h3 className="font-heading-section text-heading-section">Rincian Nilai Penawaran</h3>
-          <div className="grid grid-cols-2 gap-6 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
             <div className="space-y-2 col-span-2 sm:col-span-1">
               <CurrencyInput
                 label="Harga Penawaran"
@@ -300,7 +300,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
           keyExtractor={(row) => (row as CompetitorEntry).id}
           emptyState={<p className="text-sm text-secondary">Belum ada data kompetitor</p>}
         />
-        <div className="mt-4 pt-4 border-t border-border grid grid-cols-12 gap-3 items-end">
+        <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
           <div className="col-span-12 sm:col-span-3">
             <Input label="Nama Kompetitor" value={newCompName} onChange={e => setNewCompName(e.target.value)} placeholder="Nama kompetitor..." />
           </div>

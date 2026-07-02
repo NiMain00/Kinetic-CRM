@@ -17,11 +17,8 @@ export default function MasterDataCard({ config, count, activeCount, onClick }: 
       <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-transparent group-hover:bg-green-400/40 transition-colors" />
       <div className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-transparent group-hover:bg-green-400/40 transition-colors" />
       <div className="flex items-start gap-2.5">
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-200"
-          style={{ backgroundColor: config.bgColor }}
-        >
-          <span className="material-symbols-outlined text-lg" style={{ color: config.color }}>
+        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5 bg-gray-100 dark:bg-gray-800 group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors duration-200">
+          <span className="material-symbols-outlined text-lg text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
             {config.icon}
           </span>
         </div>
@@ -30,10 +27,7 @@ export default function MasterDataCard({ config, count, activeCount, onClick }: 
             {config.name}
           </h3>
           <div className="flex items-center gap-2.5 mt-1.5">
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold leading-tight"
-              style={{ backgroundColor: config.bgColor, color: config.color }}
-            >
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold leading-tight bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               {count}
             </span>
             {activeCount !== undefined && (

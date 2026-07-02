@@ -44,15 +44,15 @@ export default function Topbar({
   }, [mobileSearchOpen]);
 
   return (
-    <header className="w-full h-16 bg-surface border-b border-border flex items-center justify-between px-4 lg:px-8 shrink-0">
-      <div className="flex items-center gap-4 flex-1 min-w-0">
+    <header className="w-full h-14 sm:h-16 bg-surface border-b border-border flex items-center justify-between px-3 sm:px-4 lg:px-8 shrink-0">
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         {/* Hamburger menu - mobile only */}
         <button
           onClick={onMenuClick}
-          className="md:hidden flex items-center justify-center touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer"
+          className="md:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer"
           aria-label="Buka/tutup menu sidebar"
         >
-          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">menu</span>
+          <span className="material-symbols-outlined text-on-surface text-xl" aria-hidden="true">menu</span>
         </button>
 
         {/* Desktop search */}
@@ -63,68 +63,68 @@ export default function Topbar({
         {/* Mobile search icon */}
         <button
           onClick={() => setMobileSearchOpen(true)}
-          className="md:hidden flex items-center justify-center touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer ml-auto"
+          className="md:hidden flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer ml-auto"
           aria-label="Buka pencarian"
         >
-          <span className="material-symbols-outlined text-on-surface" aria-hidden="true">search</span>
+          <span className="material-symbols-outlined text-on-surface text-xl" aria-hidden="true">search</span>
         </button>
       </div>
 
-      <div className="flex items-center gap-2 lg:gap-3">
+      <div className="flex items-center gap-0 sm:gap-1 lg:gap-3">
         {/* Notification Bell */}
         <button
           onClick={onNotificationsClick}
-          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all relative cursor-pointer"
+          className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl hover:bg-surface-container transition-all relative cursor-pointer touch-min"
           aria-label={`Notifikasi${notificationCount > 0 ? `, ${notificationCount} belum dibaca` : ''}`}
         >
-          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">notifications</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (
-            <span className="absolute top-1 right-1 flex items-center justify-center w-4 h-4 bg-gold rounded-full ring-2 ring-surface">
+            <span className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[16px] h-4 bg-gold rounded-full ring-2 ring-surface px-1">
               <span className="text-[9px] leading-none text-white font-bold">{notificationCount > 99 ? '99+' : notificationCount}</span>
             </span>
           )}
         </button>
 
-        {/* Messages */}
+        {/* Messages - hidden on small mobile */}
         <button
-          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer"
+          className="hidden sm:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label="Pesan"
         >
-          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">chat</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">chat</span>
         </button>
 
-        {/* Global Settings Gear */}
+        {/* Global Settings Gear - hidden on small mobile */}
         <button
-          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer"
+          className="hidden sm:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label="Pengaturan"
         >
-          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">settings</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">settings</span>
         </button>
 
         {/* Dark Mode Toggle */}
         <button
           onClick={toggle}
-          className="flex items-center justify-center w-10 h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer"
+          className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label={dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
         >
-          <span className="material-symbols-outlined text-on-surface-variant" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
         </button>
 
-        <div className="h-8 w-[1px] bg-border mx-1 lg:mx-2"></div>
+        <div className="h-6 sm:h-8 w-[1px] bg-border mx-0 sm:mx-1 lg:mx-2"></div>
 
         {/* User Card */}
         <button
           type="button"
           onClick={onProfileClick}
-          className="flex items-center gap-3 hover:bg-surface-container p-2 rounded-xl transition-all text-left cursor-pointer outline-none touch-min-h"
+          className="flex items-center gap-2 sm:gap-3 hover:bg-surface-container p-1.5 sm:p-2 rounded-xl transition-all text-left cursor-pointer outline-none touch-min-h"
           aria-label="Profil pengguna"
         >
           <div className="text-right hidden sm:block">
-            <p className="font-label-sm text-label-sm text-on-surface leading-none font-bold">{userName}</p>
-            <p className="font-caption-xs text-caption-xs text-outline mt-1">{roleName}</p>
+            <p className="font-label-sm text-label-sm text-on-surface leading-none font-bold text-xs sm:text-sm truncate max-w-[120px]">{userName}</p>
+            <p className="font-caption-xs text-caption-xs text-outline mt-0.5 truncate max-w-[120px]">{roleName}</p>
           </div>
           <img
-            className="w-10 h-10 rounded-full border-2 border-primary/20 object-cover"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-primary/20 object-cover"
             alt="Foto profil pengguna"
             src={avatarUrl}
             referrerPolicy="no-referrer"
