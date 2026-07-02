@@ -1,20 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Badge, Button, Tabs, Card } from '@/components/ui';
-import type { Tab } from '@/components/ui/Tabs';
 import toast from 'react-hot-toast';
 import { useConfigStore } from '@/stores/configStore';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import type { WorkflowStep as ConfigWorkflowStep } from '@/types/domain/config';
 
 interface WorkflowStepDisplay extends ConfigWorkflowStep {
   status: 'completed' | 'current' | 'pending' | 'rejected';
   assignee: string;
 }
-
-const ENTITY_TABS: Tab[] = [
-  { id: 'prospek', label: 'Prospek', icon: 'travel_explore' },
-  { id: 'rks', label: 'RKS', icon: 'description' },
-  { id: 'lphs', label: 'LPHS', icon: 'assessment' },
-];
 
 const STATUS_CONFIG: Record<string, { color: string; icon: string; label: string }> = {
   completed: { color: 'bg-success text-white', icon: 'check_circle', label: 'Selesai' },
@@ -26,6 +20,14 @@ const STATUS_CONFIG: Record<string, { color: string; icon: string; label: string
 export default function ConfigWorkflowPage() {
   const [activeEntity, setActiveEntity] = useState('prospek');
   const workflows = useConfigStore((s) => s.workflows);
+  const workflowEntityOptions = useActiveOptions('workflow_entity_tabs');
+  const workflowEntityTabs = useMemo(() =>
+    workflowEntityOptions.map(o => ({
+      id: o.value,
+      label: o.label,
+      icon: (o.metadata?.icon || 'alt_route') as any,
+    })),
+  [workflowEntityOptions]);
 
   const steps: WorkflowStepDisplay[] = useMemo(() => {
     const definition = workflows.find((w) => w.entityType === activeEntity);
@@ -48,7 +50,7 @@ export default function ConfigWorkflowPage() {
 
       <div className="flex-1 overflow-y-auto p-6 sm:p-8">
         <div className="max-w-5xl mx-auto space-y-6">
-          <Tabs tabs={ENTITY_TABS} activeTab={activeEntity} onChange={setActiveEntity} variant="pills" />
+          <Tabs tabs={workflowEntityTabs} activeTab={activeEntity} onChange={setActiveEntity} variant="pills" />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-sm">
