@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
 import { useUserStore } from '@/stores/userStore';
 import type { User, UserRole } from '@/types/domain/users';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
 import { userSchema, type UserFormData } from '@/utils/validators';
 
@@ -23,6 +24,7 @@ export default function UserFormPage() {
   const roleOptions = useMemo(() => masterRoles.map(r => r.name), [masterRoles]);
   const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
   const deptOptions = useMemo(() => departments.map(d => d.name), [departments]);
+  const accountStatusOptions = useActiveOptions('account_statuses');
 
   const {
     register,
@@ -171,24 +173,17 @@ export default function UserFormPage() {
           <div className="space-y-1.5">
             <label className="font-semibold text-sm text-on-surface-variant">Status Akun</label>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer text-sm">
-                <input
-                  type="radio"
-                  value="active"
-                  {...register('status')}
-                  className="text-primary focus:ring-primary"
-                />
-                Aktif
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer text-sm">
-                <input
-                  type="radio"
-                  value="inactive"
-                  {...register('status')}
-                  className="text-primary focus:ring-primary"
-                />
-                Non-Aktif
-              </label>
+              {accountStatusOptions.map(o => (
+                <label key={o.value} className="flex items-center gap-2 cursor-pointer text-sm">
+                  <input
+                    type="radio"
+                    value={o.value}
+                    {...register('status')}
+                    className="text-primary focus:ring-primary"
+                  />
+                  {o.label}
+                </label>
+              ))}
             </div>
           </div>
 

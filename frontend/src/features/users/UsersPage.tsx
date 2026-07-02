@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { User, UserRole } from '../../types/domain/users';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
 
 interface UsersViewProps {
@@ -27,9 +28,10 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
   const roleOptions = useMemo(() => masterRoles.map(r => r.name as UserRole), [masterRoles]);
   const branchOptions = useMemo(() => branches.map(b => b.name), [branches]);
   const deptOptions = useMemo(() => departments.map(d => d.name), [departments]);
+  const accountStatusOptions = useActiveOptions('account_statuses');
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -40,7 +42,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
   const [formBranch, setFormBranch] = useState('');
   const [formDepartment, setFormDepartment] = useState('');
   const [formPhone, setFormPhone] = useState('');
-  const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('active');
+  const [formStatus, setFormStatus] = useState<string>('active');
 
   const handleOpenCreate = () => {
     setEditingUser(null);
@@ -75,10 +77,10 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
       return;
     }
     if (editingUser) {
-      setUsers(users.map(u => u.id === editingUser.id ? { ...u, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus } : u));
+      setUsers(users.map(u => u.id === editingUser.id ? { ...u, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'] } : u));
       onShowNotification(`Pengguna ${formFullName} berhasil diperbarui.`, 'success');
     } else {
-      const newUser: User = { id: `USR-${String(users.length + 1).padStart(3, '0')}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus, createdAt: new Date().toISOString().split('T')[0] };
+      const newUser: User = { id: `USR-${String(users.length + 1).padStart(3, '0')}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'], createdAt: new Date().toISOString().split('T')[0] };
       setUsers([newUser, ...users]);
       onShowNotification(`Pengguna ${formFullName} berhasil ditambahkan.`, 'success');
     }
@@ -137,10 +139,9 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                 <option value="all">Semua Role</option>
                 {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
-              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')} className="bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none">
+              <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none">
                 <option value="all">Semua Status</option>
-                <option value="active">Aktif</option>
-                <option value="inactive">Non-Aktif</option>
+                {accountStatusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
               <button onClick={() => { setSearchQuery(''); setRoleFilter('all'); setStatusFilter('all'); onShowNotification('Filter direset.', 'success'); }} className="px-3 py-2 border border-border rounded-lg text-xs font-semibold text-on-surface-variant hover:bg-surface-container-low cursor-pointer">Reset</button>
             </div>
@@ -256,8 +257,12 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
               <div className="space-y-2">
                 <label className="font-semibold text-on-surface block">Status Akun</label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="userStatus" checked={formStatus === 'active'} onChange={() => setFormStatus('active')} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="userStatus" checked={formStatus === 'inactive'} onChange={() => setFormStatus('inactive')} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
+                  {accountStatusOptions.map(o => (
+                    <label key={o.value} className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="userStatus" checked={formStatus === o.value} onChange={() => setFormStatus(o.value)} className="text-primary" />
+                      <span className="text-xs font-medium">{o.label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
             </form>
