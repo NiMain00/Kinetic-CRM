@@ -38,6 +38,9 @@ export interface Prospect {
   isConverted?: boolean;
   projectId?: string;
   createdByUserId?: string;
+  departmentId?: string;
+  currentStageId?: string;
+  ownerUserId?: string;
 }
 
 export interface RksData {
@@ -133,6 +136,10 @@ export interface Project {
   providerExisting?: string;
   deadlineTender?: string;
   createdByUserId?: string;
+  departmentId?: string;
+  currentStageId?: string;
+  ownerUserId?: string;
+  scopeDepartments?: string[];
   pricing?: {
     value: number;
     margin: number;
@@ -162,6 +169,15 @@ export interface Project {
   competitors?: CompetitorEntry[];
   documents?: DocGroup[];
   timeline?: TimelineEvent[];
+}
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  roleId: string;
+  departmentId: string;
+  assignedBy: string;
 }
 
 export interface ApprovalItem {
