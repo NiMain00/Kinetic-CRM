@@ -8,6 +8,7 @@ interface TopbarProps {
   avatarUrl?: string;
   onNotificationsClick?: () => void;
   onProfileClick?: () => void;
+  onConfigClick?: () => void;
   onMenuClick?: () => void;
   onHelpClick?: () => void;
   notificationCount?: number;
@@ -19,6 +20,7 @@ export default function Topbar({
   avatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWDEhx9DDyQcza1Ly6ob2GvUr0RcKFg_ZWPWDX3R89h599PQ2OzX6K21-q2Bb6wr08y-sjWBdJ0UmyRJEjaEB7mRRTEILqTd1oApCKVAcFeJesIsCQ52_trToPbTyXHoo1Ed8D8c6Z0inMzS44qG749ofXtaBpSw-btx_MFUMYLzJsAg_aaXXLqufa_N2Jw2s6ca5NfTPTnJJf0CH5RFHVv38b591w568UukqO4CLBCdt0GAI6TWz8IG_d8Fg4dMoJ1zEMVwF3E3rs',
   onNotificationsClick,
   onProfileClick,
+  onConfigClick,
   onMenuClick,
   onHelpClick,
   notificationCount = 3,
@@ -95,6 +97,7 @@ export default function Topbar({
 
         {/* Global Settings Gear - hidden on small mobile */}
         <button
+          onClick={onConfigClick}
           className="hidden sm:flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label="Pengaturan"
         >

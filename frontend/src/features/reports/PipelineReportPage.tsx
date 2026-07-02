@@ -12,8 +12,6 @@ const STATUS_TO_STAGE: Record<string, string> = {
   'LPHS/SIOS': 'LPHS',
   'Input Harga': 'Negosiasi Harga',
   'Pemenang': 'Management Apprv',
-  'Executing': 'Final Kontrak',
-  'Target Delivery': 'Final Kontrak',
 };
 
 const STAGE_COLORS = [

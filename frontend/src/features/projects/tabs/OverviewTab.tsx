@@ -9,7 +9,7 @@ interface TabProps {
 
 export default function OverviewTab({ project }: TabProps) {
   const statusBadgeVariant = (status: string): 'success' | 'warning' | 'info' | 'purple' | 'danger' => {
-    if (status === 'Executing' || status === 'Target Delivery') return 'success';
+    if (status === 'Selesai') return 'success';
     if (status === 'LPHS/SIOS' || status === 'Input Harga') return 'warning';
     if (status === 'Review RKS') return 'info';
     return 'purple';

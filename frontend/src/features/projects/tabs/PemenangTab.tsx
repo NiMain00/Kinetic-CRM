@@ -3,6 +3,7 @@ import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { Card, Button, Input, Select, CurrencyInput } from '@/components/ui';
+import { createProcurementFromProject } from '@/features/procurement/procurementService';
 
 interface TabProps {
   project?: Project;
@@ -76,7 +77,9 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
 
     // Advance status
     if (outcome === 'menang') {
-      updateProject(project.id, { status: 'Target Delivery', phase: 'Target Delivery' });
+      // Auto-create procurement record for the winning project
+      createProcurementFromProject(project);
+      updateProject(project.id, { status: 'Selesai', phase: 'Selesai' });
     } else {
       updateProject(project.id, { status: 'Kalah', phase: 'Selesai' });
     }

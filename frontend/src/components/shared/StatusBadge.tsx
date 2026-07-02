@@ -31,7 +31,7 @@ const FALLBACK_VARIANT_MAP: Record<string, BadgeVariant> = {
   potensial: 'success',
   'waiting pm': 'info',
   revision: 'warning',
-  'perlu verifikasi': 'info',
+  'perlu verifikasi': 'purple',
   'menunggu': 'warning',
   'follow up': 'info',
   'tender': 'purple',

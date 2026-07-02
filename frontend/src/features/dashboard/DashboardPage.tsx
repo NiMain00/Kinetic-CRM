@@ -50,7 +50,7 @@ export default function DashboardPage() {
   };
 
   const stats = useMemo(() => {
-    const active = projects.filter((p) => p.status !== 'Selesai' && p.status !== 'Executing');
+    const active = projects.filter((p) => p.status !== 'Selesai' && p.status !== 'Kalah');
     const won = projects.filter((p) => p.winnerDetails?.outcome === 'menang');
     const totalValue = active.reduce((sum, p) => sum + (p.estimatedValue || 0), 0);
     return {

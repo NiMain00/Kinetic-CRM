@@ -1,9 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import AppRouter from './routes/router';
 import { ErrorBoundary } from '@/components/shared';
 import { useThemeStore } from '@/stores/themeStore';
+import { useProjectStore } from '@/stores/projectStore';
+import { migrateExistingProjects } from '@/features/procurement/procurementService';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +26,18 @@ function App() {
       document.documentElement.classList.add('dark');
     }
     return unsub;
+  }, []);
+
+  // One-time migration: create procurement records for existing winning projects
+  const migrated = useRef(false);
+  useEffect(() => {
+    if (migrated.current) return;
+    migrated.current = true;
+    const projects = useProjectStore.getState().projects;
+    const count = migrateExistingProjects(projects);
+    if (count > 0) {
+      console.info(`[Migration] Created ${count} procurement record(s) from existing winning projects.`);
+    }
   }, []);
 
   return (

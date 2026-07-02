@@ -63,7 +63,7 @@ export default function KPIReportPage() {
       ? Math.round((slaCompliant / projectsWithDelivery.length) * 100)
       : 0;
 
-    const onTrack = projects.filter((p) => p.status === 'Executing' || p.status === 'Target Delivery').length;
+    const onTrack = projects.filter((p) => p.winnerDetails?.outcome === 'menang').length;
     const onTrackPct = totalProjects > 0 ? Math.round((onTrack / totalProjects) * 100) : 0;
 
     return [

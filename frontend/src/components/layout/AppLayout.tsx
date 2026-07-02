@@ -88,6 +88,7 @@ export default function AppLayout() {
           notificationCount={pendingApprovalsCount}
           onNotificationsClick={() => navigate('/notifications')}
           onProfileClick={() => navigate('/profile')}
+          onConfigClick={() => navigate('/config')}
           onMenuClick={() => setMobileSidebarOpen(true)}
           onHelpClick={() => setShortcutHelpOpen((v) => !v)}
         />

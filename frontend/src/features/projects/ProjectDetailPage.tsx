@@ -19,7 +19,6 @@ import LphsSiosTab from './tabs/LphsSiosTab';
 import HargaTab from './tabs/HargaTab';
 import KompetitorTab from './tabs/KompetitorTab';
 import PemenangTab from './tabs/PemenangTab';
-import DeliveryTab from './tabs/DeliveryTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
 import ChatTab from './tabs/ChatTab';
@@ -100,7 +99,6 @@ export default function ProjectDetailView({
       { label: 'Harga', path: 'harga' },
       { label: 'Kompetitor', path: 'kompetitor' },
       { label: 'Pemenang', path: 'pemenang' },
-      { label: 'Target Delivery', path: 'target-delivery' },
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
       { label: 'Diskusi', path: 'diskusi' },
@@ -110,12 +108,6 @@ export default function ProjectDetailView({
     } else {
       // LPHS/SIOS only for Tender projects
       items.splice(2, 1);
-    }
-    // Sembunyikan Target Delivery jika proyek kalah
-    const isKalah = project.status === 'Kalah' || project.winnerDetails?.outcome === 'kalah';
-    if (isKalah) {
-      const idx = items.findIndex(t => t.label === 'Target Delivery');
-      if (idx >= 0) items.splice(idx, 1);
     }
     return items;
   }, [project.type, isFromNonPotensial, project.status, project.winnerDetails?.outcome]);
@@ -127,23 +119,19 @@ export default function ProjectDetailView({
 
   const phaseLabel = STATUS_STEP_MAP[project.status] || 'RKS';
   const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
-  const isTerminal = project.status === 'Selesai' || project.status === 'Kalah' || project.status === 'Completed';
+  const isTerminal = project.status === 'Selesai' || project.status === 'Kalah';
   const accessibleUpToIndex = isTerminal ? tabs.length - 1 : (currentStepIndex >= 0 ? currentStepIndex : 0);
   const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
-  const isMenang = project.winnerDetails?.outcome === 'menang';
 
   const isTabLocked = (tabIndex: number) => {
     const tab = tabs[tabIndex];
     if (!tab) return true;
 
-    // Terminal states (Selesai, Kalah, Completed): all tabs unlocked
-    if (project.status === 'Selesai' || project.status === 'Kalah' || project.status === 'Completed') return false;
+    // Terminal states (Selesai, Kalah): all tabs unlocked
+    if (project.status === 'Selesai' || project.status === 'Kalah') return false;
 
     // Timeline, Dokumen & Diskusi: always unlocked
     if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi') return false;
-
-    // Target Delivery: unlocked once project outcome is menang (including Executing / Selesai)
-    if (tab.label === 'Target Delivery') return !isMenang;
 
     // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval (Tender)
     // atau langsung unlocked untuk Prospecting (tidak perlu LPHS)
@@ -348,9 +336,8 @@ export default function ProjectDetailView({
               isStepUnlocked={(index) => {
                 const step = tabs[index];
                 return (
-                  step.label === 'Timeline' || step.label === 'Dokumen' ||
-                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved) ||
-                  (step.label === 'Target Delivery' && isMenang)
+                  (step.label === 'Timeline' || step.label === 'Dokumen' ||
+                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved))
                 );
               }}
             />
@@ -399,9 +386,6 @@ export default function ProjectDetailView({
               <p className="text-sm text-outline mt-2 max-w-md">
                 {(() => {
                   const lockedTab = tabs[activeTabIndex];
-                  if (lockedTab?.label === 'Target Delivery') {
-                    return 'Tahap Target Delivery hanya dapat diakses setelah proyek dinyatakan MENANG. Silakan isi data Pemenang terlebih dahulu.';
-                  }
                   if (['Harga', 'Kompetitor', 'Pemenang'].includes(lockedTab?.label || '')) {
                     return 'Tahap ini dapat diakses setelah LPHS/SIOS mendapat final approval dari Management.';
                   }
@@ -444,12 +428,7 @@ export default function ProjectDetailView({
             <PemenangTab project={project} onShowNotification={handleShowNotification} />
           )}
 
-          {/* TAB 8: TARGET DELIVERY */}
-          {activeTab === 'Target Delivery' && (
-            <DeliveryTab project={project} onShowNotification={handleShowNotification} />
-          )}
-
-          {/* TAB 9: TIMELINE */}
+          {/* TAB 8: TIMELINE */}
           {activeTab === 'Timeline' && (
             <TimelineTab project={project} onShowNotification={handleShowNotification} />
           )}

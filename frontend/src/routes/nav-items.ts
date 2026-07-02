@@ -11,6 +11,7 @@ export const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['dashboard_view'] },
   { label: 'Prospek', path: '/prospects', icon: 'person', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['prospek_view'] },
   { label: 'Proyek', path: '/projects', icon: 'work', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['proyek_view'] },
+  { label: 'Proses Pengadaan', path: '/procurement', icon: 'inventory_2', permissions: ['procurement_view'] },
   { label: 'Persetujuan', path: '/approvals', icon: 'how_to_reg', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer'], permissions: ['approval_view'] },
   { label: 'Laporan', path: '/reports', icon: 'pie_chart', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management'], permissions: ['laporan_view'] },
   { label: 'Kalender', path: '/reports/calendar', icon: 'calendar_today', roles: ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Management', 'Reviewer', 'Staff'], permissions: ['laporan_view'] },

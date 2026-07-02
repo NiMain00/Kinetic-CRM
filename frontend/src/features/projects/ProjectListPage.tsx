@@ -13,7 +13,7 @@ type PipelineTab = 'all' | 'aktif' | 'menang' | 'kalah' | 'selesai';
 
 const PAGE_SIZE = 20;
 
-const terminalStatuses = ['Selesai', 'Kalah', 'Completed', 'Cancelled', 'Dibatalkan'];
+const terminalStatuses = ['Selesai', 'Kalah', 'Cancelled', 'Dibatalkan'];
 
 function getDeadlineInfo(dateStr?: string): { label: string; variant: 'success' | 'warning' | 'danger' | 'default' } | null {
   if (!dateStr) return null;

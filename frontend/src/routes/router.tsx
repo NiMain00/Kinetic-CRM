@@ -54,6 +54,11 @@ const ProjectListPage = LazyLoadPermission(lazy(() => import('@/features/project
 const ProjectFormPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectFormPage')), ['proyek_view']);
 const ProjectDetailPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectDetailPage')), ['proyek_view']);
 
+// Procurement
+const ProcurementListPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementListPage')), ['procurement_view']);
+const ProcurementFormPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementFormPage')), ['procurement_edit']);
+const ProcurementDetailPage = LazyLoadPermission(lazy(() => import('@/features/procurement/ProcurementDetailPage')), ['procurement_view']);
+
 // Approvals
 const ApprovalInboxPage = LazyLoadPermission(lazy(() => import('@/features/approvals/ApprovalInboxPage')), ['approval_view']);
 
@@ -136,6 +141,12 @@ export default function AppRouter() {
         <Route path="projects" element={<ProjectListPage />} />
         <Route path="projects/new" element={<ProjectFormPage />} />
         <Route path="project/:projectId/:tab?" element={<ProjectDetailPage />} />
+
+        {/* Procurement */}
+        <Route path="procurement" element={<ProcurementListPage />} />
+        <Route path="procurement/new" element={<ProcurementFormPage />} />
+        <Route path="procurement/:procurementId" element={<ProcurementDetailPage />} />
+        <Route path="procurement/:procurementId/:tab" element={<ProcurementDetailPage />} />
 
         {/* Approvals */}
         <Route path="approvals" element={<ApprovalInboxPage />} />

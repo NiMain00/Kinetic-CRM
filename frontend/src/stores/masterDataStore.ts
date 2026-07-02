@@ -315,7 +315,7 @@ const INITIAL_PROJECT_STATUSES: MasterProjectStatus[] = [
   { id: 'PS-05', code: 'revision', label: 'Revisi', description: 'Proyek dalam revisi', color_hex: '#D97706', text_color_hex: '#FFFFFF', sort_order: 5, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
   { id: 'PS-06', code: 'submit_harga', label: 'Input Harga', description: 'Input harga penawaran', color_hex: '#0D9488', text_color_hex: '#FFFFFF', sort_order: 6, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
   { id: 'PS-07', code: 'pengumuman_pemenang', label: 'Pengumuman Pemenang', description: 'Pengumuman pemenang tender', color_hex: '#EA580C', text_color_hex: '#FFFFFF', sort_order: 7, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
-  { id: 'PS-08', code: 'target_delivery', label: 'Target Delivery', description: 'Proyek dalam tahap delivery', color_hex: '#0284C7', text_color_hex: '#FFFFFF', sort_order: 8, is_system: true, is_terminal: false, is_active: true, applicable_to: 'both' },
+  { id: 'PS-08', code: 'target_delivery', label: 'Target Delivery (Digantikan)', description: 'Proyek dalam tahap delivery (tidak digunakan lagi)', color_hex: '#94A3B8', text_color_hex: '#FFFFFF', sort_order: 8, is_system: true, is_terminal: false, is_active: false, applicable_to: 'both' },
   { id: 'PS-09', code: 'selesai', label: 'Selesai', description: 'Proyek selesai', color_hex: '#16A34A', text_color_hex: '#FFFFFF', sort_order: 9, is_system: true, is_terminal: true, is_active: true, applicable_to: 'both' },
   { id: 'PS-10', code: 'cancelled', label: 'Dibatalkan', description: 'Proyek dibatalkan', color_hex: '#9F1239', text_color_hex: '#FFFFFF', sort_order: 10, is_system: true, is_terminal: true, is_active: true, applicable_to: 'both' },
 ];
@@ -389,6 +389,10 @@ const ALL_PERMISSIONS = [
   { key: 'kpi_manage', label: 'KPI - Kelola' },
   { key: 'laporan_view', label: 'Laporan - Lihat' },
   { key: 'master_data', label: 'Master Data' },
+  { key: 'procurement_view', label: 'Pengadaan - Lihat' },
+  { key: 'procurement_create', label: 'Pengadaan - Buat' },
+  { key: 'procurement_edit', label: 'Pengadaan - Edit' },
+  { key: 'procurement_delete', label: 'Pengadaan - Hapus' },
   { key: 'users_manage', label: 'Pengguna - Kelola' },
   { key: 'config_access', label: 'Konfigurasi - Akses' },
   { key: 'audit_view', label: 'Audit - Lihat' },
@@ -396,11 +400,11 @@ const ALL_PERMISSIONS = [
 
 const INITIAL_ROLES: MasterRole[] = [
   { id: 'R-01', name: 'Super Admin', description: 'Akses penuh ke seluruh sistem', permissions: ALL_PERMISSIONS.map(p => p.key) },
-  { id: 'R-02', name: 'Admin', description: 'Kelola master data, pengguna, dan konfigurasi', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'prospek_delete', 'proyek_view', 'proyek_create', 'proyek_edit', 'proyek_delete', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view', 'master_data', 'users_manage', 'config_access', 'audit_view'] },
-  { id: 'R-03', name: 'PM', description: 'Kelola proyek dan prospek', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-04', name: 'Branch Manager', description: 'Kelola cabang dan approval', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-05', name: 'Dept Head', description: 'Oversight departemen', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
-  { id: 'R-06', name: 'Management', description: 'Approval level management dan review', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view'] },
+  { id: 'R-02', name: 'Admin', description: 'Kelola master data, pengguna, dan konfigurasi', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'prospek_delete', 'proyek_view', 'proyek_create', 'proyek_edit', 'proyek_delete', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view', 'procurement_view', 'procurement_create', 'procurement_edit', 'master_data', 'users_manage', 'config_access', 'audit_view'] },
+  { id: 'R-03', name: 'PM', description: 'Kelola proyek dan prospek', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
+  { id: 'R-04', name: 'Branch Manager', description: 'Kelola cabang dan approval', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
+  { id: 'R-05', name: 'Dept Head', description: 'Oversight departemen', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'laporan_view'] },
+  { id: 'R-06', name: 'Management', description: 'Approval level management dan review', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'prospek_edit', 'proyek_view', 'proyek_create', 'proyek_edit', 'procurement_view', 'approval_process', 'approval_view', 'kpi_view', 'kpi_manage', 'laporan_view'] },
   { id: 'R-07', name: 'Reviewer', description: 'Review dan validasi', permissions: ['dashboard_view', 'prospek_view', 'proyek_view', 'approval_view', 'laporan_view'] },
   { id: 'R-08', name: 'Staff', description: 'Akses dasar operasional', permissions: ['dashboard_view', 'prospek_view', 'prospek_create', 'proyek_view'] },
 ];
@@ -500,15 +504,16 @@ export const useMasterDataStore = create<MasterDataState>()(
     }),
     {
       name: 'kinetic-master-data',
-      version: 5,
+      version: 6,
       migrate: (persisted: unknown, version: number) => {
-        const current = (persisted || {}) as any;
+        let current = (persisted || {}) as any;
         if (version < 5) {
           // v5: Force replace pertanyaan dengan data terbaru (pengadaan unit)
-          return {
-            ...current,
-            questions: INITIAL_QUESTIONS,
-          };
+          current = { ...current, questions: INITIAL_QUESTIONS };
+        }
+        if (version < 6) {
+          // v6: Refresh roles with procurement permissions
+          current = { ...current, roles: INITIAL_ROLES };
         }
         return current;
       },

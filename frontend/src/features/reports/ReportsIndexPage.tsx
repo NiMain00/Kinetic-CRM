@@ -22,8 +22,8 @@ export default function ReportsIndexPage() {
     const growthLabel = growthPct >= 0 ? `↑ ${growthPct}% vs last year` : `↓ ${Math.abs(growthPct)}% vs last year`;
     const growthColor = growthPct >= 0 ? 'text-success' : 'text-danger';
 
-    // Count on-track projects (Executing or Target Delivery)
-    const onTrack = projects.filter((p) => p.status === 'Executing' || p.status === 'Target Delivery').length;
+    // Count winning projects (menang)
+    const onTrack = projects.filter((p) => p.winnerDetails?.outcome === 'menang').length;
 
     return { totalProjects, winRate, wonCount, totalValue, growthLabel, growthColor, onTrack };
   }, [projects]);

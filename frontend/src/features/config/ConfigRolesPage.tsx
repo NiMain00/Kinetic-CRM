@@ -38,6 +38,15 @@ const MODULE_GROUPS: ModuleGroup[] = [
     ],
   },
   {
+    name: 'Pengadaan',
+    perms: [
+      { key: 'procurement_view', label: 'Lihat Pengadaan', shortLabel: 'Lihat' },
+      { key: 'procurement_create', label: 'Buat Pengadaan', shortLabel: 'Buat' },
+      { key: 'procurement_edit', label: 'Edit Pengadaan', shortLabel: 'Sunting' },
+      { key: 'procurement_delete', label: 'Hapus Pengadaan', shortLabel: 'Hapus' },
+    ],
+  },
+  {
     name: 'Persetujuan',
     perms: [
       { key: 'approval_process', label: 'Proses Persetujuan', shortLabel: 'Proses' },

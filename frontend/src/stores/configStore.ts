@@ -78,12 +78,9 @@ const INITIAL_PHASES: ProjectPhase[] = [
   { id: 'PH-05', status: 'Input Harga', phase: 'Harga', order: 5, isActive: true },
   { id: 'PH-06', status: 'Kompetitor', phase: 'Kompetitor', order: 6, isActive: true },
   { id: 'PH-07', status: 'Pemenang', phase: 'Pemenang', order: 7, isActive: true },
-  { id: 'PH-08', status: 'Target Delivery', phase: 'Target Delivery', order: 8, isActive: true },
-  { id: 'PH-09', status: 'Executing', phase: 'Timeline', order: 9, isActive: true },
-  { id: 'PH-10', status: 'Completed', phase: 'Dokumen', order: 10, isActive: true },
-  { id: 'PH-11', status: 'Kalah', phase: 'Selesai', order: 11, isActive: true },
-  { id: 'PH-12', status: 'Revisi', phase: 'Revisi', order: 12, isActive: true },
-  { id: 'PH-13', status: 'Selesai', phase: 'Selesai', order: 13, isActive: true },
+  { id: 'PH-08', status: 'Kalah', phase: 'Selesai', order: 8, isActive: true },
+  { id: 'PH-09', status: 'Revisi', phase: 'Revisi', order: 9, isActive: true },
+  { id: 'PH-10', status: 'Selesai', phase: 'Selesai', order: 10, isActive: true },
 ];
 
 const INITIAL_UPLOAD: UploadConfig = {
@@ -228,9 +225,9 @@ export const useConfigStore = create<ConfigState>()(
     }),
     {
       name: 'kinetic-config',
-      version: 2,
+      version: 3,
       migrate: (persistedState: any, version: number) => {
-        const current = persistedState || {};
+        let current = persistedState || {};
         if (version < 2) {
           // Merge: tambah item baru dari INITIAL_* yang belum ada di persisted, tanpa hapus data user
           const mergeById = <T extends { id: string }>(persisted: T[] | undefined, initial: T[]): T[] => {
@@ -244,13 +241,23 @@ export const useConfigStore = create<ConfigState>()(
             }
             return result;
           };
-          return {
+          current = {
             ...current,
             orgUnits: mergeById(current.orgUnits, INITIAL_ORG),
             slaConfigs: mergeById(current.slaConfigs, INITIAL_SLA),
             kpiTargets: mergeById(current.kpiTargets, INITIAL_TARGETS),
             connectors: mergeById(current.connectors, INITIAL_CONNECTORS),
             projectPhases: mergeById(current.projectPhases, INITIAL_PHASES),
+          };
+        }
+        if (version < 3) {
+          // Remove deprecated phases (Target Delivery, Executing, Completed)
+          const deprecatedIds = new Set(['PH-08', 'PH-09', 'PH-10']);
+          current = {
+            ...current,
+            projectPhases: (current.projectPhases || []).filter(
+              (p: any) => !deprecatedIds.has(p.id),
+            ),
           };
         }
         return current;

@@ -15,19 +15,18 @@ interface ProspectsViewProps {
   onNavigatePage: (page: string) => void;
 }
 
-type FilterTab = 'All' | 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved' | 'Perlu Verifikasi';
+type FilterTab = 'All' | 'Butuh Approval' | 'Non Potensial' | 'Potensial' | 'Revision' | 'Approved';
 
 const PAGE_SIZE = 10;
 
-const FILTER_TABS: FilterTab[] = ['All', 'Non Potensial', 'Potensial', 'Waiting PM', 'Revision', 'Approved', 'Perlu Verifikasi'];
+const FILTER_TABS: FilterTab[] = ['All', 'Butuh Approval', 'Non Potensial', 'Potensial', 'Revision', 'Approved'];
 const FILTER_LABELS: Record<FilterTab, string> = {
   All: 'Semua',
+  'Butuh Approval': 'Butuh Approval',
   'Non Potensial': 'Non Potensial',
   Potensial: 'Potensial',
-  'Waiting PM': 'Menunggu PM',
   Revision: 'Revisi',
   Approved: 'Disetujui',
-  'Perlu Verifikasi': 'Perlu Verifikasi',
 };
 
 type SortField = 'name' | 'client' | 'status' | 'author' | 'date';
@@ -109,8 +108,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         count = visibleProspects.filter(p => p.status === 'Non Potensial' || p.prospectType === 'non_potensial').length;
       } else if (tab === 'Potensial') {
         count = visibleProspects.filter(p => p.status === 'Potensial' || p.prospectType === 'potensial').length;
-      } else if (tab === 'Perlu Verifikasi') {
-        count = visibleProspects.filter(p => p.customerData?.needsVerification === true).length;
+      } else if (tab === 'Butuh Approval') {
+        count = visibleProspects.filter(p => p.customerData?.needsVerification === true || p.status === 'Waiting PM').length;
       } else {
         count = visibleProspects.filter(p => p.status === tab).length;
       }
@@ -130,8 +129,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       matchesTab = p.status === 'Non Potensial' || p.prospectType === 'non_potensial';
     } else if (activeFilter === 'Potensial') {
       matchesTab = p.status === 'Potensial' || p.prospectType === 'potensial';
-    } else if (activeFilter === 'Perlu Verifikasi') {
-      matchesTab = p.customerData?.needsVerification === true;
+    } else if (activeFilter === 'Butuh Approval') {
+      matchesTab = p.customerData?.needsVerification === true || p.status === 'Waiting PM';
     } else {
       matchesTab = p.status === activeFilter;
     }
