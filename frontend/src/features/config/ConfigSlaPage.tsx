@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import type { SlaConfig } from '@/types/domain/config';
 import { useConfigStore } from '@/stores/configStore';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 
 interface ConfigSlaViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
 }
-
-const ENTITY_LABELS: Record<string, string> = { prospek: 'Prospek Review', rks: 'RKS Approval', lphs: 'LPHS Review', approval: 'General Approval' };
 
 export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps) {
   const configs = useConfigStore((s) => s.slaConfigs);
@@ -15,6 +14,16 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
   const deleteConfigData = useConfigStore((s) => s.deleteConfigData);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<SlaConfig | null>(null);
+
+  const entityTypeOptions = useActiveOptions('sla_entity_types');
+  const slaUnitOptions = useActiveOptions('sla_units');
+  const escalationRoleOptions = useActiveOptions('escalation_roles');
+
+  const entityLabels = useMemo(() => {
+    const map: Record<string, string> = {};
+    entityTypeOptions.forEach(o => { map[o.value] = o.label; });
+    return map;
+  }, [entityTypeOptions]);
 
   const [formName, setFormName] = useState('');
   const [formEntityType, setFormEntityType] = useState<SlaConfig['entityType']>('approval');
@@ -100,7 +109,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
                   {configs.map(c => (
                     <tr key={c.id} className="hover:bg-surface-container-low/65 transition-colors">
                       <td className="px-6 py-4 font-bold text-on-surface">{c.name}</td>
-                      <td className="px-6 py-4"><span className="px-2 py-0.5 bg-surface-container rounded text-[10px] font-semibold text-on-surface-variant badge-compact">{ENTITY_LABELS[c.entityType] || c.entityType}</span></td>
+                      <td className="px-6 py-4"><span className="px-2 py-0.5 bg-surface-container rounded text-[10px] font-semibold text-on-surface-variant badge-compact">{entityLabels[c.entityType] || c.entityType}</span></td>
                       <td className="px-6 py-4 text-right font-mono font-bold text-warning">{c.warningThreshold} {c.unit === 'hours' ? 'h' : 'd'}</td>
                       <td className="px-6 py-4 text-right font-mono font-bold text-danger">{c.criticalThreshold} {c.unit === 'hours' ? 'h' : 'd'}</td>
                       <td className="px-6 py-4"><span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-[10px] font-bold badge-compact">{c.escalationRole}</span></td>
@@ -139,10 +148,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
               <div className="space-y-2">
                 <label className="font-semibold text-on-surface block">Tipe Entitas</label>
                 <select value={formEntityType} onChange={e => setFormEntityType(e.target.value as SlaConfig['entityType'])} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
-                  <option value="prospek">Prospek Review</option>
-                  <option value="rks">RKS Approval</option>
-                  <option value="lphs">LPHS Review</option>
-                  <option value="approval">General Approval</option>
+                  {entityTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -159,18 +165,13 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Unit Waktu</label>
                   <select value={formUnit} onChange={e => setFormUnit(e.target.value as 'hours' | 'days')} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
-                    <option value="hours">Jam</option>
-                    <option value="days">Hari</option>
+                    {slaUnitOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
                   <label className="font-semibold text-on-surface block">Role Eskalasi</label>
                   <select value={formEscalation} onChange={e => setFormEscalation(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
-                    <option>Admin</option>
-                    <option>PM</option>
-                    <option>Branch Manager</option>
-                    <option>Dept Head</option>
-                    <option>Super Admin</option>
+                    {escalationRoleOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
               </div>
