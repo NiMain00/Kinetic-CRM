@@ -11,10 +11,9 @@ import { useCustomerStore } from '@/stores/customerStore';
 import { useRbacStore } from '@/stores/rbacStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import type { Prospect } from '@/types/domain';
 import { projectSchema, type ProjectFormData } from '@/utils/validators';
-
-const PROJECT_TYPES = ['Tender', 'Prospecting'] as const;
 
 interface MemberEntry {
   deptId: string;
@@ -29,6 +28,7 @@ export default function ProjectFormPage() {
   const projectCount = useProjectStore((s) => s.projects.length);
   const user = useAuthStore((s) => s.user);
   const customers = useCustomerStore((s) => s.customers);
+  const projectTypeOptions = useActiveOptions('project_types');
 
   // RBAC
   const departments = useRbacStore((s) => s.departments);
@@ -211,7 +211,7 @@ export default function ProjectFormPage() {
                   className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-surface"
                   aria-label="Tipe Proyek"
                 >
-                  {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  {projectTypeOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
             </div>
