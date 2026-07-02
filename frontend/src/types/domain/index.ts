@@ -209,13 +209,6 @@ export interface TimelineEvent {
   fileSize?: string;
 }
 
-export const CUSTOMER_TYPES = [
-  { value: 'swasta', label: 'Swasta' },
-  { value: 'bumn', label: 'BUMN' },
-  { value: 'pemerintah', label: 'Pemerintah' },
-  { value: 'asing', label: 'Asing' },
-];
-
 export * from './users';
 
 // NOTE: Some parts of the app use a different Prospect/Project typing model.

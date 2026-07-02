@@ -3,7 +3,7 @@ import { prospectSchema } from '@/utils/validators';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Prospect, Customer } from '@/types/domain';
-import { CUSTOMER_TYPES } from '@/types/domain';
+import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -33,6 +33,7 @@ export default function ProspectFormPage() {
   const addApproval = useApprovalStore((s) => s.addApproval);
   const questions = useMasterDataStore((s) => s.questions);
   const questionTypes = useMasterDataStore((s) => s.questionTypes);
+  const customerTypeOptions = useActiveOptions('customer_types');
 
   // Ambil pertanyaan aktif dari master data dengan context 'prospect' atau 'both'
   const prospectQuestions = useMemo(() => {
@@ -385,7 +386,7 @@ export default function ProspectFormPage() {
                 <div className="space-y-1.5">
                   <label className="font-semibold text-sm text-on-surface-variant">Tipe Customer</label>
                   <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm">
-                    {CUSTOMER_TYPES.map(t => (
+                    {customerTypeOptions.map(t => (
                       <option key={t.value} value={t.value}>{t.label}</option>
                     ))}
                   </select>
