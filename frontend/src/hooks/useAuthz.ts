@@ -51,7 +51,7 @@ export function useAuthz() {
         );
       },
 
-      /** Highest non-project role: 'director' | 'admin' | 'manager' | 'staff' */
+      /** Highest non-project role: 'super_admin' | 'director' | 'admin' | 'manager' | 'staff' */
       highestRole: (): string => {
         if (!userId) return 'staff';
         return authz.getUserHighestRole(userId);

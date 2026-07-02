@@ -71,6 +71,7 @@ const DEPT_COLORS: Record<string, string> = {
 };
 
 const ROLE_BADGES: Record<string, string> = {
+  super_admin: 'bg-danger/10 text-danger',
   staff: 'bg-surface-container-high text-on-surface-variant',
   manager: 'bg-primary/10 text-primary',
   admin: 'bg-status-purple/10 text-status-purple',
@@ -560,13 +561,14 @@ function UserAssignmentsTab() {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  TAB: Role Permissions
+//  TAB: Role Permissions (improved: search, collapse, stats, scope)
 // ════════════════════════════════════════════════════════════════
 
 function RolePermissionsTab() {
   const permissions = useRbacStore((s) => s.permissions);
   const roles = useRbacStore((s) => s.roles);
   const rolePermissions = useRbacStore((s) => s.rolePermissions);
+  const departments = useRbacStore((s) => s.departments);
   const addRolePermission = useRbacStore((s) => s.addRolePermission);
   const removeRolePermission = useRbacStore((s) => s.removeRolePermission);
 
@@ -585,15 +587,69 @@ function RolePermissionsTab() {
 
   /** Draft state: per key {roleId}:{permissionId} → 'add' | 'remove' | null (no draft) */
   const [draftChanges, setDraftChanges] = useState<Record<string, 'add' | 'remove' | null>>({});
-
   const hasDraft = Object.values(draftChanges).some(v => v !== null);
 
-  const getPermStatus = (roleId: string, permCode: string): { assigned: boolean; rp?: RbacRolePermission } => {
-    const perm = permissions.find(p => p.code === permCode);
-    if (!perm) return { assigned: false };
-    const rp = permMap[roleId]?.[perm.id];
-    return { assigned: !!rp, rp };
-  };
+  // Collapsible module groups
+  const [collapsedMods, setCollapsedMods] = useState<Record<string, boolean>>({});
+  const toggleModule = (name: string) =>
+    setCollapsedMods(prev => ({ ...prev, [name]: !prev[name] }));
+
+  // Search filter
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Scope type preference for newly added permissions
+  const [defaultScope, setDefaultScope] = useState<'department' | 'global'>('department');
+
+  // Filtered groups & flattened perm list
+  const filteredGroups = useMemo(() => {
+    if (!searchQuery.trim()) return MODULE_GROUPS;
+    const q = searchQuery.toLowerCase();
+    return MODULE_GROUPS.map(mg => ({
+      ...mg,
+      perms: mg.perms.filter(p =>
+        p.code.toLowerCase().includes(q) || p.label.toLowerCase().includes(q) || mg.name.toLowerCase().includes(q)
+      ),
+    })).filter(mg => mg.perms.length > 0);
+  }, [searchQuery]);
+
+  // Stats per role (assigned / total)
+  const roleStats = useMemo(() => {
+    const stats: Record<string, { assigned: number; total: number }> = {};
+    for (const role of deptRoles) {
+      const total = ALL_PERM_CODES.length;
+      const assigned = ALL_PERM_CODES.filter(code => {
+        const perm = permissions.find(p => p.code === code);
+        return perm && !!permMap[role.id]?.[perm.id];
+      }).length;
+      stats[role.id] = { assigned, total };
+    }
+    return stats;
+  }, [deptRoles, permissions, permMap]);
+
+  // Stats per permission (how many roles have it assigned)
+  const permStats = useMemo(() => {
+    const stats: Record<string, number> = {};
+    for (const code of ALL_PERM_CODES) {
+      const perm = permissions.find(p => p.code === code);
+      if (!perm) continue;
+      let count = 0;
+      for (const role of deptRoles) {
+        if (permMap[role.id]?.[perm.id]) count++;
+      }
+      stats[code] = count;
+    }
+    return stats;
+  }, [deptRoles, permissions, permMap]);
+
+  // Draft summary counts
+  const draftSummary = useMemo(() => {
+    let adds = 0, removes = 0;
+    for (const [, action] of Object.entries(draftChanges)) {
+      if (action === 'add') adds++;
+      else if (action === 'remove') removes++;
+    }
+    return { adds, removes };
+  }, [draftChanges]);
 
   /** Get effective checked state (store + draft combined) */
   const getEffectiveChecked = (roleId: string, permId: string): boolean => {
@@ -601,8 +657,19 @@ function RolePermissionsTab() {
     const draft = draftChanges[key];
     if (draft === 'add') return true;
     if (draft === 'remove') return false;
-    // No draft → use original store state
     return !!permMap[roleId]?.[permId];
+  };
+
+  /** Get scope badge info for an assigned permission */
+  const getScopeBadge = (roleId: string, permId: string): { label: string; color: string } | null => {
+    const rp = permMap[roleId]?.[permId];
+    if (!rp) return null;
+    if (rp.scopeType === 'global') return { label: 'G', color: 'bg-status-purple/10 text-status-purple border-status-purple/20' };
+    if (rp.scopeId) {
+      const dept = departments.find(d => d.id === rp.scopeId);
+      if (dept) return { label: dept.code.slice(0, 2), color: 'bg-amber-100 text-amber-700 border-amber-200' };
+    }
+    return { label: 'D', color: 'bg-primary/10 text-primary border-primary/20' };
   };
 
   const handleToggle = (roleId: string, permCode: string) => {
@@ -615,21 +682,28 @@ function RolePermissionsTab() {
     setDraftChanges(prev => {
       const next = { ...prev };
       if (isCurrentlyChecked) {
-        // Want to uncheck
-        if (!originalAssigned) {
-          // Original is already unchecked → clear draft (revert to original)
-          next[key] = null;
-        } else {
-          next[key] = 'remove';
-        }
+        if (!originalAssigned) next[key] = null;
+        else next[key] = 'remove';
       } else {
-        // Want to check
-        if (originalAssigned) {
-          // Original is already checked → clear draft (revert to original)
-          next[key] = null;
-        } else {
-          next[key] = 'add';
-        }
+        if (originalAssigned) next[key] = null;
+        else next[key] = 'add';
+      }
+      return next;
+    });
+  };
+
+  /** Toggle all permissions in a module for a single role */
+  const handleToggleModule = (roleId: string, mg: typeof MODULE_GROUPS[0], checked: boolean) => {
+    setDraftChanges(prev => {
+      const next = { ...prev };
+      for (const pDef of mg.perms) {
+        const perm = permissions.find(pm => pm.code === pDef.code);
+        if (!perm) continue;
+        const key = `${roleId}:${perm.id}`;
+        const originalAssigned = !!permMap[roleId]?.[perm.id];
+        if (checked && !originalAssigned) next[key] = 'add';
+        else if (!checked && originalAssigned) next[key] = 'remove';
+        else if (next[key] !== undefined) next[key] = null;
       }
       return next;
     });
@@ -639,10 +713,10 @@ function RolePermissionsTab() {
     let count = 0;
     for (const [key, action] of Object.entries(draftChanges)) {
       if (!action) continue;
-      const [, permissionId] = key.split(':');
-      const roleId = key.split(':')[0];
+      const [roleId, ...rest] = key.split(':');
+      const permissionId = rest.join(':');
       if (action === 'add') {
-        addRolePermission(roleId, permissionId, 'department', undefined);
+        addRolePermission(roleId, permissionId, defaultScope, undefined);
         count++;
       } else {
         const rp = permMap[roleId]?.[permissionId];
@@ -650,7 +724,7 @@ function RolePermissionsTab() {
       }
     }
     setDraftChanges({});
-    toast.success(`${count} perubahan diterapkan`);
+    toast.success(`${count} perubahan diterapkan (scope: ${defaultScope})`);
   };
 
   const handleCancel = () => {
@@ -658,29 +732,184 @@ function RolePermissionsTab() {
     toast('Perubahan dibatalkan', { icon: 'ℹ️' });
   };
 
+  /** Description map for tooltips */
+  const permDescription: Record<string, string> = {
+    'dashboard:view': 'Melihat halaman dashboard utama',
+    'notification:read': 'Membaca notifikasi sistem',
+    'profile:manage': 'Mengelola profil diri sendiri',
+    'prospect:read': 'Melihat daftar dan detail prospek',
+    'prospect:write:prospecting': 'Mengedit prospek yang masih di tahap Prospecting',
+    'prospect:approve:transition': 'Menyetujui transisi stage prospek',
+    'project:read': 'Melihat daftar dan detail proyek',
+    'project:create': 'Membuat proyek baru',
+    'project:write': 'Mengedit data proyek',
+    'project:manage:members': 'Mengelola anggota tim proyek',
+    'project:manage:scope': 'Mengelola scope departemen proyek',
+    'pengadaan:read': 'Melihat daftar dan detail pengadaan',
+    'pengadaan:create': 'Membuat pengadaan baru',
+    'pengadaan:write': 'Mengedit data pengadaan',
+    'report:view:department': 'Melihat laporan department sendiri',
+    'report:view:crossdept': 'Melihat laporan lintas department',
+    'config:access': 'Mengakses halaman konfigurasi sistem',
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="font-bold text-sm text-on-surface">Permission Matrix</h3>
-          <p className="text-[11px] text-outline">Atur permission untuk setiap role</p>
+          <p className="text-[11px] text-outline">
+            Atur permission untuk setiap role &bull; {deptRoles.length} role, {ALL_PERM_CODES.length} permissions
+          </p>
         </div>
-        {hasDraft && (
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={handleCancel}>Batal</Button>
-            <Button variant="primary" size="sm" onClick={handleApply}>Terapkan Perubahan</Button>
+        <div className="flex items-center gap-2">
+          {/* Scope type selector */}
+          <div className="flex items-center gap-1.5 bg-surface-container border border-border rounded-lg px-2.5 py-1.5">
+            <span className="text-[9px] text-outline font-semibold uppercase">Scope:</span>
+            <select
+              value={defaultScope}
+              onChange={e => setDefaultScope(e.target.value as 'department' | 'global')}
+              className="text-[10px] bg-transparent border-none outline-none font-semibold text-on-surface cursor-pointer"
+            >
+              <option value="department">Department</option>
+              <option value="global">Global</option>
+            </select>
           </div>
+          {hasDraft && (
+            <>
+              <Button variant="secondary" size="sm" onClick={handleCancel}>Batal</Button>
+              <Button variant="primary" size="sm" onClick={handleApply}>
+                Terapkan ({draftSummary.adds + draftSummary.removes})
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Draft Summary Bar ── */}
+      {hasDraft && (
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs">
+          <span className="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-400">edit_note</span>
+          <span className="text-amber-800 dark:text-amber-300 font-semibold">Perubahan Tertunda:</span>
+          {draftSummary.adds > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold">
+              +{draftSummary.adds} tambah
+            </span>
+          )}
+          {draftSummary.removes > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-danger/10 text-danger text-[10px] font-bold">
+              -{draftSummary.removes} hapus
+            </span>
+          )}
+          <span className="text-outline ml-auto text-[9px]">Scope: {defaultScope}</span>
+        </div>
+      )}
+
+      {/* ── Search ── */}
+      <div className="relative">
+        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-outline">search</span>
+        <input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          placeholder="Cari permission berdasarkan nama atau kode…"
+          className="w-full pl-8 pr-3 py-2 text-xs bg-surface-container-lowest border border-border rounded-xl focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[14px]">close</span>
+          </button>
         )}
       </div>
 
+      {/* ── Role Coverage Stats ── */}
+      <div className="flex flex-wrap gap-2">
+        {deptRoles.map(role => {
+          const st = roleStats[role.id];
+          if (!st) return null;
+          const pct = st.total > 0 ? Math.round((st.assigned / st.total) * 100) : 0;
+          return (
+            <div key={role.id} className="flex items-center gap-1.5 bg-surface-container-lowest border border-border rounded-lg px-2.5 py-1.5 text-[10px]">
+              <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${ROLE_BADGES[role.name] || ''}`}>
+                {role.name.replace(/_/g, ' ')}
+              </span>
+              <span className="text-outline">
+                <span className="font-bold text-on-surface-variant">{st.assigned}</span>/{st.total}
+              </span>
+              <div className="w-10 h-1.5 bg-surface-container rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary transition-all"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Permission Matrix Table ── */}
       <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-x-auto">
         <table className="w-full text-xs table-auto border-collapse">
           <thead>
             <tr className="bg-surface-container-low border-b border-border">
-              <th className="px-3 py-2.5 sticky left-0 bg-surface-container-low z-10 border-r border-border text-[10px] uppercase font-mono tracking-wider text-secondary text-left">Role</th>
-              {MODULE_GROUPS.map(mg => (
-                <th key={mg.name} colSpan={mg.perms.length} className="px-1 py-2.5 text-center text-[9px] uppercase font-mono tracking-wider text-secondary border-r border-border last:border-r-0">
-                  {mg.name}
+              <th className="px-3 py-2.5 sticky left-0 bg-surface-container-low z-20 border-r border-border text-[10px] uppercase font-mono tracking-wider text-secondary text-left min-w-[130px]">
+                Role
+              </th>
+              {filteredGroups.map(mg => (
+                <th
+                  key={mg.name}
+                  colSpan={mg.perms.length}
+                  className="px-1 py-0 border-r border-border last:border-r-0 relative align-top"
+                >
+                  {/* Collapse toggle button */}
+                  <button
+                    onClick={() => toggleModule(mg.name)}
+                    className="w-full flex items-center justify-center gap-1 px-1.5 py-2 text-[9px] uppercase font-mono tracking-wider text-secondary hover:text-on-surface transition-colors cursor-pointer"
+                    title={collapsedMods[mg.name] ? 'Perluas modul' : 'Ciutkan modul'}
+                  >
+                    <span className="material-symbols-outlined text-[12px]">
+                      {collapsedMods[mg.name] ? 'expand_more' : 'expand_less'}
+                    </span>
+                    {mg.name}
+                    {mg.perms.length > 1 && (
+                      <span className="text-[7px] text-outline ml-0.5">({mg.perms.length})</span>
+                    )}
+                  </button>
+
+                  {/* Sub-header: permission labels */}
+                  {!collapsedMods[mg.name] && (
+                    <div className="flex border-t border-border/50">
+                      {mg.perms.map(pDef => (
+                        <div
+                          key={pDef.code}
+                          className="flex-1 px-1 py-1 text-center text-[7px] text-outline font-semibold truncate border-r border-border/30 last:border-r-0"
+                          title={`${pDef.code} — ${pDef.label}`}
+                        >
+                          {pDef.label}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Footer: adoption count per permission */}
+                  {!collapsedMods[mg.name] && (
+                    <div className="flex border-t border-border/50 bg-surface-container-low/60">
+                      {mg.perms.map(pDef => {
+                        const cnt = permStats[pDef.code] || 0;
+                        return (
+                          <div
+                            key={pDef.code}
+                            className="flex-1 px-1 py-1 text-center text-[6px] text-outline border-r border-border/30 last:border-r-0"
+                          >
+                            {cnt}/{deptRoles.length}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </th>
               ))}
             </tr>
@@ -688,38 +917,93 @@ function RolePermissionsTab() {
           <tbody className="divide-y divide-border">
             {deptRoles.map((r, idx) => {
               const rowBg = idx % 2 === 1 ? 'bg-surface-container-low/40' : 'bg-surface-container-lowest';
+              const st = roleStats[r.id];
               return (
                 <tr key={r.id} className={`${rowBg} hover:bg-surface-container/60 transition-colors`}>
-                  <td className={`px-3 py-2.5 sticky left-0 z-10 border-r border-border ${rowBg}`}>
-                    <div className="flex items-center gap-2">
+                  <td className={`px-3 py-1.5 sticky left-0 z-10 border-r border-border ${rowBg}`}>
+                    <div className="flex items-center gap-1.5">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${ROLE_BADGES[r.name] || 'bg-surface-container text-on-surface-variant'}`}>
                         {r.name.replace(/_/g, ' ')}
                       </span>
-                      {r.is_system && <span className="text-[8px] text-outline">S</span>}
+                      {r.is_system && <span className="text-[7px] text-outline bg-surface-container px-1 rounded">SYS</span>}
+                      {st && (
+                        <span className="text-[7px] text-outline ml-auto">
+                          {st.assigned}/{st.total}
+                        </span>
+                      )}
                     </div>
                   </td>
-                  {MODULE_GROUPS.flatMap(mg => mg.perms).map(p => {
-                      const perm = permissions.find(pm => pm.code === p.code);
-                      const checked = perm ? getEffectiveChecked(r.id, perm.id) : false;
-                      const key = `${r.id}:${perm?.id}`;
-                      const isDrafted = draftChanges[key] !== undefined && draftChanges[key] !== null;
+                  {filteredGroups.map(mg => {
+                    if (collapsedMods[mg.name]) {
+                      // Collapsed: show summary cell with expand button
+                      const assigned = mg.perms.filter(pDef => {
+                        const perm = permissions.find(pm => pm.code === pDef.code);
+                        return perm && getEffectiveChecked(r.id, perm.id);
+                      }).length;
                       return (
-                        <td key={p.code} className="px-1 py-2.5 text-center border-r border-border last:border-r-0">
-                          <div className="flex items-center justify-center">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => handleToggle(r.id, p.code)}
-                              className="w-4 h-4 text-primary border-border rounded focus:ring-primary cursor-pointer"
-                              title={`${r.name} → ${p.label}`}
-                            />
-                            {isDrafted && (
-                              <span className="ml-1 text-[8px] text-amber-600 font-bold">*</span>
+                        <td
+                          key={mg.name}
+                          colSpan={mg.perms.length}
+                          className="px-2 py-1.5 text-center border-r border-border last:border-r-0 align-middle"
+                        >
+                          <button
+                            onClick={() => toggleModule(mg.name)}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-surface-container text-[9px] text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[12px]">expand_more</span>
+                            {assigned}/{mg.perms.length} aktif
+                          </button>
+                        </td>
+                      );
+                    }
+                    // Expanded: show individual permission cells
+                    return mg.perms.map(pDef => {
+                      const perm = permissions.find(pm => pm.code === pDef.code);
+                      if (!perm) return <td key={pDef.code} className="px-1 py-1.5 text-center border-r border-border last:border-r-0" />;
+
+                      const checked = getEffectiveChecked(r.id, perm.id);
+                      const key = `${r.id}:${perm.id}`;
+                      const isAdd = draftChanges[key] === 'add';
+                      const isRemove = draftChanges[key] === 'remove';
+                      const isDrafted = isAdd || isRemove;
+                      const scopeBadge = getScopeBadge(r.id, perm.id);
+
+                      return (
+                        <td
+                          key={pDef.code}
+                          className="px-1 py-1.5 text-center border-r border-border last:border-r-0 align-middle"
+                        >
+                          <div className="flex flex-col items-center gap-0.5">
+                            <div className="relative inline-flex items-center justify-center">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => handleToggle(r.id, pDef.code)}
+                                className={`w-4 h-4 rounded focus:ring-primary cursor-pointer ${
+                                  isAdd
+                                    ? 'border-amber-400 text-amber-500 accent-amber-500'
+                                    : isRemove
+                                    ? 'border-red-400 text-red-500 accent-red-500'
+                                    : 'text-primary border-border accent-primary'
+                                }`}
+                                title={`${r.name.replace(/_/g, ' ')} — ${pDef.label}\n${pDef.code}\n${permDescription[pDef.code] || ''}`}
+                              />
+                              {/* Draft indicator dot */}
+                              {isDrafted && (
+                                <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-amber-400 border border-white dark:border-surface" />
+                              )}
+                            </div>
+                            {/* Scope badge */}
+                            {scopeBadge && (
+                              <span className={`px-1 py-[1px] rounded text-[6px] font-bold border leading-tight ${scopeBadge.color}`}>
+                                {scopeBadge.label}
+                              </span>
                             )}
                           </div>
                         </td>
                       );
-                    })}
+                    });
+                  })}
                 </tr>
               );
             })}
@@ -727,14 +1011,47 @@ function RolePermissionsTab() {
         </table>
       </div>
 
-      {/* Legend */}
+      {/* ── Legend ── */}
       <div className="bg-surface-container-low border border-border rounded-xl p-4">
-        <h4 className="font-bold text-xs text-on-surface mb-2">Keterangan Permission</h4>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {permissions.map(p => (
-            <span key={p.id} className="text-[9px] text-outline bg-surface-container-lowest px-2 py-1 rounded border border-border">
-              <span className="font-semibold text-on-surface-variant">{p.code}</span> — {p.name}
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="font-bold text-xs text-on-surface">Keterangan Permission</h4>
+          <div className="flex items-center gap-3 text-[9px] text-outline">
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded bg-status-purple/30 border border-status-purple/50" />
+              Global
             </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded bg-primary/30 border border-primary/50" />
+              Dept (all)
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded bg-amber-300 border border-amber-500" />
+              Dept specific
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
+          {MODULE_GROUPS.map(mg => (
+            <div key={mg.name} className="space-y-0.5">
+              <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider px-1 pt-1">{mg.name}</p>
+              {mg.perms.map(pDef => (
+                <div
+                  key={pDef.code}
+                  className="group relative flex items-center gap-1.5 text-[9px] text-outline bg-surface-container-lowest px-2 py-1 rounded border border-border/50 hover:border-primary/30 transition-colors"
+                >
+                  <span className="w-1 h-1 rounded-full bg-primary/40 shrink-0" />
+                  <span className="font-semibold text-on-surface-variant shrink-0">{pDef.code}</span>
+                  <span className="text-border/60">—</span>
+                  <span className="truncate">{pDef.label}</span>
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-30">
+                    <div className="bg-surface-container-high text-on-surface text-[9px] px-2 py-1 rounded-lg shadow-lg border border-border whitespace-nowrap">
+                      {permDescription[pDef.code] || pDef.label}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ))}
         </div>
       </div>

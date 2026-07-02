@@ -22,6 +22,7 @@ type StageAccessLevel = 'none' | 'read' | 'write';
 
 /** Role level hierarchy for owner filtering */
 const ROLE_HIERARCHY: Record<string, number> = {
+  super_admin: 5,
   director: 4,
   admin: 3,
   manager: 2,
@@ -184,7 +185,7 @@ class AuthorizationEngine {
   /**
    * Get the highest role level for a user across all non-project roles.
    * Used for owner filtering: staff → own data only; manager/admin/director → all data.
-   * Returns: 'director' | 'admin' | 'manager' | 'staff'
+   * Returns: 'super_admin' | 'director' | 'admin' | 'manager' | 'staff'
    */
   getUserHighestRole(userId: string): string {
     const store = useRbacStore.getState();
@@ -210,12 +211,12 @@ class AuthorizationEngine {
   }
 
   /**
-   * Check if user has elevated role (manager, admin, or director).
+   * Check if user has elevated role (manager, admin, director, or super_admin).
    * Elevated roles see ALL data in their department(s).
    */
   hasElevatedRole(userId: string): boolean {
     const role = this.getUserHighestRole(userId);
-    return role === 'manager' || role === 'admin' || role === 'director';
+    return role === 'manager' || role === 'admin' || role === 'director' || role === 'super_admin';
   }
 
   /**
@@ -293,6 +294,15 @@ class AuthorizationEngine {
         (ur) => ur.userId === userId && ur.roleId === adminRole.id && ur.scopeType === 'global',
       );
       if (isGlobalAdmin) return store.departments.filter((d) => d.is_active);
+    }
+
+    // Super Admin sees all departments
+    const superAdminRole = store.roles.find((r) => r.name === 'super_admin');
+    if (superAdminRole) {
+      const isSuperAdmin = store.userRoles.some(
+        (ur) => ur.userId === userId && ur.roleId === superAdminRole.id,
+      );
+      if (isSuperAdmin) return store.departments.filter((d) => d.is_active);
     }
 
     const deptIds = this.buildDepartmentFilter(userId, { includeProjectAccess: true });

@@ -84,6 +84,7 @@ const SEED_DEPARTMENTS: RbacDepartment[] = [
 ];
 
 const SEED_ROLES: RbacRole[] = [
+  { id: 'role-super-admin', name: 'super_admin', description: 'Super Admin — akses penuh ke seluruh sistem', is_system: true },
   { id: 'role-staff', name: 'staff', description: 'Staff department — akses operasional dasar', is_system: true },
   { id: 'role-manager', name: 'manager', description: 'Manager department — approve & monitor', is_system: true },
   { id: 'role-admin', name: 'admin', description: 'Admin department — full control', is_system: true },
@@ -171,6 +172,24 @@ const SEED_ROLE_PERMISSIONS: RbacRolePermission[] = [
   { id: 'rp-admin-global-12', roleId: 'role-admin', permissionId: 'perm-report-view-dept', scopeType: 'global', accessLevel: 'write' },
   { id: 'rp-admin-global-13', roleId: 'role-admin', permissionId: 'perm-report-view-crossdept', scopeType: 'global', accessLevel: 'write' },
   { id: 'rp-admin-global-14', roleId: 'role-admin', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'write' },
+  // ── Super Admin (global, all permissions, write) ──
+  { id: 'rp-super-admin-1', roleId: 'role-super-admin', permissionId: 'perm-dash-view', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-2', roleId: 'role-super-admin', permissionId: 'perm-notif-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-3', roleId: 'role-super-admin', permissionId: 'perm-profile-manage', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-4', roleId: 'role-super-admin', permissionId: 'perm-prospect-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-5', roleId: 'role-super-admin', permissionId: 'perm-prospect-write-prospecting', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-6', roleId: 'role-super-admin', permissionId: 'perm-prospect-approve-transition', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-7', roleId: 'role-super-admin', permissionId: 'perm-project-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-8', roleId: 'role-super-admin', permissionId: 'perm-project-create', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-9', roleId: 'role-super-admin', permissionId: 'perm-project-write', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-10', roleId: 'role-super-admin', permissionId: 'perm-project-manage-members', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-11', roleId: 'role-super-admin', permissionId: 'perm-project-manage-scope', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-12', roleId: 'role-super-admin', permissionId: 'perm-pengadaan-read', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-13', roleId: 'role-super-admin', permissionId: 'perm-pengadaan-create', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-14', roleId: 'role-super-admin', permissionId: 'perm-pengadaan-write', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-15', roleId: 'role-super-admin', permissionId: 'perm-report-view-dept', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-16', roleId: 'role-super-admin', permissionId: 'perm-report-view-crossdept', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-super-admin-17', roleId: 'role-super-admin', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'write' },
   // ── Director (global bypass) ──
   { id: 'rp-dir-global-1', roleId: 'role-director', permissionId: 'perm-prospect-read', scopeType: 'global', accessLevel: 'read' },
   { id: 'rp-dir-global-2', roleId: 'role-director', permissionId: 'perm-project-read', scopeType: 'global', accessLevel: 'read' },
@@ -213,8 +232,8 @@ const SEED_USER_ROLES: RbacUserRole[] = [
   { id: 'ur-9', userId: '9', roleId: 'role-staff', scopeType: 'department', scopeId: 'dept-procurement' },
   // Bagus (user 10) → manager di Marketing
   { id: 'ur-10', userId: '10', roleId: 'role-manager', scopeType: 'department', scopeId: 'dept-marketing' },
-  // Super Admin (usr-admin) → admin global (all permissions, all departments)
-  { id: 'ur-admin', userId: 'usr-admin', roleId: 'role-admin', scopeType: 'global' },
+  // Super Admin (usr-admin) → super_admin global (all permissions, all departments)
+  { id: 'ur-admin', userId: 'usr-admin', roleId: 'role-super-admin', scopeType: 'global' },
 ];
 
 // ── RBAC Store Interface ──
@@ -429,7 +448,7 @@ export const useRbacStore = create<RbacState>()(
     }),
     {
       name: 'kinetic-rbac',
-      version: 6,
+      version: 7,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 2) {
@@ -513,6 +532,51 @@ export const useRbacStore = create<RbacState>()(
           }
 
           return { ...current, rolePermissions: rolePerms };
+        }
+        if (version < 7) {
+          // v7: add super_admin role with all permissions
+          const roles = [...(current.roles || [])];
+          const rolePermissions = [...(current.rolePermissions || [])];
+          const userRoles = [...(current.userRoles || [])];
+
+          // Add super_admin role if not exists
+          if (!roles.find((r: any) => r.id === 'role-super-admin')) {
+            roles.push({ id: 'role-super-admin', name: 'super_admin', description: 'Super Admin — akses penuh ke seluruh sistem', is_system: true });
+          }
+
+          // Add all 17 permissions for super_admin if not exists
+          const SUPER_ADMIN_PERMS = [
+            { id: 'rp-super-admin-1', permissionId: 'perm-dash-view' },
+            { id: 'rp-super-admin-2', permissionId: 'perm-notif-read' },
+            { id: 'rp-super-admin-3', permissionId: 'perm-profile-manage' },
+            { id: 'rp-super-admin-4', permissionId: 'perm-prospect-read' },
+            { id: 'rp-super-admin-5', permissionId: 'perm-prospect-write-prospecting' },
+            { id: 'rp-super-admin-6', permissionId: 'perm-prospect-approve-transition' },
+            { id: 'rp-super-admin-7', permissionId: 'perm-project-read' },
+            { id: 'rp-super-admin-8', permissionId: 'perm-project-create' },
+            { id: 'rp-super-admin-9', permissionId: 'perm-project-write' },
+            { id: 'rp-super-admin-10', permissionId: 'perm-project-manage-members' },
+            { id: 'rp-super-admin-11', permissionId: 'perm-project-manage-scope' },
+            { id: 'rp-super-admin-12', permissionId: 'perm-pengadaan-read' },
+            { id: 'rp-super-admin-13', permissionId: 'perm-pengadaan-create' },
+            { id: 'rp-super-admin-14', permissionId: 'perm-pengadaan-write' },
+            { id: 'rp-super-admin-15', permissionId: 'perm-report-view-dept' },
+            { id: 'rp-super-admin-16', permissionId: 'perm-report-view-crossdept' },
+            { id: 'rp-super-admin-17', permissionId: 'perm-config-access' },
+          ];
+          for (const p of SUPER_ADMIN_PERMS) {
+            if (!rolePermissions.find((rp: any) => rp.id === p.id)) {
+              rolePermissions.push({ id: p.id, roleId: 'role-super-admin', permissionId: p.permissionId, scopeType: 'global', accessLevel: 'write' });
+            }
+          }
+
+          // Update user assignment for usr-admin if still using role-admin
+          const adminUrIdx = userRoles.findIndex((ur: any) => ur.userId === 'usr-admin' && ur.roleId === 'role-admin');
+          if (adminUrIdx >= 0) {
+            userRoles[adminUrIdx] = { ...userRoles[adminUrIdx], roleId: 'role-super-admin' };
+          }
+
+          return { ...current, roles, rolePermissions, userRoles };
         }
         return current;
       },
