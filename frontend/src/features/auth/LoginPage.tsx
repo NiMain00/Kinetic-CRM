@@ -155,16 +155,39 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-green-800 to-green-950 p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-surface rounded-2xl shadow-xl border border-border/60 p-8">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+    <div className="min-h-screen w-full flex">
+      {/* Left Panel — Brand (hidden on mobile) */}
+      <div className="hidden lg:flex w-[40%] bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]">
+          <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-primary blur-3xl" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-primary-lighter blur-3xl" />
+        </div>
+        <div className="relative z-10 text-center">
+          <div className="w-20 h-20 rounded-2xl bg-primary shadow-lg flex items-center justify-center mx-auto mb-6">
+            <span className="text-white font-bold text-4xl">K</span>
+          </div>
+          <h2 className="font-display-title text-2xl text-primary-dark dark:text-primary-light font-bold mb-2">
+            Kinetic CRM
+          </h2>
+          <p className="text-primary-dark/70 dark:text-primary-light/70 text-sm max-w-xs">
+            Kelola proyek dan pengadaan perusahaan lebih efektif dalam satu platform terintegrasi.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Panel — Form */}
+      <div className="w-full lg:w-[60%] flex items-center justify-center p-4 sm:p-8 bg-surface">
+        <div className="w-full max-w-md">
+          {/* Mobile brand — visible only on mobile */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
               <span className="material-symbols-outlined text-primary text-3xl">corporate_fare</span>
             </div>
-            <h1 className="font-display-title text-display-title text-on-surface">KINETIC CRM</h1>
-            <p className="text-caption-xs text-secondary mt-1">Enterprise Workspace Portal</p>
+            <h1 className="font-display-title text-xl text-on-surface">KINETIC CRM</h1>
+            <p className="text-caption-xs text-secondary mt-0.5">Enterprise Workspace Portal</p>
           </div>
+
+          <div className="bg-surface rounded-xl p-6 sm:p-8">
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
@@ -338,6 +361,7 @@ export default function LoginPage() {
           &copy; {new Date().getFullYear()} Kinetic CRM. All rights reserved.
         </p>
       </div>
+    </div>
     </div>
   );
 }
