@@ -73,6 +73,7 @@ const DEPT_COLORS: Record<string, string> = {
 const ROLE_BADGES: Record<string, string> = {
   super_admin: 'bg-danger/10 text-danger',
   staff: 'bg-surface-container-high text-on-surface-variant',
+  supervisor: 'bg-warning/10 text-warning',
   manager: 'bg-primary/10 text-primary',
   admin: 'bg-status-purple/10 text-status-purple',
   director: 'bg-status-maroon/10 text-status-maroon',

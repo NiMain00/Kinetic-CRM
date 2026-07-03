@@ -29,6 +29,14 @@ const legacyLabels: Record<string, string> = {
   detailKebutuhanUnit: 'Detail kebutuhan pengadaan unit',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  'Waiting PM': 'Menunggu Supervisor',
+  'Non Potensial': 'Non Potensial',
+  'Potensial': 'Potensial',
+  'Revision': 'Revisi',
+  'Approved': 'Disetujui',
+};
+
 const workflowSteps: StepperStep[] = [
   { label: 'Dibuat' },
   { label: 'Review Supervisor' },
@@ -247,7 +255,7 @@ export default function ProspectDetailPage() {
   const isPotensial = prospect.status === 'Potensial' || prospect.prospectType === 'potensial';
   const needsVerification = customer?.needsVerification;
   const isConverted = prospect.isConverted && prospect.projectId;
-  const tipeProspek = isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : prospect.status;
+  const tipeProspek = isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : (STATUS_LABELS[prospect.status] || prospect.status);
 
   const handleApprove = () => {
     const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
@@ -523,7 +531,7 @@ export default function ProspectDetailPage() {
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-xl font-extrabold text-on-surface truncate">{prospect.name}</h1>
-                <StatusBadge status={needsVerification ? 'Perlu Verifikasi' : prospect.status} />
+                <StatusBadge status={needsVerification ? 'Perlu Verifikasi' : (STATUS_LABELS[prospect.status] || prospect.status)} />
               </div>
               <p className="text-sm text-secondary">{prospect.client}</p>
               <div className="flex flex-wrap gap-2">
@@ -643,7 +651,7 @@ export default function ProspectDetailPage() {
                       Detail Prospek
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
-                      <DataField label="Status" value={prospect.status} />
+                      <DataField label="Status" value={STATUS_LABELS[prospect.status] || prospect.status} />
                       <DataField label="Tipe Prospek" value={tipeProspek} />
                       <DataField label="Tipe Proyek" value={
                         useInputConfigStore.getState().getGroup('project_types')
@@ -842,7 +850,7 @@ export default function ProspectDetailPage() {
                 )}
                 <div className="bg-surface-container-low p-4 rounded-lg">
                   <p className="text-xs text-secondary">Status Approval</p>
-                  <p className="text-sm font-semibold text-on-surface mt-1">{prospect.status}</p>
+                  <p className="text-sm font-semibold text-on-surface mt-1">{STATUS_LABELS[prospect.status] || prospect.status}</p>
                 </div>
               </div>
             )}
