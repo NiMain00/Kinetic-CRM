@@ -21,7 +21,7 @@ export default function PhaseStepper({
   const current = accessibleUpToIndex;
 
   return (
-    <section className="bg-surface-container-lowest px-3 sm:px-6 py-3 sm:py-5 border-b border-border overflow-x-auto select-none scrollbar-none">
+    <section className="bg-surface-container-lowest px-3 sm:px-6 py-3 sm:py-5 border-b border-border/40 overflow-x-auto select-none scrollbar-none">
       <div className="min-w-[400px] sm:min-w-[500px] flex items-center justify-between relative">
         <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 -z-0">
           <div className="h-full bg-border rounded-full relative overflow-hidden">
@@ -48,11 +48,11 @@ export default function PhaseStepper({
                   <span className="material-symbols-outlined text-[14px] sm:text-[16px]">check</span>
                 </div>
               ) : isActive ? (
-                <div className="w-9 h-9 sm:w-10 sm:h-10 -m-1 rounded-full bg-surface-container-lowest border-2 border-primary text-primary flex items-center justify-center font-bold text-xs sm:text-sm shadow-md ring-2 sm:ring-4 ring-primary/10">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 -m-1 rounded-full bg-surface border-2 border-primary text-primary flex items-center justify-center font-bold text-xs sm:text-sm shadow-md ring-2 sm:ring-4 ring-primary/10">
                   {index + 1}
                 </div>
               ) : (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-border text-on-surface-variant flex items-center justify-center font-bold text-[10px] sm:text-xs">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-surface-container-high text-outline flex items-center justify-center font-bold text-[10px] sm:text-xs">
                   {index + 1}
                 </div>
               )}
