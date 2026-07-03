@@ -116,10 +116,10 @@ export default function Sidebar({
       <button
         key={item.path}
         onClick={() => handleNavigate(item.path)}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h ${
+        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
           isActive
-            ? 'bg-primary-container/20 text-primary font-semibold'
-            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            ? 'bg-primary-container/40 text-primary font-semibold border-primary'
+            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
         }`}
         aria-label={item.label}
       >
@@ -138,8 +138,8 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-surface border-r border-border shrink-0 ${
-        collapsed ? (mobile ? 'w-72' : 'w-20') : 'w-72'
+      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-surface border-r border-border/60 shrink-0 ${
+        collapsed ? (mobile ? 'w-64' : 'w-18') : 'w-64'
       } ${mobile ? 'slide-in-left' : 'transition-all duration-300'}`}
     >
       {mobile && (
@@ -151,14 +151,14 @@ export default function Sidebar({
       )}
 
       <div
-        className={`relative z-10 flex flex-col h-full py-6 ${mobile ? 'w-72 shadow-2xl' : ''}`}
+        className={`relative z-10 flex flex-col h-full py-5 ${mobile ? 'w-64 shadow-2xl' : ''}`}
         {...(mobile ? swipeHandlers : {})}
       >
         {/* Brand Header */}
-        <div className={`px-6 mb-8 transition-opacity duration-200 ${collapsed && !mobile ? 'text-center' : ''}`}>
+        <div className={`px-5 mb-6 transition-opacity duration-200 ${collapsed && !mobile ? 'text-center' : ''}`}>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-2xl">K</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-xl">K</span>
             </div>
             {(!collapsed || mobile) && (
               <div>
@@ -176,7 +176,7 @@ export default function Sidebar({
         {/* Active Department Badge */}
         {(!collapsed || mobile) && deptName && (
           <div className="px-3 mb-3">
-            <div className="flex items-center gap-2 px-3 py-2 bg-primary-container/20 rounded-xl border border-primary/10">
+            <div className="flex items-center gap-2 px-3 py-2 bg-primary-container/30 rounded-lg border border-primary/10">
               <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-primary text-[16px]">business</span>
               </div>
@@ -231,7 +231,7 @@ export default function Sidebar({
         })()}
 
         {/* Navigation list */}
-        <nav ref={navListRef} className="flex-1 px-3 space-y-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
+        <nav ref={navListRef} className="flex-1 px-3 space-y-0.5 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
           {allowedNavItems.map(renderNavItem)}
         </nav>
 
@@ -240,7 +240,7 @@ export default function Sidebar({
           <div className="px-3 mb-2">
             <button
               onClick={onLogout}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-danger hover:bg-danger-container/20 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h ${
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-danger hover:bg-danger-container/20 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h border-l-[3px] border-transparent ${
                 collapsed && !mobile ? 'justify-center' : ''
               }`}
               title="Keluar"
@@ -257,13 +257,12 @@ export default function Sidebar({
           <div className="px-3 mt-auto">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center justify-center gap-2 py-2.5 text-outline font-label-sm text-label-sm border border-border rounded-xl hover:bg-surface-container hover:text-on-surface-variant transition-all touch-min-h"
+              className="w-full flex items-center justify-center gap-2 py-2 text-outline font-label-sm text-label-sm rounded-lg hover:bg-surface-container hover:text-on-surface-variant transition-all touch-min-h"
               aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             >
               <span className="material-symbols-outlined text-lg transition-transform duration-300">
                 {collapsed ? 'keyboard_double_arrow_right' : 'chevron_left'}
               </span>
-              {!collapsed && <span>Ciutkan Menu</span>}
             </button>
           </div>
         )}
