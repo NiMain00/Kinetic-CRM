@@ -254,7 +254,7 @@ export default function ProspectFormPage() {
       });
     }
 
-    toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke PM untuk review.' : 'Draf prospek berhasil disimpan.');
+    toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke Supervisor untuk review.' : 'Draf prospek berhasil disimpan.');
     setIsSubmitting(false);
     navigate('/prospects');
     return true;

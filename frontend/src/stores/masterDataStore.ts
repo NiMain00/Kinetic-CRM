@@ -369,7 +369,7 @@ const INITIAL_AUDIT_LOGS: MasterAuditLog[] = [
 ];
 
 const INITIAL_APPROVAL_LEVELS: MasterApprovalLevel[] = [
-  { id: 'AL-01', name: 'Review PM / Kepala Cabang', code: 'L1', level_number: 1, escalates_to_level_id: 'AL-02', description: 'Level pertama approval oleh Project Manager', is_active: true },
+  { id: 'AL-01', name: 'Review Supervisor / Kepala Cabang', code: 'L1', level_number: 1, escalates_to_level_id: 'AL-02', description: 'Level pertama approval oleh Supervisor Marketing', is_active: true },
   { id: 'AL-02', name: 'Review Departemen / Kepala Dept', code: 'L2', level_number: 2, escalates_to_level_id: 'AL-03', description: 'Level kedua approval oleh Kepala Departemen', is_active: true },
   { id: 'AL-03', name: 'Persetujuan Management', code: 'L3', level_number: 3, escalates_to_level_id: null, description: 'Level akhir approval oleh Management', is_active: true },
 ];

@@ -89,6 +89,7 @@ const SEED_ROLES: RbacRole[] = [
   { id: 'role-manager', name: 'manager', description: 'Manager department — approve & monitor', is_system: true },
   { id: 'role-admin', name: 'admin', description: 'Admin department — full control', is_system: true },
   { id: 'role-director', name: 'director', description: 'Bisa lihat semua department', is_system: true },
+  { id: 'role-supervisor', name: 'supervisor', description: 'Supervisor department — approve & monitor terbatas', is_system: true },
   { id: 'role-pv', name: 'project_viewer', description: 'View-only di scope project', is_system: true },
   { id: 'role-pc', name: 'project_contributor', description: 'Create/edit data di scope project', is_system: true },
   { id: 'role-pm', name: 'project_manager', description: 'Manage project scope & members', is_system: true },
@@ -196,6 +197,14 @@ const SEED_ROLE_PERMISSIONS: RbacRolePermission[] = [
   { id: 'rp-dir-global-3', roleId: 'role-director', permissionId: 'perm-pengadaan-read', scopeType: 'global', accessLevel: 'read' },
   { id: 'rp-dir-global-4', roleId: 'role-director', permissionId: 'perm-report-view-crossdept', scopeType: 'global', accessLevel: 'read' },
   { id: 'rp-dir-global-5', roleId: 'role-director', permissionId: 'perm-config-access', scopeType: 'global', accessLevel: 'read' },
+  // ── Supervisor (department) — khusus Marketing ──
+  { id: 'rp-supervisor-1', roleId: 'role-supervisor', permissionId: 'perm-dash-view', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-supervisor-2', roleId: 'role-supervisor', permissionId: 'perm-notif-read', scopeType: 'global', accessLevel: 'read' },
+  { id: 'rp-supervisor-3', roleId: 'role-supervisor', permissionId: 'perm-profile-manage', scopeType: 'global', accessLevel: 'write' },
+  { id: 'rp-supervisor-4', roleId: 'role-supervisor', permissionId: 'perm-prospect-read', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'read' },
+  { id: 'rp-supervisor-5', roleId: 'role-supervisor', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
+  { id: 'rp-supervisor-6', roleId: 'role-supervisor', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'write' },
+  { id: 'rp-supervisor-7', roleId: 'role-supervisor', permissionId: 'perm-project-read', scopeType: 'department', scopeId: 'dept-marketing', accessLevel: 'read' },
   // ── Project roles (project scope — assigned per-project) ──
   { id: 'rp-pv-project', roleId: 'role-pv', permissionId: 'perm-project-read', scopeType: 'project', accessLevel: 'read' },
   { id: 'rp-pc-project-1', roleId: 'role-pc', permissionId: 'perm-project-read', scopeType: 'project', accessLevel: 'read' },
@@ -220,8 +229,8 @@ const SEED_USER_ROLES: RbacUserRole[] = [
   { id: 'ur-3', userId: '3', roleId: 'role-staff', scopeType: 'department', scopeId: 'dept-procurement' },
   // Doni (user 4) → admin di IT
   { id: 'ur-4', userId: '4', roleId: 'role-admin', scopeType: 'department', scopeId: 'dept-it' },
-  // Siti (user 5) → staff di Marketing
-  { id: 'ur-5', userId: '5', roleId: 'role-staff', scopeType: 'department', scopeId: 'dept-marketing' },
+  // Siti (user 5) → supervisor di Marketing
+  { id: 'ur-5', userId: '5', roleId: 'role-supervisor', scopeType: 'department', scopeId: 'dept-marketing' },
   // Hendra (user 6) → staff di PM
   { id: 'ur-6', userId: '6', roleId: 'role-staff', scopeType: 'department', scopeId: 'dept-pm' },
   // Dewi (user 7) → director global
@@ -448,7 +457,7 @@ export const useRbacStore = create<RbacState>()(
     }),
     {
       name: 'kinetic-rbac',
-      version: 7,
+      version: 8,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 2) {
@@ -574,6 +583,48 @@ export const useRbacStore = create<RbacState>()(
           const adminUrIdx = userRoles.findIndex((ur: any) => ur.userId === 'usr-admin' && ur.roleId === 'role-admin');
           if (adminUrIdx >= 0) {
             userRoles[adminUrIdx] = { ...userRoles[adminUrIdx], roleId: 'role-super-admin' };
+          }
+
+          return { ...current, roles, rolePermissions, userRoles };
+        }
+        if (version < 8) {
+          // v8: add supervisor role with prospect approve permission
+          const roles = [...(current.roles || [])];
+          const rolePermissions = [...(current.rolePermissions || [])];
+          const userRoles = [...(current.userRoles || [])];
+
+          // Add supervisor role if not exists
+          if (!roles.find((r: any) => r.id === 'role-supervisor')) {
+            roles.push({ id: 'role-supervisor', name: 'supervisor', description: 'Supervisor department — approve & monitor terbatas', is_system: true });
+          }
+
+          // Add supervisor permissions if not exists
+          const SUPERVISOR_PERMS = [
+            { id: 'rp-supervisor-1', permissionId: 'perm-dash-view', scopeType: 'global', scopeId: undefined },
+            { id: 'rp-supervisor-2', permissionId: 'perm-notif-read', scopeType: 'global', scopeId: undefined },
+            { id: 'rp-supervisor-3', permissionId: 'perm-profile-manage', scopeType: 'global', scopeId: undefined },
+            { id: 'rp-supervisor-4', permissionId: 'perm-prospect-read', scopeType: 'department', scopeId: 'dept-marketing' },
+            { id: 'rp-supervisor-5', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing' },
+            { id: 'rp-supervisor-6', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', scopeId: 'dept-marketing' },
+            { id: 'rp-supervisor-7', permissionId: 'perm-project-read', scopeType: 'department', scopeId: 'dept-marketing' },
+          ];
+          for (const p of SUPERVISOR_PERMS) {
+            if (!rolePermissions.find((rp: any) => rp.id === p.id)) {
+              rolePermissions.push({
+                id: p.id,
+                roleId: 'role-supervisor',
+                permissionId: p.permissionId,
+                scopeType: p.scopeType,
+                scopeId: p.scopeId,
+                accessLevel: p.permissionId === 'perm-notif-read' ? 'read' : 'write',
+              });
+            }
+          }
+
+          // Update Siti (user 5) to supervisor if still staff
+          const sitiIdx = userRoles.findIndex((ur: any) => ur.userId === '5' && ur.roleId === 'role-staff');
+          if (sitiIdx >= 0) {
+            userRoles[sitiIdx] = { ...userRoles[sitiIdx], roleId: 'role-supervisor' };
           }
 
           return { ...current, roles, rolePermissions, userRoles };

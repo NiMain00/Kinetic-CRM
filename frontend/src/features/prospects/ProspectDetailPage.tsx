@@ -31,7 +31,7 @@ const legacyLabels: Record<string, string> = {
 
 const workflowSteps: StepperStep[] = [
   { label: 'Dibuat' },
-  { label: 'Review PM' },
+  { label: 'Review Supervisor' },
   { label: 'Approval' },
   { label: 'Proyek' },
 ];
@@ -160,31 +160,31 @@ export default function ProspectDetailPage() {
     if (prospect.status === 'Waiting PM' || prospect.status === 'Revision' || prospect.status === 'Approved') {
       derived.push({
         id: `evt-${prospect.id}-submitted`,
-        title: 'Diajukan untuk Review PM',
+        title: 'Diajukan ke Supervisor',
         actor: prospect.author,
         role: 'Staff',
         time: prospect.date,
         type: 'submit',
-        description: `Prospek "${prospect.name}" diajukan ke Project Manager.`,
+        description: `Prospek "${prospect.name}" diajukan ke Supervisor Marketing.`,
       });
     }
     if (prospect.status === 'Revision') {
       derived.push({
         id: `evt-${prospect.id}-revised`,
         title: 'Revisi Diminta',
-        actor: 'Project Manager',
-        role: 'PM',
+        actor: 'Supervisor Marketing',
+        role: 'Supervisor',
         time: prospect.date,
         type: 'revision',
-        description: `PM meminta revisi untuk prospek "${prospect.name}".`,
+        description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
       });
     }
     if (prospect.status === 'Approved') {
       derived.push({
         id: `evt-${prospect.id}-approved`,
         title: 'Prospek Disetujui',
-        actor: 'Project Manager',
-        role: 'PM',
+        actor: 'Supervisor Marketing',
+        role: 'Supervisor',
         time: prospect.date,
         type: 'approve',
         description: `Prospek "${prospect.name}" telah disetujui.`,
@@ -286,7 +286,7 @@ export default function ProspectDetailPage() {
   const handleResubmit = () => {
     if (resubmitting) return;
     setResubmitting(true);
-    updateProspect(prospect.id, { status: 'Waiting PM' });
+    updateProspect(prospect.id, { status: 'Waiting PM', currentStageId: 'stage-supervisor-review' });
     addApproval({
       id: `app-prospect-${prospect.id}`,
       ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
@@ -303,7 +303,7 @@ export default function ProspectDetailPage() {
     toast.success('Prospek berhasil dikirim ke review.');
     addNotification({
       title: 'Prospek Disubmit',
-      message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh PM.`,
+      message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh Supervisor.`,
       type: 'approval',
       entityId: prospect.id,
       entityType: 'prospect',
@@ -388,7 +388,7 @@ export default function ProspectDetailPage() {
           </Button>
         )}
 
-        {prospect.status === 'Waiting PM' && access === 'write' && (
+        {prospect.status === 'Waiting PM' && access === 'write' && can('prospect:approve:transition') && (
           <>
             <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>} onClick={handleApprove}>
               Setujui
@@ -401,7 +401,7 @@ export default function ProspectDetailPage() {
 
         {prospect.status === 'Revision' && (
           <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">refresh</span>} onClick={handleResubmit} isLoading={resubmitting} disabled={resubmitting}>
-            {resubmitting ? 'Mengirim...' : 'Kirim Ulang ke PM'}
+            {resubmitting ? 'Mengirim...' : 'Kirim Ulang ke Supervisor'}
           </Button>
         )}
 
@@ -817,8 +817,8 @@ export default function ProspectDetailPage() {
                   <div className="p-4 bg-warning/10 border border-warning/30 rounded-lg flex items-center gap-3">
                     <span className="material-symbols-outlined text-warning text-[24px]">hourglass_top</span>
                     <div>
-                      <p className="text-sm font-semibold text-on-surface">Menunggu Persetujuan PM</p>
-                      <p className="text-xs text-secondary">Prospek sedang dalam antrian review Project Manager.</p>
+                      <p className="text-sm font-semibold text-on-surface">Menunggu Persetujuan Supervisor</p>
+                      <p className="text-xs text-secondary">Prospek sedang dalam antrian review Supervisor Marketing.</p>
                     </div>
                   </div>
                 )}
@@ -836,7 +836,7 @@ export default function ProspectDetailPage() {
                     <span className="material-symbols-outlined text-warning text-[24px]">edit_note</span>
                     <div>
                       <p className="text-sm font-semibold text-on-surface">Revisi Diminta</p>
-                      <p className="text-xs text-secondary">PM meminta revisi sebelum menyetujui prospek.</p>
+                      <p className="text-xs text-secondary">Supervisor Marketing meminta revisi sebelum menyetujui prospek.</p>
                     </div>
                   </div>
                 )}
