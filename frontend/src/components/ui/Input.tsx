@@ -23,7 +23,7 @@ export default function Input({
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="font-label-sm text-sm text-on-surface font-semibold">
+        <label htmlFor={inputId} className="text-[11px] font-semibold text-on-surface uppercase tracking-wider">
           {label}
           {props.required && <span className="text-danger ml-0.5">*</span>}
         </label>
@@ -38,12 +38,17 @@ export default function Input({
           id={inputId}
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
-          className={`w-full px-4 py-2.5 border rounded-xl text-sm outline-none transition-all bg-surface focus:ring-2 focus:ring-primary/20 focus:border-primary ${leftIcon ? 'pl-10' : ''} ${rightIcon ? 'pr-10' : ''} ${error ? 'border-danger focus:ring-danger/20 focus:border-danger' : 'border-border hover:border-outline'} ${className}`}
+          className={`w-full px-3.5 py-2 border rounded-lg text-sm outline-none transition-all bg-surface placeholder:text-on-surface-variant/50 focus:ring-2 focus:ring-primary/20 focus:border-primary ${leftIcon ? 'pl-9' : ''} ${rightIcon || error ? 'pr-9' : ''} ${error ? 'border-danger focus:ring-danger/20 focus:border-danger' : 'border-outline-variant hover:border-outline'} ${className}`}
           {...props}
         />
         {rightIcon && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-outline text-sm">
             {rightIcon}
+          </span>
+        )}
+        {error && !rightIcon && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-danger text-sm material-symbols-outlined" aria-hidden="true">
+            warning
           </span>
         )}
       </div>
