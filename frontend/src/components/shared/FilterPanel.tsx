@@ -50,13 +50,17 @@ interface FilterPanelProps {
   onChange: (key: string, value: string) => void;
   onReset: () => void;
   onApply?: () => void;
+  collapsible?: boolean;
+  isOpen?: boolean;
 }
 
-export default function FilterPanel({ fields, values, onChange, onReset, onApply }: FilterPanelProps) {
+export default function FilterPanel({ fields, values, onChange, onReset, onApply, collapsible = false, isOpen = true }: FilterPanelProps) {
+  if (collapsible && !isOpen) return null;
+
   const activeCount = Object.values(values).filter(Boolean).length;
 
   return (
-    <div className="bg-surface rounded-2xl border border-border/60 p-5 space-y-4 shadow-card">
+    <div className="bg-surface rounded-xl border border-border/60 p-4 space-y-4 shadow-card animate-in slide-in-from-top-2 fade-in duration-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-outline text-sm" aria-hidden="true">filter_alt</span>

@@ -128,7 +128,7 @@ export default function Table<T = Record<string, unknown>>({
     return isMobile ? (
       <div className="space-y-3" role="status" aria-label="Memuat data">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-surface border border-border/60 rounded-2xl p-4 space-y-3 shadow-card">
+          <div key={i} className="bg-surface border border-border/60 rounded-lg p-4 space-y-3 shadow-card">
             {columns.filter(c => !c.hideOnMobile).map((col) => (
               <div key={col.key}>
                 <div className="h-3 w-20 bg-surface-container-high rounded-lg skeleton mb-1.5"></div>
@@ -169,7 +169,7 @@ export default function Table<T = Record<string, unknown>>({
       <div className="py-8">
         {emptyState || (
           <EmptyState
-            icon="search_off"
+            icon="inbox"
             title="Tidak ada data"
             description="Belum ada data untuk ditampilkan."
           />
@@ -185,7 +185,7 @@ export default function Table<T = Record<string, unknown>>({
           <div
             key={keyExtractor(row)}
             onClick={() => onRowClick?.(row)}
-            className={`bg-surface border border-border/60 rounded-2xl overflow-hidden shadow-card ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
+            className={`bg-surface border border-border/60 rounded-lg overflow-hidden shadow-card ${onRowClick ? 'cursor-pointer active:scale-[0.99] transition-transform' : ''}`}
             role="listitem"
           >
             {mobileCardRenderer(row)}
@@ -242,7 +242,7 @@ export default function Table<T = Record<string, unknown>>({
               <tr
                 key={keyExtractor(row)}
                 onClick={() => onRowClick?.(row)}
-                className={`${onRowClick ? 'cursor-pointer hover:bg-primary/5' : 'hover:bg-surface-container-low'} transition-colors`}
+                className={`${onRowClick ? 'cursor-pointer hover:bg-surface-container' : 'hover:bg-surface-container-low'} transition-colors`}
               >
                 {displayColumns.map((col) => (
                   <td key={col.key} className={`px-3 sm:px-4 lg:px-6 py-3 sm:py-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''} ${col.className || ''}`}>
@@ -268,7 +268,7 @@ export default function Table<T = Record<string, unknown>>({
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="p-1.5 rounded-xl hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed text-secondary transition-colors"
+            className="p-1.5 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed text-secondary transition-colors"
             aria-label="Halaman sebelumnya"
           >
             <span className="material-symbols-outlined text-sm" aria-hidden="true">chevron_left</span>
@@ -281,7 +281,7 @@ export default function Table<T = Record<string, unknown>>({
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`w-7 h-7 rounded-xl text-xs font-semibold transition-colors ${p === page ? 'bg-primary text-white' : 'text-secondary hover:bg-surface-container'}`}
+                className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors ${p === page ? 'bg-primary text-white' : 'text-secondary hover:bg-surface-container'}`}
                 aria-label={`Halaman ${p + 1}`}
                 aria-current={p === page ? 'page' : undefined}
               >
@@ -292,7 +292,7 @@ export default function Table<T = Record<string, unknown>>({
           <button
             onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="p-1.5 rounded-xl hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed text-secondary transition-colors"
+            className="p-1.5 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed text-secondary transition-colors"
             aria-label="Halaman selanjutnya"
           >
             <span className="material-symbols-outlined text-sm" aria-hidden="true">chevron_right</span>
