@@ -8,6 +8,13 @@ import { useProcurementStore } from './procurementStore';
  */
 export function createProcurementFromProject(project: Project): Procurement {
   const store = useProcurementStore.getState();
+
+  // Prevent duplicate: check if procurement already exists for this project
+  const existing = store.procurements.find(
+    (p) => p.sourceProjectId === project.id,
+  );
+  if (existing) return existing;
+
   const procurement = store.addProcurement({
     sourceProjectId: project.id,
     sourceProjectCode: project.code,

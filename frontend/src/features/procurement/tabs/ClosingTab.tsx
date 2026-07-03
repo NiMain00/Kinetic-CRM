@@ -1,4 +1,6 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
 import { Button } from '@/components/ui';
@@ -8,6 +10,7 @@ interface Props {
 }
 
 export default function ClosingTab({ procurement }: Props) {
+  const navigate = useNavigate();
   const updateProcurement = useProcurementStore((s) => s.updateProcurement);
   const addTimelineEvent = useProcurementStore((s) => s.addTimelineEvent);
 
@@ -34,6 +37,8 @@ export default function ClosingTab({ procurement }: Props) {
       type: 'approve',
       description: `Pengadaan ${procurement.code} telah selesai dan ditutup.`,
     });
+    toast.success(`Pengadaan ${procurement.code} berhasil ditutup!`);
+    navigate('/procurement');
   };
 
   const handleCancel = () => {
@@ -58,6 +63,8 @@ export default function ClosingTab({ procurement }: Props) {
       type: 'revision',
       description: `Pengadaan ${procurement.code} dibatalkan.`,
     });
+    toast.success(`Pengadaan ${procurement.code} dibatalkan.`);
+    navigate('/procurement');
   };
 
   const isClosed = procurement.status === 'Closed';

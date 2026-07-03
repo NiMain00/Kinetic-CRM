@@ -77,6 +77,7 @@ export default function ProcurementDetailView() {
       tab.label === 'Diskusi'
     )
       return false;
+    if (tab.label === 'Closing') return false;
     return tabIndex > currentStepIndex + 1;
   };
 

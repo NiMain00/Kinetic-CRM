@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
 import { Button } from '@/components/ui';
@@ -8,6 +10,7 @@ interface Props {
 }
 
 export default function ProgressTab({ procurement }: Props) {
+  const navigate = useNavigate();
   const updateProcurement = useProcurementStore((s) => s.updateProcurement);
   const [progressNotes, setProgressNotes] = useState(
     procurement.progressNotes || '',
@@ -22,6 +25,14 @@ export default function ProgressTab({ procurement }: Props) {
   const handleSave = () => {
     if (!procurement.id) return;
     updateProcurement(procurement.id, { progressNotes, progress: progressVal });
+    toast.success('Progress berhasil disimpan');
+  };
+
+  const handleContinue = () => {
+    if (!procurement.id) return;
+    updateProcurement(procurement.id, { progressNotes, progress: progressVal });
+    toast.success('Progress disimpan. Silakan tutup pengadaan di tab Closing.');
+    navigate(`/procurement/${procurement.id}/closing`);
   };
 
   return (
@@ -77,14 +88,23 @@ export default function ProgressTab({ procurement }: Props) {
           />
         </div>
 
-        <div className="flex justify-end border-t pt-6 border-border">
+        <div className="flex justify-end gap-3 border-t pt-6 border-border">
           <Button
+            variant="secondary"
             onClick={handleSave}
-            rightIcon={
-              <span className="material-symbols-outlined text-[18px]">save</span>
+            leftIcon={
+              <span className="material-symbols-outlined text-[18px]">drafts</span>
             }
           >
-            Simpan Progress
+            Simpan Draft
+          </Button>
+          <Button
+            onClick={handleContinue}
+            rightIcon={
+              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+            }
+          >
+            Lanjutkan ke Closing
           </Button>
         </div>
       </div>

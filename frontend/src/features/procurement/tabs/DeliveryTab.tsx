@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
 import { Button } from '@/components/ui';
@@ -57,6 +58,29 @@ export default function DeliveryTab({ procurement }: Props) {
       unitReceivedDate,
       deliveryNote,
     });
+    if (procurement.status === 'PO Process') {
+      updateProcurement(procurement.id, {
+        status: 'Delivery',
+        phase: 'Delivery',
+      });
+      addTimelineEvent(procurement.id, {
+        id: `evt-${Date.now()}`,
+        title: 'Target Delivery Disimpan',
+        actor: procurement.createdBy,
+        role: 'Procurement',
+        time: new Date().toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        type: 'submit',
+        description:
+          'Target jadwal delivery telah ditetapkan. Procurement memasuki tahap Delivery.',
+      });
+      toast.success('Target delivery disimpan. Procurement beralih ke tahap Delivery.');
+    } else {
+      toast.success('Data delivery berhasil disimpan');
+    }
   };
 
   const handleConfirmDelivery = () => {
@@ -64,6 +88,7 @@ export default function DeliveryTab({ procurement }: Props) {
     const errs: Record<string, string> = {};
     if (!targetStartDate) errs.targetStartDate = 'Wajib diisi';
     if (!targetEndDate) errs.targetEndDate = 'Wajib diisi';
+    if (!unitReceivedDate) errs.unitReceivedDate = 'Wajib diisi untuk konfirmasi';
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
@@ -102,6 +127,7 @@ export default function DeliveryTab({ procurement }: Props) {
         description:
           'Pengiriman telah dikonfirmasi. Procurement memasuki tahap Progress.',
       });
+      toast.success('Delivery dikonfirmasi! Procurement beralih ke tahap Progress.');
     }
   };
 

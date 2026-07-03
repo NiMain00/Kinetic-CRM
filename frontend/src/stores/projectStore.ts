@@ -13,6 +13,7 @@ import { INITIAL_PROJECTS } from '@/services/mock-data';
 // NOTE: Cross-store coupling via getState() — consider refactoring to event pattern
 import { useApprovalStore } from './approvalStore';
 import { useNotificationStore } from './notificationStore';
+import { useProcurementStore } from '@/features/procurement/procurementStore';
 
 interface ProjectState {
   projects: Project[];
@@ -67,6 +68,10 @@ export const useProjectStore = create<ProjectState>()(
         approvalStore.approvals
           .filter((a) => a.entityType === 'project' && a.entityId === id)
           .forEach((a) => approvalStore.removeApproval(a.id));
+        // Hapus juga procurement terkait
+        const deleteProc = useProcurementStore.getState().deleteProcurement;
+        const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
+        linked.forEach((p) => deleteProc(p.id));
         return set((s) => ({ projects: s.projects.filter((p) => p.id !== id) }));
       },
       getProjectById: (id) => get().projects.find((p) => p.id === id),

@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { Modal, Button } from '@/components/ui';
 import { useProcurementStore } from './procurementStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { formatCurrency } from '@/utils/formatters';
-import type { ProcurementStatus } from '@/types/domain/procurement';
+import type { Procurement, ProcurementStatus } from '@/types/domain/procurement';
 
 const STATUS_COLORS: Record<ProcurementStatus, string> = {
   Draft: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600',
@@ -23,6 +25,9 @@ export default function ProcurementListPage() {
   const { can } = useAuthz();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProcurementStatus | 'all'>('all');
+  const deleteProcurement = useProcurementStore((s) => s.deleteProcurement);
+  const [deleteTarget, setDeleteTarget] = useState<Procurement | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const filtered = useMemo(() => {
     return procurements
@@ -59,6 +64,20 @@ export default function ProcurementListPage() {
     return p.sourceProjectName
       || (p.sourceProjectId && projectNameMap.get(p.sourceProjectId))
       || (p.sourceProjectCode && projectNameMap.get(p.sourceProjectCode));
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, p: Procurement) => {
+    e.stopPropagation();
+    setDeleteTarget(p);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteProcurement(deleteTarget.id);
+    toast.success(`Pengadaan ${deleteTarget.code} berhasil dihapus`);
+    setShowDeleteModal(false);
+    setDeleteTarget(null);
   };
 
   return (
@@ -166,6 +185,11 @@ export default function ProcurementListPage() {
                     <th className="text-right px-4 py-3 font-semibold text-secondary">
                       Dibuat
                     </th>
+                    {can('pengadaan:write') && (
+                      <th className="text-center px-4 py-3 font-semibold text-secondary w-16">
+                        Aksi
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
@@ -220,6 +244,17 @@ export default function ProcurementListPage() {
                           year: 'numeric',
                         })}
                       </td>
+                      {can('pengadaan:write') && (
+                        <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={(e) => handleDeleteClick(e, p)}
+                            className="p-1.5 rounded-lg text-outline hover:text-danger hover:bg-danger/5 transition-colors"
+                            title="Hapus pengadaan"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -228,6 +263,26 @@ export default function ProcurementListPage() {
           </div>
         )}
       </div>
+
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => { setShowDeleteModal(false); setDeleteTarget(null); }}
+        title="Konfirmasi Hapus"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => { setShowDeleteModal(false); setDeleteTarget(null); }}>
+              Batal
+            </Button>
+            <Button variant="danger" size="md" onClick={confirmDelete}>
+              Hapus
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-secondary">
+          Apakah Anda yakin ingin menghapus pengadaan <strong>{deleteTarget?.code}</strong>?
+        </p>
+      </Modal>
     </div>
   );
 }
