@@ -80,7 +80,7 @@ export default function AppLayout() {
         />
       )}
 
-      <div className={`hidden md:flex ${sidebarOpen ? 'w-72' : 'w-20'} transition-all duration-300 shrink-0`}>
+      <div className={`hidden md:flex ${sidebarOpen ? 'w-64' : 'w-18'} transition-all duration-300 shrink-0`}>
         <Sidebar
           activeTab={location.pathname}
           setActiveTab={handleNavigate}
@@ -111,7 +111,7 @@ export default function AppLayout() {
           {isFullBleed ? (
             <Outlet />
           ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-10 py-5 sm:py-8">
               <Outlet />
             </div>
           )}
