@@ -70,7 +70,7 @@ export const INITIAL_PROJECTS: Project[] = [
       lphsExternalUrl: 'https://docs.google.com/document/d/abc123',
       siosFileName: 'SIOS_Infra_TahapII.pdf',
       siosFileSize: '1.2 MB',
-      selectedDepartments: ['01', '02'],
+      selectedDepartments: ['dept-it', 'dept-finance'],
       departmentsLocked: true,
       pmStatus: 'approved',
       pmApprovedAt: '2025-03-10',
@@ -78,8 +78,8 @@ export const INITIAL_PROJECTS: Project[] = [
       overallStatus: 'dept_review',
       submittedAt: '2025-03-08',
       departmentApprovals: [
-        { departmentId: '01', departmentName: 'IT Infrastructure', status: 'approved', approverName: 'Budi Santoso', approvedAt: '2025-03-12', reviewNotes: 'Spesifikasi teknis sesuai standar.', revisionRound: 0, isTargetedRevision: false },
-        { departmentId: '02', departmentName: 'Financial Audit', status: 'reviewing', approverName: undefined, revisionRound: 0, isTargetedRevision: false },
+        { departmentId: 'dept-it', departmentName: 'Information Technology', status: 'approved', approverName: 'Budi Santoso', approvedAt: '2025-03-12', reviewNotes: 'Spesifikasi teknis sesuai standar.', revisionRound: 0, isTargetedRevision: false },
+        { departmentId: 'dept-finance', departmentName: 'Finance', status: 'reviewing', approverName: undefined, revisionRound: 0, isTargetedRevision: false },
       ],
     },
     competitors: [

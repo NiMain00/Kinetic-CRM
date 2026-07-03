@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Project, LphsData, LphsDepartmentApproval, TimelineEvent, ApprovalItem } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
-import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useRbacStore } from '@/stores/rbacStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
@@ -44,7 +44,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const updateLphsDepartmentApproval = useProjectStore((s) => s.updateLphsDepartmentApproval);
   const updateLphsStatus = useProjectStore((s) => s.updateLphsStatus);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
-  const departments = useMasterDataStore((s) => s.departments);
+  const departments = useRbacStore((s) => s.departments);
   const authUser = useAuthStore((s) => s.user);
   const addApproval = useApprovalStore((s) => s.addApproval);
   const removeApproval = useApprovalStore((s) => s.removeApproval);
@@ -74,7 +74,14 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const isManagement = userRole === 'Admin' || userRole === 'Management' || isSuperAdmin;
   const isDeptHead = userRole === 'Dept Head' || isSuperAdmin;
 
-  const activeDepartments = useMemo(() => departments.filter(d => d.status), [departments]);
+  const activeDepartments = useMemo(() => {
+    // Untuk proyek Tender: filter berdasarkan scope departments yang sudah diatur
+    if (project?.type === 'Tender' && project?.scopeDepartments && project.scopeDepartments.length > 0) {
+      return departments.filter(d => d.is_active && project.scopeDepartments!.includes(d.id));
+    }
+    // Fallback: tampilkan semua departemen aktif (Prospecting / data lama)
+    return departments.filter(d => d.is_active);
+  }, [departments, project?.scopeDepartments, project?.type]);
 
   // --- Document Upload Handlers ---
   const handleUploadLphs = () => {
@@ -608,7 +615,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                   <input type="checkbox" checked={isSelected} disabled={isDisabled} readOnly className="accent-primary cursor-pointer" />
                   <div className="flex-1">
                     <p className="text-xs font-semibold">{dept.name}</p>
-                    <p className="text-[10px] text-outline">{dept.division} • {dept.head}</p>
+                    <p className="text-[10px] text-outline">{dept.code} • {dept.description || dept.name}</p>
                   </div>
                   {approval && (
                     <Badge variant={STATUS_BADGE[approval.status] || 'default'}>{STATUS_LABEL[approval.status]}</Badge>

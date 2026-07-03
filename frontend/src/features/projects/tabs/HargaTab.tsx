@@ -305,7 +305,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
             <Input label="Nama Kompetitor" value={newCompName} onChange={e => setNewCompName(e.target.value)} placeholder="Nama kompetitor..." />
           </div>
           <div className="col-span-12 sm:col-span-3">
-            <Input label="Estimasi Harga" value={newCompPrice} onChange={e => setNewCompPrice(e.target.value)} placeholder="Contoh: 142500000000" type="number" />
+            <CurrencyInput label="Estimasi Harga" value={Number(newCompPrice) || 0} onChange={(val) => setNewCompPrice(String(val ?? ''))} placeholder="Rp 0" />
           </div>
           <div className="col-span-12 sm:col-span-3">
             <Input label="Kelebihan" value={newCompAdv} onChange={e => setNewCompAdv(e.target.value)} placeholder="Pisahkan dengan koma" />

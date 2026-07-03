@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Project, CompetitorEntry, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
+import { formatCurrency } from '@/utils/formatters';
+import { CurrencyInput } from '@/components/ui';
 
 interface TabProps {
   project?: Project;
@@ -105,7 +107,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                     </div>
                   </td>
                   <td className={`px-6 py-4 font-mono font-semibold ${isLowestCompetitor(row) ? 'text-warning' : ''}`}>
-                    {row.estPrice.toLocaleString('id-ID')}
+                    {formatCurrency(row.estPrice)}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col gap-1">
@@ -142,12 +144,11 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                   />
                 </td>
                 <td className="px-6 py-3">
-                  <input
-                    value={newCompPrice}
-                    onChange={(e) => setNewCompPrice(e.target.value)}
-                    placeholder="Contoh: 142500000000"
-                    className="bg-surface-container-lowest border border-border rounded px-3 py-1.5 focus:ring-1 focus:ring-primary w-full text-sm font-mono outline-none"
-                    type="number"
+                  <CurrencyInput
+                    value={Number(newCompPrice) || 0}
+                    onChange={(val) => setNewCompPrice(String(val ?? ''))}
+                    placeholder="Rp 0"
+                    className="!rounded !py-1.5 !text-sm"
                   />
                 </td>
                 <td className="px-6 py-3">

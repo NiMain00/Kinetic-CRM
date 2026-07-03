@@ -5,6 +5,8 @@ import { formatCurrency, formatDate } from '@/utils/formatters';
 import { Card, Button, Input, Select, CurrencyInput } from '@/components/ui';
 import { createProcurementFromProject } from '@/features/procurement/procurementService';
 
+const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.zip'];
+
 interface TabProps {
   project?: Project;
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -21,6 +23,8 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   const [startDate, setStartDate] = useState(project?.winnerDetails?.startDate || '');
   const [failureReason, setFailureReason] = useState(project?.winnerDetails?.loseReason || '');
   const [loseNote, setLoseNote] = useState(project?.winnerDetails?.loseNote || '');
+  const [spkDocument, setSpkDocument] = useState<{ name: string; size: string; time: string } | null>(project?.winnerDetails?.spkDocument || null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   // Sync when switching projects
   useEffect(() => {
@@ -30,7 +34,57 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
     setStartDate(project?.winnerDetails?.startDate || '');
     setFailureReason(project?.winnerDetails?.loseReason || '');
     setLoseNote(project?.winnerDetails?.loseNote || '');
+    setSpkDocument(project?.winnerDetails?.spkDocument || null);
   }, [project?.id]);
+
+  const validateSpkFile = (file: File): string | null => {
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return `Format file tidak didukung. Gunakan: PDF, DOCX, atau ZIP`;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      return 'Ukuran file maksimal 25MB';
+    }
+    return null;
+  };
+
+  const handleUploadSpk = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.docx,.zip';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const error = validateSpkFile(file);
+        if (error) {
+          onShowNotification?.(error, 'error');
+          return;
+        }
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+        setSpkDocument({ name: file.name, size: `${sizeMB} MB`, time: 'Baru saja' });
+      }
+    };
+    input.click();
+  };
+
+  const handleSpkDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const error = validateSpkFile(file);
+      if (error) {
+        onShowNotification?.(error, 'error');
+        return;
+      }
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      setSpkDocument({ name: file.name, size: `${sizeMB} MB`, time: 'Baru saja' });
+    }
+  };
+
+  const handleDeleteSpk = () => {
+    setSpkDocument(null);
+  };
 
   const handleSaveDraft = () => {
     if (!project?.id) return;
@@ -41,6 +95,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
       duration: outcome === 'menang' ? Number(durationDays) : undefined,
       loseReason: outcome === 'kalah' ? failureReason : undefined,
       loseNote: outcome === 'kalah' ? loseNote : undefined,
+      spkDocument: outcome === 'menang' ? spkDocument : null,
     });
     onShowNotification?.('Draf hasil tender berhasil disimpan', 'success');
   };
@@ -51,6 +106,10 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
       onShowNotification?.('Pilih hasil tender terlebih dahulu', 'error');
       return;
     }
+    if (outcome === 'menang' && !spkDocument) {
+      onShowNotification?.('Unggah dokumen SPK/Kontrak terlebih dahulu', 'error');
+      return;
+    }
     // Persist winner details
     updateProjectWinner(project.id, {
       outcome,
@@ -59,6 +118,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
       duration: outcome === 'menang' ? Number(durationDays) : undefined,
       loseReason: outcome === 'kalah' ? failureReason : undefined,
       loseNote: outcome === 'kalah' ? loseNote : undefined,
+      spkDocument: outcome === 'menang' ? spkDocument : null,
     });
 
     // Add timeline event
@@ -189,11 +249,42 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
                 </div>
                 <div>
                   <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">Dokumen SPK / Kontrak</label>
-                  <div className="border-2 border-dashed border-border rounded-xl p-8 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
-                    <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors mb-2">cloud_upload</span>
-                    <p className="text-sm font-semibold text-secondary">Seret file ke sini atau <span className="text-primary underline">klik untuk unggah</span></p>
-                    <p className="text-xs text-outline mt-1">PDF, DOCX, ZIP (Maks. 25MB)</p>
-                  </div>
+                  {spkDocument ? (
+                    <div className="border border-border rounded-xl p-4 bg-surface-container-low">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="material-symbols-outlined text-primary">description</span>
+                          <div>
+                            <p className="text-sm font-semibold text-on-surface">{spkDocument.name}</p>
+                            <p className="text-xs text-outline">{spkDocument.size} &middot; {spkDocument.time}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleDeleteSpk}
+                          className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      onClick={handleUploadSpk}
+                      onDrop={handleSpkDrop}
+                      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                      onDragLeave={() => setIsDragOver(false)}
+                      className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer group ${
+                        isDragOver
+                          ? 'border-primary bg-primary/5'
+                          : 'border-border bg-surface-container-low hover:bg-surface-container'
+                      }`}
+                    >
+                      <span className={`material-symbols-outlined text-4xl transition-colors mb-2 ${isDragOver ? 'text-primary' : 'text-outline group-hover:text-primary'}`}>cloud_upload</span>
+                      <p className="text-sm font-semibold text-secondary">Seret file ke sini atau <span className="text-primary underline">klik untuk unggah</span></p>
+                      <p className="text-xs text-outline mt-1">PDF, DOCX, ZIP (Maks. 25MB)</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

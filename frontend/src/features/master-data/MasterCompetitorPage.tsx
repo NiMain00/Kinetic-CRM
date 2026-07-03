@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { Button, Input, Select, Badge, Card, CurrencyInput } from '@/components/ui';
 import { useMasterDataStore, type MasterCompetitor } from '@/stores/masterDataStore';
 import { formatCurrency } from '@/utils/formatters';
 
@@ -127,12 +127,10 @@ export default function MasterCompetitorPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Harga Minimum (Rp)</label>
-                  <input type="number" value={form.min_price || ''} onChange={e => setForm({ ...form, min_price: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="0" />
+                  <CurrencyInput label="Harga Minimum" value={form.min_price || 0} onChange={(val) => setForm({ ...form, min_price: val ?? 0 })} placeholder="Rp 0" />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Harga Maksimum (Rp)</label>
-                  <input type="number" value={form.max_price || ''} onChange={e => setForm({ ...form, max_price: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="0" />
+                  <CurrencyInput label="Harga Maksimum" value={form.max_price || 0} onChange={(val) => setForm({ ...form, max_price: val ?? 0 })} placeholder="Rp 0" />
                 </div>
               </div>
               <div className="space-y-2">

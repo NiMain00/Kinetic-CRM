@@ -155,6 +155,7 @@ export interface Project {
     duration?: number;
     loseReason?: string;
     loseNote?: string;
+    spkDocument?: { name: string; size: string; time: string } | null;
   };
   delivery?: {
     startDate?: string;
