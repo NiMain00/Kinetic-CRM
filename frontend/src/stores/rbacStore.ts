@@ -457,7 +457,7 @@ export const useRbacStore = create<RbacState>()(
     }),
     {
       name: 'kinetic-rbac',
-      version: 8,
+      version: 9,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version < 2) {
@@ -589,6 +589,49 @@ export const useRbacStore = create<RbacState>()(
         }
         if (version < 8) {
           // v8: add supervisor role with prospect approve permission
+          const roles = [...(current.roles || [])];
+          const rolePermissions = [...(current.rolePermissions || [])];
+          const userRoles = [...(current.userRoles || [])];
+
+          // Add supervisor role if not exists
+          if (!roles.find((r: any) => r.id === 'role-supervisor')) {
+            roles.push({ id: 'role-supervisor', name: 'supervisor', description: 'Supervisor department — approve & monitor terbatas', is_system: true });
+          }
+
+          // Add supervisor permissions if not exists
+          const SUPERVISOR_PERMS = [
+            { id: 'rp-supervisor-1', permissionId: 'perm-dash-view', scopeType: 'global', scopeId: undefined },
+            { id: 'rp-supervisor-2', permissionId: 'perm-notif-read', scopeType: 'global', scopeId: undefined },
+            { id: 'rp-supervisor-3', permissionId: 'perm-profile-manage', scopeType: 'global', scopeId: undefined },
+            { id: 'rp-supervisor-4', permissionId: 'perm-prospect-read', scopeType: 'department', scopeId: 'dept-marketing' },
+            { id: 'rp-supervisor-5', permissionId: 'perm-prospect-write-prospecting', scopeType: 'department', scopeId: 'dept-marketing' },
+            { id: 'rp-supervisor-6', permissionId: 'perm-prospect-approve-transition', scopeType: 'department', scopeId: 'dept-marketing' },
+            { id: 'rp-supervisor-7', permissionId: 'perm-project-read', scopeType: 'department', scopeId: 'dept-marketing' },
+          ];
+          for (const p of SUPERVISOR_PERMS) {
+            if (!rolePermissions.find((rp: any) => rp.id === p.id)) {
+              rolePermissions.push({
+                id: p.id,
+                roleId: 'role-supervisor',
+                permissionId: p.permissionId,
+                scopeType: p.scopeType,
+                scopeId: p.scopeId,
+                accessLevel: p.permissionId === 'perm-notif-read' ? 'read' : 'write',
+              });
+            }
+          }
+
+          // Update Siti (user 5) to supervisor if still staff
+          const sitiIdx = userRoles.findIndex((ur: any) => ur.userId === '5' && ur.roleId === 'role-staff');
+          if (sitiIdx >= 0) {
+            userRoles[sitiIdx] = { ...userRoles[sitiIdx], roleId: 'role-supervisor' };
+          }
+
+          return { ...current, roles, rolePermissions, userRoles };
+        }
+        if (version < 9) {
+          // v9: ensure supervisor role exists (fixes case where localStorage had version 8
+          // stored before migration v8 was added, skipping the v8 migration)
           const roles = [...(current.roles || [])];
           const rolePermissions = [...(current.rolePermissions || [])];
           const userRoles = [...(current.userRoles || [])];
