@@ -50,15 +50,15 @@ export default function ProcurementListPage() {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [procurements, statusFilter, search]);
 
+  const projects = useProjectStore((s) => s.projects);
   const projectNameMap = useMemo(() => {
-    const projects = useProjectStore.getState().projects;
     const map = new Map<string, string>();
     projects.forEach((p) => {
       if (p.id) map.set(p.id, p.name);
       if (p.code) map.set(p.code, p.name);
     });
     return map;
-  }, []);
+  }, [projects]);
 
   const getProjectName = (p: { sourceProjectId?: string; sourceProjectCode?: string; sourceProjectName?: string }): string | undefined => {
     return p.sourceProjectName

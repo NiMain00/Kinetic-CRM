@@ -211,6 +211,8 @@ export interface TimelineEvent {
 }
 
 export * from './users';
+export * from './item';
+export * from './master-item';
 
 // NOTE: Some parts of the app use a different Prospect/Project typing model.
 // This file re-exports the canonical domain types. Update them carefully.

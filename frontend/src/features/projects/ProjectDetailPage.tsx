@@ -40,7 +40,7 @@ export default function ProjectDetailView({
   const navigate = useNavigate();
 
   const getProjectById = useProjectStore((s) => s.getProjectById);
-  const storeProject = useProjectStore((s) => projectId ? s.projects.find(p => p.id === projectId) : undefined);
+  const storeProject = useProjectStore((s) => projectId ? s.entities[projectId] : undefined);
   const updateProject = useProjectStore((s) => s.updateProject);
   const deleteProject = useProjectStore((s) => s.deleteProject);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
@@ -132,8 +132,6 @@ export default function ProjectDetailView({
   const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
   const isTerminal = project.status === 'Selesai' || project.status === 'Kalah';
   const accessibleUpToIndex = isTerminal ? tabs.length - 1 : (currentStepIndex >= 0 ? currentStepIndex : 0);
-  const lphsMgmtApproved = project.lphs?.overallStatus === 'approved';
-
   const isTabLocked = (tabIndex: number) => {
     const tab = tabs[tabIndex];
     if (!tab) return true;
@@ -144,11 +142,11 @@ export default function ProjectDetailView({
     // Timeline, Dokumen, Diskusi & RKS: always unlocked
     if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi' || tab.label === 'RKS') return false;
 
-    // Harga, Kompetitor, Pemenang: unlocked after LPHS management approval (Tender)
-    // atau langsung unlocked untuk Prospecting (tidak perlu LPHS)
+    // Harga, Kompetitor, Pemenang: unlocked only after project advances past LPHS/SIOS phase
+    // (management must click "Lanjutkan ke Input Harga" first)
     if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
       if (project.type === 'Prospecting') return false; // always unlocked for Prospecting
-      return !lphsMgmtApproved;
+      return project.status === 'LPHS/SIOS';
     }
 
     // Default sequential locking (Overview, RKS, Review RKS, LPHS/SIOS)
@@ -348,7 +346,7 @@ export default function ProjectDetailView({
                 const step = tabs[index];
                 return (
                   (step.label === 'Timeline' || step.label === 'Dokumen' || step.label === 'Scope & Tim' ||
-                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && lphsMgmtApproved))
+                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && project.status !== 'LPHS/SIOS'))
                 );
               }}
             />
@@ -398,7 +396,7 @@ export default function ProjectDetailView({
                 {(() => {
                   const lockedTab = tabs[activeTabIndex];
                   if (['Harga', 'Kompetitor', 'Pemenang'].includes(lockedTab?.label || '')) {
-                    return 'Tahap ini dapat diakses setelah LPHS/SIOS mendapat final approval dari Management.';
+                    return 'Tahap ini dapat diakses setelah Management mengklik "Lanjutkan ke Input Harga".';
                   }
                   return `Tahap ini belum dapat diakses. Selesaikan dan dapatkan persetujuan untuk tahap "${tabs[Math.min(accessibleUpToIndex, tabs.length - 1)]?.label}" terlebih dahulu.`;
                 })()}

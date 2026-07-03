@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
+import { useConfigStore } from '@/stores/configStore';
 import { useAuthStore } from '@/stores/authStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
@@ -45,6 +46,17 @@ export default function ProjectListPage() {
   const projects = useProjectStore((s) => s.projects);
   const authUser = useAuthStore((s) => s.user);
   const { isStaffOnly, userId } = useOwnerFilter();
+  const projectPhases = useConfigStore((s) => s.projectPhases);
+
+  // Derive progress from project status for display (mirrors ProjectDetailPage logic)
+  const deriveProgress = useCallback((status: string) => {
+    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    const idx = active.findIndex((p) => p.status === status);
+    if (idx >= 0 && active.length > 1) {
+      return Math.round((idx / (active.length - 1)) * 100);
+    }
+    return 0;
+  }, [projectPhases]);
 
   const uniqueClients = useMemo(() => {
     return [...new Set(projects.map((p) => p.client))].sort();
@@ -105,6 +117,16 @@ export default function ProjectListPage() {
   const paginated = filtered.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE,
+  );
+
+  // Override progress with value derived from project status for display
+  const displayFiltered = useMemo(
+    () => filtered.map((p) => ({ ...p, progress: deriveProgress(p.status) })),
+    [filtered, deriveProgress],
+  );
+  const displayPaginated = useMemo(
+    () => paginated.map((p) => ({ ...p, progress: deriveProgress(p.status) })),
+    [paginated, deriveProgress],
   );
 
   const handleTabClick = (tab: string) => {
@@ -220,7 +242,7 @@ export default function ProjectListPage() {
               size="md"
               leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
               onClick={() => exportCSV(
-                filtered,
+                displayFiltered,
                 [
                   { header: 'Kode', accessor: (p) => p.code },
                   { header: 'Nama Proyek', accessor: (p) => p.name },
@@ -331,7 +353,7 @@ export default function ProjectListPage() {
       <Card padding="none">
         <Table
           columns={projectColumns}
-          data={paginated}
+          data={displayPaginated}
           keyExtractor={(p) => p.id}
           onRowClick={(p) => setDrawerProject(p)}
           emptyState={

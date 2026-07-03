@@ -333,7 +333,6 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     if (!project?.id) return;
     updateLphsStatus(project.id, { mgmtStatus: 'approved', overallStatus: 'approved' });
     updateProjectLphs(project.id, { ...lphs, mgmtStatus: 'approved', mgmtApprovedAt: new Date().toISOString(), overallStatus: 'approved', finalApprovedAt: new Date().toISOString() });
-    updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
     setLphs(prev => ({ ...prev, mgmtStatus: 'approved', mgmtApprovedAt: new Date().toISOString(), overallStatus: 'approved', finalApprovedAt: new Date().toISOString() }));
 
     // Remove LPHS approval from inbox
@@ -347,17 +346,35 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
       role: 'Management',
       time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
       type: 'approve',
-      description: 'LPHS/SIOS disetujui oleh Management. Proyek lanjut ke tahap Input Harga.',
+      description: 'LPHS/SIOS disetujui oleh Management. Klik "Lanjutkan ke Input Harga" untuk melanjutkan ke tahap berikutnya.',
     };
     addTimelineEvent(project.id, event);
-    onShowNotification?.('LPHS/SIOS final approved oleh Management.', 'success');
+    onShowNotification?.('LPHS/SIOS final approved oleh Management. Klik Lanjutkan untuk ke tahap Input Harga.', 'success');
     addNotification({
       title: 'Management Final Approve LPHS/SIOS',
-      message: `LPHS/SIOS proyek "${project.name}" telah mendapat final approval dari Management. Proyek lanjut ke tahap Input Harga.`,
+      message: `LPHS/SIOS proyek "${project.name}" telah mendapat final approval dari Management. Klik Lanjutkan untuk melanjutkan ke Input Harga.`,
       type: 'approval',
       entityId: project.id,
       entityType: 'project',
     });
+  };
+
+  // --- Continue to Input Harga (after mgmt approval) ---
+  const handleContinueToHarga = () => {
+    if (!project?.id) return;
+    updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
+
+    const event: TimelineEvent = {
+      id: `evt-${Date.now()}`,
+      title: 'Lanjut ke Input Harga',
+      actor: authUser?.fullName || authUser?.name || 'User',
+      role: 'Management',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'approve',
+      description: 'Proyek lanjut ke tahap Input Harga setelah final approval LPHS/SIOS.',
+    };
+    addTimelineEvent(project.id, event);
+    onShowNotification?.('Proyek lanjut ke tahap Input Harga.', 'success');
   };
 
   // --- Management Targeted Revision ---
@@ -704,11 +721,12 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-amber-800">Management</p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}${project?.status === 'LPHS/SIOS' ? ' — Klik Lanjutkan' : ''}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {statusIcon(lphs.mgmtStatus)}
-                  {(isManagement && lphs.pmStatus === 'approved' && lphs.overallStatus !== 'approved') && (
+                  {/* Tombol Setujui/Revisi sebelum mgmt approve */}
+                  {(isManagement && lphs.pmStatus === 'approved' && lphs.mgmtStatus !== 'approved') && (
                     <>
                       <button onClick={handleMgmtApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                         Setujui
@@ -718,7 +736,19 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                       </button>
                     </>
                   )}
-                  
+                  {/* Tombol Lanjutkan/Revisi setelah mgmt approve — tidak auto-advance */}
+                  {(isManagement && lphs.mgmtStatus === 'approved' && project?.status === 'LPHS/SIOS') && (
+                    <>
+                      <button onClick={handleContinueToHarga} className="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                        Lanjutkan ke Input Harga
+                      </button>
+                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                        Revisi
+                      </button>
+                    </>
+                  )}
+
                 </div>
               </div>
             )}

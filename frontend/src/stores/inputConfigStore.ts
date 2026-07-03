@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { InputConfigGroup, InputOption, InputConfigGroupKey } from '@/types/input-config';
+import { deepClone } from '@/utils/clone';
 
 // ── Seed Data ──
 
@@ -133,7 +134,7 @@ const SEED_GROUPS: InputConfigGroup[] = [
 // ── Helpers ──
 
 function getDefaultGroups(): InputConfigGroup[] {
-  return JSON.parse(JSON.stringify(SEED_GROUPS));
+  return deepClone(SEED_GROUPS);
 }
 
 // ── Store ──

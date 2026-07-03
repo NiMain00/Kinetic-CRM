@@ -1,6 +1,7 @@
 import type { Project } from '@/types/domain';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from './procurementStore';
+import { deepClone, createSnapshot } from '@/utils/clone';
 
 /**
  * Auto-create a Procurement entry from a winning project.
@@ -16,17 +17,21 @@ export function createProcurementFromProject(project: Project): Procurement {
   if (existing) return existing;
 
   const procurement = store.addProcurement({
+    // ── Identity (reference ke source) ──────────────────────────────────
     sourceProjectId: project.id,
     sourceProjectCode: project.code,
     sourceProjectName: project.name,
-    client: project.client,
-    contractValue: project.winnerDetails?.contractValue || project.estimatedValue || 0,
-    location: project.location,
+
+    // ── Snapshot (copy sekali saat transisi) ────────────────────────────
+    ...createSnapshot(project, ['client', 'location']),
     createdBy: project.author,
     createdByUserId: project.createdByUserId,
+    contractValue: project.winnerDetails?.contractValue || project.estimatedValue || 0,
+
     status: 'Draft',
     phase: 'Draft',
-    // Inherit delivery data if project already has it
+
+    // ── Derived dari project.delivery ───────────────────────────────────
     targetStartDate: project.delivery?.startDate,
     targetEndDate: project.delivery?.endDate,
     actualEndDate: project.delivery?.actualEndDate,
@@ -34,9 +39,10 @@ export function createProcurementFromProject(project: Project): Procurement {
     isDelivered: project.delivery?.isCompleted,
     deliveredAt: project.delivery?.completedAt,
     deliveredBy: project.delivery?.completedBy,
-    // Copy documents & timeline (deep clone)
-    documents: project.documents ? JSON.parse(JSON.stringify(project.documents)) : [],
-    timeline: project.timeline ? JSON.parse(JSON.stringify(project.timeline)) : [],
+
+    // ── Deep clone (immutable copy) ─────────────────────────────────────
+    documents: project.documents ? deepClone(project.documents) : [],
+    timeline: project.timeline ? deepClone(project.timeline) : [],
   });
 
   // Add timeline event for the creation

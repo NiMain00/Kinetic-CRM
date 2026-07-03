@@ -16,7 +16,13 @@ import { useNotificationStore } from './notificationStore';
 import { useProcurementStore } from '@/features/procurement/procurementStore';
 
 interface ProjectState {
+  /** Normalized entity map — O(1) lookup */
+  entities: Record<string, Project>;
+  /** Ordered IDs — preserves insertion order */
+  ids: string[];
+  /** Derived array — backward-compat selector */
   projects: Project[];
+
   addProject: (p: Project) => void;
   updateProject: (id: string, data: Partial<Project>) => void;
   deleteProject: (id: string) => void;
@@ -40,16 +46,77 @@ interface ProjectState {
   updateProjectStage: (id: string, stageId: string) => void;
 }
 
+// ─── Helpers ────────────────────────────────────────────────────────────
+
+function deriveProjects(
+  entities: Record<string, Project>,
+  ids: string[],
+): Project[] {
+  const arr: Project[] = new Array(ids.length);
+  for (let i = 0; i < ids.length; i++) {
+    arr[i] = entities[ids[i]];
+  }
+  return arr;
+}
+
+function normalizeProjects(projects: Project[]): {
+  entities: Record<string, Project>;
+  ids: string[];
+} {
+  const entities: Record<string, Project> = {};
+  const ids: string[] = new Array(projects.length);
+  for (let i = 0; i < projects.length; i++) {
+    const p = projects[i];
+    entities[p.id] = p;
+    ids[i] = p.id;
+  }
+  return { entities, ids };
+}
+
+function updateEntity(
+  entities: Record<string, Project>,
+  ids: string[],
+  id: string,
+  updater: (e: Project) => Project,
+): { entities: Record<string, Project>; projects: Project[] } {
+  const existing = entities[id];
+  if (!existing) {
+    return { entities, projects: deriveProjects(entities, ids) };
+  }
+  const next = { ...entities, [id]: updater(existing) };
+  return {
+    entities: next,
+    projects: deriveProjects(next, ids),
+  };
+}
+
+// ─── Initial state (first-load fallback) ───────────────────────────────
+const { entities: INITIAL_ENTITIES, ids: INITIAL_IDS } = normalizeProjects(INITIAL_PROJECTS);
+
 export const useProjectStore = create<ProjectState>()(
   persist(
     (set, get) => ({
-      projects: INITIAL_PROJECTS,
-      addProject: (p) => set((s) => ({ projects: [...s.projects, p] })),
+      entities: INITIAL_ENTITIES,
+      ids: INITIAL_IDS,
+      projects: deriveProjects(INITIAL_ENTITIES, INITIAL_IDS),
+
+      addProject: (p) =>
+        set((s) => {
+          const entities = { ...s.entities, [p.id]: p };
+          const ids = [...s.ids, p.id];
+          return { entities, ids, projects: deriveProjects(entities, ids) };
+        }),
+
       updateProject: (id, data) => {
-        const current = get().projects.find((p) => p.id === id);
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, ...data } : p)),
-        }));
+        const current = get().entities[id];
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            ...data,
+            updatedAt: new Date().toISOString(),
+          }));
+          return { ...r, ids: s.ids };
+        });
         // Add notification if status changed
         if (data.status && current && current.status !== data.status) {
           const addNotification = useNotificationStore.getState().addNotification;
@@ -62,6 +129,7 @@ export const useProjectStore = create<ProjectState>()(
           });
         }
       },
+
       deleteProject: (id) => {
         // Hapus juga approval terkait
         const approvalStore = useApprovalStore.getState();
@@ -72,122 +140,167 @@ export const useProjectStore = create<ProjectState>()(
         const deleteProc = useProcurementStore.getState().deleteProcurement;
         const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
         linked.forEach((p) => deleteProc(p.id));
-        return set((s) => ({ projects: s.projects.filter((p) => p.id !== id) }));
+        set((s) => {
+          const entities = { ...s.entities };
+          delete entities[id];
+          const ids = s.ids.filter((i) => i !== id);
+          return { entities, ids, projects: deriveProjects(entities, ids) };
+        });
       },
-      getProjectById: (id) => get().projects.find((p) => p.id === id),
+
+      getProjectById: (id) => get().entities[id],
 
       updateProjectRks: (id, rks) =>
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, rks } : p)),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, rks }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectLphs: (id, lphs) =>
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, lphs } : p)),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, lphs }));
+          return { ...r, ids: s.ids };
+        }),
       updateLphsDepartmentApproval: (id, approval) =>
-        set((s) => ({
-          projects: s.projects.map((p) => {
-            if (p.id !== id || !p.lphs) return p;
-            const existing = p.lphs.departmentApprovals.findIndex(a => a.departmentId === approval.departmentId);
-            const newApprovals = existing >= 0
-              ? p.lphs.departmentApprovals.map((a, i) => i === existing ? approval : a)
-              : [...p.lphs.departmentApprovals, approval];
-            return { ...p, lphs: { ...p.lphs, departmentApprovals: newApprovals } };
-          }),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => {
+            if (!e.lphs) return e;
+            const existing = e.lphs.departmentApprovals.findIndex(
+              (a) => a.departmentId === approval.departmentId,
+            );
+            const newApprovals =
+              existing >= 0
+                ? e.lphs.departmentApprovals.map((a, i) => (i === existing ? approval : a))
+                : [...e.lphs.departmentApprovals, approval];
+            return { ...e, lphs: { ...e.lphs, departmentApprovals: newApprovals } };
+          });
+          return { ...r, ids: s.ids };
+        }),
       updateLphsStatus: (id, status) =>
-        set((s) => ({
-          projects: s.projects.map((p) => {
-            if (p.id !== id || !p.lphs) return p;
-            return { ...p, lphs: { ...p.lphs, ...status } };
-          }),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => {
+            if (!e.lphs) return e;
+            return { ...e, lphs: { ...e.lphs, ...status } };
+          });
+          return { ...r, ids: s.ids };
+        }),
       updateProjectPricing: (id, pricing) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id ? { ...p, pricing: { ...p.pricing, ...pricing } as Project['pricing'] } : p,
-          ),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            pricing: { ...e.pricing, ...pricing } as Project['pricing'],
+          }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectCompetitors: (id, competitors) =>
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, competitors } : p)),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, competitors }));
+          return { ...r, ids: s.ids };
+        }),
       addProjectCompetitor: (id, competitor) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id
-              ? { ...p, competitors: [...(p.competitors || []), competitor] }
-              : p,
-          ),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            competitors: [...(e.competitors || []), competitor],
+          }));
+          return { ...r, ids: s.ids };
+        }),
       removeProjectCompetitor: (id, competitorId) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id
-              ? { ...p, competitors: (p.competitors || []).filter((c) => c.id !== competitorId) }
-              : p,
-          ),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            competitors: (e.competitors || []).filter((c) => c.id !== competitorId),
+          }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectWinner: (id, winnerDetails) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id
-              ? { ...p, winnerDetails: { ...p.winnerDetails, ...winnerDetails } as Project['winnerDetails'] }
-              : p,
-          ),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            winnerDetails: { ...e.winnerDetails, ...winnerDetails } as Project['winnerDetails'],
+          }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectDelivery: (id, delivery) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id
-              ? { ...p, delivery: { ...p.delivery, ...delivery } as Project['delivery'] }
-              : p,
-          ),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            delivery: { ...e.delivery, ...delivery } as Project['delivery'],
+          }));
+          return { ...r, ids: s.ids };
+        }),
       addTimelineEvent: (id, event) =>
-        set((s) => ({
-          projects: s.projects.map((p) =>
-            p.id === id
-              ? { ...p, timeline: [...(p.timeline || []), event] }
-              : p,
-          ),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            timeline: [...(e.timeline || []), event],
+          }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectDocuments: (id, documents) =>
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, documents } : p)),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, documents }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectScope: (id, scopeDepartments) =>
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, scopeDepartments } : p)),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, scopeDepartments }));
+          return { ...r, ids: s.ids };
+        }),
       updateProjectStage: (id, stageId) =>
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === id ? { ...p, currentStageId: stageId } : p)),
-        })),
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, currentStageId: stageId }));
+          return { ...r, ids: s.ids };
+        }),
     }),
     {
       name: 'kinetic-projects',
-      version: 4,
-      migrate: (persisted: unknown, version: number) => {
-        const current = (persisted || {}) as any;
-        if (version < 3) {
-          // v3: Force re-init with fresh mock data that includes createdByUserId
-          return { ...current, projects: INITIAL_PROJECTS } as ProjectState;
-        }
-        if (version < 4) {
-          // v4: Add RBAC fields (scopeDepartments, currentStageId, departmentId) with defaults
+      version: 5,
+      merge: (persisted: unknown, current: ProjectState) => {
+        if (!persisted || typeof persisted !== 'object') return current;
+        const p = persisted as Partial<ProjectState>;
+        if (p.entities && p.ids) {
           return {
             ...current,
-            projects: (current.projects || []).map((p: any) => ({
-              ...p,
-              scopeDepartments: p.scopeDepartments || [],
-              currentStageId: p.currentStageId || 'stage-in-project',
-              departmentId: p.departmentId || 'dept-pm',
-            })),
-          } as ProjectState;
+            ...p,
+            projects: deriveProjects(p.entities, p.ids),
+          };
         }
-        return current as ProjectState;
+        return { ...current, ...p };
       },
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+
+        // v4→v5: normalize to Record pattern
+        if (version < 5) {
+          // v3: Force re-init with fresh mock data that includes createdByUserId
+          // v4: Add RBAC fields (scopeDepartments, currentStageId, departmentId) with defaults
+          const raw = current.projects || INITIAL_PROJECTS;
+          const withDefaults = raw.map((p: any) => ({
+            ...p,
+            scopeDepartments: p.scopeDepartments || [],
+            currentStageId: p.currentStageId || 'stage-in-project',
+            departmentId: p.departmentId || 'dept-pm',
+            createdByUserId: p.createdByUserId || p.createdBy || '',
+          }));
+          const { entities, ids } = normalizeProjects(withDefaults);
+          return { entities, ids, projects: deriveProjects(entities, ids) };
+        }
+
+        // Ensure derived `projects` for loads from direct persist
+        if (!current.projects && current.entities && current.ids) {
+          return {
+            ...current,
+            projects: deriveProjects(current.entities, current.ids),
+          };
+        }
+
+        return current;
+      },
+      // Only persist entities + ids; projects is derived on hydrate
+      partialize: (state) => ({
+        entities: state.entities,
+        ids: state.ids,
+      }),
     },
   ),
 );

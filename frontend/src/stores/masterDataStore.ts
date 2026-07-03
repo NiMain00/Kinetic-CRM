@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { MasterItem } from '@/types/domain/master-item';
 
 /**
  * Generic master data store — handles all master data entities
@@ -418,7 +419,25 @@ const INITIAL_NOTIF_TEMPLATES: MasterNotifTemplate[] = [
   { id: 'NT-06', event_code: 'project.cancelled', event_name: 'Proyek Dibatalkan', template_inapp: 'Proyek {{projectName}} telah dibatalkan. Alasan: {{cancelReason}}.', recipient_roles: ['cabang'], available_variables: ['projectName', 'cancelReason'], is_active: true, is_system: true },
 ];
 
-type EntityType = 'categories' | 'competitors' | 'docTypes' | 'questions' | 'holidays' | 'lossReasons' | 'periods' | 'customers' | 'industries' | 'projectStatuses' | 'documentTypes' | 'questionTypes' | 'departments' | 'users' | 'auditLogs' | 'approvalLevels' | 'notifTemplates' | 'roles';
+const INITIAL_ITEMS: MasterItem[] = [
+  { id: 'ITEM-001', sku: 'SW-M365-E3', name: 'Microsoft 365 E3 License', type: 'jasa', unit: 'tahun', categoryId: 'cat-swa', categoryName: 'Software & Lisensi', basePrice: 1_200_000, description: 'Lisensi Microsoft 365 Enterprise E3 per user per tahun', is_active: true },
+  { id: 'ITEM-002', sku: 'SW-M365-E5', name: 'Microsoft 365 E5 License', type: 'jasa', unit: 'tahun', categoryId: 'cat-swa', categoryName: 'Software & Lisensi', basePrice: 2_400_000, description: 'Lisensi Microsoft 365 Enterprise E5 per user per tahun', is_active: true },
+  { id: 'ITEM-003', sku: 'HW-SRV-R430', name: 'Dell PowerEdge R430 Server', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Server', basePrice: 85_000_000, description: 'Server rackmount 1U dengan Xeon E5-2603 v4', is_active: true },
+  { id: 'ITEM-004', sku: 'HW-SRV-R740', name: 'Dell PowerEdge R740 Server', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Server', basePrice: 185_000_000, description: 'Server rackmount 2U dengan Xeon Silver 4210', is_active: true },
+  { id: 'ITEM-005', sku: 'HW-UPS-3KVA', name: 'UPS 3KVA Online Double Conversion', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Network', basePrice: 25_000_000, description: 'UPS 3KVA dengan baterai eksternal untuk 2 jam backup', is_active: true },
+  { id: 'ITEM-006', sku: 'HW-RCK-42U', name: 'Rack Server 42U Standard', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Network', basePrice: 15_000_000, description: 'Rack server 42U dengan PDU dan cable management', is_active: true },
+  { id: 'ITEM-007', sku: 'HW-AC-2PK', name: 'AC Split 2PK Server Room', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Infrastructure', basePrice: 18_500_000, description: 'AC split 2PK khusus server room dengan thermostat', is_active: true },
+  { id: 'ITEM-008', sku: 'SW-VMW-STD', name: 'VMware vSphere Standard', type: 'jasa', unit: 'unit', categoryId: 'cat-swa', categoryName: 'Software & Lisensi', basePrice: 65_000_000, description: 'Lisensi VMware vSphere Standard per processor', is_active: true },
+  { id: 'ITEM-009', sku: 'SW-VMW-ENT', name: 'VMware vSphere Enterprise Plus', type: 'jasa', unit: 'unit', categoryId: 'cat-swa', categoryName: 'Software & Lisensi', basePrice: 120_000_000, description: 'Lisensi VMware vSphere Enterprise Plus per processor', is_active: true },
+  { id: 'ITEM-010', sku: 'JAS-KONS-IT', name: 'Jasa Konsultasi Infrastruktur IT', type: 'jasa', unit: 'hari', categoryId: 'cat-jas', categoryName: 'Jasa Konsultansi', basePrice: 3_500_000, description: 'Jasa konsultasi perencanaan infrastruktur IT per hari', is_active: true },
+  { id: 'ITEM-011', sku: 'JAS-INST-SRV', name: 'Jasa Instalasi & Konfigurasi Server', type: 'jasa', unit: 'unit', categoryId: 'cat-jas', categoryName: 'Jasa Implementasi', basePrice: 7_500_000, description: 'Jasa instalasi dan konfigurasi server rackmount', is_active: true },
+  { id: 'ITEM-012', sku: 'HW-CBL-FO-50M', name: 'Fiber Optic Cable 50m Single Mode', type: 'barang', unit: 'pcs', categoryId: 'cat-hw', categoryName: 'Hardware Network', basePrice: 1_200_000, description: 'Kabel fiber optic single mode 50m dengan konektor LC', is_active: true },
+  { id: 'ITEM-013', sku: 'HW-SWT-POE48', name: 'Switch PoE 48 Port Gigabit', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Network', basePrice: 32_000_000, description: 'Switch managed PoE+ 48 port gigabit dengan 4 SFP+', is_active: true },
+  { id: 'ITEM-014', sku: 'JAS-TRKBL-FO', name: 'Jasa Trunking & Penarikan Kabel FO', type: 'jasa', unit: 'meter', categoryId: 'cat-jas', categoryName: 'Jasa Implementasi', basePrice: 250_000, description: 'Jasa penarikan kabel fiber optic termasuk trunking per meter', is_active: true },
+  { id: 'ITEM-015', sku: 'HW-FW-FOR-100E', name: 'Fortinet FortiGate 100E Firewall', type: 'barang', unit: 'unit', categoryId: 'cat-hw', categoryName: 'Hardware Network', basePrice: 55_000_000, description: 'Firewall FortiGate 100E dengan subscription 1 tahun', is_active: true },
+];
+
+type EntityType = 'categories' | 'competitors' | 'docTypes' | 'questions' | 'holidays' | 'lossReasons' | 'periods' | 'customers' | 'industries' | 'projectStatuses' | 'documentTypes' | 'questionTypes' | 'departments' | 'users' | 'auditLogs' | 'approvalLevels' | 'notifTemplates' | 'roles' | 'items';
 
 const INITIAL_DATA: Record<EntityType, any[]> = {
   categories: INITIAL_CATEGORIES,
@@ -439,6 +458,7 @@ const INITIAL_DATA: Record<EntityType, any[]> = {
   approvalLevels: INITIAL_APPROVAL_LEVELS,
   notifTemplates: INITIAL_NOTIF_TEMPLATES,
   roles: INITIAL_ROLES,
+  items: INITIAL_ITEMS,
 };
 
 interface MasterDataState {
@@ -460,6 +480,7 @@ interface MasterDataState {
   approvalLevels: MasterApprovalLevel[];
   notifTemplates: MasterNotifTemplate[];
   roles: MasterRole[];
+  items: MasterItem[];
   getData: <T>(entity: EntityType) => T[];
   addData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, item: T) => void;
   updateData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, id: string, data: Partial<T>) => void;
@@ -487,6 +508,7 @@ export const useMasterDataStore = create<MasterDataState>()(
       approvalLevels: INITIAL_APPROVAL_LEVELS,
       notifTemplates: INITIAL_NOTIF_TEMPLATES,
       roles: INITIAL_ROLES,
+      items: INITIAL_ITEMS,
 
       getData: <T>(entity: EntityType) => get()[entity] as unknown as T[],
       addData: <T>(entity: EntityType, item: T) =>
@@ -504,7 +526,7 @@ export const useMasterDataStore = create<MasterDataState>()(
     }),
     {
       name: 'kinetic-master-data',
-      version: 8,
+      version: 9,
       migrate: (persisted: unknown, version: number) => {
         let current = (persisted || {}) as any;
         if (version < 5) {
@@ -522,6 +544,10 @@ export const useMasterDataStore = create<MasterDataState>()(
         if (version < 8) {
           // v8: Refresh permissions keys — underscore → colon (RBAC alignment)
           current = { ...current, roles: INITIAL_ROLES };
+        }
+        if (version < 9) {
+          // v9: Add items (katalog barang/jasa)
+          current = { ...current, items: INITIAL_ITEMS };
         }
         return current;
       },

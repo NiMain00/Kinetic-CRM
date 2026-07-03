@@ -9,8 +9,8 @@ import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useRbacStore } from '@/stores/rbacStore';
-import { useProspectStore } from '@/stores/prospectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { eventBus } from '@/services/eventBridge';
 import { useActiveOptions } from '@/hooks/useInputConfig';
 import type { Prospect } from '@/types/domain';
 import { projectSchema, type ProjectFormData } from '@/utils/validators';
@@ -133,12 +133,14 @@ export default function ProjectFormPage() {
 
     addProject(newProject);
 
-    // Jika dari prospek, update status konversi
+    // Jika dari prospek, emit event — handler akan update status + link
     if (fromProspect) {
-      const { updateProspect } = useProspectStore.getState();
-      updateProspect(fromProspect.id, {
-        isConverted: true,
+      eventBus.emit({
+        type: 'PROSPECT_CONVERTED',
+        prospectId: fromProspect.id,
         projectId,
+        projectName: data.name.trim(),
+        timestamp: new Date().toISOString(),
       });
     }
 

@@ -16,6 +16,8 @@ import { useNotificationStore } from '@/stores/notificationStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useRbacStore } from '@/stores/rbacStore';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
+import { useRelationStore } from '@/stores/relationStore';
+import { eventBus } from '@/services/eventBridge';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 
 const legacyLabels: Record<string, string> = {
@@ -119,7 +121,6 @@ export default function ProspectDetailPage() {
   const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
   const getCustomerById = useCustomerStore((s) => s.getCustomerById);
   const getProjectById = useProjectStore((s) => s.getProjectById);
-  const deleteProject = useProjectStore((s) => s.deleteProject);
   const { approvals, approveItem, addApproval } = useApprovalStore();
 
   const authUser = useAuthStore((s) => s.user);
@@ -229,12 +230,13 @@ export default function ProspectDetailPage() {
     );
   }, [notifications, prospect, localActivities]);
 
+  const relatedProjectId = useRelationStore((s) => s.getProjectByProspect(prospect?.id || ''));
   const relatedProject = useMemo(() => {
-    if (prospect?.isConverted && prospect?.projectId) {
-      return getProjectById(prospect.projectId);
+    if (prospect?.isConverted && relatedProjectId) {
+      return getProjectById(relatedProjectId);
     }
     return null;
-  }, [getProjectById, prospect]);
+  }, [getProjectById, prospect, relatedProjectId]);
 
   if (!prospect) {
     return (
@@ -324,9 +326,16 @@ export default function ProspectDetailPage() {
   };
 
   const confirmDeleteProspect = () => {
-    if (prospect.isConverted && prospect.projectId) {
-      deleteProject(prospect.projectId);
-    }
+    // Emit event — handler will clean up approvals, relations, and optionally cascade project
+    eventBus.emit({
+      type: 'PROSPECT_DELETED',
+      prospectId: prospect.id,
+      cascadeProjectId: prospect.isConverted && prospect.projectId
+        ? prospect.projectId
+        : undefined,
+      timestamp: new Date().toISOString(),
+    });
+    // Store action just removes local data
     deleteProspect(prospect.id);
     toast.success('Prospek berhasil dihapus.');
     setShowDeleteModal(false);

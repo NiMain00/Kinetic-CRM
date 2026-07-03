@@ -27,7 +27,7 @@ export default function ProcurementDetailView() {
   const navigate = useNavigate();
   const store = useProcurementStore();
   const procurement = procurementId
-    ? store.procurements.find((p) => p.id === procurementId)
+    ? store.entities[procurementId]
     : undefined;
   const { can } = useAuthz();
   const [showDeleteModal, setShowDeleteModal] = useState(false);

@@ -4,8 +4,10 @@ import { BrowserRouter } from 'react-router-dom';
 import AppRouter from './routes/router';
 import { ErrorBoundary } from '@/components/shared';
 import { useThemeStore } from '@/stores/themeStore';
-import { useProjectStore } from '@/stores/projectStore';
+import { registerEventHandlers } from '@/bootstrap/eventHandlers';
 import { migrateExistingProjects } from '@/features/procurement/procurementService';
+import { useProjectStore } from '@/stores/projectStore';
+import { useProcurementStore } from '@/features/procurement/procurementStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,15 +30,27 @@ function App() {
     return unsub;
   }, []);
 
-  // One-time migration: create procurement records for existing winning projects
-  const migrated = useRef(false);
+  // Register domain event handlers once at startup
+  const initRef = useRef(false);
   useEffect(() => {
-    if (migrated.current) return;
-    migrated.current = true;
-    const projects = useProjectStore.getState().projects;
-    const count = migrateExistingProjects(projects);
-    if (count > 0) {
-      console.info(`[Migration] Created ${count} procurement record(s) from existing winning projects.`);
+    if (initRef.current) return;
+    initRef.current = true;
+    registerEventHandlers();
+
+    // Wait for Zustand persist hydration before migrating
+    const tryMigrate = () => {
+      if (useProjectStore.persist.hasHydrated() && useProcurementStore.persist.hasHydrated()) {
+        const projects = useProjectStore.getState().projects;
+        migrateExistingProjects(projects);
+        return true;
+      }
+      return false;
+    };
+
+    if (!tryMigrate()) {
+      const unsub1 = useProjectStore.persist.onFinishHydration(() => tryMigrate());
+      const unsub2 = useProcurementStore.persist.onFinishHydration(() => tryMigrate());
+      return () => { unsub1(); unsub2(); };
     }
   }, []);
 

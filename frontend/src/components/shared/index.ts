@@ -11,3 +11,7 @@ export { default as CalendarView } from './CalendarView';
 export { default as ActivityFeed } from './ActivityFeed';
 export { default as ShortcutHelpModal } from './ShortcutHelpModal';
 export { MobileOnly, DesktopOnly } from './Responsive';
+export { default as RequirementProgressBar } from './RequirementProgressBar';
+export { default as ProcurementConsolidator } from './ProcurementConsolidator';
+export { default as ProcurementAllocationTable } from './ProcurementAllocationTable';
+export { default as ItemSelector } from './ItemSelector';

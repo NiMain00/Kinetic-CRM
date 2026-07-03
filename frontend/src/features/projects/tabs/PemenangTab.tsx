@@ -3,7 +3,7 @@ import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import { Card, Button, Input, Select, CurrencyInput } from '@/components/ui';
-import { createProcurementFromProject } from '@/features/procurement/procurementService';
+import { eventBus } from '@/services/eventBridge';
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.zip'];
 
@@ -137,8 +137,14 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
 
     // Advance status
     if (outcome === 'menang') {
-      // Auto-create procurement record for the winning project
-      createProcurementFromProject(project);
+      // Emit event — handler will create procurement + link + notify
+      eventBus.emit({
+        type: 'PROJECT_WON',
+        projectId: project.id,
+        projectName: project.name,
+        contractValue: finalContractValue ?? 0,
+        timestamp: new Date().toISOString(),
+      });
       updateProject(project.id, { status: 'Selesai', phase: 'Selesai' });
     } else {
       updateProject(project.id, { status: 'Kalah', phase: 'Selesai' });
