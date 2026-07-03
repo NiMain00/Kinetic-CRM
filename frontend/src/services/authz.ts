@@ -106,6 +106,9 @@ class AuthorizationEngine {
     const stage = store.workflowStages.find((s) => s.code === currentStageCode);
     if (!stage) return 'none';
 
+    // Elevated roles (super_admin, admin, director) bypass stage access check
+    if (this.hasElevatedRole(userId)) return 'write';
+
     if (!activeDepartmentId) return 'none';
 
     const userDept = store.departments.find((d) => d.id === activeDepartmentId);
