@@ -13,6 +13,7 @@ const variants = {
   warning: 'bg-warning-container text-warning',
   danger: 'bg-danger-container text-danger',
   info: 'bg-info-container text-info',
+  primary: 'bg-primary-container text-primary',
   purple: 'bg-purple-100 text-status-purple',
   gold: 'bg-gold-container text-on-gold',
 };
@@ -24,7 +25,7 @@ const sizes = {
 
 export default function Badge({ variant = 'default', size = 'sm', children, className = '' }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center font-semibold rounded-full ${variants[variant]} ${sizes[size]} ${className}`}>
+    <span className={`inline-flex items-center font-bold tracking-wide rounded-full ${variants[variant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   );
