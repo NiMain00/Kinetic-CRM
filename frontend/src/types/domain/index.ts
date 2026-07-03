@@ -34,7 +34,7 @@ export interface Prospect {
   answers?: Record<string, string>;
   industryId?: string;
   providerExisting?: string;
-  projectType?: 'Tender' | 'Prospecting';
+  projectType?: string;
   isConverted?: boolean;
   projectId?: string;
   createdByUserId?: string;
@@ -131,7 +131,7 @@ export interface Project {
   date: string;
   progress: number;
   estimatedValue: number;
-  type: 'Tender' | 'Prospecting';
+  type: string;
   sourceProspectId?: string;
   providerExisting?: string;
   deadlineTender?: string;

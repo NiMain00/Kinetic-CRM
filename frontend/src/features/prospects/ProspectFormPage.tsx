@@ -88,10 +88,10 @@ export default function ProspectFormPage() {
   const [formDate, setFormDate] = useState(existingProspect?.date || '');
   const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
 
-  // Tipe Proyek
-  const [projectType, setProjectType] = useState<'Tender' | 'Prospecting'>(
-    // ProspectFormPage payload uses projectType on Prospect
-    existingProspect?.projectType || 'Tender'
+  // Tipe Proyek — dari input config
+  const projectTypeOptions = useActiveOptions('project_types');
+  const [projectType, setProjectType] = useState<string>(
+    existingProspect?.projectType || projectTypeOptions[0]?.value || 'Tender'
   );
 
   // Potensi Penambahan Unit
@@ -495,19 +495,23 @@ export default function ProspectFormPage() {
                 <input value={formName} onChange={(e) => setFormName(e.target.value)} required className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm" placeholder="Contoh: Modernization of Data Center - Jakarta" type="text" aria-label="Nama Prospek" />
               </div>
 
-              {/* Tipe Proyek — menentukan apakah proyek Tender atau Prospecting */}
+              {/* Tipe Proyek — dari input config */}
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>
                 <select
                   value={projectType}
-                  onChange={(e) => setProjectType(e.target.value as 'Tender' | 'Prospecting')}
+                  onChange={(e) => setProjectType(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm"
                   aria-label="Tipe Proyek"
                 >
-                  <option value="Tender">Tender</option>
-                  <option value="Prospecting">Prospecting</option>
+                  {projectTypeOptions.length === 0 && (
+                    <option value="Tender">Tender</option>
+                  )}
+                  {projectTypeOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
                 </select>
-                <p className="text-[10px] text-secondary">Pilih "Tender" jika proyek melalui proses tender, atau "Prospecting" jika penawaran langsung.</p>
+                <p className="text-[10px] text-secondary">Pilih sesuai kategori proyek. Opsi dikelola di Konfigurasi Input.</p>
               </div>
 
               {/* Estimasi Nilai Proyek — non-mandatory (Fase 1 item 1.7) */}

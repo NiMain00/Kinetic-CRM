@@ -15,6 +15,7 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useRbacStore } from '@/stores/rbacStore';
+import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 
 const legacyLabels: Record<string, string> = {
@@ -644,7 +645,10 @@ export default function ProspectDetailPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
                       <DataField label="Status" value={prospect.status} />
                       <DataField label="Tipe Prospek" value={tipeProspek} />
-                      <DataField label="Tipe Proyek" value={prospect.projectType || '-'} />
+                      <DataField label="Tipe Proyek" value={
+                        useInputConfigStore.getState().getGroup('project_types')
+                          ?.options.find(o => o.value === prospect.projectType)?.label || prospect.projectType || '-'
+                      } />
                       <DataField label="Potensi Unit" value={`${prospect.potensiUnit} Unit`} />
                       <DataField label="Cabang" value={prospect.branch || '-'} />
                       <DataField label="PIC" value={prospect.author} />

@@ -20,13 +20,13 @@ export const prospectSchema = z.object({
   description: z.string().optional(),
   branch: z.string().min(1, 'Cabang wajib dipilih'),
   potensiUnit: z.number().min(0, 'Unit potensi tidak boleh negatif'),
-  projectType: z.enum(['Tender', 'Prospecting']).optional(),
+  projectType: z.string().optional(),
 });
 
 export const projectSchema = z.object({
   name: z.string().min(3, 'Nama proyek minimal 3 karakter'),
   client: z.string().min(1, 'Nama client wajib diisi'),
-  type: z.enum(['Tender', 'Prospecting']),
+  type: z.string(),
   location: z.string().min(1, 'Lokasi wajib diisi'),
   estimatedValue: z.number().min(0, 'Nilai estimasi tidak boleh negatif'),
   deadlineTender: z.string().optional(),
