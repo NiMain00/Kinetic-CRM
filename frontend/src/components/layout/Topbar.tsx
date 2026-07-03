@@ -47,7 +47,7 @@ export default function Topbar({
 
   return (
     <header className="w-full h-12 sm:h-14 bg-surface flex items-center justify-between px-3 sm:px-4 lg:px-8 shrink-0 relative pb-[3px]">
-      <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-primary/5 via-primary to-primary/5"></div>
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
       <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         {/* Hamburger menu - mobile only */}
         <button

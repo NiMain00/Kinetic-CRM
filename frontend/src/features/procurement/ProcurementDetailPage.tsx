@@ -13,7 +13,6 @@ import PurchaseRequestTab from './tabs/PurchaseRequestTab';
 import VendorSelectionTab from './tabs/VendorSelectionTab';
 import PoTab from './tabs/PoTab';
 import DeliveryTab from './tabs/DeliveryTab';
-import ProgressTab from './tabs/ProgressTab';
 import ClosingTab from './tabs/ClosingTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
@@ -49,7 +48,6 @@ export default function ProcurementDetailView() {
       { label: 'Vendor Selection', path: 'vendor-selection' },
       { label: 'PO', path: 'po' },
       { label: 'Delivery', path: 'delivery' },
-      { label: 'Progress', path: 'progress' },
       { label: 'Closing', path: 'closing' },
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
@@ -279,9 +277,6 @@ export default function ProcurementDetailView() {
                 {activeTab === 'PO' && <PoTab procurement={procurement} />}
                 {activeTab === 'Delivery' && (
                   <DeliveryTab procurement={procurement} />
-                )}
-                {activeTab === 'Progress' && (
-                  <ProgressTab procurement={procurement} />
                 )}
                 {activeTab === 'Closing' && (
                   <ClosingTab procurement={procurement} />

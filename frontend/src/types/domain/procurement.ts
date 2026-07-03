@@ -78,9 +78,8 @@ export const PROCUREMENT_PHASES = [
   { id: 'PC-03', status: 'Vendor Selection', phase: 'Vendor Selection',  order: 3, isActive: true },
   { id: 'PC-04', status: 'PO Process',       phase: 'PO',                order: 4, isActive: true },
   { id: 'PC-05', status: 'Delivery',         phase: 'Delivery',          order: 5, isActive: true },
-  { id: 'PC-06', status: 'Progress',         phase: 'Progress',          order: 6, isActive: true },
-  { id: 'PC-07', status: 'Closed',           phase: 'Closing',           order: 7, isActive: true },
-  { id: 'PC-08', status: 'Cancelled',        phase: 'Selesai',           order: 8, isActive: true },
+  { id: 'PC-06', status: 'Closed',           phase: 'Closing',           order: 6, isActive: true },
+  { id: 'PC-07', status: 'Cancelled',        phase: 'Selesai',           order: 7, isActive: true },
 ];
 
 export function generateProcurementCode(index: number): string {

@@ -661,35 +661,48 @@ export default function ProspectDetailPage() {
                   </div>
                 )}
 
-                {/* Row 3: Jawaban Pertanyaan Standar */}
-                {prospect.answers && Object.keys(prospect.answers).length > 0 && (
-                  <div>
-                    <h4 className="font-bold text-xs text-status-indigo uppercase tracking-wider flex items-center gap-1.5 mb-3">
-                      <span className="material-symbols-outlined text-[16px] text-status-indigo">quiz</span>
-                      Jawaban Pertanyaan Standar
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {Object.entries(prospect.answers).map(([key, value]) => {
-                        const masterQ = questions.find(q => q.id === key);
-                        const label = masterQ?.question_text || legacyLabels[key] || key;
-                        return (
-                          <div key={key} className="p-4 bg-surface border border-border/60 border-l-2 border-l-status-indigo/50 rounded-lg shadow-card">
-                            <p className="text-xs text-outline font-semibold mb-1">{label}</p>
-                            <p className="text-sm font-semibold text-on-surface">{value || '-'}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* Row 3: Jawaban Pertanyaan Standar + Activity (side by side) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-                {/* Empty state for description + answers */}
-                {!prospect.description && (!prospect.answers || Object.keys(prospect.answers).length === 0) && (
-                  <div className="text-center py-8 text-outline bg-surface border border-border/60 border-l-4 border-l-outline rounded-xl shadow-card">
-                    <span className="material-symbols-outlined text-4xl text-outline/50">overview</span>
-                    <p className="text-sm font-medium mt-2">Tidak ada deskripsi atau pertanyaan tambahan</p>
+                  {/* Left: Jawaban Pertanyaan Standar */}
+                  {prospect.answers && Object.keys(prospect.answers).length > 0 ? (
+                    <div>
+                      <h4 className="font-bold text-xs text-status-indigo uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                        <span className="material-symbols-outlined text-[16px] text-status-indigo">quiz</span>
+                        Jawaban Pertanyaan Standar
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {Object.entries(prospect.answers).map(([key, value]) => {
+                          const masterQ = questions.find(q => q.id === key);
+                          const label = masterQ?.question_text || legacyLabels[key] || key;
+                          return (
+                            <div key={key} className="p-4 bg-surface border border-border/60 border-l-2 border-l-status-indigo/50 rounded-lg shadow-card">
+                              <p className="text-xs text-outline font-semibold mb-1">{label}</p>
+                              <p className="text-sm font-semibold text-on-surface">{value || '-'}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    !prospect.description && (
+                      <div className="text-center py-8 text-outline bg-surface border border-border/60 border-l-4 border-l-outline rounded-xl shadow-card">
+                        <span className="material-symbols-outlined text-4xl text-outline/50">overview</span>
+                        <p className="text-sm font-medium mt-2">Tidak ada deskripsi atau pertanyaan tambahan</p>
+                      </div>
+                    )
+                  )}
+
+                  {/* Right: Activity Feed */}
+                  <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card">
+                    <h4 className="font-bold text-xs text-status-orange uppercase tracking-wider flex items-center gap-1.5 mb-4">
+                      <span className="material-symbols-outlined text-[16px]">forum</span>
+                      Aktivitas
+                    </h4>
+                    {renderActivityFeed()}
                   </div>
-                )}
+
+                </div>
 
               </div>
             )}

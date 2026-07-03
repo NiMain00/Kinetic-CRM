@@ -39,24 +39,34 @@ export default function TimelineTab({ procurement }: Props) {
             <div
               className={`absolute left-0 w-10 h-10 rounded-full flex items-center justify-center border-2 -translate-x-1/2 ${
                 event.type === 'approve'
-                  ? 'bg-success-container border-success text-success'
-                  : event.type === 'revision'
-                    ? 'bg-warning-container border-warning text-warning'
-                    : event.type === 'submit'
-                      ? 'bg-info-container border-info text-info'
-                      : 'bg-surface-container border-border text-secondary'
+                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                  : event.type === 'submit'
+                    ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-500 text-blue-600 dark:text-blue-400'
+                    : event.type === 'revision'
+                      ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-500 text-rose-600 dark:text-rose-400'
+                      : event.type === 'upload'
+                        ? 'bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                        : event.type === 'status_change'
+                          ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-500 text-amber-600 dark:text-amber-400'
+                          : event.type === 'comment'
+                            ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-500 text-purple-600 dark:text-purple-400'
+                            : 'bg-surface-container border-border text-secondary'
               }`}
             >
               <span className="material-symbols-outlined text-[18px]">
                 {event.type === 'approve'
                   ? 'check_circle'
-                  : event.type === 'revision'
-                    ? 'edit_note'
-                    : event.type === 'submit'
-                      ? 'send'
+                  : event.type === 'submit'
+                    ? 'send'
+                    : event.type === 'revision'
+                      ? 'edit_note'
                       : event.type === 'upload'
                         ? 'upload_file'
-                        : 'circle'}
+                        : event.type === 'status_change'
+                          ? 'swap_horiz'
+                          : event.type === 'comment'
+                            ? 'comment'
+                            : 'circle'}
               </span>
             </div>
             <div className="ml-4">
