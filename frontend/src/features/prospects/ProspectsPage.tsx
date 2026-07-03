@@ -76,7 +76,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       } else if (tab === 'Potensial') {
         count = visibleProspects.filter(p => p.status === 'Potensial' || p.prospectType === 'potensial').length;
       } else if (tab === 'Butuh Approval') {
-        count = visibleProspects.filter(p => p.customerData?.needsVerification === true || p.status === 'Waiting PM').length;
+        count = visibleProspects.filter(p => p.customerData?.needsVerification === true || p.status === 'Waiting Supervisor').length;
       } else {
         count = visibleProspects.filter(p => p.status === tab).length;
       }
@@ -97,7 +97,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     } else if (activeFilter === 'Potensial') {
       matchesTab = p.status === 'Potensial' || p.prospectType === 'potensial';
     } else if (activeFilter === 'Butuh Approval') {
-      matchesTab = p.customerData?.needsVerification === true || p.status === 'Waiting PM';
+      matchesTab = p.customerData?.needsVerification === true || p.status === 'Waiting Supervisor';
     } else {
       matchesTab = p.status === activeFilter;
     }

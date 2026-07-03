@@ -23,7 +23,7 @@ export interface Prospect {
   customerId?: string;
   customerType?: 'existing' | 'new';
   customerData?: Customer;
-  status: 'Non Potensial' | 'Potensial' | 'Waiting PM' | 'Revision' | 'Approved';
+  status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor' | 'Revision' | 'Approved';
   prospectType?: 'non_potensial' | 'potensial';
   potensiUnit: number;
   author: string;
@@ -41,6 +41,8 @@ export interface Prospect {
   departmentId?: string;
   currentStageId?: string;
   ownerUserId?: string;
+  timeline?: TimelineEvent[];
+  documents?: DocGroup[];
 }
 
 export interface RksData {

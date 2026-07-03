@@ -10,7 +10,7 @@ export function registerEventHandlers(): void {
   // ── PROSPECT CONVERTED ──────────────────────────────────────────────
   // When a prospect is converted to a project, link them and mark converted.
   eventBus.on('PROSPECT_CONVERTED', (event) => {
-    const { prospectId, projectId } = event;
+    const { prospectId, projectId, projectName } = event;
 
     // Link in relation store
     useRelationStore.getState().linkProspectToProject(prospectId, projectId);
@@ -19,6 +19,17 @@ export function registerEventHandlers(): void {
     useProspectStore.getState().updateProspect(prospectId, {
       isConverted: true,
       projectId,
+    });
+
+    // Add timeline event to prospect
+    useProspectStore.getState().addTimelineEvent(prospectId, {
+      id: `evt-${prospectId}-converted-${Date.now()}`,
+      title: 'Dikonversi ke Proyek',
+      actor: 'System',
+      role: 'System',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'approve',
+      description: `Prospek dikonversi menjadi proyek "${projectName || projectId}".`,
     });
   });
 

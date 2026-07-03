@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { prospectSchema } from '@/utils/validators';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import type { Prospect, Customer } from '@/types/domain';
+import type { Prospect, Customer, TimelineEvent } from '@/types/domain';
 import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
@@ -137,7 +137,7 @@ export default function ProspectFormPage() {
     return '';
   };
 
-  const saveProspect = (status: 'Non Potensial' | 'Potensial' | 'Waiting PM') => {
+  const saveProspect = (status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor') => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     const clientName = getClientName();
@@ -163,7 +163,7 @@ export default function ProspectFormPage() {
 
     // Determine potensi status
     const potensi = Number(potensiUnit) || 0;
-    const autoStatus = status === 'Waiting PM' ? 'Waiting PM' : (potensi > 0 ? 'Potensial' : 'Non Potensial');
+    const autoStatus = status === 'Waiting Supervisor' ? 'Waiting Supervisor' : (potensi > 0 ? 'Potensial' : 'Non Potensial');
     const prospectType = potensi > 0 ? 'potensial' : 'non_potensial';
 
     // Build customerData untuk new customer
@@ -208,8 +208,36 @@ export default function ProspectFormPage() {
       }
     }
 
+    const prospectId = existingProspect?.id || String(Date.now());
+    const authorName = authUser?.name || authUser?.fullName || 'Unknown';
+    const currentTime = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    const events: TimelineEvent[] = [];
+    if (!isEdit) {
+      events.push({
+        id: `evt-${prospectId}-created-${Date.now()}`,
+        title: 'Prospek Dibuat',
+        actor: authorName,
+        role: 'Staff',
+        time: currentTime,
+        type: 'status_change',
+        description: `Prospek "${formName}" dibuat untuk klien ${clientName}.`,
+      });
+    }
+    if (status === 'Waiting Supervisor') {
+      events.push({
+        id: `evt-${prospectId}-submitted-${Date.now()}`,
+        title: 'Diajukan ke Supervisor',
+        actor: authorName,
+        role: 'Staff',
+        time: currentTime,
+        type: 'submit',
+        description: `Prospek "${formName}" diajukan ke Supervisor Marketing.`,
+      });
+    }
+
     const payload: Prospect = {
-      id: existingProspect?.id || String(Date.now()),
+      id: prospectId,
       name: formName,
       client: clientName,
       customerId: customerMode === 'existing' ? selectedCustomerId : customerData?.id,
@@ -218,8 +246,8 @@ export default function ProspectFormPage() {
       status: autoStatus,
       prospectType,
       potensiUnit: potensi,
-      author: existingProspect?.author || (authUser?.name || authUser?.fullName || 'Unknown'),
-      date: formDate || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      author: existingProspect?.author || authorName,
+      date: formDate || currentTime,
       estimatedValue: formValue ?? undefined,
       description: formDesc,
       branch: userBranch,
@@ -228,6 +256,7 @@ export default function ProspectFormPage() {
       providerExisting: providerExisting || undefined,
       projectType: projectType,
       createdByUserId: existingProspect?.createdByUserId || authUser?.id,
+      timeline: [...(existingProspect?.timeline || []), ...events],
     };
 
     if (isEdit && existingProspect) {
@@ -237,8 +266,7 @@ export default function ProspectFormPage() {
     }
 
     // Auto-create approval item when submitting to PM
-    if (status === 'Waiting PM') {
-      const prospectId = existingProspect?.id || payload.id;
+    if (status === 'Waiting Supervisor') {
       addApproval({
         id: `app-prospect-${prospectId}`,
         ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
@@ -254,14 +282,14 @@ export default function ProspectFormPage() {
       });
     }
 
-    toast.success(status === 'Waiting PM' ? 'Prospek berhasil diajukan ke Supervisor untuk review.' : 'Draf prospek berhasil disimpan.');
+    toast.success(status === 'Waiting Supervisor' ? 'Prospek berhasil diajukan ke Supervisor untuk review.' : 'Draf prospek berhasil disimpan.');
     setIsSubmitting(false);
     navigate('/prospects');
     return true;
   };
 
   const handleSaveDraft = () => saveProspect('Potensial');
-  const handleSubmitReview = () => saveProspect('Waiting PM');
+  const handleSubmitReview = () => saveProspect('Waiting Supervisor');
 
   // Reset auto-fill ketika ganti customer
   const handleSelectCustomer = (c: Customer) => {

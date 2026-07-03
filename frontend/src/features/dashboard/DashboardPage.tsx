@@ -90,7 +90,7 @@ export default function DashboardPage() {
   const statusDistribution = useMemo(() => {
     const berjalan = projects.filter((p) => !['Selesai', 'Dibatalkan'].includes(p.status) && !p.winnerDetails?.outcome).length;
     const planning = projects.filter((p) => ['Dibuat', 'Potensial'].includes(p.status)).length;
-    const review = projects.filter((p) => ['Review Departemen', 'LPHS/SIOS', 'Revisi', 'Waiting PM', 'Revision'].includes(p.status)).length;
+    const review = projects.filter((p) => ['Review Departemen', 'LPHS/SIOS', 'Revisi', 'Waiting Supervisor', 'Revision'].includes(p.status)).length;
     const selesai = projects.filter((p) => p.status === 'Selesai' || p.winnerDetails?.outcome === 'menang').length;
     const total = berjalan + planning + review + selesai;
     return { berjalan, planning, review, selesai, total };
@@ -126,12 +126,12 @@ export default function DashboardPage() {
   return (
     <PageContainer>
       {/* Header */}
-      <div className="rounded-2xl bg-surface border border-border/60 shadow-card p-6 sm:p-8 mb-6">
-        <h1 className="font-display-title text-display-title text-on-surface mb-1">
+      <div className="rounded-2xl bg-surface border border-border/60 shadow-card p-4 sm:p-5">
+        <h1 className="font-display-title text-display-title text-on-surface">
           {greeting}, <span className="text-primary">{userName}</span>
         </h1>
-        <div className="w-16 h-1 bg-primary rounded-full mb-3"></div>
-        <div className="flex flex-wrap items-center gap-3 text-sm text-secondary mb-5">
+        <div className="w-12 h-0.5 bg-primary rounded-full mt-1 mb-2"></div>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-secondary mb-3">
           <span>{currentDateString}</span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-warning"></span>
@@ -180,20 +180,20 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Proyek Aktif */}
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
-          <div className="flex justify-between items-start mb-3">
-            <span className="p-2.5 rounded-xl bg-primary/10 text-primary">
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
+          <div className="flex justify-between items-start mb-2">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">account_balance_wallet</span>
             </span>
             <span className="text-success font-label-sm flex items-center gap-1 text-xs">
               <span className="material-symbols-outlined text-[14px]">trending_up</span> +12%
             </span>
           </div>
-          <p className="text-secondary font-caption-xs mb-1">Total Proyek Aktif</p>
+          <p className="text-secondary font-caption-xs mb-0.5">Total Proyek Aktif</p>
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{formatCurrency(stats.totalActiveValue)}</h3>
-          <p className="text-success text-[11px] mt-2">dari bulan lalu</p>
+          <p className="text-success text-[11px] mt-1">dari bulan lalu</p>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
               <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="#16A34A" />
@@ -203,14 +203,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Persetujuan Tertunda */}
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/approvals')}>
-          <div className="flex justify-between items-start mb-3">
-            <span className="p-2.5 rounded-xl bg-warning-container text-warning">
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/approvals')}>
+          <div className="flex justify-between items-start mb-2">
+            <span className="p-2 rounded-xl bg-warning-container text-warning">
               <span className="material-symbols-outlined">fact_check</span>
             </span>
             <span className="text-warning font-label-sm text-xs">Prioritas Tinggi</span>
           </div>
-          <p className="text-secondary font-caption-xs mb-1">Persetujuan Tertunda</p>
+          <p className="text-secondary font-caption-xs mb-0.5">Persetujuan Tertunda</p>
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.pendingApprovals} Item</h3>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
@@ -221,14 +221,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Mendekati Deadline */}
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
-          <div className="flex justify-between items-start mb-3">
-            <span className="p-2.5 rounded-xl bg-danger-container text-danger">
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
+          <div className="flex justify-between items-start mb-2">
+            <span className="p-2 rounded-xl bg-danger-container text-danger">
               <span className="material-symbols-outlined">alarm</span>
             </span>
             <span className="text-danger font-label-sm text-xs">Perlu perhatian</span>
           </div>
-          <p className="text-secondary font-caption-xs mb-1">Mendekati Deadline</p>
+          <p className="text-secondary font-caption-xs mb-0.5">Mendekati Deadline</p>
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.criticalDeadlines} Proyek</h3>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
@@ -239,14 +239,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Rasio Kemenangan */}
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-5 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/reports/kpi')}>
-          <div className="flex justify-between items-start mb-3">
-            <span className="p-2.5 rounded-xl bg-primary/10 text-primary">
+        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/reports/kpi')}>
+          <div className="flex justify-between items-start mb-2">
+            <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">military_tech</span>
             </span>
             <span className="text-primary font-label-sm text-xs">Kinerja YTD</span>
           </div>
-          <p className="text-secondary font-caption-xs mb-1">Rasio Kemenangan</p>
+          <p className="text-secondary font-caption-xs mb-0.5">Rasio Kemenangan</p>
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.winRate}%</h3>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
@@ -258,10 +258,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-12 gap-4 sm:gap-6 mb-6">
+      <div className="grid grid-cols-12 gap-3 sm:gap-4">
         {/* Trend Win/Loss */}
-        <div className="col-span-12 lg:col-span-8 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
+        <div className="col-span-12 lg:col-span-8 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
             <div>
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Trend Win/Loss</h4>
               <p className="text-secondary font-caption-xs text-xs">Performa 6 bulan terakhir</p>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex justify-center border-t border-border/60 pt-3">
+          <div className="flex justify-center border-t border-border/60 pt-2.5">
             <button
               onClick={() => navigate('/reports')}
               className="flex items-center gap-1.5 text-primary font-label-sm text-xs hover:underline"
@@ -327,10 +327,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Proyek per Status */}
-        <div className="col-span-12 lg:col-span-4 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6 flex flex-col">
-          <h4 className="font-heading-section text-heading-section text-sm sm:text-base mb-4">Proyek per Status</h4>
+        <div className="col-span-12 lg:col-span-4 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5 flex flex-col">
+          <h4 className="font-heading-section text-heading-section text-sm sm:text-base mb-3">Proyek per Status</h4>
 
-          <div className="flex flex-1 items-center gap-4 py-4">
+          <div className="flex flex-1 items-center gap-4 py-2">
             {/* Donut chart */}
             <div className="relative shrink-0">
               <svg className="w-36 h-36 sm:w-40 sm:h-40 -rotate-90" viewBox="0 0 120 120">
@@ -357,7 +357,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Legend */}
-            <div className="space-y-3 flex-1 min-w-0">
+            <div className="space-y-2 flex-1 min-w-0">
               {donutData.map((seg, i) => (
                 <div key={i} className="flex justify-between items-center text-xs">
                   <div className="flex items-center gap-2">
@@ -370,7 +370,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex justify-center border-t border-border/60 pt-3 mt-2">
+          <div className="flex justify-center border-t border-border/60 pt-2.5 mt-1">
             <button
               onClick={() => navigate('/reports')}
               className="flex items-center gap-1.5 text-primary font-label-sm text-xs hover:underline"
@@ -383,10 +383,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Section: Proyek Terbaru + Aktivitas Terbaru */}
-      <div className="grid grid-cols-12 gap-4 sm:gap-6">
+      <div className="grid grid-cols-12 gap-3 sm:gap-4">
         {/* Proyek Terbaru */}
         <div className="col-span-12 lg:col-span-7 bg-surface rounded-2xl border border-border/60 shadow-card overflow-hidden">
-          <div className="p-4 sm:p-6 border-b border-border/60 flex justify-between items-center bg-surface-container-low">
+          <div className="p-4 sm:p-5 border-b border-border/60 flex justify-between items-center bg-surface-container-low">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-xl">folder</span>
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Proyek Terbaru</h4>
@@ -400,7 +400,7 @@ export default function DashboardPage() {
           </div>
 
           {recentProjects.length === 0 ? (
-            <div className="p-8 text-center text-secondary text-sm">Belum ada proyek.</div>
+            <div className="p-6 text-center text-secondary text-sm">Belum ada proyek.</div>
           ) : isMobile ? (
             <div className="p-3 space-y-3">
               {recentProjects.map((project) => (
@@ -426,26 +426,26 @@ export default function DashboardPage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-surface-container-low text-secondary font-caption-xs uppercase border-b border-border/60">
                   <tr>
-                    <th className="px-6 py-3 font-semibold text-xs">Nama Proyek</th>
-                    <th className="px-6 py-3 font-semibold text-xs">Klien</th>
-                    <th className="px-6 py-3 font-semibold text-xs">Status</th>
-                    <th className="px-6 py-3 font-semibold text-right text-xs">Nilai</th>
+                    <th className="px-5 py-2.5 font-semibold text-xs">Nama Proyek</th>
+                    <th className="px-5 py-2.5 font-semibold text-xs">Klien</th>
+                    <th className="px-5 py-2.5 font-semibold text-xs">Status</th>
+                    <th className="px-5 py-2.5 font-semibold text-right text-xs">Nilai</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {recentProjects.map((project) => (
                     <tr key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="hover:bg-primary/5 transition-colors group cursor-pointer">
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3">
                         <p className="font-label-sm text-on-surface text-sm font-medium">{project.name}</p>
                         <p className="text-xs text-secondary font-mono">{project.code}</p>
                       </td>
-                      <td className="px-6 py-4 text-secondary text-xs">{project.client}</td>
-                      <td className="px-6 py-4">
+                      <td className="px-5 py-3 text-secondary text-xs">{project.client}</td>
+                      <td className="px-5 py-3">
                         <span className={`px-2 py-0.5 rounded-lg font-mono-data text-xs ${project.status === 'Selesai' ? 'bg-success-container text-success' : 'bg-primary/10 text-primary'}`}>
                           {project.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right text-xs font-mono-data">{formatCurrency(project.estimatedValue)}</td>
+                      <td className="px-5 py-3 text-right text-xs font-mono-data">{formatCurrency(project.estimatedValue)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -455,8 +455,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Aktivitas Terbaru */}
-        <div className="col-span-12 lg:col-span-5 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6 flex flex-col">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <div className="col-span-12 lg:col-span-5 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5 flex flex-col">
+          <div className="flex justify-between items-center mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-xl">history</span>
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Aktivitas Terbaru</h4>

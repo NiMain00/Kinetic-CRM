@@ -118,7 +118,7 @@ const SEED_PERMISSIONS: RbacPermission[] = [
 const SEED_WORKFLOW_STAGES: WorkflowStage[] = [
   { id: 'stage-prospecting', code: 'prospecting', name: 'Prospecting', module: 'prospect', sequence: 1, ownerDepartmentCode: 'MARKETING', prevDepartmentCode: null },
   { id: 'stage-supervisor-review', code: 'supervisor_review', name: 'Supervisor Review', module: 'prospect', sequence: 1.5, ownerDepartmentCode: 'MARKETING', prevDepartmentCode: 'MARKETING' },
-  { id: 'stage-waiting-pm', code: 'waiting_pm', name: 'Waiting PM', module: 'prospect', sequence: 2, ownerDepartmentCode: 'PM', prevDepartmentCode: 'MARKETING' },
+  { id: 'stage-waiting-pm', code: 'waiting_pm', name: 'Waiting Supervisor', module: 'prospect', sequence: 2, ownerDepartmentCode: 'PM', prevDepartmentCode: 'MARKETING' },
   { id: 'stage-in-project', code: 'in_project', name: 'In Project', module: 'project', sequence: 3, ownerDepartmentCode: 'PM', prevDepartmentCode: 'MARKETING' },
   { id: 'stage-pengadaan', code: 'pengadaan', name: 'Pengadaan', module: 'pengadaan', sequence: 4, ownerDepartmentCode: 'PROCUREMENT', prevDepartmentCode: 'PM' },
   { id: 'stage-delivery', code: 'delivery', name: 'Delivery', module: 'project', sequence: 5, ownerDepartmentCode: 'PM', prevDepartmentCode: 'PROCUREMENT' },

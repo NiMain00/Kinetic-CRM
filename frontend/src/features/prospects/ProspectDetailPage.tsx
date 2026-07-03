@@ -32,7 +32,7 @@ const legacyLabels: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  'Waiting PM': 'Menunggu Supervisor',
+  'Waiting Supervisor': 'Menunggu Supervisor',
   'Non Potensial': 'Non Potensial',
   'Potensial': 'Potensial',
   'Revision': 'Revisi',
@@ -51,6 +51,7 @@ const detailTabs: Tab[] = [
   { id: 'documents', label: 'Dokumen', icon: 'description' },
   { id: 'contacts', label: 'Kontak', icon: 'contacts' },
   { id: 'approval', label: 'Approval', icon: 'approval' },
+  { id: 'timeline', label: 'Timeline', icon: 'timeline' },
   { id: 'related-project', label: 'Proyek Terkait', icon: 'business' },
 ];
 
@@ -118,6 +119,7 @@ export default function ProspectDetailPage() {
   const getProspectById = useProspectStore((s) => s.getProspectById);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
+  const addProspectTimelineEvent = useProspectStore((s) => s.addTimelineEvent);
   const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
   const getCustomerById = useCustomerStore((s) => s.getCustomerById);
   const getProjectById = useProjectStore((s) => s.getProjectById);
@@ -149,69 +151,15 @@ export default function ProspectDetailPage() {
   const currentStep = useMemo(() => {
     if (prospect?.isConverted) return 3;
     if (prospect?.status === 'Approved') return 2;
-    if (prospect?.status === 'Waiting PM' || prospect?.status === 'Revision') return 1;
+    if (prospect?.status === 'Waiting Supervisor' || prospect?.status === 'Revision') return 1;
     return 0;
   }, [prospect]);
 
   const events = useMemo(() => {
-    if (!prospect) return INITIAL_TIMELINE_EVENTS;
-    const derived: TimelineEvent[] = [
-      {
-        id: `evt-${prospect.id}-created`,
-        title: 'Prospek Dibuat',
-        actor: prospect.author,
-        role: 'Staff',
-        time: prospect.date,
-        type: 'status_change',
-        description: `Prospek "${prospect.name}" dibuat untuk klien ${prospect.client}.`,
-      },
-    ];
-    if (prospect.status === 'Waiting PM' || prospect.status === 'Revision' || prospect.status === 'Approved') {
-      derived.push({
-        id: `evt-${prospect.id}-submitted`,
-        title: 'Diajukan ke Supervisor',
-        actor: prospect.author,
-        role: 'Staff',
-        time: prospect.date,
-        type: 'submit',
-        description: `Prospek "${prospect.name}" diajukan ke Supervisor Marketing.`,
-      });
-    }
-    if (prospect.status === 'Revision') {
-      derived.push({
-        id: `evt-${prospect.id}-revised`,
-        title: 'Revisi Diminta',
-        actor: 'Supervisor Marketing',
-        role: 'Supervisor',
-        time: prospect.date,
-        type: 'revision',
-        description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
-      });
-    }
-    if (prospect.status === 'Approved') {
-      derived.push({
-        id: `evt-${prospect.id}-approved`,
-        title: 'Prospek Disetujui',
-        actor: 'Supervisor Marketing',
-        role: 'Supervisor',
-        time: prospect.date,
-        type: 'approve',
-        description: `Prospek "${prospect.name}" telah disetujui.`,
-      });
-    }
-    if (prospect.isConverted && prospect.projectId) {
-      derived.push({
-        id: `evt-${prospect.id}-converted`,
-        title: 'Dikonversi ke Proyek',
-        actor: 'System',
-        role: 'System',
-        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        type: 'approve',
-        description: `Prospek dikonversi menjadi proyek ${prospect.projectId}.`,
-      });
-    }
-    return derived;
-  }, [prospect]);
+    return (prospect?.timeline || INITIAL_TIMELINE_EVENTS).sort(
+      (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
+    );
+  }, [prospect?.timeline]);
 
   const allActivities = useMemo(() => {
     const notifs = notifications
@@ -265,6 +213,15 @@ export default function ProspectDetailPage() {
       approveItem(pendingApproval.id);
     }
     updateProspect(prospect.id, { status: 'Approved' });
+    addProspectTimelineEvent(prospect.id, {
+      id: `evt-${prospect.id}-approved-${Date.now()}`,
+      title: 'Prospek Disetujui',
+      actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
+      role: userRole || 'Waiting Supervisor',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'approve',
+      description: `Prospek "${prospect.name}" telah disetujui.`,
+    });
     toast.success('Prospek berhasil disetujui.');
     addNotification({
       title: 'Prospek Disetujui',
@@ -281,6 +238,15 @@ export default function ProspectDetailPage() {
       approveItem(pendingApproval.id);
     }
     updateProspect(prospect.id, { status: 'Revision' });
+    addProspectTimelineEvent(prospect.id, {
+      id: `evt-${prospect.id}-revised-${Date.now()}`,
+      title: 'Revisi Diminta',
+      actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
+      role: userRole || 'Waiting Supervisor',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'revision',
+      description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
+    });
     toast.success('Permintaan revisi telah dikirim.');
     addNotification({
       title: 'Revisi Prospek',
@@ -296,7 +262,16 @@ export default function ProspectDetailPage() {
   const handleResubmit = () => {
     if (resubmitting) return;
     setResubmitting(true);
-    updateProspect(prospect.id, { status: 'Waiting PM', currentStageId: 'stage-supervisor-review' });
+    updateProspect(prospect.id, { status: 'Waiting Supervisor', currentStageId: 'stage-supervisor-review' });
+    addProspectTimelineEvent(prospect.id, {
+      id: `evt-${prospect.id}-resubmitted-${Date.now()}`,
+      title: 'Diajukan Ulang ke Supervisor',
+      actor: authUser?.fullName || authUser?.name || prospect.author,
+      role: userRole || 'Staff',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'submit',
+      description: `Prospek "${prospect.name}" diajukan ulang setelah revisi.`,
+    });
     addApproval({
       id: `app-prospect-${prospect.id}`,
       ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
@@ -405,7 +380,7 @@ export default function ProspectDetailPage() {
           </Button>
         )}
 
-        {prospect.status === 'Waiting PM' && access === 'write' && can('prospect:approve:transition') && (
+        {prospect.status === 'Waiting Supervisor' && access === 'write' && can('prospect:approve:transition') && (
           <>
             <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">check_circle</span>} onClick={handleApprove}>
               Setujui
@@ -716,24 +691,6 @@ export default function ProspectDetailPage() {
                   </div>
                 )}
 
-                {/* Row 4: Timeline + Aktivitas (2-col) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <div className="bg-surface border border-border/60 border-l-4 border-l-status-purple rounded-xl p-5 shadow-card">
-                    <h3 className="font-bold text-sm text-status-purple mb-4 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[20px]">timeline</span>
-                      Riwayat Status
-                    </h3>
-                    {renderTimeline()}
-                  </div>
-                  <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card">
-                    <h3 className="font-bold text-sm text-status-orange mb-4 flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[20px]">forum</span>
-                      Aktivitas
-                    </h3>
-                    {renderActivityFeed()}
-                  </div>
-                </div>
-
               </div>
             )}
 
@@ -830,7 +787,7 @@ export default function ProspectDetailPage() {
             {/* ─── APPROVAL TAB ─── */}
             {activeTab === 'approval' && (
               <div className="space-y-4">
-                {prospect.status === 'Waiting PM' && (
+                {prospect.status === 'Waiting Supervisor' && (
                   <div className="p-4 bg-warning/10 border border-warning/30 rounded-lg flex items-center gap-3">
                     <span className="material-symbols-outlined text-warning text-[24px]">hourglass_top</span>
                     <div>
@@ -860,6 +817,28 @@ export default function ProspectDetailPage() {
                 <div className="bg-surface-container-low p-4 rounded-lg">
                   <p className="text-xs text-secondary">Status Approval</p>
                   <p className="text-sm font-semibold text-on-surface mt-1">{STATUS_LABELS[prospect.status] || prospect.status}</p>
+                </div>
+              </div>
+            )}
+
+            {/* ─── TIMELINE TAB ─── */}
+            {activeTab === 'timeline' && (
+              <div>
+                <div className="bg-surface border border-border/60 border-l-4 border-l-status-purple rounded-xl p-5 shadow-card">
+                  <h3 className="font-bold text-sm text-status-purple mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px]">timeline</span>
+                    Timeline Audit Trail
+                  </h3>
+                  {renderTimeline()}
+                </div>
+
+                {/* Activity Feed */}
+                <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card mt-4">
+                  <h3 className="font-bold text-sm text-status-orange mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px]">forum</span>
+                    Aktivitas
+                  </h3>
+                  {renderActivityFeed()}
                 </div>
               </div>
             )}

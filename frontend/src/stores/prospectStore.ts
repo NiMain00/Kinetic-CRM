@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Prospect } from '@/types/domain';
+import type { Prospect, TimelineEvent, DocGroup } from '@/types/domain';
 import { INITIAL_PROSPECTS } from '@/services/mock-data';
 import { eventBus } from '@/services/eventBridge';
 
@@ -17,6 +17,8 @@ interface ProspectState {
   deleteProspect: (id: string) => void;
   getProspectById: (id: string) => Prospect | undefined;
   updateProspectStage: (id: string, stageId: string) => void;
+  addTimelineEvent: (id: string, event: TimelineEvent) => void;
+  updateDocuments: (id: string, documents: DocGroup[]) => void;
 }
 
 /** Build derived `prospects` array from entities + ids */
@@ -98,10 +100,31 @@ export const useProspectStore = create<ProspectState>()(
           const entities = { ...s.entities, [id]: updated };
           return { entities, prospects: deriveProspects(entities, s.ids) };
         }),
+
+      addTimelineEvent: (id, event) =>
+        set((s) => {
+          const existing = s.entities[id];
+          if (!existing) return s;
+          const updated = {
+            ...existing,
+            timeline: [...(existing.timeline || []), event],
+          };
+          const entities = { ...s.entities, [id]: updated };
+          return { entities, prospects: deriveProspects(entities, s.ids) };
+        }),
+
+      updateDocuments: (id, documents) =>
+        set((s) => {
+          const existing = s.entities[id];
+          if (!existing) return s;
+          const updated = { ...existing, documents };
+          const entities = { ...s.entities, [id]: updated };
+          return { entities, prospects: deriveProspects(entities, s.ids) };
+        }),
     }),
     {
       name: 'kinetic-prospects',
-      version: 4,
+      version: 7,
       merge: (persisted: unknown, current: ProspectState) => {
         if (!persisted || typeof persisted !== 'object') return current;
         const p = persisted as Partial<ProspectState>;
@@ -139,7 +162,45 @@ export const useProspectStore = create<ProspectState>()(
           return { entities, ids, prospects: deriveProspects(entities, ids) };
         }
 
-        // version >= 4 — ensure derived prospects exists (safety for direct-persist loads)
+        // v4→v5: add timeline and documents fields
+        if (version < 5) {
+          const entities = current.entities || {};
+          const updatedEntities: Record<string, Prospect> = {};
+          for (const key of Object.keys(entities)) {
+            updatedEntities[key] = {
+              ...entities[key],
+              timeline: entities[key].timeline || [],
+              documents: entities[key].documents || [],
+            };
+          }
+          const ids = current.ids || Object.keys(updatedEntities);
+          return {
+            entities: updatedEntities,
+            ids,
+            prospects: deriveProspects(updatedEntities, ids),
+          };
+        }
+
+        // v6→v7: rename 'Waiting PM' / 'Supervisor' → 'Waiting Supervisor'
+        if (version < 7) {
+          const entities = current.entities || {};
+          const updatedEntities: Record<string, Prospect> = {};
+          for (const key of Object.keys(entities)) {
+            const e = entities[key];
+            updatedEntities[key] = {
+              ...e,
+              status: e.status === 'Waiting PM' || e.status === 'Supervisor' ? 'Waiting Supervisor' : e.status,
+            };
+          }
+          const ids = current.ids || Object.keys(updatedEntities);
+          return {
+            entities: updatedEntities,
+            ids,
+            prospects: deriveProspects(updatedEntities, ids),
+          };
+        }
+
+        // version >= 7 — ensure derived prospects exists (safety for direct-persist loads)
         if (!current.prospects && current.entities && current.ids) {
           return {
             ...current,
