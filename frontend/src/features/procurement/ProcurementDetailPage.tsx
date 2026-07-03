@@ -120,7 +120,7 @@ export default function ProcurementDetailView() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Header */}
-      <section className="bg-surface border-b border-border/60 px-4 sm:px-8 py-2.5 sm:py-3.5 shadow-card z-30">
+      <section className="bg-surface border-b border-border/60 px-4 sm:px-8 py-2 sm:py-3 shadow-sm z-30">
         <nav className="flex items-center gap-1 text-xs text-secondary mb-2 flex-wrap">
           <button
             type="button"
@@ -218,8 +218,8 @@ export default function ProcurementDetailView() {
         )}
 
         {/* Tab Nav */}
-        <nav className="bg-surface border-b border-border/60 px-3 sm:px-8 overflow-x-auto select-none scrollbar-none">
-          <div className="flex items-center gap-4 sm:gap-8 min-w-max">
+        <nav className="bg-surface border-b border-border/60 px-3 sm:px-8 py-3 overflow-x-auto select-none scrollbar-none">
+          <div className="flex items-center gap-2 min-w-max">
             {tabs.map((tab, index) => {
               const locked = isTabLocked(index);
               return (
@@ -228,16 +228,16 @@ export default function ProcurementDetailView() {
                   onClick={() => {
                     if (!locked) handleTabChange(tab.path);
                   }}
-                  className={`py-3 sm:py-4 font-label-sm text-xs sm:text-sm transition-all relative flex items-center gap-1 whitespace-nowrap ${
+                  className={`px-4 py-2 font-label-sm text-xs sm:text-sm rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
                     activeTab === tab.label
-                      ? 'text-primary font-bold border-b-2 border-primary'
+                      ? 'bg-primary text-white shadow-sm font-bold'
                       : locked
-                        ? 'text-outline cursor-not-allowed opacity-50'
-                        : 'text-on-surface-variant hover:text-primary'
+                        ? 'text-outline cursor-not-allowed opacity-40'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'
                   }`}
                 >
                   {locked && (
-                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]">
+                    <span className="material-symbols-outlined text-[14px]">
                       lock
                     </span>
                   )}
@@ -249,8 +249,8 @@ export default function ProcurementDetailView() {
         </nav>
 
         {/* Tab Panels */}
-        <div className="p-3 sm:p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+        <div className="p-4 sm:p-6">
+          <div className="max-w-6xl mx-auto space-y-5">
             {activeTab === 'Overview' && <OverviewTab procurement={procurement} />}
 
             {activeTab !== 'Overview' && isTabLocked(activeTabIndex) && (
