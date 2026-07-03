@@ -108,10 +108,10 @@ export default function DashboardPage() {
     let offset = 0;
 
     const segments = [
-      { label: 'Berjalan', count: statusDistribution.berjalan, color: 'var(--color-primary)' },
-      { label: 'Planning', count: statusDistribution.planning, color: 'var(--color-gold)' },
-      { label: 'Review', count: statusDistribution.review, color: 'var(--color-primary-container)' },
-      { label: 'Selesai', count: statusDistribution.selesai, color: 'var(--color-secondary-container)' },
+      { label: 'Berjalan', count: statusDistribution.berjalan, color: 'var(--color-info)' },
+      { label: 'Planning', count: statusDistribution.planning, color: 'var(--color-status-orange)' },
+      { label: 'Review', count: statusDistribution.review, color: 'var(--color-status-purple)' },
+      { label: 'Selesai', count: statusDistribution.selesai, color: 'var(--color-success)' },
     ];
 
     return segments.map((seg) => {
