@@ -29,15 +29,7 @@ interface DepartmentBreakdown {
   behind: number;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: 'all', label: 'Semua Kategori' },
-  { value: 'win_rate', label: 'Win Rate' },
-  { value: 'revenue', label: 'Revenue' },
-  { value: 'project_count', label: 'Project Count' },
-  { value: 'avg_margin', label: 'Average Margin' },
-  { value: 'sla_compliance', label: 'SLA Compliance' },
-  { value: 'customer_satisfaction', label: 'Customer Satisfaction' },
-];
+const CATEGORY_OPTIONS: { value: string; label: string }[] = [];
 
 // PERIOD_OPTIONS now built dynamically in the component via useMasterPeriods()
 

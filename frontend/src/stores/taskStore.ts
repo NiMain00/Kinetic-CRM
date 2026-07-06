@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { masterDataService } from '@/services/master-data';
 
 export interface Task {
   id: string;
@@ -23,14 +24,16 @@ interface TaskState {
   entities: Record<string, Task>;
   ids: string[];
   tasks: Task[];
+  loading: boolean;
 
-  addTask: (task: Task) => void;
-  updateTask: (id: string, data: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
+  addTask: (task: Task) => Promise<void>;
+  updateTask: (id: string, data: Partial<Task>) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
   getProjectTasks: (projectId: string) => Task[];
   getTaskById: (id: string) => Task | undefined;
   getSubtasks: (parentId: string) => Task[];
   reorderTasks: (projectId: string, orderedIds: string[]) => void;
+  fetchTasks: () => Promise<void>;
 }
 
 function deriveTasks(entities: Record<string, Task>, ids: string[]): Task[] {
@@ -57,8 +60,28 @@ export const useTaskStore = create<TaskState>()(
       entities: {},
       ids: [],
       tasks: [],
+      loading: false,
 
-      addTask: (task) =>
+      fetchTasks: async () => {
+        set({ loading: true });
+        try {
+          const res = await masterDataService.get('tasks');
+          if (res.data?.data) {
+            const tasks = res.data.data as unknown as Task[];
+            const { entities, ids } = normalizeTasks(tasks);
+            set({ entities, ids, tasks: deriveTasks(entities, ids), loading: false });
+          }
+        } catch {
+          set({ loading: false });
+        }
+      },
+
+      addTask: async (task) => {
+        try {
+          await masterDataService.create('tasks', task as unknown as Record<string, unknown>);
+        } catch {
+          // non-blocking
+        }
         set((s) => {
           const entities = { ...s.entities, [task.id]: task };
           const ids = [...s.ids, task.id];
@@ -71,17 +94,29 @@ export const useTaskStore = create<TaskState>()(
           }
 
           return { entities, ids, tasks: deriveTasks(entities, ids) };
-        }),
+        });
+      },
 
-      updateTask: (id, data) =>
+      updateTask: async (id, data) => {
+        try {
+          await masterDataService.update('tasks', id, data as unknown as Record<string, unknown>);
+        } catch {
+          // non-blocking
+        }
         set((s) => {
           const existing = s.entities[id];
           if (!existing) return s;
           const entities = { ...s.entities, [id]: { ...existing, ...data } };
           return { entities, tasks: deriveTasks(entities, s.ids) };
-        }),
+        });
+      },
 
-      deleteTask: (id) => {
+      deleteTask: async (id) => {
+        try {
+          await masterDataService.delete('tasks', id);
+        } catch {
+          // non-blocking
+        }
         const task = get().entities[id];
         if (!task) return;
 

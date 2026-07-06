@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Rfq, RfqQuote } from '@/types/domain/procurement';
+import { masterDataService } from '@/services/master-data';
 
 interface RfqState {
   entities: Record<string, Rfq>;
   ids: string[];
   rfqs: Rfq[];
+  loading: boolean;
 
   addRfq: (rfq: Rfq) => void;
   updateRfq: (id: string, data: Partial<Rfq>) => void;
@@ -15,6 +17,7 @@ interface RfqState {
   addQuote: (rfqId: string, quote: RfqQuote) => void;
   submitRfq: (id: string) => void;
   selectQuote: (rfqId: string, quoteId: string) => void;
+  fetchRfqs: () => Promise<void>;
 }
 
 function deriveRfqs(entities: Record<string, Rfq>, ids: string[]): Rfq[] {
@@ -38,29 +41,55 @@ export const useRfqStore = create<RfqState>()(
       entities: {},
       ids: [],
       rfqs: [],
+      loading: false,
 
-      addRfq: (rfq) =>
+      addRfq: (rfq) => {
+        masterDataService.create('rfqs', rfq as any).catch(() => {});
         set((state) => {
           const entities = { ...state.entities, [rfq.id]: rfq };
           const ids = [...state.ids, rfq.id];
           return { entities, ids, rfqs: deriveRfqs(entities, ids) };
-        }),
+        });
+      },
 
-      updateRfq: (id, data) =>
+      updateRfq: (id, data) => {
+        masterDataService.update('rfqs', id, data as any).catch(() => {});
         set((state) => {
           const existing = state.entities[id];
           if (!existing) return state;
           const entities = { ...state.entities, [id]: { ...existing, ...data } };
           return { entities, rfqs: deriveRfqs(entities, state.ids) };
-        }),
+        });
+      },
 
-      deleteRfq: (id) =>
+      deleteRfq: (id) => {
+        masterDataService.delete('rfqs', id).catch(() => {});
         set((state) => {
           const entities = { ...state.entities };
           delete entities[id];
           const ids = state.ids.filter((i) => i !== id);
           return { entities, ids, rfqs: deriveRfqs(entities, ids) };
-        }),
+        });
+      },
+
+      fetchRfqs: async () => {
+        set({ loading: true });
+        try {
+          const res = await masterDataService.get('rfqs', { perPage: 200 });
+          const data = res.data?.data || res.data || [];
+          const list = Array.isArray(data) ? data : [];
+          const entities: Record<string, Rfq> = {};
+          const ids: string[] = [];
+          for (const item of list) {
+            const rfq = item as unknown as Rfq;
+            entities[rfq.id] = rfq;
+            ids.push(rfq.id);
+          }
+          set({ entities, ids, rfqs: deriveRfqs(entities, ids), loading: false });
+        } catch {
+          set({ loading: false });
+        }
+      },
 
       getRfqById: (id) => get().entities[id],
 

@@ -366,7 +366,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">
-                        {row.author.charAt(0)}
+                        {(row.author || '?')[0]}
                       </div>
                       <span className="text-on-surface text-xs truncate" title={row.author}>{row.author}</span>
                     </div>

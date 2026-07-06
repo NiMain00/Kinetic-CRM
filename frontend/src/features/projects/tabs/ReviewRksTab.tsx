@@ -63,6 +63,8 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
       waitingSince: new Date().toISOString(),
       slaStatus: 'Normal',
       type: 'LPHS',
+      resourceType: 'lphs_sios',
+      resourceId: project.id,
       client: project.client,
       entityId: project.id,
       entityType: 'project',

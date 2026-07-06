@@ -50,7 +50,12 @@ export class ProjectsService {
   }
 
   async create(data: any) {
-    return this.prisma.project.create({ data });
+    try {
+      return await this.prisma.project.create({ data });
+    } catch (err) {
+      console.error('Prisma create project error:', err);
+      throw err;
+    }
   }
 
   async update(id: string, data: any) {

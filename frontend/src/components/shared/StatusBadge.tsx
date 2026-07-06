@@ -65,7 +65,7 @@ export default function StatusBadge({ status, className = '' }: StatusBadgeProps
   const variant = useMemo<BadgeVariant>(() => {
     const key = status.toLowerCase();
     const match = projectStatuses.find((ps) => ps.code.toLowerCase() === key);
-    if (match) {
+    if (match && match.color_hex) {
       return hexToBadgeVariant(match.color_hex);
     }
     return FALLBACK_VARIANT_MAP[key] || 'default';

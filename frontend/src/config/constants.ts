@@ -84,6 +84,7 @@ export const ROLE_HIERARCHY = {
   director: 4,
   admin: 3,
   manager: 2,
+  supervisor: 1.5,
   staff: 1,
 } as const;
 
@@ -103,6 +104,7 @@ export const ROLES = {
 
 export const ELEVATED_ROLES: readonly string[] = [
   ROLES.MANAGER,
+  ROLES.SUPERVISOR,
   ROLES.ADMIN,
   ROLES.DIRECTOR,
   ROLES.SUPER_ADMIN,

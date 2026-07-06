@@ -81,6 +81,7 @@ export default function ProcurementDetailView() {
       tab.label === 'Diskusi' ||
       tab.label === 'Suppliers' ||
       tab.label === 'RFQ' ||
+      tab.label === 'Delivery' ||
       tab.label === 'Approval'
     )
       return false;

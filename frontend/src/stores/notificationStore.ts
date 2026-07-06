@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { notificationService } from '@/services/notifications';
 
 export interface Notification {
   id: string;
@@ -9,7 +10,7 @@ export interface Notification {
   read: boolean;
   createdAt: string;
   entityId?: string;
-  entityType?: 'prospect' | 'project';
+  entityType?: 'prospect' | 'project' | 'procurement';
   icon?: string;
   color?: string;
 }
@@ -17,6 +18,8 @@ export interface Notification {
 interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
+  loading: boolean;
+  fetchNotifications: () => Promise<void>;
   addNotification: (n: Omit<Notification, 'id' | 'read' | 'createdAt'>) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -32,19 +35,32 @@ const TYPE_CONFIG: Record<string, { icon: string; color: string }> = {
   system: { icon: 'dns', color: 'border-outline text-secondary bg-surface-container' },
 };
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  { id: 'n1', title: 'Prospek Baru: Surveillance System', message: 'Prospek baru dari Secure City Group memerlukan review.', type: 'approval', read: false, createdAt: new Date(Date.now() - 3600000).toISOString(), entityType: 'prospect', entityId: '3', icon: 'fact_check' },
-  { id: 'n2', title: 'RKS Direview: Data Center Jakarta', message: 'Dokumen RKS untuk Pembangunan Infrastruktur Data Center - Tahap II sedang direview.', type: 'status_change', read: false, createdAt: new Date(Date.now() - 7200000).toISOString(), entityType: 'project', entityId: 'PR-2025-001', icon: 'swap_horiz' },
-  { id: 'n3', title: 'Revisi LPHS: FTTH Menteng', message: 'Department Financial Audit meminta revisi pada dokumen LPHS.', type: 'revision', read: true, createdAt: new Date(Date.now() - 86400000).toISOString(), entityType: 'project', entityId: 'PR-2025-002', icon: 'edit_document' },
-  { id: 'n4', title: 'Penugasan Baru', message: 'Anda ditugaskan sebagai reviewer untuk proyek Modernization of Terminal 3.', type: 'assignment', read: false, createdAt: new Date(Date.now() - 172800000).toISOString(), entityType: 'project', entityId: 'PR-2025-003', icon: 'person_add' },
-  { id: 'n5', title: 'Sistem: Backup Selesai', message: 'Backup data harian berhasil dilakukan pada pukul 02:00 WIB.', type: 'system', read: true, createdAt: new Date(Date.now() - 259200000).toISOString(), icon: 'dns' },
-];
-
 export const useNotificationStore = create<NotificationState>()(
   persist(
-    (set) => ({
-      notifications: INITIAL_NOTIFICATIONS,
-      unreadCount: INITIAL_NOTIFICATIONS.filter((n) => !n.read).length,
+    (set, get) => ({
+      notifications: [],
+      unreadCount: 0,
+      loading: false,
+
+      fetchNotifications: async () => {
+        set({ loading: true });
+        try {
+          const res = await notificationService.list({ perPage: 50 });
+          const list = res.data?.data || res.data || [];
+          const notifications = Array.isArray(list) ? list.map((n: any) => ({
+            ...n,
+            icon: n.icon || (TYPE_CONFIG[n.type] || TYPE_CONFIG.system).icon,
+            color: n.color || (TYPE_CONFIG[n.type] || TYPE_CONFIG.system).color,
+          })) : [];
+          set({
+            notifications,
+            unreadCount: notifications.filter((n: any) => !n.read).length,
+            loading: false,
+          });
+        } catch {
+          set({ loading: false });
+        }
+      },
 
       addNotification: (n) => {
         const config = TYPE_CONFIG[n.type] || TYPE_CONFIG.system;
@@ -62,7 +78,8 @@ export const useNotificationStore = create<NotificationState>()(
         }));
       },
 
-      markAsRead: (id) =>
+      markAsRead: (id) => {
+        notificationService.markAsRead(id).catch(() => {});
         set((s) => {
           const updated = s.notifications.map((n) =>
             n.id === id ? { ...n, read: true } : n
@@ -71,13 +88,16 @@ export const useNotificationStore = create<NotificationState>()(
             notifications: updated,
             unreadCount: updated.filter((n) => !n.read).length,
           };
-        }),
+        });
+      },
 
-      markAllAsRead: () =>
+      markAllAsRead: () => {
+        notificationService.markAllAsRead().catch(() => {});
         set((s) => ({
           notifications: s.notifications.map((n) => ({ ...n, read: true })),
           unreadCount: 0,
-        })),
+        }));
+      },
 
       removeNotification: (id) =>
         set((s) => {
@@ -92,10 +112,14 @@ export const useNotificationStore = create<NotificationState>()(
     }),
     {
       name: 'kinetic-notifications',
-      version: 1,
+      version: 2,
+      partialize: (state) => ({ notifications: state.notifications, unreadCount: state.unreadCount }),
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version === 0) return { notifications: current.notifications || [], unreadCount: (current.notifications || []).filter((n: any) => !n.read).length };
+        if (version === 0 || version === 1) {
+          const notifications = current.notifications || [];
+          return { notifications, unreadCount: notifications.filter((n: any) => !n.read).length };
+        }
         return current;
       },
     },

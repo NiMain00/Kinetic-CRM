@@ -1,7 +1,7 @@
 import type { Project } from '@/types/domain';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from './procurementStore';
-import { deepClone, createSnapshot } from '@/utils/clone';
+import { deepClone } from '@/utils/clone';
 
 /**
  * Auto-create a Procurement entry from a winning project.
@@ -23,7 +23,8 @@ export function createProcurementFromProject(project: Project): Procurement {
     sourceProjectName: project.name,
 
     // ── Snapshot (copy sekali saat transisi) ────────────────────────────
-    ...createSnapshot(project, ['client', 'location']),
+    client: project.client,
+    location: project.location,
     createdBy: project.author,
     createdByUserId: project.createdByUserId,
     contractValue: project.winnerDetails?.contractValue || project.estimatedValue || 0,

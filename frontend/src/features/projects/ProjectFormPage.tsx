@@ -8,7 +8,7 @@ import type { Project } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useCustomerStore } from '@/stores/customerStore';
-import { useRbacStore } from '@/stores/rbacStore';
+import { useRbacStore, type RbacDepartment, type RbacRole } from '@/stores/rbacStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { eventBus } from '@/services/eventBridge';
 import { useActiveOptions } from '@/hooks/useInputConfig';
@@ -24,22 +24,22 @@ interface MemberEntry {
 export default function ProjectFormPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const addProject = useProjectStore((s) => s.addProject);
+  const createProject = useProjectStore((s) => s.createProject);
   const projectCount = useProjectStore((s) => s.projects.length);
   const user = useAuthStore((s) => s.user);
   const customers = useCustomerStore((s) => s.customers);
   const projectTypeOptions = useActiveOptions('project_types');
 
   // RBAC
-  const departments = useRbacStore((s) => s.departments);
+  const departments = useMasterDataStore((s) => s.departments as unknown as RbacDepartment[]);
   const userRoles = useRbacStore((s) => s.userRoles);
-  const roles = useRbacStore((s) => s.roles);
+  const roles = useMasterDataStore((s) => s.roles as unknown as RbacRole[]);
   const addProjectDept = useRbacStore((s) => s.addProjectDepartment);
   const addProjMember = useRbacStore((s) => s.addProjectMember);
   const masterUsers = useMasterDataStore((s) => s.users);
 
   const projectRoles = roles.filter((r) =>
-    ['project_viewer', 'project_contributor', 'project_manager'].includes(r.name),
+    ['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id),
   );
 
   // Pre-fill dari prospect jika ada
@@ -55,9 +55,9 @@ export default function ProjectFormPage() {
     defaultValues: {
       name: fromProspect?.name || '',
       client: fromProspect?.client || '',
-      type: (fromProspect?.projectType as 'Tender' | 'Prospecting') || 'Tender',
+      type: fromProspect?.projectType?.toLowerCase() || projectTypeOptions[0]?.value || '',
       location: fromProspect?.branch || '',
-      estimatedValue: fromProspect?.estimatedValue || undefined,
+      estimatedValue: fromProspect?.estimatedValue !== undefined && fromProspect?.estimatedValue !== null ? Number(fromProspect.estimatedValue) : undefined,
       deadlineTender: undefined,
     },
   });
@@ -108,21 +108,23 @@ export default function ProjectFormPage() {
 
   const getRoleName = (roleId: string) => roles.find((r) => r.id === roleId)?.name.replace(/_/g, ' ') || roleId;
 
-  const onSubmit = (data: ProjectFormData) => {
-    const projectId = `PR-${Date.now()}`;
+  const onSubmit = async (data: ProjectFormData) => {
+    const ts = Date.now();
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const projectId = `PR-${ts}`;
     const newProject: Project = {
       id: projectId,
-      code: `PRJ-${String(projectCount + 1).padStart(4, '0')}`,
+      code: `PRJ-${String(projectCount + 1).padStart(4, '0')}-${ts}-${rand}`,
       name: data.name.trim(),
       client: data.client,
       status: 'RKS',
       phase: 'RKS',
       location: data.location.trim(),
       author: user?.fullName || user?.name || 'Admin',
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      date: new Date().toISOString(),
       progress: 0,
-      estimatedValue: data.estimatedValue || 0,
-      type: data.type as 'Tender' | 'Prospecting',
+      estimatedValue: Number(data.estimatedValue) || 0,
+      type: data.type?.toLowerCase() || 'tender',
       deadlineTender: data.deadlineTender || undefined,
       createdByUserId: user?.id,
       scopeDepartments: selectedDeptIds,
@@ -131,31 +133,35 @@ export default function ProjectFormPage() {
       sourceProspectId: fromProspect?.id,
     };
 
-    addProject(newProject);
+    try {
+      await createProject(newProject);
 
-    // Jika dari prospek, emit event — handler akan update status + link
-    if (fromProspect) {
-      eventBus.emit({
-        type: 'PROSPECT_CONVERTED',
-        prospectId: fromProspect.id,
-        projectId,
-        projectName: data.name.trim(),
-        timestamp: new Date().toISOString(),
+      // Simpan project departments
+      selectedDeptIds.forEach((deptId) => {
+        addProjectDept(projectId, deptId);
       });
+
+      // Simpan project members
+      members.forEach((m) => {
+        addProjMember(projectId, m.userId, m.roleId, m.deptId, user?.id || '');
+      });
+
+      // Jika dari prospek, emit event
+      if (fromProspect) {
+        eventBus.emit({
+          type: 'PROSPECT_CONVERTED',
+          prospectId: fromProspect.id,
+          projectId,
+          projectName: data.name.trim(),
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
+      navigate(`/project/${projectId}/overview`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menyimpan proyek. Silakan coba lagi.');
     }
-
-    // Simpan project departments
-    selectedDeptIds.forEach((deptId) => {
-      addProjectDept(projectId, deptId);
-    });
-
-    // Simpan project members
-    members.forEach((m) => {
-      addProjMember(projectId, m.userId, m.roleId, m.deptId, user?.id || '');
-    });
-
-    toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
-    navigate(`/project/${projectId}/overview`);
   };
 
   const fieldClass = (field: keyof ProjectFormData) =>

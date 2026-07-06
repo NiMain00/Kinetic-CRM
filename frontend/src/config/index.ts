@@ -31,3 +31,4 @@ export {
 } from './constants';
 export { NAV_ITEMS, CONFIG_NAV_ITEMS, filterNavItems } from './nav-items';
 export type { NavItem } from './nav-items';
+export type { RoleLevel } from './constants';

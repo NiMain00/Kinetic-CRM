@@ -273,6 +273,61 @@ async function main() {
     await prisma.questionType.upsert({ where: { id: q.id }, update: {}, create: q });
   }
 
+  const questions = [
+    { id: 'q-001', questionText: 'Unit apa yang akan diadakan?', questionTypeId: 'qt-text', context: 'prospect' as const, category: 'Data Pribadi', isRequired: true, sortOrder: 1, placeholderText: 'Contoh: AC Central, Server, Kendaraan Operasional', helpText: 'Sebutkan secara spesifik jenis unit yang dibutuhkan.' },
+    { id: 'q-002', questionText: 'Jelaskan spesifikasi teknis unit yang dibutuhkan secara detail.', questionTypeId: 'qt-textarea', context: 'prospect' as const, category: 'Teknis', isRequired: true, sortOrder: 2, placeholderText: 'Deskripsikan spesifikasi minimal...', helpText: 'Semakin detail spesifikasi, semakin akurat penawaran yang diterima.' },
+    { id: 'q-003', questionText: 'Kategori pengadaan unit ini termasuk?', questionTypeId: 'qt-radio', context: 'both' as const, category: 'Legalitas', isRequired: true, sortOrder: 3 },
+    { id: 'q-004', questionText: 'Metode pengadaan apa yang akan digunakan?', questionTypeId: 'qt-select', context: 'prospect' as const, category: 'Legalitas', isRequired: true, sortOrder: 4, helpText: 'Pilih metode yang sesuai dengan kebijakan perusahaan.' },
+    { id: 'q-005', questionText: 'Fasilitas pendukung apa saja yang diperlukan?', questionTypeId: 'qt-checkbox', context: 'both' as const, category: 'Teknis', isRequired: false, sortOrder: 5, helpText: 'Pilih semua yang relevan dengan kebutuhan unit.' },
+    { id: 'q-006', questionText: 'Berapa estimasi anggaran yang tersedia untuk unit ini?', questionTypeId: 'qt-number', context: 'prospect' as const, category: 'Keuangan', isRequired: true, sortOrder: 6, placeholderText: 'Contoh: 500000000', helpText: 'Dalam satuan Rupiah penuh (tanpa titik/koma).' },
+    { id: 'q-007', questionText: 'Target waktu unit mulai beroperasi?', questionTypeId: 'qt-date', context: 'both' as const, category: 'Jadwal', isRequired: true, sortOrder: 7, helpText: 'Perkiraan tanggal unit siap digunakan.' },
+    { id: 'q-008', questionText: 'Lokasi pengiriman / instalasi unit?', questionTypeId: 'qt-text', context: 'prospect' as const, category: 'Lokasi', isRequired: true, sortOrder: 8, placeholderText: 'Contoh: Jakarta Pusat, Kantor Cabang Bandung', helpText: 'Sebutkan lokasi tempat unit akan dikirim/diinstalasi.' },
+    { id: 'q-009', questionText: 'Apakah tersedia lahan / ruang khusus untuk unit ini?', questionTypeId: 'qt-radio', context: 'rks' as const, category: 'Verifikasi Fisik', isRequired: true, sortOrder: 9, helpText: 'Pastikan infrastruktur pendukung sudah siap.' },
+    { id: 'q-010', questionText: 'Sebutkan syarat garansi dan layanan purna jual yang diharapkan.', questionTypeId: 'qt-textarea', context: 'rks' as const, category: 'Dokumen', isRequired: false, sortOrder: 10, placeholderText: 'Contoh: Garansi 3 tahun, response time 1x24 jam...', helpText: 'Cantumkan ketentuan garansi minimal yang harus dipenuhi vendor.' },
+    { id: 'q-011', questionText: 'Berapa estimasi volume / jumlah unit yang dibutuhkan?', questionTypeId: 'qt-number', context: 'prospect' as const, category: 'Keuangan', isRequired: true, sortOrder: 11, placeholderText: 'Contoh: 5', helpText: 'Isikan jumlah unit yang akan diadakan.' },
+    { id: 'q-012', questionText: 'Sumber dana pengadaan unit ini berasal dari?', questionTypeId: 'qt-select', context: 'prospect' as const, category: 'Keuangan', isRequired: true, sortOrder: 12, helpText: 'Pilih sumber pendanaan yang berlaku.' },
+    { id: 'q-013', questionText: 'Dokumen pendukung apa saja yang sudah tersedia?', questionTypeId: 'qt-checkbox', context: 'both' as const, category: 'Dokumen', isRequired: false, sortOrder: 13, helpText: 'Centang dokumen yang sudah dimiliki.' },
+    { id: 'q-014', questionText: 'Apakah unit ini merupakan pengadaan ulang (replacement)?', questionTypeId: 'qt-radio', context: 'prospect' as const, category: 'Lainnya', isRequired: false, sortOrder: 14, helpText: 'Pengadaan ulang berarti mengganti unit lama yang sudah tidak layak.' },
+    { id: 'q-015', questionText: 'Tanggal perkiraan pengiriman (estimasi) kapan?', questionTypeId: 'qt-date', context: 'rks' as const, category: 'Jadwal', isRequired: true, sortOrder: 15, placeholderText: '', helpText: 'Perkiraan tanggal pengiriman dari vendor ke lokasi.' },
+  ];
+
+  const questionOptions = [
+    { id: 'qopt-001', questionId: 'q-003', optionLabel: 'Barang (Aset Tetap)', sortOrder: 0 },
+    { id: 'qopt-002', questionId: 'q-003', optionLabel: 'Jasa Konsultasi', sortOrder: 1 },
+    { id: 'qopt-003', questionId: 'q-003', optionLabel: 'Barang Habis Pakai', sortOrder: 2 },
+    { id: 'qopt-004', questionId: 'q-003', optionLabel: 'Sewa / Leasing', sortOrder: 3 },
+    { id: 'qopt-005', questionId: 'q-004', optionLabel: 'Tender Terbuka', sortOrder: 0 },
+    { id: 'qopt-006', questionId: 'q-004', optionLabel: 'Tender Terbatas', sortOrder: 1 },
+    { id: 'qopt-007', questionId: 'q-004', optionLabel: 'Penunjukan Langsung', sortOrder: 2 },
+    { id: 'qopt-008', questionId: 'q-004', optionLabel: 'E-Purchasing (Katalog)', sortOrder: 3 },
+    { id: 'qopt-009', questionId: 'q-005', optionLabel: 'Instalasi / Setting', sortOrder: 0 },
+    { id: 'qopt-010', questionId: 'q-005', optionLabel: 'Pelatihan Operator', sortOrder: 1 },
+    { id: 'qopt-011', questionId: 'q-005', optionLabel: 'Maintenance Berkala', sortOrder: 2 },
+    { id: 'qopt-012', questionId: 'q-005', optionLabel: 'Suku Cadang Awal', sortOrder: 3 },
+    { id: 'qopt-013', questionId: 'q-005', optionLabel: 'Dokumentasi Teknis', sortOrder: 4 },
+    { id: 'qopt-014', questionId: 'q-009', optionLabel: 'Ya, tersedia', sortOrder: 0 },
+    { id: 'qopt-015', questionId: 'q-009', optionLabel: 'Tidak, perlu persiapan', sortOrder: 1 },
+    { id: 'qopt-016', questionId: 'q-009', optionLabel: 'Sedang dalam proses', sortOrder: 2 },
+    { id: 'qopt-017', questionId: 'q-012', optionLabel: 'APBN / APBD', sortOrder: 0 },
+    { id: 'qopt-018', questionId: 'q-012', optionLabel: 'Anggaran Perusahaan (Internal)', sortOrder: 1 },
+    { id: 'qopt-019', questionId: 'q-012', optionLabel: 'Kredit Investasi Bank', sortOrder: 2 },
+    { id: 'qopt-020', questionId: 'q-012', optionLabel: 'Kerjasama Pihak Ketiga (KSO)', sortOrder: 3 },
+    { id: 'qopt-021', questionId: 'q-013', optionLabel: 'KAK (Kerangka Acuan Kerja)', sortOrder: 0 },
+    { id: 'qopt-022', questionId: 'q-013', optionLabel: 'RAB (Rencana Anggaran Biaya)', sortOrder: 1 },
+    { id: 'qopt-023', questionId: 'q-013', optionLabel: 'Gambar Teknis / Denah', sortOrder: 2 },
+    { id: 'qopt-024', questionId: 'q-013', optionLabel: 'Surat Penawaran Vendor', sortOrder: 3 },
+    { id: 'qopt-025', questionId: 'q-013', optionLabel: 'Izin / Rekomendasi Terkait', sortOrder: 4 },
+    { id: 'qopt-026', questionId: 'q-014', optionLabel: 'Ya, replacement', sortOrder: 0 },
+    { id: 'qopt-027', questionId: 'q-014', optionLabel: 'Bukan, pengadaan baru', sortOrder: 1 },
+  ];
+
+  for (const q of questions) {
+    await prisma.question.upsert({ where: { id: q.id }, update: {}, create: q });
+  }
+  for (const o of questionOptions) {
+    await prisma.questionOption.upsert({ where: { id: o.id }, update: {}, create: o });
+  }
+
   const lossReasons = [
     { id: 'lr-price', name: 'Harga lebih tinggi', code: 'HARGA', category: 'harga' as const },
     { id: 'lr-tech', name: 'Kelemahan teknis', code: 'TEKNIS', category: 'teknis' as const },
@@ -392,6 +447,77 @@ async function main() {
     update: {},
     create: { projectId: 'PR-2025-001', userId: 'user-2', roleId: 'role-pm', departmentId: deptPM.id, assignedBy: 'user-1' },
   });
+
+  // ── INPUT CONFIG GROUPS ─────────────────────────────────────────
+  const inputConfigGroups = [
+    { id: 'icg-customer-types', key: 'customer_types', name: 'Tipe Pelanggan', description: 'Klasifikasi tipe pelanggan', category: 'form' as const, isSystem: true },
+    { id: 'icg-project-types', key: 'project_types', name: 'Tipe Proyek', description: 'Klasifikasi jenis proyek / pengadaan', category: 'form' as const, isSystem: true },
+    { id: 'icg-escalation-roles', key: 'escalation_roles', name: 'Peran Eskalasi SLA', description: 'Role yang menerima notifikasi eskalasi SLA', category: 'sla' as const, isSystem: true },
+    { id: 'icg-sla-entity-types', key: 'sla_entity_types', name: 'Tipe Entitas SLA', description: 'Entitas yang dapat dikaitkan dengan SLA', category: 'sla' as const, isSystem: true },
+    { id: 'icg-sla-units', key: 'sla_units', name: 'Satuan SLA', description: 'Satuan waktu untuk perhitungan SLA', category: 'sla' as const, isSystem: true },
+    { id: 'icg-prospect-filter-tabs', key: 'prospect_filter_tabs', name: 'Tab Filter Prospek', description: 'Tab filter pada halaman daftar prospek', category: 'filter' as const, isSystem: true },
+    { id: 'icg-pipeline-tabs', key: 'pipeline_tabs', name: 'Tab Pipeline', description: 'Tab filter pada halaman pipeline proyek', category: 'filter' as const, isSystem: true },
+    { id: 'icg-account-statuses', key: 'account_statuses', name: 'Status Akun', description: 'Status akun pengguna', category: 'filter' as const, isSystem: true },
+    { id: 'icg-workflow-entity-tabs', key: 'workflow_entity_tabs', name: 'Tab Entitas Workflow', description: 'Tab filter pada halaman konfigurasi workflow', category: 'workflow' as const, isSystem: true },
+  ];
+  for (const g of inputConfigGroups) {
+    await prisma.inputConfigGroup.upsert({ where: { id: g.id }, update: {}, create: g });
+  }
+
+  const inputConfigOptions = [
+    // ── customer_types ──
+    { id: 'ico-ct-1', groupId: 'icg-customer-types', value: 'swasta', label: 'Swasta', sortOrder: 1, colorHex: '#3B82F6' },
+    { id: 'ico-ct-2', groupId: 'icg-customer-types', value: 'bumn', label: 'BUMN / BUMD', sortOrder: 2, colorHex: '#10B981' },
+    { id: 'ico-ct-3', groupId: 'icg-customer-types', value: 'pemerintah', label: 'Pemerintah', sortOrder: 3, colorHex: '#F59E0B' },
+    { id: 'ico-ct-4', groupId: 'icg-customer-types', value: 'asing', label: 'Asing', sortOrder: 4, colorHex: '#8B5CF6' },
+    // ── project_types ──
+    { id: 'ico-pt-1', groupId: 'icg-project-types', value: 'tender', label: 'Tender', sortOrder: 1, colorHex: '#EF4444' },
+    { id: 'ico-pt-2', groupId: 'icg-project-types', value: 'prospecting', label: 'Prospecting', sortOrder: 2, colorHex: '#3B82F6' },
+    { id: 'ico-pt-3', groupId: 'icg-project-types', value: 'pengadaan_langsung', label: 'Pengadaan Langsung', sortOrder: 3, colorHex: '#10B981' },
+    { id: 'ico-pt-4', groupId: 'icg-project-types', value: 'lelang', label: 'Lelang Umum', sortOrder: 4, colorHex: '#F59E0B' },
+    { id: 'ico-pt-5', groupId: 'icg-project-types', value: 'swakelola', label: 'Swakelola', sortOrder: 5, colorHex: '#8B5CF6' },
+    // ── escalation_roles ──
+    { id: 'ico-er-1', groupId: 'icg-escalation-roles', value: 'pm', label: 'Project Manager', sortOrder: 1 },
+    { id: 'ico-er-2', groupId: 'icg-escalation-roles', value: 'branch_manager', label: 'Branch Manager', sortOrder: 2 },
+    { id: 'ico-er-3', groupId: 'icg-escalation-roles', value: 'dir_teknik', label: 'Direktur Teknik', sortOrder: 3 },
+    { id: 'ico-er-4', groupId: 'icg-escalation-roles', value: 'dir_keuangan', label: 'Direktur Keuangan', sortOrder: 4 },
+    { id: 'ico-er-5', groupId: 'icg-escalation-roles', value: 'super_admin', label: 'Super Admin', sortOrder: 5 },
+    // ── sla_entity_types ──
+    { id: 'ico-set-1', groupId: 'icg-sla-entity-types', value: 'prospek', label: 'Prospek', sortOrder: 1 },
+    { id: 'ico-set-2', groupId: 'icg-sla-entity-types', value: 'rks', label: 'RKS', sortOrder: 2 },
+    { id: 'ico-set-3', groupId: 'icg-sla-entity-types', value: 'lphs', label: 'LPHS', sortOrder: 3 },
+    { id: 'ico-set-4', groupId: 'icg-sla-entity-types', value: 'pengadaan', label: 'Pengadaan', sortOrder: 4 },
+    // ── sla_units ──
+    { id: 'ico-su-1', groupId: 'icg-sla-units', value: 'jam', label: 'Jam', sortOrder: 1 },
+    { id: 'ico-su-2', groupId: 'icg-sla-units', value: 'hari', label: 'Hari', sortOrder: 2 },
+    { id: 'ico-su-3', groupId: 'icg-sla-units', value: 'minggu', label: 'Minggu', sortOrder: 3 },
+    { id: 'ico-su-4', groupId: 'icg-sla-units', value: 'bulan', label: 'Bulan', sortOrder: 4 },
+    // ── prospect_filter_tabs ──
+    { id: 'ico-pft-1', groupId: 'icg-prospect-filter-tabs', value: 'all', label: 'Semua', sortOrder: 1 },
+    { id: 'ico-pft-2', groupId: 'icg-prospect-filter-tabs', value: 'my_prospects', label: 'Prospek Saya', sortOrder: 2 },
+    { id: 'ico-pft-3', groupId: 'icg-prospect-filter-tabs', value: 'recent', label: 'Terbaru', sortOrder: 3 },
+    { id: 'ico-pft-4', groupId: 'icg-prospect-filter-tabs', value: 'needs_review', label: 'Perlu Review', sortOrder: 4 },
+    { id: 'ico-pft-5', groupId: 'icg-prospect-filter-tabs', value: 'won', label: 'Menang', sortOrder: 5 },
+    { id: 'ico-pft-6', groupId: 'icg-prospect-filter-tabs', value: 'lost', label: 'Hilang', sortOrder: 6 },
+    // ── pipeline_tabs ──
+    { id: 'ico-pl-1', groupId: 'icg-pipeline-tabs', value: 'all', label: 'Semua', sortOrder: 1 },
+    { id: 'ico-pl-2', groupId: 'icg-pipeline-tabs', value: 'prospecting', label: 'Prospecting', sortOrder: 2 },
+    { id: 'ico-pl-3', groupId: 'icg-pipeline-tabs', value: 'tender', label: 'Tender', sortOrder: 3 },
+    { id: 'ico-pl-4', groupId: 'icg-pipeline-tabs', value: 'negotiation', label: 'Negosiasi', sortOrder: 4 },
+    { id: 'ico-pl-5', groupId: 'icg-pipeline-tabs', value: 'won', label: 'Menang', sortOrder: 5 },
+    { id: 'ico-pl-6', groupId: 'icg-pipeline-tabs', value: 'lost', label: 'Hilang', sortOrder: 6 },
+    // ── account_statuses ──
+    { id: 'ico-as-1', groupId: 'icg-account-statuses', value: 'active', label: 'Aktif', sortOrder: 1, colorHex: '#10B981' },
+    { id: 'ico-as-2', groupId: 'icg-account-statuses', value: 'inactive', label: 'Non-Aktif', sortOrder: 2, colorHex: '#EF4444' },
+    { id: 'ico-as-3', groupId: 'icg-account-statuses', value: 'suspended', label: 'Ditangguhkan', sortOrder: 3, colorHex: '#F59E0B' },
+    // ── workflow_entity_tabs ──
+    { id: 'ico-wet-1', groupId: 'icg-workflow-entity-tabs', value: 'prospek', label: 'Prospek', sortOrder: 1 },
+    { id: 'ico-wet-2', groupId: 'icg-workflow-entity-tabs', value: 'rks', label: 'RKS', sortOrder: 2 },
+    { id: 'ico-wet-3', groupId: 'icg-workflow-entity-tabs', value: 'lphs', label: 'LPHS', sortOrder: 3 },
+  ];
+  for (const o of inputConfigOptions) {
+    await prisma.inputConfigOption.upsert({ where: { id: o.id }, update: {}, create: o });
+  }
 
   console.log('Seed completed successfully!');
   console.log('Login credentials:');

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Procurement, ProcurementStatus, TimelineEvent, DocGroup } from '@/types/domain/procurement';
+import type { Procurement, ProcurementStatus } from '@/types/domain/procurement';
+import type { TimelineEvent, DocGroup } from '@/types/domain';
 import { generateProcurementCode } from '@/types/domain/procurement';
 
 interface ProcurementState {

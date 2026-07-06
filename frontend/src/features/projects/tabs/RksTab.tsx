@@ -152,7 +152,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       answers,
     });
 
-    if (project.type === 'Prospecting') {
+    if (project.type === 'prospecting') {
       // Prospecting: skip Review RKS & LPHS/SIOS, langsung ke Harga
       updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
       const event: TimelineEvent = {
@@ -179,6 +179,8 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
         waitingSince: new Date().toISOString(),
         slaStatus: 'Normal',
         type: 'RKS',
+        resourceType: 'rks',
+        resourceId: project.id,
         client: project.client,
         entityId: project.id,
         entityType: 'project',

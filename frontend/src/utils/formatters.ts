@@ -1,8 +1,10 @@
-export function formatCurrency(value: number): string {
+export function formatCurrency(value: number | null | undefined): string {
+  if (value == null) return '-';
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 }
 
-export function formatCurrencyShort(value: number): string {
+export function formatCurrencyShort(value: number | null | undefined): string {
+  if (value == null) return '-';
   if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} T`;
   if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`;
   if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} jt`;

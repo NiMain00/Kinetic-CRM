@@ -39,8 +39,7 @@ export function withPageProps<T extends PageProps>(
       onSelectProject: (id) => navigate(`/projects/${id}/overview`),
       onOpenApproval: () => navigate('/approvals'),
       onLoginSuccess: (userData) => {
-        const mockToken = 'kinetic-mock-' + Date.now() + '-' + Math.random().toString(36).slice(2);
-        login(mockToken, userData || { name: 'User' });
+        login('', userData || { name: 'User' });
         navigate('/dashboard');
       },
       projects: [],

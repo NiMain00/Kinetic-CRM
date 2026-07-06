@@ -9,7 +9,7 @@ import { createProcurementFromProject } from '@/features/procurement/procurement
 export function registerEventHandlers(): void {
   // ── PROSPECT CONVERTED ──────────────────────────────────────────────
   // When a prospect is converted to a project, link them and mark converted.
-  eventBus.on('PROSPECT_CONVERTED', (event) => {
+  eventBus.onEvent('PROSPECT_CONVERTED', (event) => {
     const { prospectId, projectId, projectName } = event;
 
     // Link in relation store
@@ -35,7 +35,7 @@ export function registerEventHandlers(): void {
 
   // ── PROJECT WON ─────────────────────────────────────────────────────
   // When a project wins tender, create procurement record automatically.
-  eventBus.on('PROJECT_WON', (event) => {
+  eventBus.onEvent('PROJECT_WON', (event) => {
     const { projectId } = event;
 
     // Try to resolve the project, with a fallback re-query for persist timing
@@ -78,10 +78,18 @@ export function registerEventHandlers(): void {
   });
 
   // ── PROJECT DELETED ─────────────────────────────────────────────────
-  // Cascade: delete all linked procurements, then clean up relations.
-  eventBus.on('PROJECT_DELETED', (event) => {
+  // Cascade: delete all linked procurements, clean up relations, and reset prospect conversion.
+  eventBus.onEvent('PROJECT_DELETED', (event) => {
     const { projectId } = event;
     const relationStore = useRelationStore.getState();
+
+    // Reset prospect conversion if linked
+    const linkedProspect = relationStore.getProspectByProject(projectId);
+    if (linkedProspect) {
+      useProspectStore.getState().updateProspect(linkedProspect, {
+        isConverted: false,
+      });
+    }
 
     // Get all linked procurements
     const procIds = relationStore.getProcurementsByProject(projectId);
@@ -99,7 +107,7 @@ export function registerEventHandlers(): void {
   // ── PROSPECT DELETED ────────────────────────────────────────────────
   // If prospect has a linked project, also clean up that relation.
   // (Does NOT cascade-delete the project — that's a user decision.)
-  eventBus.on('PROSPECT_DELETED', (event) => {
+  eventBus.onEvent('PROSPECT_DELETED', (event) => {
     const { prospectId } = event;
     const relationStore = useRelationStore.getState();
 
@@ -125,7 +133,7 @@ export function registerEventHandlers(): void {
 
   // ── PROCUREMENT DELETED ─────────────────────────────────────────────
   // Clean up the relation link when a procurement is deleted.
-  eventBus.on('PROCUREMENT_DELETED', (event) => {
+  eventBus.onEvent('PROCUREMENT_DELETED', (event) => {
     if (event.projectId) {
       useRelationStore
         .getState()

@@ -6,6 +6,7 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useDashboardStore } from '@/stores/dashboardStore';
 import { useSlaConfigs } from '@/hooks/useConfigData';
 import { formatCurrency, formatCurrencyShort } from '@/utils/formatters';
 
@@ -16,13 +17,15 @@ export default function DashboardPage() {
   const { approvals } = useApprovalStore();
   const { projects } = useProjectStore();
   const user = useAuthStore((s) => s.user);
+  const { stats: apiStats, chartData: apiChartData, statusDistribution: apiDist, loading: dashLoading, fetchAll } = useDashboardStore();
 
   const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
 
   useEffect(() => {
+    fetchAll();
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('id-ID', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     }));
   }, []);
 
@@ -50,6 +53,7 @@ export default function DashboardPage() {
   };
 
   const stats = useMemo(() => {
+    if (apiStats) return apiStats;
     const active = projects.filter((p) => p.status !== 'Selesai' && p.status !== 'Kalah');
     const won = projects.filter((p) => p.winnerDetails?.outcome === 'menang');
     const totalValue = active.reduce((sum, p) => sum + (p.estimatedValue || 0), 0);
@@ -59,10 +63,12 @@ export default function DashboardPage() {
       pendingApprovals: userApprovals.length,
       criticalDeadlines: projects.filter((p) => p.deadlineTender && new Date(p.deadlineTender) <= new Date(Date.now() + 7 * 86400000)).length,
       winRate: projects.length ? Math.round((won.length / projects.length) * 100 * 10) / 10 : 0,
+      valueChangePercent: 12,
     };
-  }, [projects, userApprovals]);
+  }, [apiStats, projects, userApprovals]);
 
   const chartData = useMemo(() => {
+    if (apiChartData.length > 0) return apiChartData;
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'];
     const monthlyWin = [0, 0, 0, 0, 0, 0];
     const monthlyLose = [0, 0, 0, 0, 0, 0];
@@ -81,20 +87,24 @@ export default function DashboardPage() {
     const maxVal = Math.max(...monthlyWin.map((v, i) => v + monthlyLose[i]), 1);
 
     return months.map((m, i) => ({
-      m,
+      month: m,
       win: Math.max(5, Math.round((monthlyWin[i] / maxVal) * 100)),
       lose: Math.max(5, Math.round((monthlyLose[i] / maxVal) * 100)),
     }));
-  }, [projects]);
+  }, [apiChartData, projects]);
 
   const statusDistribution = useMemo(() => {
+    if (apiDist) {
+      const { inProgress, completed, postponed, total } = apiDist;
+      return { berjalan: inProgress, planning: 0, review: postponed, selesai: completed, total };
+    }
     const berjalan = projects.filter((p) => !['Selesai', 'Dibatalkan'].includes(p.status) && !p.winnerDetails?.outcome).length;
     const planning = projects.filter((p) => ['Dibuat', 'Potensial'].includes(p.status)).length;
     const review = projects.filter((p) => ['Review Departemen', 'LPHS/SIOS', 'Revisi', 'Waiting Supervisor', 'Revision'].includes(p.status)).length;
     const selesai = projects.filter((p) => p.status === 'Selesai' || p.winnerDetails?.outcome === 'menang').length;
     const total = berjalan + planning + review + selesai;
     return { berjalan, planning, review, selesai, total };
-  }, [projects]);
+  }, [apiDist, projects]);
 
   const recentProjects = useMemo(() => {
     return [...projects]
@@ -123,6 +133,16 @@ export default function DashboardPage() {
     });
   }, [statusDistribution]);
 
+  if (dashLoading && !apiStats) {
+    return (
+      <PageContainer>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       {/* Header */}
@@ -142,7 +162,6 @@ export default function DashboardPage() {
             {stats.criticalDeadlines} deadline kritis
           </span>
         </div>
-        {/* Action buttons */}
         <div className="flex gap-2 flex-wrap">
           <Button
             variant="primary"
@@ -181,14 +200,13 @@ export default function DashboardPage() {
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total Proyek Aktif */}
         <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">account_balance_wallet</span>
             </span>
             <span className="text-success font-label-sm flex items-center gap-1 text-xs">
-              <span className="material-symbols-outlined text-[14px]">trending_up</span> +12%
+              <span className="material-symbols-outlined text-[14px]">trending_up</span> +{stats.valueChangePercent || 12}%
             </span>
           </div>
           <p className="text-secondary font-caption-xs mb-0.5">Total Proyek Aktif</p>
@@ -202,7 +220,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Persetujuan Tertunda */}
         <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/approvals')}>
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-warning-container text-warning">
@@ -220,7 +237,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Mendekati Deadline */}
         <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-danger-container text-danger">
@@ -238,7 +254,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Rasio Kemenangan */}
         <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/reports/kpi')}>
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-primary/10 text-primary">
@@ -259,7 +274,6 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-12 gap-3 sm:gap-4">
-        {/* Trend Win/Loss */}
         <div className="col-span-12 lg:col-span-8 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
             <div>
@@ -283,9 +297,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Bar chart with Y axis */}
           <div className="flex gap-2 sm:gap-4 px-2 sm:px-4 pb-4">
-            {/* Y-axis labels */}
             <div className={`flex flex-col justify-between text-[10px] text-secondary font-mono-data ${isMobile ? 'h-40' : 'h-56'}`}>
               <span>40</span>
               <span>30</span>
@@ -293,7 +305,6 @@ export default function DashboardPage() {
               <span>10</span>
               <span>0</span>
             </div>
-            {/* Bars */}
             <div className={`flex-1 flex items-end justify-between gap-2 sm:gap-4 ${isMobile ? 'h-40' : 'h-56'}`}>
               {chartData.map((d, i) => (
                 <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
@@ -309,7 +320,7 @@ export default function DashboardPage() {
                       title={`Kalah: ${d.lose}`}
                     ></div>
                   </div>
-                  <span className="font-caption-xs text-secondary text-xs">{d.m}</span>
+                  <span className="font-caption-xs text-secondary text-xs">{d.month}</span>
                 </div>
               ))}
             </div>
@@ -326,12 +337,10 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Proyek per Status */}
         <div className="col-span-12 lg:col-span-4 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5 flex flex-col">
           <h4 className="font-heading-section text-heading-section text-sm sm:text-base mb-3">Proyek per Status</h4>
 
           <div className="flex flex-1 items-center gap-4 py-2">
-            {/* Donut chart */}
             <div className="relative shrink-0">
               <svg className="w-36 h-36 sm:w-40 sm:h-40 -rotate-90" viewBox="0 0 120 120">
                 {donutData.map((seg, i) => (
@@ -356,7 +365,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Legend */}
             <div className="space-y-2 flex-1 min-w-0">
               {donutData.map((seg, i) => (
                 <div key={i} className="flex justify-between items-center text-xs">
@@ -382,9 +390,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Bottom Section: Proyek Terbaru + Aktivitas Terbaru */}
+      {/* Bottom Section */}
       <div className="grid grid-cols-12 gap-3 sm:gap-4">
-        {/* Proyek Terbaru */}
         <div className="col-span-12 lg:col-span-7 bg-surface rounded-2xl border border-border/60 shadow-card overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border/60 flex justify-between items-center bg-surface-container-low">
             <div className="flex items-center gap-2">
@@ -454,7 +461,6 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Aktivitas Terbaru */}
         <div className="col-span-12 lg:col-span-5 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5 flex flex-col">
           <div className="flex justify-between items-center mb-3 sm:mb-4">
             <div className="flex items-center gap-2">

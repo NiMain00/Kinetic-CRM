@@ -36,7 +36,7 @@ class AuthorizationEngine {
 
     // Bypass: jika user dari API scope global / Super Admin, grant semua permission
     const authUser = useAuthStore.getState().user;
-    if (authUser?.id === userId && (authUser?.scopeType === 'global' || authUser?.roleName === 'Super Admin')) return true;
+    if (authUser?.id === userId && (authUser?.scopeType === 'global' || authUser?.roleName === 'Super Admin' || authUser?.roleName === 'super_admin')) return true;
 
     if (this.checkDirectorBypass(userId, permissionCode)) return true;
 
@@ -173,7 +173,7 @@ class AuthorizationEngine {
     const roleNames = store.roles
       .filter((r) => userRoleIds.includes(r.id))
       .map((r) => r.name)
-      .filter((name) => ![ROLES.PROJECT_VIEWER, ROLES.PROJECT_CONTRIBUTOR, ROLES.PROJECT_MANAGER].includes(name));
+      .filter((name) => ![ROLES.PROJECT_VIEWER, ROLES.PROJECT_CONTRIBUTOR, ROLES.PROJECT_MANAGER].includes(name as any));
 
     let highest: string = ROLES.STAFF;
     let highestLevel = 0;

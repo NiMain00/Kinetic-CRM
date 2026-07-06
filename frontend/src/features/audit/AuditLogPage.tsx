@@ -2,17 +2,6 @@ import React, { useState } from 'react';
 import { Card, Button, Input, Select, Badge } from '@/components/ui';
 import type { AuditLogEntry } from '@/types/domain/users';
 
-const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
-  { id: 'aud-001', timestamp: '2026-06-22 08:30:00', actor: 'Ahmad Sulistyo', actorInitials: 'AS', action: 'CREATE', entityType: 'Project', entityId: 'PR-2026-001', entityName: 'Data Center Expansion', summary: 'Membuat proyek baru', before: '', after: '{"name":"Data Center Expansion"}', ipAddress: '192.168.1.100', impact: 'Medium' },
-  { id: 'aud-002', timestamp: '2026-06-22 08:15:00', actor: 'Bambang Permadi', actorInitials: 'BP', action: 'UPDATE', entityType: 'RKS', entityId: 'RKS-2026-001', entityName: 'RKS Data Center', summary: 'Memperbarui dokumen RKS', before: '{"status":"draft"}', after: '{"status":"submitted"}', ipAddress: '192.168.1.101', impact: 'High' },
-  { id: 'aud-003', timestamp: '2026-06-21 16:45:00', actor: 'Siti Aminah', actorInitials: 'SA', action: 'APPROVE', entityType: 'Prospek', entityId: 'PR-2023-08-001', entityName: 'Modernization of Data Center Jakarta', summary: 'Menyetujui prospek', before: '{"status":"waiting_pm_approval"}', after: '{"status":"approved"}', ipAddress: '192.168.1.102', impact: 'High' },
-  { id: 'aud-004', timestamp: '2026-06-21 14:20:00', actor: 'Doni Wahyudi', actorInitials: 'DW', action: 'LOGIN', entityType: 'Session', entityId: 'SES-001', entityName: 'User Session', summary: 'Login ke sistem', before: '', after: '', ipAddress: '192.168.1.200', impact: 'Low' },
-  { id: 'aud-005', timestamp: '2026-06-21 11:30:00', actor: 'Rina Marlina', actorInitials: 'RM', action: 'DELETE', entityType: 'Document', entityId: 'DOC-001', entityName: 'old_report_v2.pdf', summary: 'Menghapus dokumen', before: '{"file":"old_report_v2.pdf"}', after: '', ipAddress: '192.168.1.103', impact: 'Medium' },
-  { id: 'aud-006', timestamp: '2026-06-21 10:00:00', actor: 'Eko Prasetyo', actorInitials: 'EP', action: 'REVISE', entityType: 'LPHS', entityId: 'LPHS-001', entityName: 'LPHS Site Survey', summary: 'Merevisi LPHS', before: '{"status":"reviewed"}', after: '{"status":"revision"}', ipAddress: '192.168.1.104', impact: 'High' },
-  { id: 'aud-007', timestamp: '2026-06-20 09:15:00', actor: 'Andi Wijaya', actorInitials: 'AW', action: 'UPLOAD', entityType: 'Document', entityId: 'DOC-002', entityName: 'blueprint_v3.pdf', summary: 'Mengunggah dokumen baru', before: '', after: '{"file":"blueprint_v3.pdf","size":"4.2MB"}', ipAddress: '192.168.1.105', impact: 'Low' },
-  { id: 'aud-008', timestamp: '2026-06-20 08:00:00', actor: 'Dewi Sartika', actorInitials: 'DS', action: 'REJECT', entityType: 'Approval', entityId: 'APPR-001', entityName: 'Approval Budget', summary: 'Menolak approval anggaran', before: '{"status":"pending"}', after: '{"status":"rejected"}', ipAddress: '192.168.1.106', impact: 'High' },
-];
-
 const actionVariant: Record<string, 'info' | 'success' | 'warning' | 'danger' | 'default' | 'purple'> = {
   CREATE: 'success',
   UPDATE: 'info',
@@ -34,7 +23,7 @@ const impactColor = (impact: string) => {
 };
 
 export default function AuditLogPage() {
-  const [logs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
+  const [logs] = useState<AuditLogEntry[]>([]);
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
   const [impactFilter, setImpactFilter] = useState('all');

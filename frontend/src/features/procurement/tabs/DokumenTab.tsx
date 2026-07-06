@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { Procurement, DocGroup, DocumentEntry } from '@/types/domain';
+import type { DocGroup, DocumentEntry } from '@/types/domain';
+import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
 
 interface Props {

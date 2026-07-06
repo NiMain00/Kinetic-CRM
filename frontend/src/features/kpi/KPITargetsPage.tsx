@@ -15,14 +15,7 @@ interface TargetForm {
   unit: string;
 }
 
-const CATEGORY_OPTIONS = [
-  { value: 'win_rate', label: 'Win Rate' },
-  { value: 'revenue', label: 'Revenue' },
-  { value: 'project_count', label: 'Project Count' },
-  { value: 'avg_margin', label: 'Average Margin' },
-  { value: 'sla_compliance', label: 'SLA Compliance' },
-  { value: 'customer_satisfaction', label: 'Customer Satisfaction' },
-];
+const CATEGORY_OPTIONS: { value: string; label: string }[] = [];
 
 // PERIOD_OPTIONS now built dynamically in the component via useMasterPeriods()
 
@@ -49,15 +42,6 @@ const STATUS_LABEL: Record<string, string> = {
   achieved: 'Achieved',
 };
 
-const INITIAL_TARGETS: (KpiTarget & { createdAt: string } & Record<string, unknown>)[] = [
-  { id: 'KPI-001', name: 'Win Rate', category: 'win_rate', targetValue: 70, actualValue: 65.5, unit: '%', period: '2026 Q2', status: 'at_risk', createdAt: '2026-01-15' },
-  { id: 'KPI-002', name: 'Total Revenue', category: 'revenue', targetValue: 500000000000, actualValue: 425000000000, unit: 'IDR', period: '2026 H1', status: 'on_track', createdAt: '2026-01-01' },
-  { id: 'KPI-003', name: 'Project Completion', category: 'project_count', targetValue: 48, actualValue: 36, unit: 'projects', period: '2026 Q2', status: 'behind', createdAt: '2026-01-15' },
-  { id: 'KPI-004', name: 'Average Margin', category: 'avg_margin', targetValue: 18, actualValue: 16.2, unit: '%', period: '2026 Q2', status: 'at_risk', createdAt: '2026-01-15' },
-  { id: 'KPI-005', name: 'SLA Compliance', category: 'sla_compliance', targetValue: 98, actualValue: 94.3, unit: '%', period: '2026 Q2', status: 'at_risk', createdAt: '2026-01-15' },
-  { id: 'KPI-006', name: 'Customer Satisfaction', category: 'customer_satisfaction', targetValue: 4.5, actualValue: 4.2, unit: '/5', period: '2026 H1', status: 'on_track', createdAt: '2026-01-01' },
-];
-
 const CATEGORY_ICONS: Record<string, string> = {
   win_rate: 'trending_up',
   revenue: 'payments',
@@ -67,8 +51,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   customer_satisfaction: 'star',
 };
 
-// EMPTY_FORM now built inside the component to get default period from store
-
 export default function KPITargetsPage() {
   const navigate = useNavigate();
   const { can } = usePermission();
@@ -76,7 +58,7 @@ export default function KPITargetsPage() {
   const periodOptions = useMemo(() => periods.map(p => ({ value: p.name, label: p.name })), [periods]);
   const defaultPeriod = periods.find(p => p.is_active)?.name || periods[0]?.name || '';
   const emptyForm: TargetForm = { name: '', category: 'win_rate', period: defaultPeriod, targetValue: '', unit: '%' };
-  const [targets, setTargets] = useState<(KpiTarget & { createdAt: string } & Record<string, unknown>)[]>(INITIAL_TARGETS);
+  const [targets, setTargets] = useState<(KpiTarget & { createdAt: string } & Record<string, unknown>)[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<TargetForm>(emptyForm);
   const [errors, setErrors] = useState<Partial<Record<keyof TargetForm, string>>>({});

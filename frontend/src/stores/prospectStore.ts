@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Prospect, TimelineEvent, DocGroup } from '@/types/domain';
-import { INITIAL_PROSPECTS } from '@/services/mock-data';
 import { prospectService } from '@/services/prospects';
 import { eventBus } from '@/services/eventBridge';
 
@@ -51,12 +50,39 @@ function normalizeProspects(prospects: Prospect[]): {
   return { entities, ids };
 }
 
-const { entities: INITIAL_ENTITIES, ids: INITIAL_IDS } = normalizeProspects(INITIAL_PROSPECTS);
+/** Map UI status values to Prisma enum member names */
+const STATUS_MAP: Record<string, string> = {
+  'Non Potensial': 'Non_Potensial',
+  'Potensial': 'Potensial',
+  'Waiting Supervisor': 'Waiting_Supervisor',
+  'Revision': 'Revision',
+  'Approved': 'Approved',
+};
+/** Reverse map Prisma enum → UI display value */
+const STATUS_MAP_REV: Record<string, string> = {
+  'Non_Potensial': 'Non Potensial',
+  'Potensial': 'Potensial',
+  'Waiting_Supervisor': 'Waiting Supervisor',
+  'Revision': 'Revision',
+  'Approved': 'Approved',
+};
 
 /** Map API prospect to UI Prospect shape (add author/date from relations) */
 function mapApiProspect(p: any): Prospect {
+  const answers: Record<string, string> = {};
+  if (Array.isArray(p.answers)) {
+    for (const a of p.answers) {
+      answers[a.questionId] = a.answerText || '';
+    }
+  } else if (p.answers && typeof p.answers === 'object') {
+    Object.assign(answers, p.answers);
+  }
   return {
     ...p,
+    projectId: p.convertedToProjectId || p.projectId,
+    estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : undefined,
+    answers: Object.keys(answers).length > 0 ? answers : undefined,
+    status: STATUS_MAP_REV[p.status] || p.status,
     author: p.author || p.ownerUser?.fullName || p.createdBy?.fullName || p.createdByUserId || '',
     date: p.date || p.createdAt || '',
   };
@@ -65,9 +91,9 @@ function mapApiProspect(p: any): Prospect {
 export const useProspectStore = create<ProspectState>()(
   persist(
     (set, get) => ({
-      entities: INITIAL_ENTITIES,
-      ids: INITIAL_IDS,
-      prospects: deriveProspects(INITIAL_ENTITIES, INITIAL_IDS),
+      entities: {},
+      ids: [],
+      prospects: [],
       loading: false,
 
       fetchProspects: async (params) => {
@@ -110,7 +136,25 @@ export const useProspectStore = create<ProspectState>()(
         }),
 
       createProspect: async (data) => {
-        const res = await prospectService.create(data);
+        const { author, date, customerData, timeline, ...clean } = data as any;
+        if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
+        if (timeline?.length) {
+          clean.timelineEvents = {
+            create: timeline.map((evt: any) => ({
+              ...evt,
+              time: evt.time ? new Date(evt.time).toISOString() : undefined,
+            })),
+          };
+        }
+        if (data.answers && Object.keys(data.answers).length > 0) {
+          clean.answers = {
+            create: Object.entries(data.answers).map(([questionId, answerText]) => ({
+              questionId,
+              answerText: String(answerText),
+            })),
+          };
+        }
+        const res = await prospectService.create(clean);
         const prospect = mapApiProspect(res.data.data || res.data);
         set((s) => {
           const entities = { ...s.entities, [prospect.id]: prospect };
@@ -121,7 +165,26 @@ export const useProspectStore = create<ProspectState>()(
       },
 
       updateProspect: async (id, data) => {
-        await prospectService.update(id, data);
+        const { author, date, customerData, timeline, ...clean } = data as any;
+        if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
+        if (timeline?.length) {
+          clean.timelineEvents = {
+            create: timeline.map((evt: any) => ({
+              ...evt,
+              time: evt.time ? new Date(evt.time).toISOString() : undefined,
+            })),
+          };
+        }
+        if (data.answers && Object.keys(data.answers).length > 0) {
+          clean.answers = {
+            deleteMany: {},
+            create: Object.entries(data.answers).map(([questionId, answerText]) => ({
+              questionId,
+              answerText: String(answerText),
+            })),
+          };
+        }
+        await prospectService.update(id, clean);
         set((s) => {
           const existing = s.entities[id];
           if (!existing) return s;
@@ -185,7 +248,7 @@ export const useProspectStore = create<ProspectState>()(
     }),
     {
       name: 'kinetic-prospects',
-      version: 8,
+      version: 9,
       merge: (persisted: unknown, current: ProspectState) => {
         if (!persisted || typeof persisted !== 'object') return current;
         const p = persisted as Partial<ProspectState>;
@@ -200,53 +263,7 @@ export const useProspectStore = create<ProspectState>()(
       },
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version < 2) {
-          const { entities, ids } = normalizeProspects(INITIAL_PROSPECTS);
-          return { entities, ids, prospects: deriveProspects(entities, ids) };
-        }
-        if (version < 3) {
-          const rawProspects = current.prospects || INITIAL_PROSPECTS;
-          const migrated = rawProspects.map((p: any) => ({
-            ...p,
-            currentStageId: p.currentStageId || 'stage-prospecting',
-            departmentId: p.departmentId || 'dept-marketing',
-            ownerUserId: p.ownerUserId || p.createdByUserId || '',
-          }));
-          const { entities, ids } = normalizeProspects(migrated);
-          return { entities, ids, prospects: deriveProspects(entities, ids) };
-        }
-        if (version < 4) {
-          const rawProspects = current.prospects || INITIAL_PROSPECTS;
-          const { entities, ids } = normalizeProspects(rawProspects);
-          return { entities, ids, prospects: deriveProspects(entities, ids) };
-        }
-        if (version < 5) {
-          const entities = current.entities || {};
-          const updatedEntities: Record<string, Prospect> = {};
-          for (const key of Object.keys(entities)) {
-            updatedEntities[key] = {
-              ...entities[key],
-              timeline: entities[key].timeline || [],
-              documents: entities[key].documents || [],
-            };
-          }
-          const ids = current.ids || Object.keys(updatedEntities);
-          return { entities: updatedEntities, ids, prospects: deriveProspects(updatedEntities, ids) };
-        }
-        if (version < 7) {
-          const entities = current.entities || {};
-          const updatedEntities: Record<string, Prospect> = {};
-          for (const key of Object.keys(entities)) {
-            const e = entities[key];
-            updatedEntities[key] = {
-              ...e,
-              status: e.status === 'Waiting PM' || e.status === 'Supervisor' ? 'Waiting Supervisor' : e.status,
-            };
-          }
-          const ids = current.ids || Object.keys(updatedEntities);
-          return { entities: updatedEntities, ids, prospects: deriveProspects(updatedEntities, ids) };
-        }
-        if (!current.prospects && current.entities && current.ids) {
+        if (current.entities && current.ids) {
           return {
             ...current,
             prospects: deriveProspects(current.entities, current.ids),

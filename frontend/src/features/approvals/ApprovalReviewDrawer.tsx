@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import type { ApprovalItem, TimelineEvent, SlaConfig } from '@/types/domain';
-import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 import { useSlaConfigs } from '@/hooks/useConfigData';
 import { formatRelativeTime } from '@/utils/formatters';
 import MentionTextarea from '@/components/shared/MentionTextarea';
@@ -46,7 +45,7 @@ const actionColor: Record<string, string> = {
 
 export default function ApprovalReviewDrawer({ item, onClose, onApprove, onReject }: ApprovalReviewDrawerProps) {
   const [comment, setComment] = useState('');
-  const [timelineEvents] = useState<TimelineEvent[]>(INITIAL_TIMELINE_EVENTS);
+  const [timelineEvents] = useState<TimelineEvent[]>([]);
   const slaConfigs = useSlaConfigs();
   const users = useUserStore((s) => s.users);
   const currentUser = useAuthStore((s) => s.user);

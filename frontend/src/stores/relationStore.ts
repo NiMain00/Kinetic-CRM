@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { masterDataService } from '@/services/master-data';
 
 interface RelationState {
   /** prospectId → projectId (1-to-1) */
@@ -18,6 +19,8 @@ interface RelationState {
   getProjectByProspect: (prospectId: string) => string | undefined;
   getProcurementsByProject: (projectId: string) => string[];
   getProspectByProject: (projectId: string) => string | undefined;
+
+  fetchLinks: () => Promise<void>;
 }
 
 export const useRelationStore = create<RelationState>()(
@@ -88,10 +91,23 @@ export const useRelationStore = create<RelationState>()(
         );
         return entry?.[0];
       },
+
+      fetchLinks: async () => {
+        // Relations are managed through prospect updates — no dedicated API
+        try {
+          await masterDataService.get('prospects', { perPage: 1 });
+        } catch {
+          // non-blocking
+        }
+      },
     }),
     {
       name: 'kinetic-relations',
       version: 1,
+      partialize: (state) => ({
+        prospectToProject: state.prospectToProject,
+        projectToProcurement: state.projectToProcurement,
+      }),
     },
   ),
 );

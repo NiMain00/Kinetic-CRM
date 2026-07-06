@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { ApprovalItem } from '@/types/domain';
-import { INITIAL_APPROVALS } from '@/services/mock-data';
+import { masterDataService } from '@/services/master-data';
 
 export interface ApprovalHistoryItem extends ApprovalItem {
   resolvedAt: string;
@@ -11,6 +11,8 @@ export interface ApprovalHistoryItem extends ApprovalItem {
 interface ApprovalState {
   approvals: ApprovalItem[];
   approvalHistory: ApprovalHistoryItem[];
+  loading: boolean;
+  fetchApprovals: () => Promise<void>;
   getPendingCount: () => number;
   getPendingCountByUser: (userId: string) => number;
   getPendingByType: (type: ApprovalItem['type']) => ApprovalItem[];
@@ -28,8 +30,17 @@ const removeById = (id: string) => (s: { approvals: ApprovalItem[] }) => ({
 export const useApprovalStore = create<ApprovalState>()(
   persist(
     (set, get) => ({
-      approvals: INITIAL_APPROVALS,
+      approvals: [],
       approvalHistory: [],
+      loading: false,
+      fetchApprovals: async () => {
+        set({ loading: true });
+        try {
+          const res = await masterDataService.get('approvals', { perPage: 100 });
+          const list = res.data?.data || res.data || [];
+          set({ approvals: Array.isArray(list) ? (list as any) : [], loading: false });
+        } catch { set({ loading: false }); }
+      },
 
       getPendingCount: () => get().approvals.length,
 
@@ -65,30 +76,27 @@ export const useApprovalStore = create<ApprovalState>()(
           };
         }),
 
-      addApproval: (item) =>
-        set((s) => {
-          const existing = s.approvals.find((a) => a.id === item.id || (a.entityId === item.entityId && a.entityType === item.entityType));
-          if (existing) {
-            return { approvals: s.approvals.map((a) => (a.id === existing.id ? item : a)) };
-          }
-          return { approvals: [...s.approvals, item] };
-        }),
+      addApproval: async (item) => {
+        try {
+          const { ref, name, branch, waitingSince, slaStatus, type, client, entityId, entityType, assigneeUserId, ...prismaFields } = item as any;
+          await masterDataService.create('approvals', {
+            ...prismaFields,
+            assignedToUserId: assigneeUserId,
+          });
+        } catch {}
+        set((s) => ({ approvals: [item, ...s.approvals] }));
+      },
 
       removeApproval: (id) => set(removeById(id)),
     }),
     {
       name: 'kinetic-approvals',
-      version: 3,
+      version: 4,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version < 2) {
-          return { ...current, approvals: INITIAL_APPROVALS, approvalHistory: [] } as ApprovalState;
-        }
-        if (version < 3) {
-          return { ...current, approvalHistory: [] } as ApprovalState;
-        }
-        return current as ApprovalState;
+        return { approvals: current.approvals || [], approvalHistory: current.approvalHistory || [] };
       },
+      partialize: (state) => ({ approvals: state.approvals, approvalHistory: state.approvalHistory }),
     },
   ),
 );

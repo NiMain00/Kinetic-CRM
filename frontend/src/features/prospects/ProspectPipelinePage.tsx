@@ -72,7 +72,7 @@ function ProspectCard({
       <div className="flex items-center justify-between pt-2 border-t border-border/40">
         <div className="flex items-center gap-1.5">
           <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">
-            {prospect.author.charAt(0)}
+            {(prospect.author || '?')[0]}
           </div>
           <span className="text-[10px] text-secondary truncate max-w-[80px]">{prospect.author}</span>
         </div>

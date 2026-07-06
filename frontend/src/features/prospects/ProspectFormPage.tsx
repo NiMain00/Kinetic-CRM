@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { prospectSchema } from '@/utils/validators';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -24,12 +24,11 @@ export default function ProspectFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- Stores ---
-  const { prospects, createProspect, updateProspect } = useProspectStore();
-  const { addCustomer } = useCustomerStore();
+  const { prospects, createProspect, updateProspect, fetchProspect } = useProspectStore();
+  const { createCustomer } = useCustomerStore();
   const authUser = useAuthStore((s) => s.user);
   const industries = useMasterDataStore((s) => s.industries);
   const competitors = useMasterDataStore((s) => s.competitors);
-  const addMasterData = useMasterDataStore((s) => s.addData);
   const addApproval = useApprovalStore((s) => s.addApproval);
   const questions = useMasterDataStore((s) => s.questions);
   const questionTypes = useMasterDataStore((s) => s.questionTypes);
@@ -43,6 +42,18 @@ export default function ProspectFormPage() {
   }, [questions]);
 
   const existingProspect = isEdit ? prospects.find((p) => p.id === id) : null;
+
+  // Fetch fresh data when editing (list endpoint doesn't include answers)
+  useEffect(() => {
+    if (isEdit && id) fetchProspect(id);
+  }, [id, isEdit, fetchProspect]);
+
+  // Sync form answers when existingProspect loads after fetch
+  useEffect(() => {
+    if (existingProspect?.answers) {
+      setAnswers(existingProspect.answers);
+    }
+  }, [existingProspect?.answers]);
 
   // --- Branch readonly dari user login ---
   const userBranch = authUser?.branchName || 'Jakarta Pusat';
@@ -85,7 +96,7 @@ export default function ProspectFormPage() {
   // Prospect fields
   const [formName, setFormName] = useState(existingProspect?.name || '');
   const [formValue, setFormValue] = useState<number | undefined>(existingProspect?.estimatedValue);
-  const [formDate, setFormDate] = useState(existingProspect?.date || '');
+  const [formDate, setFormDate] = useState(existingProspect?.date ? existingProspect.date.slice(0, 10) : '');
   const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
 
   // Tipe Proyek — dari input config
@@ -142,9 +153,11 @@ export default function ProspectFormPage() {
     setIsSubmitting(true);
     const clientName = getClientName();
 
+    const authorName = authUser?.name || authUser?.fullName || 'Unknown';
     const result = prospectSchema.safeParse({
       name: formName,
       client: clientName,
+      author: authorName,
       customerId: customerMode === 'existing' ? selectedCustomerId : undefined,
       customerType: customerMode,
       estimatedValue: formValue ?? undefined,
@@ -168,10 +181,10 @@ export default function ProspectFormPage() {
 
     // Build customerData untuk new customer
     let customerData: Customer | undefined;
+    let customerId: string | undefined;
     if (customerMode === 'new') {
-      // Saat edit, reuse ID yang sudah ada agar tidak duplikat
       const existingCustomerId = existingProspect?.customerData?.id;
-      customerData = {
+      const payload: Customer = {
         id: existingCustomerId || `new-${Date.now()}`,
         name: newCustName,
         code: newCustCode || newCustName.substring(0, 3).toUpperCase(),
@@ -188,28 +201,19 @@ export default function ProspectFormPage() {
       };
 
       if (isEdit && existingCustomerId) {
-        // Update existing customer di store, jangan duplikat
-        useCustomerStore.getState().updateCustomer(existingCustomerId, customerData);
+        await useCustomerStore.getState().updateCustomer(existingCustomerId, payload);
+        customerId = existingCustomerId;
       } else {
-        // Auto-save new customer ke customerStore (Fase 1 item 1.4)
-        addCustomer(customerData);
-        // Juga sinkronkan ke masterDataStore agar muncul di Master Data Customer
-        addMasterData('customers', {
-          id: customerData.id,
-          name: customerData.name,
-          code: customerData.code,
-          type: customerData.type,
-          pic_name: customerData.picName,
-          pic_email: '',
-          pic_phone: customerData.picPhone,
-          city: customerData.city,
-          is_active: true,
-        });
+        const created = await createCustomer(payload);
+        customerId = created.id;
+        customerData = created;
       }
+    } else {
+      customerId = selectedCustomerId;
+      customerData = undefined;
     }
 
     const prospectId = existingProspect?.id || String(Date.now());
-    const authorName = authUser?.name || authUser?.fullName || 'Unknown';
     const currentTime = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     const events: TimelineEvent[] = [];
@@ -240,9 +244,9 @@ export default function ProspectFormPage() {
       id: prospectId,
       name: formName,
       client: clientName,
-      customerId: customerMode === 'existing' ? selectedCustomerId : customerData?.id,
+      customerId,
       customerType: customerMode,
-      customerData: customerMode === 'new' ? customerData : undefined,
+      customerData,
       status: autoStatus,
       prospectType,
       potensiUnit: potensi,
@@ -259,32 +263,39 @@ export default function ProspectFormPage() {
       timeline: [...(existingProspect?.timeline || []), ...events],
     };
 
-    if (isEdit && existingProspect) {
-      await updateProspect(existingProspect.id, payload);
-    } else {
-      await createProspect(payload);
-    }
+    try {
+      if (isEdit && existingProspect) {
+        await updateProspect(existingProspect.id, payload);
+      } else {
+        await createProspect(payload);
+      }
 
-    // Auto-create approval item when submitting to PM
-    if (status === 'Waiting Supervisor') {
-      addApproval({
-        id: `app-prospect-${prospectId}`,
-        ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
-        name: formName,
-        branch: userBranch,
-        waitingSince: new Date().toISOString(),
-        slaStatus: 'Normal',
-        type: 'Prospek',
-        client: clientName,
-        entityId: prospectId,
-        entityType: 'prospect',
-        assigneeUserId: authUser?.id,
-      });
-    }
+      // Auto-create approval item when submitting to PM
+      if (status === 'Waiting Supervisor') {
+        addApproval({
+          id: `app-prospect-${prospectId}`,
+          ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
+          name: formName,
+          branch: userBranch,
+          waitingSince: new Date().toISOString(),
+          slaStatus: 'Normal',
+          type: 'Prospek',
+          resourceType: 'prospect',
+          resourceId: prospectId,
+          client: clientName,
+          entityId: prospectId,
+          entityType: 'prospect',
+          assigneeUserId: authUser?.id,
+        });
+      }
 
-    toast.success(status === 'Waiting Supervisor' ? 'Prospek berhasil diajukan ke Supervisor untuk review.' : 'Draf prospek berhasil disimpan.');
-    setIsSubmitting(false);
-    navigate('/prospects');
+      toast.success(status === 'Waiting Supervisor' ? 'Prospek berhasil diajukan ke Supervisor untuk review.' : 'Draf prospek berhasil disimpan.');
+      navigate('/prospects');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menyimpan prospek. Silakan coba lagi.');
+    } finally {
+      setIsSubmitting(false);
+    }
     return true;
   };
 
@@ -591,9 +602,6 @@ export default function ProspectFormPage() {
               ) : (
                 prospectQuestions.map((q) => {
                   const typeCode = resolveTypeCode(questionTypes, q.question_type_id);
-                  const isTextarea = typeCode === 'textarea';
-                  const isCheckbox = typeCode === 'checkbox';
-                  const isSelect = typeCode === 'select';
 
                   return (
                     <div key={q.id} className="p-4 bg-surface-container-low rounded-lg border border-outline-variant/30 space-y-3">
@@ -603,15 +611,33 @@ export default function ProspectFormPage() {
                       </p>
                       {q.help_text && <p className="text-[10px] text-secondary">{q.help_text}</p>}
 
-                      {isTextarea ? (
+                      {(typeCode === 'text' || typeCode === 'textarea') && (
                         <textarea
                           value={answers[q.id] || ''}
                           onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
                           placeholder={q.placeholder_text || 'Masukkan jawaban...'}
-                          rows={4}
+                          rows={typeCode === 'textarea' ? 4 : 2}
                           className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none resize-none"
                         />
-                      ) : isCheckbox ? (
+                      )}
+                      {typeCode === 'number' && (
+                        <input
+                          type="number"
+                          value={answers[q.id] || ''}
+                          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                          placeholder={q.placeholder_text || 'Masukkan angka...'}
+                          className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none"
+                        />
+                      )}
+                      {typeCode === 'date' && (
+                        <input
+                          type="date"
+                          value={answers[q.id] || ''}
+                          onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
+                          className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none"
+                        />
+                      )}
+                      {typeCode === 'checkbox' && (
                         <div className="flex gap-4 flex-wrap">
                           {q.options?.map((opt) => {
                             const selectedValues = answers[q.id] ? answers[q.id].split(', ') : [];
@@ -634,7 +660,8 @@ export default function ProspectFormPage() {
                             );
                           })}
                         </div>
-                      ) : isSelect ? (
+                      )}
+                      {typeCode === 'select' && (
                         <select
                           value={answers[q.id] || ''}
                           onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })}
@@ -645,10 +672,10 @@ export default function ProspectFormPage() {
                             <option key={opt} value={opt}>{opt}</option>
                           ))}
                         </select>
-                      ) : (
-                        /* Default: radio (pilihan tunggal) */
+                      )}
+                      {(typeCode === 'radio' || !['text', 'textarea', 'number', 'date', 'checkbox', 'select'].includes(typeCode)) && (
                         <div className="flex gap-4 flex-wrap">
-                          {q.options?.map((opt) => (
+                          {(q.options || ['Ya', 'Tidak']).map((opt) => (
                             <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm">
                               <input
                                 type="radio"

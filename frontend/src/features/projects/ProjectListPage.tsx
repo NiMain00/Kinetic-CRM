@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useProjectStore } from '@/stores/projectStore';
 import { useConfigStore } from '@/stores/configStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -37,6 +38,8 @@ export default function ProjectListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [drawerProject, setDrawerProject] = useState<typeof projects[number] | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<typeof projects[number] | null>(null);
+  const deleteProject = useProjectStore((s) => s.deleteProject);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     client: '',
     minValue: '',
@@ -216,7 +219,7 @@ export default function ProjectListPage() {
       key: 'actions',
       header: '',
       sortable: false,
-      className: 'w-[40px]',
+      className: 'w-[80px]',
       render: (p) => (
         <div className="flex items-center justify-end gap-1">
           {can('project:write') && (
@@ -226,6 +229,15 @@ export default function ProjectListPage() {
               title="Edit Proyek"
             >
               <span className="material-symbols-outlined text-[16px]">edit</span>
+            </button>
+          )}
+          {can('project:write') && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setDeleteTarget(p); }}
+              className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all"
+              title="Hapus Proyek"
+            >
+              <span className="material-symbols-outlined text-[16px]">delete</span>
             </button>
           )}
         </div>
@@ -408,7 +420,7 @@ export default function ProjectListPage() {
               <p className="text-[11px] text-outline uppercase tracking-wider font-semibold mb-1">PIC</p>
               <p className="text-sm font-medium text-on-surface flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
-                  {drawerProject.author.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  {(drawerProject.author || '').split(' ').map(w => w[0]).join('').slice(0, 2) || '?'}
                 </span>
                 {drawerProject.author}
               </p>
@@ -451,6 +463,29 @@ export default function ProjectListPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        title="Konfirmasi Hapus"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
+            <Button variant="danger" size="md" onClick={() => {
+              if (deleteTarget) {
+                deleteProject(deleteTarget.id);
+                toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
+                setDeleteTarget(null);
+              }
+            }}>Hapus</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-secondary">
+          Apakah Anda yakin ingin menghapus proyek <strong>{deleteTarget?.name}</strong>? Tindakan ini tidak dapat dibatalkan.
+        </p>
       </Modal>
     </PageContainer>
   );

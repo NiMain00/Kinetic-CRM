@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
 import type { StepperStep, Tab } from '@/components/ui';
 import StatusBadge from '@/components/shared/StatusBadge';
-import { INITIAL_TIMELINE_EVENTS } from '@/services/mock-data';
 import type { TimelineEvent } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
@@ -162,7 +161,7 @@ export default function ProspectDetailPage() {
   }, [prospect]);
 
   const events = useMemo(() => {
-    return (prospect?.timeline || INITIAL_TIMELINE_EVENTS).sort(
+    return (prospect?.timeline || []).sort(
       (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime(),
     );
   }, [prospect?.timeline]);
@@ -286,6 +285,8 @@ export default function ProspectDetailPage() {
       waitingSince: new Date().toISOString(),
       slaStatus: 'Normal',
       type: 'Prospek',
+      resourceType: 'prospect',
+      resourceId: prospect.id,
       client: prospect.client,
       entityId: prospect.id,
       entityType: 'prospect',

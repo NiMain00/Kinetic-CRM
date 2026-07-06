@@ -12,12 +12,14 @@ export default function ConfigQuestionTypesPage() {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formStatus, setFormStatus] = useState(true);
+  const [formHasOptions, setFormHasOptions] = useState(false);
 
   const handleOpenCreate = () => {
     setEditingType(null);
     setFormName('');
     setFormDescription('');
     setFormStatus(true);
+    setFormHasOptions(false);
     setModalOpen(true);
   };
 
@@ -26,6 +28,7 @@ export default function ConfigQuestionTypesPage() {
     setFormName(qt.name);
     setFormDescription(qt.description);
     setFormStatus(qt.is_active);
+    setFormHasOptions((qt as unknown as Record<string, unknown>)?.hasOptions as boolean ?? qt.has_options ?? false);
     setModalOpen(true);
   };
 
@@ -36,7 +39,7 @@ export default function ConfigQuestionTypesPage() {
       return;
     }
     if (editingType) {
-      updateData('questionTypes', editingType.id, { name: formName, description: formDescription, is_active: formStatus });
+      updateData('questionTypes', editingType.id, { name: formName, description: formDescription, is_active: formStatus, has_options: formHasOptions });
       toast.success(`Tipe pertanyaan ${formName} berhasil diperbarui.`);
     } else {
       const newType: MasterQuestionType = {
@@ -44,7 +47,7 @@ export default function ConfigQuestionTypesPage() {
         name: formName,
         code: formName.toLowerCase().replace(/\s+/g, '_'),
         description: formDescription,
-        has_options: false,
+        has_options: formHasOptions,
         validation_config: '{}',
         is_system: false,
         is_active: formStatus,
@@ -141,6 +144,19 @@ export default function ConfigQuestionTypesPage() {
           <div className="space-y-2">
             <label className="font-semibold text-on-surface block">Deskripsi</label>
             <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi tipe pertanyaan" />
+          </div>
+          <div className="space-y-2">
+            <label className="font-semibold text-on-surface block">Memiliki Pilihan Jawaban</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="qtHasOptions" checked={formHasOptions === true} onChange={() => setFormHasOptions(true)} className="text-primary" />
+                <span className="text-xs font-medium">Ya</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="qtHasOptions" checked={formHasOptions === false} onChange={() => setFormHasOptions(false)} className="text-primary" />
+                <span className="text-xs font-medium">Tidak</span>
+              </label>
+            </div>
           </div>
           <div className="space-y-2">
             <label className="font-semibold text-on-surface block">Status</label>

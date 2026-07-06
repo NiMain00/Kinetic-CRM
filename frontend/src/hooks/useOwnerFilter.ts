@@ -26,9 +26,11 @@ export function useOwnerFilter() {
       .filter((r) => userRoleIds.includes(r.id))
       .map((r) => r.name);
 
-    // Non-project roles only (exclude project_viewer/contributor/manager)
+    // Non-project roles only (exclude project roles)
+    const excludedRoleIds = ['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'];
+    const excludedNames = roles.filter((r) => excludedRoleIds.includes(r.id)).map((r) => r.name);
     const nonProjectRoles = roleNames.filter(
-      (r) => !['project_viewer', 'project_contributor', 'project_manager'].includes(r),
+      (r) => !excludedNames.includes(r),
     );
 
     // Staff-only if every non-project role is 'staff'

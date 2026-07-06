@@ -3,8 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
 import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
+import { useNotificationStore } from '@/stores/notificationStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useUserStore } from '@/stores/userStore';
+import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { authService } from '@/services/auth';
-
 const DEMO_ACCOUNTS = [
   { id: 'user-1', name: 'Super Administrator', username: 'superadmin', password: 'admin123', role: 'Super Admin' },
   { id: 'user-2', name: 'Bambang Permadi', username: 'bambang', password: 'admin123', role: 'PM' },
@@ -23,6 +27,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+
+  const selectAccount = (acct: { username: string; password: string }) => {
+    setUsername(acct.username);
+    setPassword(acct.password);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +58,27 @@ export default function LoginPage() {
         scopeType: user.userRoles?.[0]?.scopeType || 'global',
       });
 
+      // Fetch user roles dari API (tidak blocking)
+      useRbacStore.getState().fetchUserRoles(user.id);
+      useNotificationStore.getState().fetchNotifications();
+
+      // Fetch master data dari API
+      const masterStore = useMasterDataStore.getState();
+      masterStore.fetchEntity('industries');
+      masterStore.fetchEntity('categories');
+      masterStore.fetchEntity('competitors');
+      masterStore.fetchEntity('questionTypes');
+      masterStore.fetchQuestions();
+      masterStore.fetchEntity('projectStatuses');
+      masterStore.fetchEntity('departments');
+      masterStore.fetchEntity('users');
+      masterStore.fetchEntity('roles');
+      masterStore.fetchEntity('items');
+      useInputConfigStore.getState().fetchGroups();
+
+      // Fetch users untuk user management page
+      useUserStore.getState().fetchUsers();
+
       navigate('/dashboard');
       toast.success(`Selamat datang, ${user.fullName}!`);
     } catch {
@@ -56,11 +86,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const selectAccount = (acct: typeof DEMO_ACCOUNTS[0]) => {
-    setUsername(acct.username);
-    setPassword(acct.password);
   };
 
   return (

@@ -18,6 +18,11 @@ export class RbacService {
   }
 
   async assignRole(userId: string, roleId: string, scopeType: string, scopeId?: string) {
+    // Pastikan roleId valid
+    const role = await this.prisma.role.findUnique({ where: { id: roleId } });
+    if (!role) {
+      throw new NotFoundException(`Role ${roleId} not found`);
+    }
     return this.prisma.userRole.create({
       data: { userId, roleId, scopeType: scopeType as any, scopeId },
     });

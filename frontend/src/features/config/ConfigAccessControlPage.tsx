@@ -411,7 +411,7 @@ function UserAssignmentsTab() {
   const [selScopeType, setSelScopeType] = useState<RbacUserRole['scopeType']>('department');
   const [selScopeId, setSelScopeId] = useState('');
 
-  const nonProjectRoles = roles.filter(r => !['project_viewer', 'project_contributor', 'project_manager'].includes(r.name));
+  const nonProjectRoles = roles.filter(r => !['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id));
 
   const handleAssign = () => {
     if (!selUserId || !selRoleId) { toast.error('Pilih user dan role'); return; }
@@ -471,7 +471,7 @@ function UserAssignmentsTab() {
           <div key={user.id} className="bg-surface-container-lowest border border-border rounded-xl p-4 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                {user.name.charAt(0)}
+                {user.name?.charAt(0) || '?'}
               </div>
               <div>
                 <p className="text-sm font-semibold text-on-surface">{user.name}</p>
@@ -574,7 +574,7 @@ function RolePermissionsTab() {
   const removeRolePermission = useRbacStore((s) => s.removeRolePermission);
 
   // Only show non-project roles for this grid
-  const deptRoles = roles.filter(r => !['project_viewer', 'project_contributor', 'project_manager'].includes(r.name));
+  const deptRoles = roles.filter(r => !['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id));
 
   // Build a lookup: roleId → permissionId → RbacRolePermission
   const permMap = useMemo(() => {

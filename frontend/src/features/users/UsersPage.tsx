@@ -1,27 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { User, UserRole } from '../../types/domain/users';
 import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
+import { useUserStore } from '@/stores/userStore';
 
 interface UsersViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
   onNavigatePage: (page: string) => void;
 }
 
-const INITIAL_USERS: User[] = [
-  { id: 'USR-001', username: 'asulistyo', fullName: 'Ahmad Sulistyo', email: 'ahmad.s@kinetic.co.id', role: 'Branch Manager', branch: 'Jakarta Pusat', department: 'Operations', phone: '0812-3456-7890', status: 'active', lastLogin: '2026-06-22 08:30:00', createdAt: '2024-01-15' },
-  { id: 'USR-002', username: 'bambang.pm', fullName: 'Bambang Permadi', email: 'b.permadi@kinetic.co.id', role: 'PM', branch: 'Project Management', department: 'Project Management Office', phone: '0812-3456-7891', status: 'active', lastLogin: '2026-06-21 14:20:00', createdAt: '2024-02-10' },
-  { id: 'USR-003', username: 'rina.ops', fullName: 'Rina Marlina', email: 'rina.marlina@kinetic.co.id', role: 'Dept Head', branch: 'Surabaya', department: 'Operations', phone: '0812-3456-7892', status: 'inactive', lastLogin: '2026-05-30 09:15:00', createdAt: '2024-03-05' },
-  { id: 'USR-004', username: 'doni.admin', fullName: 'Doni Wahyudi', email: 'doni.w@kinetic.co.id', role: 'Admin', branch: 'Head Office', department: 'IT', phone: '0812-3456-7893', status: 'active', lastLogin: '2026-06-22 07:45:00', createdAt: '2024-01-20' },
-  { id: 'USR-005', username: 'siti.am', fullName: 'Siti Aminah', email: 'siti.aminah@kinetic.co.id', role: 'Reviewer', branch: 'Jakarta Selatan', department: 'Quality Assurance', phone: '0812-3456-7894', status: 'active', lastLogin: '2026-06-21 16:00:00', createdAt: '2024-04-12' },
-  { id: 'USR-006', username: 'andi.w', fullName: 'Andi Wijaya', email: 'andi.w@kinetic.co.id', role: 'Staff', branch: 'Bandung', department: 'Field Operations', phone: '0812-3456-7895', status: 'active', lastLogin: '2026-06-20 11:30:00', createdAt: '2024-05-01' },
-  { id: 'USR-007', username: 'dewi.s', fullName: 'Dewi Sartika', email: 'dewi.s@kinetic.co.id', role: 'Branch Manager', branch: 'Medan', department: 'Operations', phone: '0812-3456-7896', status: 'active', lastLogin: '2026-06-22 06:50:00', createdAt: '2024-01-25' },
-  { id: 'USR-008', username: 'eko.p', fullName: 'Eko Prasetyo', email: 'eko.p@kinetic.co.id', role: 'Super Admin', branch: 'Head Office', department: 'IT', phone: '0812-3456-7897', status: 'active', lastLogin: '2026-06-22 08:00:00', createdAt: '2023-11-01' },
-  { id: 'USR-009', username: 'ratna.mgmt', fullName: 'Ratna Dewi', email: 'ratna.dewi@kinetic.co.id', role: 'Management', branch: 'Head Office', department: 'Management', phone: '0812-3456-7898', status: 'active', lastLogin: '2026-06-22 09:00:00', createdAt: '2024-06-01' },
-];
-
 export default function UsersView({ onShowNotification, onNavigatePage }: UsersViewProps) {
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
+  const storeUsers = useUserStore((s) => s.users);
+  const fetchUsers = useUserStore((s) => s.fetchUsers);
+  const addUser = useUserStore((s) => s.addUser);
+  const updateUser = useUserStore((s) => s.updateUser);
+  const deleteUser = useUserStore((s) => s.deleteUser);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    setUsers(storeUsers);
+  }, [storeUsers]);
   const masterRoles = useMasterRoles();
   const branches = useOrgBranches();
   const departments = useOrgDepartments();
@@ -70,32 +72,33 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
     setDrawerOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formFullName || !formEmail || !formUsername) {
       onShowNotification('Nama, Email, dan Username wajib diisi.', 'error');
       return;
     }
     if (editingUser) {
-      setUsers(users.map(u => u.id === editingUser.id ? { ...u, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'] } : u));
+      await updateUser(editingUser.id, { fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'] });
       onShowNotification(`Pengguna ${formFullName} berhasil diperbarui.`, 'success');
     } else {
-      const newUser: User = { id: `USR-${String(users.length + 1).padStart(3, '0')}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'], createdAt: new Date().toISOString().split('T')[0] };
-      setUsers([newUser, ...users]);
+      const newUser: User = { id: `USR-${String(Date.now()).slice(-4)}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'], createdAt: new Date().toISOString().split('T')[0] };
+      await addUser(newUser);
       onShowNotification(`Pengguna ${formFullName} berhasil ditambahkan.`, 'success');
     }
     setDrawerOpen(false);
   };
 
-  const handleToggleStatus = (id: string) => {
-    setUsers(users.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u));
+  const handleToggleStatus = async (id: string) => {
     const target = users.find(u => u.id === id);
+    const newStatus = target?.status === 'active' ? 'inactive' : 'active';
+    await updateUser(id, { status: newStatus } as any);
     onShowNotification(`Status pengguna ${target?.fullName} diubah.`, 'success');
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const target = users.find(u => u.id === id);
-    setUsers(users.filter(u => u.id !== id));
+    await deleteUser(id);
     onShowNotification(`Pengguna ${target?.fullName} berhasil dihapus.`, 'warning');
   };
 
@@ -199,7 +202,6 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
             </div>
             <div className="p-4 bg-surface-container-low border-t border-border/60 flex justify-between items-center text-[10px] text-outline">
               <span>Showing {filteredUsers.length} of {users.length} users</span>
-              <span>Static sandbox environment</span>
             </div>
           </div>
         </div>

@@ -48,7 +48,7 @@ export default function UserFormPage() {
     if (isEdit && existing) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, role, ...rest } = data;
-      updateUser(existing.id, { ...rest, role: role as UserRole });
+      updateUser(existing.id, { ...rest, role: role as UserRole, status: rest.status as 'active' | 'inactive' });
       toast.success(`Pengguna ${data.fullName} berhasil diperbarui.`);
     } else {
       const newUser: User = {
@@ -60,7 +60,7 @@ export default function UserFormPage() {
         branch: data.branch,
         department: data.department,
         phone: data.phone,
-        status: data.status,
+        status: data.status as 'active' | 'inactive',
         createdAt: new Date().toISOString().split('T')[0],
       };
       addUser(newUser);

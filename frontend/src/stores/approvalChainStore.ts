@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { masterDataService } from '@/services/master-data';
 
 export interface ApprovalLevel {
   id: string;
@@ -45,6 +46,8 @@ export interface ApprovalRequest {
 interface ApprovalChainState {
   chains: ApprovalChain[];
   requests: ApprovalRequest[];
+  loading: boolean;
+  fetchChains: () => Promise<void>;
 
   addChain: (chain: ApprovalChain) => void;
   updateChain: (id: string, data: Partial<ApprovalChain>) => void;
@@ -58,46 +61,37 @@ interface ApprovalChainState {
   getPendingRequests: (role: string) => ApprovalRequest[];
 }
 
-const INITIAL_CHAINS: ApprovalChain[] = [
-  {
-    id: 'chain-pc-001',
-    name: 'Procurement Approval (Standard)',
-    module: 'procurement',
-    isActive: true,
-    levels: [
-      { id: 'lvl-pc-1', name: 'Manager Review', role: 'Manager', order: 1, maxAmount: 50000000 },
-      { id: 'lvl-pc-2', name: 'Finance Director', role: 'Finance Director', order: 2, minAmount: 50000001, maxAmount: 500000000 },
-      { id: 'lvl-pc-3', name: 'Director', role: 'Director', order: 3, minAmount: 500000001 },
-    ],
-  },
-  {
-    id: 'chain-pr-001',
-    name: 'Project Approval (Standard)',
-    module: 'project',
-    isActive: true,
-    levels: [
-      { id: 'lvl-pr-1', name: 'Project Manager', role: 'Manager', order: 1 },
-      { id: 'lvl-pr-2', name: 'Operations Director', role: 'Director', order: 2 },
-    ],
-  },
-];
-
 export const useApprovalChainStore = create<ApprovalChainState>()(
   persist(
     (set, get) => ({
-      chains: INITIAL_CHAINS,
+      chains: [],
       requests: [],
+      loading: false,
+      fetchChains: async () => {
+        set({ loading: true });
+        try {
+          const res = await masterDataService.get('approvalChains', { perPage: 100 });
+          const list = res.data?.data || res.data || [];
+          set({ chains: Array.isArray(list) ? (list as any) : [], loading: false });
+        } catch { set({ loading: false }); }
+      },
 
-      addChain: (chain) =>
-        set((s) => ({ chains: [...s.chains, chain] })),
+      addChain: async (chain) => {
+        try { await masterDataService.create('approvalChains', chain as any); } catch {}
+        set((s) => ({ chains: [...s.chains, chain] }));
+      },
 
-      updateChain: (id, data) =>
+      updateChain: async (id, data) => {
+        try { await masterDataService.update('approvalChains', id, data as any); } catch {}
         set((s) => ({
           chains: s.chains.map((c) => (c.id === id ? { ...c, ...data } : c)),
-        })),
+        }));
+      },
 
-      deleteChain: (id) =>
-        set((s) => ({ chains: s.chains.filter((c) => c.id !== id) })),
+      deleteChain: async (id) => {
+        try { await masterDataService.delete('approvalChains', id); } catch {}
+        set((s) => ({ chains: s.chains.filter((c) => c.id !== id) }));
+      },
 
       getActiveChain: (module, amount) => {
         return get().chains.find(
@@ -171,11 +165,15 @@ export const useApprovalChainStore = create<ApprovalChainState>()(
     }),
     {
       name: 'kinetic-approval-chains',
-      version: 1,
+      version: 2,
       partialize: (state) => ({
         chains: state.chains,
         requests: state.requests,
       }),
+      migrate: (persisted: unknown, version: number) => {
+        const current = (persisted || {}) as any;
+        return { chains: current.chains || [], requests: current.requests || [] };
+      },
     },
   ),
 );

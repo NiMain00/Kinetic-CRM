@@ -6,32 +6,6 @@ import EmptyState from '@/components/shared/EmptyState';
 import type { KpiTarget } from '@/types/domain/users';
 import { useMasterPeriods } from '@/hooks/useConfigData';
 
-const INITIAL_KPIS: KpiTarget[] = [
-  { id: 'KPI-001', name: 'Win Rate', category: 'win_rate', targetValue: 70, actualValue: 65.5, unit: '%', period: '2026 Q2', status: 'at_risk' },
-  { id: 'KPI-002', name: 'Total Revenue', category: 'revenue', targetValue: 500000000000, actualValue: 425000000000, unit: 'IDR', period: '2026 H1', status: 'on_track' },
-  { id: 'KPI-003', name: 'Project Completion', category: 'project_count', targetValue: 48, actualValue: 36, unit: 'projects', period: '2026 Q2', status: 'behind' },
-  { id: 'KPI-004', name: 'Average Margin', category: 'avg_margin', targetValue: 18, actualValue: 16.2, unit: '%', period: '2026 Q2', status: 'at_risk' },
-  { id: 'KPI-005', name: 'SLA Compliance', category: 'sla_compliance', targetValue: 98, actualValue: 94.3, unit: '%', period: '2026 Q2', status: 'at_risk' },
-  { id: 'KPI-006', name: 'Customer Satisfaction', category: 'customer_satisfaction', targetValue: 4.5, actualValue: 4.2, unit: '/5', period: '2026 H1', status: 'on_track' },
-];
-
-const MONTHLY_DATA = [
-  { month: 'Jan', target: 65, actual: 58 },
-  { month: 'Feb', target: 66, actual: 62 },
-  { month: 'Mar', target: 67, actual: 71 },
-  { month: 'Apr', target: 68, actual: 64 },
-  { month: 'May', target: 69, actual: 73 },
-  { month: 'Jun', target: 70, actual: 65 },
-];
-
-const DEPARTMENT_SCORES = [
-  { dept: 'Operations', score: 82, projects: 24 },
-  { dept: 'Engineering', score: 78, projects: 18 },
-  { dept: 'Finance', score: 91, projects: 12 },
-  { dept: 'Legal', score: 95, projects: 8 },
-  { dept: 'Marketing', score: 74, projects: 6 },
-];
-
 const KPI_ICONS: Record<string, string> = {
   win_rate: 'trending_up',
   revenue: 'payments',
@@ -50,7 +24,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: 'success' | 'warni
 
 export default function KPIDashboardPage() {
   const navigate = useNavigate();
-  const [kpis] = useState<KpiTarget[]>(INITIAL_KPIS);
+  const [kpis] = useState<KpiTarget[]>([]);
   const periods = useMasterPeriods();
   const periodOptions = useMemo(() => periods.map(p => ({ value: p.name, label: p.name })), [periods]);
   const defaultPeriod = periods.find(p => p.is_active)?.name || periods[0]?.name || '';
@@ -139,7 +113,7 @@ export default function KPIDashboardPage() {
             <div className="lg:col-span-7 bg-surface border border-border/60 rounded-2xl p-6 shadow-xs">
               <h4 className="font-bold text-on-surface text-xs mb-6">Win Rate Trend (YTD)</h4>
               <div className="h-56 flex items-end justify-between gap-3 px-2 border-b border-border" aria-label="Grafik tren win rate">
-                {MONTHLY_DATA.map((d, i) => (
+                {[].map((d: { month: string; target: number; actual: number }, i: number) => (
                   <div key={i} className="flex-1 flex flex-col items-center h-full justify-end group">
                     <div className="w-full flex items-end justify-center gap-1 h-[85%]">
                       <div className="w-1/3 bg-surface-container-highest rounded-t-xs transition-all group-hover:bg-primary-light" style={{ height: `${d.target}%` }} title={`Target: ${d.target}%`} role="img" aria-label={`Bulan ${d.month} target ${d.target}%`}></div>
@@ -158,7 +132,7 @@ export default function KPIDashboardPage() {
             <div className="lg:col-span-5 bg-surface border border-border/60 rounded-2xl p-6 shadow-xs">
               <h4 className="font-bold text-on-surface text-xs mb-4">Department Performance Scores</h4>
               <div className="space-y-4" role="list" aria-label="Skor performa departemen">
-                {DEPARTMENT_SCORES.map(d => (
+                {[].map((d: { dept: string; score: number; projects: number }) => (
                   <div key={d.dept} className="space-y-1" role="listitem">
                     <div className="flex justify-between text-[11px]">
                       <span className="font-semibold text-on-surface">{d.dept}</span>

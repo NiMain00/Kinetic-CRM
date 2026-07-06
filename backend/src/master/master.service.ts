@@ -1,0 +1,101 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+const ENTITY_MAP: Record<string, string> = {
+  industries: 'industry',
+  categories: 'projectCategory',
+  competitors: 'competitor',
+  questionTypes: 'questionType',
+  questions: 'question',
+  projectStatuses: 'projectStatusDefinition',
+  periods: 'period',
+  holidays: 'holiday',
+  lossReasons: 'lossReason',
+  documentTypes: 'documentType',
+  departments: 'orgUnit',
+  users: 'user',
+  roles: 'role',
+  items: 'masterItem',
+  auditLogs: 'auditLog',
+  approvalLevels: 'approvalChainLevel',
+  notifTemplates: 'notificationTemplate',
+  approvals: 'approval',
+  approvalChains: 'approvalChain',
+  chatMessages: 'chatMessage',
+  dealLineItems: 'dealLineItem',
+  procurements: 'procurement',
+  procurementItems: 'procurementItem',
+  projectRequirements: 'projectRequirementItem',
+  suppliers: 'supplier',
+  rfqs: 'rfq',
+  tasks: 'task',
+  inputConfigGroups: 'inputConfigGroup',
+};
+
+@Injectable()
+export class MasterService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private getModel(entity: string) {
+    const modelName = ENTITY_MAP[entity];
+    if (!modelName) throw new NotFoundException(`Unknown entity: ${entity}`);
+    return (this.prisma as any)[modelName];
+  }
+
+  private getInclude(entity: string) {
+    if (entity === 'inputConfigGroups') return { options: { orderBy: { sortOrder: 'asc' as const } } };
+    if (entity === 'questions') return { questionOptions: { orderBy: { sortOrder: 'asc' as const } } };
+    return undefined;
+  }
+
+  async list(entity: string, params?: any) {
+    const model = this.getModel(entity);
+    const where: any = {};
+    if (params?.search) {
+      where.OR = [
+        { name: { contains: params.search } },
+        { code: { contains: params.search } },
+      ];
+    }
+    if (params?.is_active !== undefined) {
+      where.isActive = params.is_active === 'true' || params.is_active === true;
+    }
+    const page = Number(params?.page) || 1;
+    const perPage = Number(params?.perPage) || 100;
+    const [data, total] = await Promise.all([
+      model.findMany({
+        where,
+        skip: (page - 1) * perPage,
+        take: perPage,
+        orderBy: { createdAt: 'desc' },
+        include: this.getInclude(entity),
+      }),
+      model.count({ where }),
+    ]);
+    return { data, total, page, perPage };
+  }
+
+  async get(entity: string, id: string) {
+    const model = this.getModel(entity);
+    const record = await model.findUnique({ where: { id }, include: this.getInclude(entity) });
+    if (!record) throw new NotFoundException(`${entity} not found`);
+    return record;
+  }
+
+  async create(entity: string, data: any) {
+    const model = this.getModel(entity);
+    return model.create({ data });
+  }
+
+  async update(entity: string, id: string, data: any) {
+    const model = this.getModel(entity);
+    await this.get(entity, id);
+    return model.update({ where: { id }, data });
+  }
+
+  async delete(entity: string, id: string) {
+    const model = this.getModel(entity);
+    await this.get(entity, id);
+    return model.update({ where: { id }, data: { deletedAt: new Date() } });
+  }
+}

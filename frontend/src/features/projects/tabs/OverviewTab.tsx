@@ -53,7 +53,7 @@ export default function OverviewTab({ project }: TabProps) {
               <p className="text-secondary text-xs uppercase tracking-wider">PIC</p>
               <p className="font-semibold text-on-surface flex items-center gap-2 mt-1">
                 <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center">
-                  {project?.author?.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                  {(project?.author || '').split(' ').map(w => w[0]).join('').slice(0, 2) || '?'}
                 </span>
                 {project?.author}
               </p>

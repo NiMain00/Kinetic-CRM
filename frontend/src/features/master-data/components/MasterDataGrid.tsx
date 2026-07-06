@@ -113,7 +113,7 @@ export default function MasterDataGrid({ entries, getCount, getActiveCount, onCa
       )}
 
       {masterDataCategories.map((cat) => {
-        const catEntries = cat.entries.filter((e) => !e.isFrequent);
+        const catEntries = cat.entries.filter((e) => !e.isFrequent || getCount(e) === 0);
         if (catEntries.length === 0) return null;
         return (
           <SectionGroup

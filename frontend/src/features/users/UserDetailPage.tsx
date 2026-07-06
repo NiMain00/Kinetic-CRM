@@ -1,16 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useUserStore } from '@/stores/userStore';
-import type { AuditLogEntry } from '@/types/domain/users';
-
-const INITIAL_AUDIT_LOG: AuditLogEntry[] = [
-  { id: 'aud-1', timestamp: '2026-06-22 08:30:00', actor: 'System', actorInitials: 'SY', action: 'LOGIN', entityType: 'User', entityId: 'USR-001', entityName: 'Ahmad Sulistyo', summary: 'User login berhasil', impact: 'Low' },
-  { id: 'aud-2', timestamp: '2026-06-21 14:20:00', actor: 'System', actorInitials: 'SY', action: 'UPDATE', entityType: 'Prospek', entityId: 'PR-001', entityName: 'Modernization of Data Center', summary: 'Mengupdate status prospek menjadi Approved', impact: 'Medium' },
-  { id: 'aud-3', timestamp: '2026-06-20 11:30:00', actor: 'System', actorInitials: 'SY', action: 'CREATE', entityType: 'Prospek', entityId: 'PR-002', entityName: 'Supply of Industrial Cables', summary: 'Membuat prospek baru', impact: 'Medium' },
-  { id: 'aud-4', timestamp: '2026-06-19 09:15:00', actor: 'System', actorInitials: 'SY', action: 'APPROVE', entityType: 'Approval', entityId: 'AP-001', entityName: 'RKS Document Approval', summary: 'Menyetujui dokumen RKS', impact: 'High' },
-  { id: 'aud-5', timestamp: '2026-06-18 16:00:00', actor: 'System', actorInitials: 'SY', action: 'UPLOAD', entityType: 'Document', entityId: 'DOC-001', entityName: 'LPH Technical Draft', summary: 'Mengunggah dokumen teknis', impact: 'Low' },
-];
 
 const actionBadge: Record<string, string> = {
   CREATE: 'bg-success/10 text-success',
@@ -29,7 +20,7 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const getUserById = useUserStore((s) => s.getUserById);
   const user = getUserById(id || '');
-  const [auditLogs] = useState(INITIAL_AUDIT_LOG);
+  const auditLogs: any[] = [];
 
   if (!user) {
     return (

@@ -5,7 +5,7 @@ import { useRbacStore } from '@/stores/rbacStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { Modal, Button } from '@/components/ui';
 import { authz } from '@/services/authz';
-import type { ProjectMemberRecord } from '@/stores/rbacStore';
+import type { ProjectMemberRecord, RbacRole, RbacDepartment } from '@/stores/rbacStore';
 
 interface ScopeTimTabProps {
   project?: Project;
@@ -17,7 +17,7 @@ export default function ScopeTimTab({ project }: ScopeTimTabProps) {
   const user = useAuthStore((s) => s.user);
   const userId = user?.id;
 
-  const departments = useRbacStore((s) => s.departments);
+  const departments = useMasterDataStore((s) => s.departments as unknown as RbacDepartment[]);
   const projectDepartments = useRbacStore((s) => s.projectDepartments);
   const projectMembers = useRbacStore((s) => s.projectMembers);
   const addProjectDept = useRbacStore((s) => s.addProjectDepartment);
@@ -25,7 +25,7 @@ export default function ScopeTimTab({ project }: ScopeTimTabProps) {
   const addProjMember = useRbacStore((s) => s.addProjectMember);
   const removeProjMember = useRbacStore((s) => s.removeProjectMember);
 
-  const roles = useRbacStore((s) => s.roles);
+  const roles = useMasterDataStore((s) => s.roles as unknown as RbacRole[]);
   const masterUsers = useMasterDataStore((s) => s.users);
 
   const [showAddDeptModal, setShowAddDeptModal] = useState(false);
@@ -307,7 +307,7 @@ function AddMemberForm({
 }) {
   const addProjMember = useRbacStore((s) => s.addProjectMember);
   const masterUsers = useMasterDataStore((s) => s.users);
-  const roles = useRbacStore((s) => s.roles);
+  const roles = useMasterDataStore((s) => s.roles as unknown as RbacRole[]);
   const projectMembers = useRbacStore((s) => s.projectMembers);
 
   // Filter users in this department (based on userRoles)
@@ -324,7 +324,7 @@ function AddMemberForm({
   );
 
   const projectRoles = roles.filter((r) =>
-    ['project_viewer', 'project_contributor', 'project_manager'].includes(r.name),
+    ['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id),
   );
 
   const [selectedUser, setSelectedUser] = useState('');

@@ -44,7 +44,13 @@ export class ProspectsService {
 
   async update(id: string, data: any) {
     await this.get(id);
-    return this.prisma.prospect.update({ where: { id }, data });
+    // Map projectId (frontend) ke convertedToProjectId (Prisma model)
+    const mapped = { ...data };
+    if (mapped.projectId !== undefined) {
+      mapped.convertedToProjectId = mapped.projectId;
+      delete mapped.projectId;
+    }
+    return this.prisma.prospect.update({ where: { id }, data: mapped });
   }
 
   async delete(id: string) {

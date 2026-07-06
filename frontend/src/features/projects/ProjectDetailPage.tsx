@@ -121,7 +121,7 @@ export default function ProjectDetailView({
       { label: 'Dokumen', path: 'dokumen' },
       { label: 'Diskusi', path: 'diskusi' },
     ];
-    if (project.type === 'Tender') {
+    if (project.type === 'tender') {
       items.splice(3, 0, { label: 'Review RKS', path: 'review-rks' });
     } else {
       items.splice(3, 1);
@@ -134,7 +134,7 @@ export default function ProjectDetailView({
 
   // Tab restriction rules
 
-  const phaseLabel = STATUS_STEP_MAP[project.status] || 'RKS';
+  const phaseLabel = STATUS_STEP_MAP[project.status] || project.status || 'RKS';
   const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
   const isTerminal = project.status === 'Selesai' || project.status === 'Kalah';
   const accessibleUpToIndex = isTerminal ? tabs.length - 1 : (currentStepIndex >= 0 ? currentStepIndex : 0);
@@ -150,7 +150,7 @@ export default function ProjectDetailView({
 
     // Harga, Kompetitor, Pemenang: terkunci sampai project mencapai atau melewati fase LPHS/SIOS
     if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
-      if (project.type === 'Prospecting') return false;
+      if (project.type === 'prospecting') return false;
       const status = project.status;
       const isBeforeLphs = status === 'RKS' || status === 'Review RKS' || status === 'Draft' || status === 'Revision';
       return isBeforeLphs;
@@ -304,7 +304,7 @@ export default function ProjectDetailView({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            {canWriteProject && (
+            {can('project:write') && (
             <button
               onClick={handleDeleteProject}
               className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all flex items-center gap-1.5"
@@ -313,7 +313,7 @@ export default function ProjectDetailView({
               Hapus
             </button>
             )}
-            {canWriteProject && (
+            {can('project:write') && (
             <button
               onClick={handleRevision}
               className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all"
@@ -343,7 +343,7 @@ export default function ProjectDetailView({
       ) : (
         <div className="flex-1 overflow-y-auto">
           {/* Dynamic Stepper */}
-          {isOverview && !(project.type === 'Prospecting' && isFromNonPotensial) && (
+          {isOverview && !(project.type === 'prospecting' && isFromNonPotensial) && (
             <PhaseStepper
               steps={tabs}
               currentStepIndex={currentStepIndex}

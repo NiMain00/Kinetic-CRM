@@ -192,6 +192,8 @@ export interface ApprovalItem {
   waitingSince: string;
   slaStatus: 'Overdue' | 'Near Deadline' | 'Normal';
   type: 'Prospek' | 'RKS' | 'LPHS';
+  resourceType: 'prospect' | 'rks' | 'lphs_sios';
+  resourceId: string;
   client?: string;
   entityId?: string;
   entityType?: 'prospect' | 'project';

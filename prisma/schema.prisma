@@ -793,7 +793,7 @@ model Prospect {
   createdBy         User?           @relation("CreatedProspects", fields: [createdByUserId], references: [id])
   ownerUser         User?           @relation("OwnedProspects", fields: [ownerUserId], references: [id])
   project           Project?        @relation("ProspectToProject", fields: [convertedToProjectId], references: [id])
-  sourceProject     Project?        @relation("ProjectToProspect")
+  sourceProjects    Project[]       @relation("ProjectToProspect")
 
   answers            ProspectAnswer[]
   reviewQuestions    ProspectReviewQuestion[]
@@ -896,7 +896,7 @@ model Project {
   progress         Int      @default(0)
   estimatedValue   Decimal?   @map("estimated_value") @db.Decimal(18, 2)
   deadlineTender   DateTime? @map("deadline_tender") @db.Date
-  sourceProspectId String?  @unique @map("source_prospect_id")
+  sourceProspectId String?  @map("source_prospect_id")
   customerId      String?  @map("customer_id")
   providerExisting String?  @map("provider_existing") @db.VarChar(255)
   branch           String?  @db.VarChar(100)

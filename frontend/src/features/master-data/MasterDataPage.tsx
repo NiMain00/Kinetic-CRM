@@ -137,7 +137,7 @@ export default function MasterDataView(_props: MasterDataViewProps) {
       <MasterDataGrid
         entries={filteredConfig}
         getCount={getCount}
-        getActiveCount={(e) => getActiveCount(store, e)}
+        getActiveCount={(e) => getActiveCount(store, e) ?? 0}
         onCardClick={handleCardClick}
         onResetSearch={handleResetSearch}
         searchQuery={searchQuery}

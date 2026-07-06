@@ -3,6 +3,44 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
 import { useMasterDataStore, type MasterQuestion } from '@/stores/masterDataStore';
+import { masterDataService } from '@/services/master-data';
+
+// API field mapping
+function toApiQuestion(form: Partial<MasterQuestion>) {
+  const data: Record<string, unknown> = {
+    questionText: form.question_text,
+    questionTypeId: form.question_type_id,
+    context: form.context,
+    category: form.category,
+    isRequired: form.is_required,
+    sortOrder: form.sort_order,
+    placeholderText: form.placeholder_text || '',
+    helpText: form.help_text || '',
+    isActive: form.is_active ?? true,
+  };
+  if (form.options && form.options.length > 0) {
+    data.questionOptions = {
+      create: form.options.map((opt, i) => ({ optionLabel: opt, sortOrder: i })),
+    };
+  }
+  return data;
+}
+
+function fromApiQuestion(apiData: Record<string, unknown>): MasterQuestion {
+  return {
+    id: apiData.id as string,
+    question_text: (apiData.questionText as string) || '',
+    question_type_id: (apiData.questionTypeId as string) || '',
+    context: (apiData.context || 'prospect') as MasterQuestion['context'],
+    category: (apiData.category as string) || '',
+    is_required: Boolean(apiData.isRequired),
+    sort_order: Number(apiData.sortOrder) || 0,
+    placeholder_text: (apiData.placeholderText as string) || '',
+    help_text: (apiData.helpText as string) || '',
+    is_active: apiData.isActive !== false,
+    options: ((apiData.questionOptions as Array<{ optionLabel: string }>) || []).map(o => o.optionLabel),
+  };
+}
 
 const QUESTION_CATEGORIES = ['Data Pribadi', 'Lokasi', 'Verifikasi Fisik', 'Keuangan', 'Legalitas', 'Teknis', 'Jadwal', 'Dokumen', 'Lainnya'];
 const QUESTION_CONTEXTS = [
@@ -104,32 +142,47 @@ export default function MasterQuestionPage() {
     setDrawerOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.question_text) { toast.error('Teks pertanyaan wajib diisi'); return; }
-    if (editing) {
-      updateData<MasterQuestion>('questions', editing.id, form);
-      toast.success('Pertanyaan berhasil diperbarui');
-    } else {
-      const id = `Q-${String(questions.length + 1).padStart(3, '0')}`;
-      addData<MasterQuestion>('questions', { ...form, id } as MasterQuestion);
-      toast.success('Pertanyaan berhasil ditambahkan');
+    try {
+      if (editing) {
+        await masterDataService.update('questions', editing.id, toApiQuestion(form));
+        updateData<MasterQuestion>('questions', editing.id, form);
+        toast.success('Pertanyaan berhasil diperbarui');
+      } else {
+        const res = await masterDataService.create('questions', toApiQuestion(form));
+        const created = res.data?.data || res.data;
+        addData<MasterQuestion>('questions', created?.id ? fromApiQuestion(created) : { ...form, id: `Q-${String(questions.length + 1).padStart(3, '0')}` } as MasterQuestion);
+        toast.success('Pertanyaan berhasil ditambahkan');
+      }
+      setDrawerOpen(false);
+    } catch {
+      toast.error('Gagal menyimpan pertanyaan');
     }
-    setDrawerOpen(false);
   };
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string) => {
     const current = questions.find(q => q.id === id);
-    if (current) {
+    if (!current) return;
+    try {
+      await masterDataService.update('questions', id, { isActive: !current.is_active });
       updateData<MasterQuestion>('questions', id, { is_active: !current.is_active });
       toast.success('Status pertanyaan diubah');
+    } catch {
+      toast.error('Gagal mengubah status');
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const target = questions.find(q => q.id === id);
-    deleteData('questions', id);
-    toast.success(`Pertanyaan ${target?.question_text} dihapus`);
+    try {
+      await masterDataService.delete('questions', id);
+      deleteData('questions', id);
+      toast.success(`Pertanyaan ${target?.question_text} dihapus`);
+    } catch {
+      toast.error('Gagal menghapus pertanyaan');
+    }
   };
 
   const typeBadge = (typeId: string) => {
@@ -263,9 +316,9 @@ export default function MasterQuestionPage() {
 
               {(() => {
                 const selectedType = questionTypes.find(t => t.id === form.question_type_id);
-                const shouldShowOptions = Boolean(selectedType?.has_options);
-
-                return shouldShowOptions ? (
+                const qt = selectedType as Record<string, unknown> | undefined;
+                const show = qt?.hasOptions ?? qt?.has_options ?? false;
+                return show ? (
                   <OptionsInput
                     options={form.options || []}
                     onChange={(options) => setForm({ ...form, options })}

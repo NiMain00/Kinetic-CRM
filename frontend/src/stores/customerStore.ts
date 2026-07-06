@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Customer } from '@/types/domain';
-import { INITIAL_CUSTOMERS } from '@/services/mock-data';
 import { masterDataService } from '@/services/master-data';
 
 interface CustomerState {
@@ -19,7 +18,7 @@ interface CustomerState {
 export const useCustomerStore = create<CustomerState>()(
   persist(
     (set, get) => ({
-      customers: INITIAL_CUSTOMERS,
+      customers: [],
       loading: false,
 
       fetchCustomers: async (params) => {
@@ -69,12 +68,9 @@ export const useCustomerStore = create<CustomerState>()(
       version: 2,
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version < 2) {
-          return { customers: current.customers || [], loading: false };
-        }
-        return current;
+        return { customers: current.customers || [], loading: false };
       },
-      partialize: (state) => ({ customers: state.customers }),
+      partialize: (state) => ({ customers: state.customers, loading: false }),
     },
   ),
 );

@@ -9,7 +9,6 @@ import type {
   DocGroup,
   TimelineEvent,
 } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
 import { projectService } from '@/services/projects';
 import { useApprovalStore } from './approvalStore';
 import { useNotificationStore } from './notificationStore';
@@ -80,11 +79,10 @@ function updateEntity(
   return { entities: next, projects: deriveProjects(next, ids) };
 }
 
-const { entities: INITIAL_ENTITIES, ids: INITIAL_IDS } = normalizeProjects(INITIAL_PROJECTS);
-
 function mapApiProject(p: any): Project {
   return {
     ...p,
+    estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : 0,
     author: p.author || p.ownerUser?.fullName || p.createdBy?.fullName || p.createdByUserId || '',
     date: p.date || p.createdAt || '',
   };
@@ -93,9 +91,9 @@ function mapApiProject(p: any): Project {
 export const useProjectStore = create<ProjectState>()(
   persist(
     (set, get) => ({
-      entities: INITIAL_ENTITIES,
-      ids: INITIAL_IDS,
-      projects: deriveProjects(INITIAL_ENTITIES, INITIAL_IDS),
+      entities: {},
+      ids: [],
+      projects: [],
       loading: false,
 
       fetchProjects: async (params) => {
@@ -125,6 +123,13 @@ export const useProjectStore = create<ProjectState>()(
           }
           return project;
         } catch {
+          set((s) => {
+            if (!s.entities[id]) return s;
+            const entities = { ...s.entities };
+            delete entities[id];
+            const ids = s.ids.filter((i) => i !== id);
+            return { entities, ids, projects: deriveProjects(entities, ids) };
+          });
           return undefined;
         }
       },
@@ -137,7 +142,19 @@ export const useProjectStore = create<ProjectState>()(
         }),
 
       createProject: async (data) => {
-        const res = await projectService.create(data);
+        const { pricing, competitors, winnerDetails, delivery, rks, lphs, timeline, ...clean } = data as any;
+        if (clean.scopeDepartments && Array.isArray(clean.scopeDepartments)) {
+          clean.scopeDepartments = JSON.stringify(clean.scopeDepartments);
+        }
+        if (clean.deadlineTender === undefined || clean.deadlineTender === '') {
+          delete clean.deadlineTender;
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(clean.deadlineTender)) {
+          clean.deadlineTender = clean.deadlineTender + 'T00:00:00.000Z';
+        }
+        if (clean.estimatedValue !== undefined) {
+          clean.estimatedValue = Number(clean.estimatedValue);
+        }
+        const res = await projectService.create(clean);
         const project = mapApiProject(res.data.data || res.data);
         set((s) => {
           const entities = { ...s.entities, [project.id]: project };
@@ -148,7 +165,16 @@ export const useProjectStore = create<ProjectState>()(
       },
 
       updateProject: async (id, data) => {
-        await projectService.update(id, data);
+        const { pricing, competitors, winnerDetails, delivery, rks, lphs, timeline, ...clean } = data as any;
+        if (clean.scopeDepartments && Array.isArray(clean.scopeDepartments)) {
+          clean.scopeDepartments = JSON.stringify(clean.scopeDepartments);
+        }
+        if (clean.deadlineTender === undefined || clean.deadlineTender === '') {
+          delete clean.deadlineTender;
+        } else if (/^\d{4}-\d{2}-\d{2}$/.test(clean.deadlineTender)) {
+          clean.deadlineTender = clean.deadlineTender + 'T00:00:00.000Z';
+        }
+        await projectService.update(id, clean);
         const current = get().entities[id];
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
@@ -293,7 +319,7 @@ export const useProjectStore = create<ProjectState>()(
     }),
     {
       name: 'kinetic-projects',
-      version: 6,
+      version: 7,
       merge: (persisted: unknown, current: ProjectState) => {
         if (!persisted || typeof persisted !== 'object') return current;
         const p = persisted as Partial<ProjectState>;
@@ -308,19 +334,7 @@ export const useProjectStore = create<ProjectState>()(
       },
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version < 5) {
-          const raw = current.projects || INITIAL_PROJECTS;
-          const withDefaults = raw.map((p: any) => ({
-            ...p,
-            scopeDepartments: p.scopeDepartments || [],
-            currentStageId: p.currentStageId || 'stage-in-project',
-            departmentId: p.departmentId || 'dept-pm',
-            createdByUserId: p.createdByUserId || p.createdBy || '',
-          }));
-          const { entities, ids } = normalizeProjects(withDefaults);
-          return { entities, ids, projects: deriveProjects(entities, ids) };
-        }
-        if (!current.projects && current.entities && current.ids) {
+        if (current.entities && current.ids) {
           return {
             ...current,
             projects: deriveProjects(current.entities, current.ids),
