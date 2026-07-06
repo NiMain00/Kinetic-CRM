@@ -4,7 +4,26 @@ dist/
 coverage/
 .DS_Store
 *.log
+*.xls*
 .env*
 !.env.example
 /storage/
 docker/nginx/ssl/
+
+# Playwright
+playwright-report/
+test-results/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+.opencode/
+*.swp
+*.swo
+
+# Build cache
+*.tsbuildinfo
+.vite/
+PROJECT_PROGRESS_TRACKER_old.xlsx
+KINETIC_CRM_DOCUMENTATION_TRACKER.xlsx
