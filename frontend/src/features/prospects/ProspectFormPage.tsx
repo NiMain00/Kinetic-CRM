@@ -24,7 +24,7 @@ export default function ProspectFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- Stores ---
-  const { prospects, addProspect, updateProspect } = useProspectStore();
+  const { prospects, createProspect, updateProspect } = useProspectStore();
   const { addCustomer } = useCustomerStore();
   const authUser = useAuthStore((s) => s.user);
   const industries = useMasterDataStore((s) => s.industries);
@@ -137,7 +137,7 @@ export default function ProspectFormPage() {
     return '';
   };
 
-  const saveProspect = (status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor') => {
+  const saveProspect = async (status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor') => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     const clientName = getClientName();
@@ -260,9 +260,9 @@ export default function ProspectFormPage() {
     };
 
     if (isEdit && existingProspect) {
-      updateProspect(existingProspect.id, payload);
+      await updateProspect(existingProspect.id, payload);
     } else {
-      addProspect(payload);
+      await createProspect(payload);
     }
 
     // Auto-create approval item when submitting to PM

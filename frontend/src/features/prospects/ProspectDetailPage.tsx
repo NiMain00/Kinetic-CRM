@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
@@ -120,9 +120,15 @@ export default function ProspectDetailPage() {
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const addProspectTimelineEvent = useProspectStore((s) => s.addTimelineEvent);
+  const fetchProspect = useProspectStore((s) => s.fetchProspect);
+  const fetchCustomers = useCustomerStore((s) => s.fetchCustomers);
   const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
   const getCustomerById = useCustomerStore((s) => s.getCustomerById);
   const getProjectById = useProjectStore((s) => s.getProjectById);
+
+  useEffect(() => {
+    if (id) { fetchProspect(id); fetchCustomers(); }
+  }, [id, fetchProspect, fetchCustomers]);
   const { approvals, approveItem, addApproval } = useApprovalStore();
 
   const authUser = useAuthStore((s) => s.user);

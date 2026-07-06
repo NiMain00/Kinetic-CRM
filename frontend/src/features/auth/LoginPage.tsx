@@ -1,88 +1,28 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
 import { useAuthStore } from '@/stores/authStore';
-import { useMasterDataStore, type MasterUser } from '@/stores/masterDataStore';
-import { authz } from '@/services/authz';
-import { useRbacStore } from '@/stores/rbacStore';
+import { authService } from '@/services/auth';
 
-const ACCOUNT_ICONS: Record<string, string> = {
-  admin: 'shield',
-  'Staff Marketing': 'person',
-  'Manager PM': 'assignment',
-  'Staff PM': 'assignment',
-  'Staff Procurement': 'inventory_2',
-  'Admin IT': 'admin_panel_settings',
-  Director: 'visibility',
-  'Staff IT': 'terminal',
-  'Manager Marketing': 'group',
-};
-
-const ACCOUNT_COLORS: Record<string, string> = {
-  admin: 'bg-red-50 dark:bg-red-950/300',
-  'Staff Marketing': 'bg-blue-50 dark:bg-blue-950/300',
-  'Manager PM': 'bg-emerald-50 dark:bg-emerald-950/300',
-  'Staff PM': 'bg-teal-50 dark:bg-teal-950/300',
-  'Staff Procurement': 'bg-amber-50 dark:bg-amber-950/300',
-  'Admin IT': 'bg-purple-50 dark:bg-purple-950/300',
-  Director: 'bg-rose-50 dark:bg-rose-950/300',
-  'Staff IT': 'bg-cyan-50 dark:bg-cyan-950/300',
-  'Manager Marketing': 'bg-orange-50 dark:bg-orange-950/300',
-};
-
-const ADMIN_ACCOUNT = {
-  id: 'usr-admin',
-  name: 'Administrator',
-  branch: 'Jakarta Pusat',
-  username: 'admin',
-  email: 'admin@kinetic-crm.com',
-  role: 'Super Admin',
-  active: true,
-};
+const DEMO_ACCOUNTS = [
+  { id: 'user-1', name: 'Super Administrator', username: 'superadmin', password: 'admin123', role: 'Super Admin' },
+  { id: 'user-2', name: 'Bambang Permadi', username: 'bambang', password: 'admin123', role: 'PM' },
+  { id: 'user-3', name: 'Rina Marlina', username: 'rina', password: 'admin123', role: 'Branch Manager' },
+  { id: 'user-4', name: 'Deni Saputra', username: 'deni', password: 'staff123', role: 'Staff Finance' },
+  { id: 'user-5', name: 'Siti Rahmawati', username: 'siti', password: 'staff123', role: 'Staff Procurement' },
+  { id: 'user-6', name: 'Ahmad Sulistyo', username: 'ahmad', password: 'staff123', role: 'Staff PM' },
+];
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const login = useAuthStore((s) => s.login);
-  const logout = useAuthStore((s) => s.logout);
-  const masterUsers = useMasterDataStore((s) => s.users);
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
-  const [showDepartmentPicker, setShowDepartmentPicker] = useState(false);
-  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
-
-  // Gabungkan admin bawaan + semua user dari master data (termasuk non-aktif)
-  const demoAccounts = useMemo(() => {
-    const accounts = [ADMIN_ACCOUNT];
-    masterUsers.forEach((u) => {
-      // Hindari duplikat username
-      if (!accounts.find((a) => a.username === u.username)) {
-        accounts.push({
-          id: u.id,
-          name: u.name,
-          branch: u.branch,
-          username: u.username,
-          email: u.email,
-          role: u.role,
-          active: u.active,
-        });
-      }
-    });
-    return accounts;
-  }, [masterUsers]);
-
-  const getUserAuthPayload = (acct: typeof ADMIN_ACCOUNT) => ({
-    id: acct.id,
-    fullName: acct.name,
-    name: acct.name,
-    email: acct.email,
-    roleName: acct.role === 'Super Admin' ? 'Super Admin' : acct.role,
-    branchName: acct.branch,
-  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,63 +35,32 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      await new Promise((r) => setTimeout(r, 800));
+      const res = await authService.login({ username: username.trim(), password });
+      const { token, user } = res.data;
 
-      const matched = demoAccounts.find((a) => a.username === username);
-      if (matched && password === username) {
-        const userId = matched.id;
-        const userRoles = useRbacStore.getState().userRoles.filter((ur) => ur.userId === userId);
-        const hasGlobalRole = userRoles.some((ur) => ur.scopeType === 'global');
+      login(token, {
+        id: user.id,
+        fullName: user.fullName,
+        name: user.fullName,
+        email: user.email,
+        roleName: user.userRoles?.[0]?.role?.name || '',
+        branchName: user.orgUnit?.name || '',
+        roleId: user.userRoles?.[0]?.roleId || '',
+        scopeType: user.userRoles?.[0]?.scopeType || 'global',
+      });
 
-        if (hasGlobalRole) {
-          // Global role (admin/director) — login tanpa department
-          const globalRole = userRoles.find((ur) => ur.scopeType === 'global');
-          login('mock-token', {
-            ...getUserAuthPayload(matched),
-            roleId: globalRole?.roleId,
-            scopeType: 'global',
-          });
-          navigate('/dashboard');
-          toast.success(`Selamat datang, ${matched.name}!`);
-        } else {
-          // Department-scoped user — cek departemen yang bisa diakses
-          const depts = authz.getAccessibleDepartments(userId);
-
-          if (depts.length === 1) {
-            // Single department — auto-select
-            const dept = depts[0];
-            const activeRole = userRoles.find((ur) => ur.scopeId === dept.id);
-            login('mock-token', {
-              ...getUserAuthPayload(matched),
-              departmentId: dept.id,
-              departmentCode: dept.code,
-              departmentName: dept.name,
-              roleId: activeRole?.roleId,
-              scopeType: activeRole?.scopeType,
-              scopeId: activeRole?.scopeId,
-            });
-            useAuthStore.getState().setActiveDepartment(dept.id);
-            navigate('/dashboard');
-            toast.success(`Selamat datang, ${matched.name}!`);
-          } else {
-            // Multiple departments — show picker
-            setPendingUserId(userId);
-            setShowDepartmentPicker(true);
-          }
-        }
-      } else {
-        toast.error('Username atau password salah.');
-      }
+      navigate('/dashboard');
+      toast.success(`Selamat datang, ${user.fullName}!`);
     } catch {
-      toast.error('Login gagal. Silakan coba lagi.');
+      toast.error('Username atau password salah.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const selectAccount = (acct: typeof ADMIN_ACCOUNT) => {
+  const selectAccount = (acct: typeof DEMO_ACCOUNTS[0]) => {
     setUsername(acct.username);
-    setPassword(acct.username);
+    setPassword(acct.password);
   };
 
   return (
@@ -257,81 +166,13 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Department Picker Modal */}
-          {showDepartmentPicker && pendingUserId && (
-            <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-surface rounded-2xl shadow-modal w-full max-w-sm p-6 animate-in zoom-in-95 fade-in">
-                <h3 className="font-heading-section text-base text-on-surface mb-1">Pilih Department</h3>
-                <p className="text-sm text-secondary mb-4">Pilih department yang akan diakses:</p>
-                <div className="space-y-2">
-                  {authz.getAccessibleDepartments(pendingUserId).map((dept) => {
-                    const userRoles = useRbacStore.getState().userRoles.filter(
-                      (ur) => ur.userId === pendingUserId && ur.scopeType === 'department' && ur.scopeId === dept.id,
-                    );
-                    const roleName = userRoles.length > 0
-                      ? useRbacStore.getState().roles.find((r) => r.id === userRoles[0].roleId)?.name
-                      : 'staff';
-                    return (
-                      <button
-                        key={dept.id}
-                        type="button"
-                        onClick={() => {
-                          const matchedUser = demoAccounts.find((a) => a.id === pendingUserId);
-                          if (!matchedUser) return;
-                          const activeRole = userRoles[0];
-                          const deptRole = activeRole
-                            ? useRbacStore.getState().roles.find((r) => r.id === activeRole.roleId)
-                            : undefined;
-                          login('mock-token', {
-                            ...getUserAuthPayload(matchedUser),
-                            departmentId: dept.id,
-                            departmentCode: dept.code,
-                            departmentName: dept.name,
-                            roleId: activeRole?.roleId,
-                            scopeType: activeRole?.scopeType,
-                            scopeId: activeRole?.scopeId,
-                          });
-                          useAuthStore.getState().setActiveDepartment(dept.id);
-                          setShowDepartmentPicker(false);
-                          navigate('/dashboard');
-                          toast.success(`Selamat datang, ${matchedUser.name} (${dept.name})`);
-                        }}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-border bg-surface-container hover:border-primary/30 hover:bg-surface-container-lowest transition-all cursor-pointer text-left"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                          <span className="material-symbols-outlined text-primary text-xl">business</span>
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-on-surface truncate">{dept.name}</p>
-                          <p className="text-[10px] text-secondary uppercase tracking-wider">{dept.code} · {roleName}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowDepartmentPicker(false);
-                    setPendingUserId(null);
-                  }}
-                  className="mt-4 w-full py-2 text-center text-sm text-secondary hover:text-on-surface transition-colors"
-                >
-                  Batal
-                </button>
-              </div>
-            </div>
-          )}
-
           <div className="mt-6 pt-4 border-t border-border">
             <p className="text-caption-xs text-secondary text-center mb-3">
               Pilih akun demo untuk masuk otomatis
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {demoAccounts.map((acct) => {
+              {DEMO_ACCOUNTS.map((acct) => {
                 const isSelected = username === acct.username;
-                const color = acct.username === 'admin' ? ACCOUNT_COLORS.admin : (ACCOUNT_COLORS[acct.role] || 'bg-surface-container-low0');
-                const icon = acct.username === 'admin' ? ACCOUNT_ICONS.admin : (ACCOUNT_ICONS[acct.role] || 'person');
                 return (
                   <button
                     key={acct.username}
@@ -343,9 +184,6 @@ export default function LoginPage() {
                         : 'border-border bg-surface-container hover:border-primary/30 hover:bg-surface-container-lowest'
                     }`}
                   >
-                    <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center shrink-0`}>
-                      <span className="material-symbols-outlined text-white text-[16px]">{icon}</span>
-                    </div>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-on-surface truncate">{acct.name}</p>
                       <p className="text-[9px] text-secondary truncate leading-tight">{acct.role}</p>

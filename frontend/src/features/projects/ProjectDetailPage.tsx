@@ -45,7 +45,12 @@ export default function ProjectDetailView({
   const updateProject = useProjectStore((s) => s.updateProject);
   const deleteProject = useProjectStore((s) => s.deleteProject);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
+  const fetchProject = useProjectStore((s) => s.fetchProject);
   const getProspectById = useProspectStore((s) => s.getProspectById);
+
+  useEffect(() => {
+    if (projectId) fetchProject(projectId);
+  }, [projectId, fetchProject]);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const { approvals, approveItem } = useApprovalStore();
   const { can, canWrite } = useAuthz();

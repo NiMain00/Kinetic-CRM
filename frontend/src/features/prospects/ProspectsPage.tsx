@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button, Card } from '@/components/ui';
 import { PageContainer, PageHeader, StatusBadge, BulkActions, DuplicateDetectionPanel } from '@/components/shared';
@@ -26,8 +26,11 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const prospects = useProspectStore((s) => s.prospects);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const updateProspect = useProspectStore((s) => s.updateProspect);
+  const fetchProspects = useProspectStore((s) => s.fetchProspects);
   const authUser = useAuthStore((s) => s.user);
   const { can } = useAuthz();
+
+  useEffect(() => { fetchProspects(); }, [fetchProspects]);
   const { isStaffOnly, userId } = useOwnerFilter();
 
   const [activeFilter, setActiveFilter] = useState<string>('All');
@@ -524,12 +527,12 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       <td className="px-6 py-4 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
-                            {row.author.charAt(0)}
+                            {(row.author || '')[0] || '?'}
                           </div>
-                          <span className="text-on-surface text-xs truncate" title={row.author}>{row.author}</span>
+                          <span className="text-on-surface text-xs truncate" title={row.author || ''}>{row.author || '-'}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden" title={row.date}>{row.date}</td>
+                      <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden" title={row.date || ''}>{row.date || '-'}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {row.status === 'Approved' && !row.isConverted && (

@@ -3,9 +3,9 @@ export function formatCurrency(value: number): string {
 }
 
 export function formatCurrencyShort(value: number): string {
-  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toFixed(1)}T`;
-  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toFixed(1)}B`;
-  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000_000_000_000) return `Rp ${(value / 1_000_000_000_000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} T`;
+  if (value >= 1_000_000_000) return `Rp ${(value / 1_000_000_000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`;
+  if (value >= 1_000_000) return `Rp ${(value / 1_000_000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} jt`;
   return `Rp ${value.toLocaleString('id-ID')}`;
 }
 

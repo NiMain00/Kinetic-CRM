@@ -7,7 +7,7 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSlaConfigs } from '@/hooks/useConfigData';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatCurrencyShort } from '@/utils/formatters';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -192,7 +192,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-secondary font-caption-xs mb-0.5">Total Proyek Aktif</p>
-          <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{formatCurrency(stats.totalActiveValue)}</h3>
+          <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{formatCurrencyShort(stats.totalActiveValue)}</h3>
           <p className="text-success text-[11px] mt-1">dari bulan lalu</p>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">

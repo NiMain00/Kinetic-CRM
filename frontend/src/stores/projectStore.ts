@@ -10,24 +10,24 @@ import type {
   TimelineEvent,
 } from '@/types/domain';
 import { INITIAL_PROJECTS } from '@/services/mock-data';
-// NOTE: Cross-store coupling via getState() — consider refactoring to event pattern
+import { projectService } from '@/services/projects';
 import { useApprovalStore } from './approvalStore';
 import { useNotificationStore } from './notificationStore';
 import { useProcurementStore } from '@/features/procurement/procurementStore';
 
 interface ProjectState {
-  /** Normalized entity map — O(1) lookup */
   entities: Record<string, Project>;
-  /** Ordered IDs — preserves insertion order */
   ids: string[];
-  /** Derived array — backward-compat selector */
   projects: Project[];
+  loading: boolean;
 
+  fetchProjects: (params?: any) => Promise<void>;
+  fetchProject: (id: string) => Promise<Project | undefined>;
   addProject: (p: Project) => void;
-  updateProject: (id: string, data: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
+  createProject: (data: Partial<Project>) => Promise<Project>;
+  updateProject: (id: string, data: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
   getProjectById: (id: string) => Project | undefined;
-  // Tab-specific actions
   updateProjectRks: (id: string, rks: RksData) => void;
   updateProjectLphs: (id: string, lphs: LphsData) => void;
   updateLphsDepartmentApproval: (id: string, approval: LphsDepartmentApproval) => void;
@@ -40,18 +40,11 @@ interface ProjectState {
   updateProjectDelivery: (id: string, delivery: Partial<Project['delivery']>) => void;
   addTimelineEvent: (id: string, event: TimelineEvent) => void;
   updateProjectDocuments: (id: string, documents: DocGroup[]) => void;
-
-  // RBAC: scope & stage management
   updateProjectScope: (id: string, scopeDepartments: string[]) => void;
   updateProjectStage: (id: string, stageId: string) => void;
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────
-
-function deriveProjects(
-  entities: Record<string, Project>,
-  ids: string[],
-): Project[] {
+function deriveProjects(entities: Record<string, Project>, ids: string[]): Project[] {
   const arr: Project[] = new Array(ids.length);
   for (let i = 0; i < ids.length; i++) {
     arr[i] = entities[ids[i]];
@@ -84,14 +77,18 @@ function updateEntity(
     return { entities, projects: deriveProjects(entities, ids) };
   }
   const next = { ...entities, [id]: updater(existing) };
-  return {
-    entities: next,
-    projects: deriveProjects(next, ids),
-  };
+  return { entities: next, projects: deriveProjects(next, ids) };
 }
 
-// ─── Initial state (first-load fallback) ───────────────────────────────
 const { entities: INITIAL_ENTITIES, ids: INITIAL_IDS } = normalizeProjects(INITIAL_PROJECTS);
+
+function mapApiProject(p: any): Project {
+  return {
+    ...p,
+    author: p.author || p.ownerUser?.fullName || p.createdBy?.fullName || p.createdByUserId || '',
+    date: p.date || p.createdAt || '',
+  };
+}
 
 export const useProjectStore = create<ProjectState>()(
   persist(
@@ -99,6 +96,38 @@ export const useProjectStore = create<ProjectState>()(
       entities: INITIAL_ENTITIES,
       ids: INITIAL_IDS,
       projects: deriveProjects(INITIAL_ENTITIES, INITIAL_IDS),
+      loading: false,
+
+      fetchProjects: async (params) => {
+        set({ loading: true });
+        try {
+          const res = await projectService.list(params);
+          const data = res.data.data || res.data;
+          const list = Array.isArray(data) ? data : [];
+          const mapped = list.map(mapApiProject);
+          const { entities, ids } = normalizeProjects(mapped);
+          set({ entities, ids, projects: deriveProjects(entities, ids), loading: false });
+        } catch {
+          set({ loading: false });
+        }
+      },
+
+      fetchProject: async (id) => {
+        try {
+          const res = await projectService.get(id);
+          const project = res.data.data ? mapApiProject(res.data.data) : mapApiProject(res.data);
+          if (project?.id) {
+            set((s) => {
+              const entities = { ...s.entities, [project.id]: project };
+              const ids = s.ids.includes(project.id) ? s.ids : [...s.ids, project.id];
+              return { entities, ids, projects: deriveProjects(entities, ids) };
+            });
+          }
+          return project;
+        } catch {
+          return undefined;
+        }
+      },
 
       addProject: (p) =>
         set((s) => {
@@ -107,7 +136,19 @@ export const useProjectStore = create<ProjectState>()(
           return { entities, ids, projects: deriveProjects(entities, ids) };
         }),
 
-      updateProject: (id, data) => {
+      createProject: async (data) => {
+        const res = await projectService.create(data);
+        const project = mapApiProject(res.data.data || res.data);
+        set((s) => {
+          const entities = { ...s.entities, [project.id]: project };
+          const ids = [...s.ids, project.id];
+          return { entities, ids, projects: deriveProjects(entities, ids) };
+        });
+        return project;
+      },
+
+      updateProject: async (id, data) => {
+        await projectService.update(id, data);
         const current = get().entities[id];
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
@@ -117,7 +158,6 @@ export const useProjectStore = create<ProjectState>()(
           }));
           return { ...r, ids: s.ids };
         });
-        // Add notification if status changed
         if (data.status && current && current.status !== data.status) {
           const addNotification = useNotificationStore.getState().addNotification;
           addNotification({
@@ -130,13 +170,12 @@ export const useProjectStore = create<ProjectState>()(
         }
       },
 
-      deleteProject: (id) => {
-        // Hapus juga approval terkait
+      deleteProject: async (id) => {
+        await projectService.delete(id);
         const approvalStore = useApprovalStore.getState();
         approvalStore.approvals
           .filter((a) => a.entityType === 'project' && a.entityId === id)
           .forEach((a) => approvalStore.removeApproval(a.id));
-        // Hapus juga procurement terkait
         const deleteProc = useProcurementStore.getState().deleteProcurement;
         const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
         linked.forEach((p) => deleteProc(p.id));
@@ -254,7 +293,7 @@ export const useProjectStore = create<ProjectState>()(
     }),
     {
       name: 'kinetic-projects',
-      version: 5,
+      version: 6,
       merge: (persisted: unknown, current: ProjectState) => {
         if (!persisted || typeof persisted !== 'object') return current;
         const p = persisted as Partial<ProjectState>;
@@ -269,11 +308,7 @@ export const useProjectStore = create<ProjectState>()(
       },
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-
-        // v4→v5: normalize to Record pattern
         if (version < 5) {
-          // v3: Force re-init with fresh mock data that includes createdByUserId
-          // v4: Add RBAC fields (scopeDepartments, currentStageId, departmentId) with defaults
           const raw = current.projects || INITIAL_PROJECTS;
           const withDefaults = raw.map((p: any) => ({
             ...p,
@@ -285,18 +320,14 @@ export const useProjectStore = create<ProjectState>()(
           const { entities, ids } = normalizeProjects(withDefaults);
           return { entities, ids, projects: deriveProjects(entities, ids) };
         }
-
-        // Ensure derived `projects` for loads from direct persist
         if (!current.projects && current.entities && current.ids) {
           return {
             ...current,
             projects: deriveProjects(current.entities, current.ids),
           };
         }
-
         return current;
       },
-      // Only persist entities + ids; projects is derived on hydrate
       partialize: (state) => ({
         entities: state.entities,
         ids: state.ids,

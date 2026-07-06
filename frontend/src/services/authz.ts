@@ -1,4 +1,5 @@
 import { useRbacStore, type RbacDepartment } from '@/stores/rbacStore';
+import { useAuthStore } from '@/stores/authStore';
 import {
   GLOBAL_PERMISSIONS,
   ROLE_HIERARCHY,
@@ -32,6 +33,10 @@ class AuthorizationEngine {
     const store = useRbacStore.getState();
 
     if (GLOBAL_PERMISSIONS.includes(permissionCode)) return true;
+
+    // Bypass: jika user dari API scope global / Super Admin, grant semua permission
+    const authUser = useAuthStore.getState().user;
+    if (authUser?.id === userId && (authUser?.scopeType === 'global' || authUser?.roleName === 'Super Admin')) return true;
 
     if (this.checkDirectorBypass(userId, permissionCode)) return true;
 

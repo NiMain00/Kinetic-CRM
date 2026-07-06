@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { useConfigStore } from '@/stores/configStore';
@@ -47,6 +47,9 @@ export default function ProjectListPage() {
   const authUser = useAuthStore((s) => s.user);
   const { isStaffOnly, userId } = useOwnerFilter();
   const projectPhases = useConfigStore((s) => s.projectPhases);
+  const fetchProjects = useProjectStore((s) => s.fetchProjects);
+
+  useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
   // Derive progress from project status for display (mirrors ProjectDetailPage logic)
   const deriveProgress = useCallback((status: string) => {
