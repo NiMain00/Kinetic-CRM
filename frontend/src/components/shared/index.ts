@@ -15,3 +15,4 @@ export { default as RequirementProgressBar } from './RequirementProgressBar';
 export { default as ProcurementConsolidator } from './ProcurementConsolidator';
 export { default as ProcurementAllocationTable } from './ProcurementAllocationTable';
 export { default as ItemSelector } from './ItemSelector';
+export { default as DuplicateDetectionPanel } from './DuplicateDetectionPanel';

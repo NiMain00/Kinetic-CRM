@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button, Card } from '@/components/ui';
-import { PageContainer, PageHeader, StatusBadge, BulkActions } from '@/components/shared';
+import { PageContainer, PageHeader, StatusBadge, BulkActions, DuplicateDetectionPanel } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -39,6 +39,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
+  const [showDuplicatePanel, setShowDuplicatePanel] = useState(false);
 
   const handleDelete = (id: string) => {
     setDeleteTarget(id);
@@ -189,43 +190,51 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Prospek"
-        description="Daftar Prospek"
-        actions={
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="md"
-              leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
-              onClick={() => exportCSV(
-                prospects,
-                [
-                  { header: 'Nama Prospek', accessor: (p) => p.name },
-                  { header: 'Client', accessor: (p) => p.client },
-                  { header: 'Status', accessor: (p) => p.status },
-                  { header: 'Nilai Estimasi', accessor: (p) => p.estimatedValue ? `Rp ${p.estimatedValue.toLocaleString('id-ID')}` : '-' },
-                  { header: 'Author', accessor: (p) => p.author },
-                  { header: 'Tanggal', accessor: (p) => p.date },
-                ],
-                'daftar_prospek',
-              )}
-            >
-              Export CSV
-            </Button>
-            {can('prospect:write:prospecting') && (
+        <PageHeader
+          title="Prospek"
+          description="Daftar Prospek"
+          actions={
+            <div className="flex gap-2">
               <Button
-                variant="primary"
+                variant="ghost"
                 size="md"
-                onClick={() => navigate('/prospects/new')}
-                leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
+                leftIcon={<span className="material-symbols-outlined text-[16px]">dashboard</span>}
+                onClick={() => navigate('/prospects/pipeline')}
               >
-                Buat Prospek Baru
+                Pipeline View
               </Button>
-            )}
-          </div>
-        }
-      />
+              <Button
+                variant="ghost"
+                size="md"
+                leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
+                onClick={() => exportCSV(
+                  prospects,
+                  [
+                    { header: 'Nama Prospek', accessor: (p) => p.name },
+                    { header: 'Client', accessor: (p) => p.client },
+                    { header: 'Status', accessor: (p) => p.status },
+                    { header: 'Nilai Estimasi', accessor: (p) => p.estimatedValue ? `Rp ${p.estimatedValue.toLocaleString('id-ID')}` : '-' },
+                    { header: 'Author', accessor: (p) => p.author },
+                    { header: 'Tanggal', accessor: (p) => p.date },
+                  ],
+                  'daftar_prospek',
+                )}
+              >
+                Export CSV
+              </Button>
+              {can('prospect:write:prospecting') && (
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => navigate('/prospects/new')}
+                  leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
+                >
+                  Buat Prospek Baru
+                </Button>
+              )}
+            </div>
+          }
+        />
 
       {/* Filter Bar */}
       <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card">
@@ -254,6 +263,15 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            {can('prospect:write:prospecting') && (
+              <button
+                onClick={() => setShowDuplicatePanel(true)}
+                className="touch-min flex items-center justify-center p-2 rounded-xl border border-border/60 text-secondary hover:bg-surface-container hover:text-warning transition-all"
+                title="Cek Duplikat"
+              >
+                <span className="material-symbols-outlined text-[18px]">copy_all</span>
+              </button>
+            )}
             {can('prospect:write:prospecting') && (
               <button
                 onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
@@ -585,6 +603,13 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
         </div>
       </Card>
+
+      {/* Duplicate Detection Panel */}
+      <DuplicateDetectionPanel
+        isOpen={showDuplicatePanel}
+        onClose={() => setShowDuplicatePanel(false)}
+        onShowNotification={onShowNotification}
+      />
 
       {/* Delete Confirmation Modal */}
       <Modal

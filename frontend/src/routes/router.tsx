@@ -48,6 +48,7 @@ const DashboardPage = LazyLoadPermission(lazy(() => import('@/features/dashboard
 const ProspectsPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectsPage')), ['prospect:read']);
 const ProspectFormPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectFormPage')), ['prospect:read']);
 const ProspectDetailPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectDetailPage')), ['prospect:read']);
+const ProspectPipelinePage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectPipelinePage')), ['prospect:read']);
 
 // Projects
 const ProjectListPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectListPage')), ['project:read']);
@@ -134,6 +135,7 @@ export default function AppRouter() {
 
         {/* Prospects */}
         <Route path="prospects" element={<ProspectsPage />} />
+        <Route path="prospects/pipeline" element={<ProspectPipelinePage />} />
         <Route path="prospects/new" element={<ProspectFormPage />} />
         <Route path="prospects/:id" element={<ProspectDetailPage />} />
         <Route path="prospects/:id/edit" element={<ProspectFormPage />} />

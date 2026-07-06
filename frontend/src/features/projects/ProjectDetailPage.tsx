@@ -23,6 +23,7 @@ import PemenangTab from './tabs/PemenangTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
 import ChatTab from './tabs/ChatTab';
+import TasksTab from './tabs/TasksTab';
 
 interface ProjectDetailViewProps {
   key?: string;
@@ -105,6 +106,7 @@ export default function ProjectDetailView({
     }
     const items: Array<{ label: string; path: string }> = [
       { label: 'Overview', path: 'overview' },
+      { label: 'Tasks', path: 'tasks' },
       { label: 'RKS', path: 'rks' },
       { label: 'LPHS/SIOS', path: 'lphs' },
       { label: 'Harga', path: 'harga' },
@@ -115,10 +117,9 @@ export default function ProjectDetailView({
       { label: 'Diskusi', path: 'diskusi' },
     ];
     if (project.type === 'Tender') {
-      items.splice(2, 0, { label: 'Review RKS', path: 'review-rks' });
+      items.splice(3, 0, { label: 'Review RKS', path: 'review-rks' });
     } else {
-      // LPHS/SIOS only for Tender projects
-      items.splice(2, 1);
+      items.splice(3, 1);
     }
     return items;
   }, [project.type, isFromNonPotensial, project.status, project.winnerDetails?.outcome]);
@@ -139,17 +140,18 @@ export default function ProjectDetailView({
     // Terminal states (Selesai, Kalah): all tabs unlocked
     if (project.status === 'Selesai' || project.status === 'Kalah') return false;
 
-    // Timeline, Dokumen, Diskusi & RKS: always unlocked
-    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi' || tab.label === 'RKS') return false;
+    // Timeline, Dokumen, Diskusi, Tasks & RKS: always unlocked
+    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi' || tab.label === 'Tasks' || tab.label === 'RKS') return false;
 
-    // Harga, Kompetitor, Pemenang: unlocked only after project advances past LPHS/SIOS phase
-    // (management must click "Lanjutkan ke Input Harga" first)
+    // Harga, Kompetitor, Pemenang: terkunci sampai project mencapai atau melewati fase LPHS/SIOS
     if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
-      if (project.type === 'Prospecting') return false; // always unlocked for Prospecting
-      return project.status === 'LPHS/SIOS';
+      if (project.type === 'Prospecting') return false;
+      const status = project.status;
+      const isBeforeLphs = status === 'RKS' || status === 'Review RKS' || status === 'Draft' || status === 'Revision';
+      return isBeforeLphs;
     }
 
-    // Default sequential locking (Overview, RKS, Review RKS, LPHS/SIOS)
+    // Default sequential locking (Overview, RKS, Review RKS, LPHS/SIOS, Harga, ...)
     return tabIndex > accessibleUpToIndex;
   };
 
@@ -344,9 +346,11 @@ export default function ProjectDetailView({
               onStepClick={(path) => navigate(`/project/${projectId}/${path}`)}
               isStepUnlocked={(index) => {
                 const step = tabs[index];
+                const status = project.status;
+                const isBeforeLphs = status === 'RKS' || status === 'Review RKS' || status === 'Draft' || status === 'Revision';
                 return (
-                  (step.label === 'Timeline' || step.label === 'Dokumen' || step.label === 'Scope & Tim' ||
-                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && project.status !== 'LPHS/SIOS'))
+                  (step.label === 'Timeline' || step.label === 'Dokumen' || step.label === 'Scope & Tim' || step.label === 'Tasks') ||
+                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && !isBeforeLphs)
                 );
               }}
             />
@@ -407,7 +411,12 @@ export default function ProjectDetailView({
           {/* Non-locked tabs wrapper */}
           {(!isTabLocked(activeTabIndex) || activeTab === 'Overview') && (
             <>
-          {/* TAB 2: RKS */}
+          {/* TAB 2: TASKS */}
+          {activeTab === 'Tasks' && (
+            <TasksTab project={project} onShowNotification={handleShowNotification} />
+          )}
+
+          {/* TAB 3: RKS */}
           {activeTab === 'RKS' && (
             <RksTab project={project} onShowNotification={handleShowNotification} />
           )}

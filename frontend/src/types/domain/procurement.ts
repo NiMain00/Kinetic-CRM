@@ -1,5 +1,104 @@
 import type { TimelineEvent, DocGroup } from './index';
 
+export interface Supplier {
+  id: string;
+  name: string;
+  code: string;
+  type: 'manufacturer' | 'distributor' | 'agent' | 'contractor' | 'consultant';
+  city: string;
+  phone: string;
+  email: string;
+  picName: string;
+  picPosition: string;
+  npwp?: string;
+  rating: number;
+  totalProjects: number;
+  totalValue: number;
+  onTimeDelivery: number;
+  qualityScore: number;
+  complianceScore: number;
+  status: 'active' | 'inactive' | 'blacklisted';
+  notes?: string;
+  categories: string[];
+  certificates: string[];
+  blacklistReason?: string;
+  blacklistedAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+  evaluations: SupplierEvaluation[];
+}
+
+export interface SupplierEvaluation {
+  id: string;
+  supplierId: string;
+  projectId: string;
+  projectName: string;
+  evaluator: string;
+  date: string;
+  quality: number;
+  delivery: number;
+  pricing: number;
+  compliance: number;
+  communication: number;
+  notes: string;
+  overall: number;
+}
+
+export interface RfqDocument {
+  id: string;
+  name: string;
+  size: string;
+  uploadDate: string;
+}
+
+export interface RfqItem {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  specifications?: string;
+}
+
+export interface RfqQuote {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  items: Array<{
+    itemId: string;
+    unitPrice: number;
+    totalPrice: number;
+    deliveryTime: string;
+    notes?: string;
+  }>;
+  totalAmount: number;
+  deliveryTime: string;
+  validityPeriod: string;
+  terms: string;
+  submittedAt: string;
+  status: 'pending' | 'evaluated' | 'selected' | 'rejected';
+  evaluatorNotes?: string;
+}
+
+export interface Rfq {
+  id: string;
+  procurementId: string;
+  number: string;
+  title: string;
+  description?: string;
+  deadline: string;
+  status: 'draft' | 'sent' | 'evaluating' | 'completed' | 'cancelled';
+  items: RfqItem[];
+  suppliers: string[];
+  quotes: RfqQuote[];
+  selectedQuoteId?: string;
+  documents: RfqDocument[];
+  createdAt: string;
+  createdBy: string;
+  sentAt?: string;
+  completedAt?: string;
+  notes?: string;
+}
+
 export type ProcurementStatus =
   | 'Draft'
   | 'Purchase Request'

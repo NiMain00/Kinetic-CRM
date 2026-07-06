@@ -1,41 +1,19 @@
-/**
- * AuthorizationEngine — Synchronous RBAC permission checker.
- * Reads directly from Zustand stores (getState). No async/await.
- *
- * Permission checking order:
- * 1. Global permissions (dashboard:view, notification:read, profile:manage) → always true
- * 2. Director bypass → user has director role with global scope + permission mapped
- * 3. Additive role check → any matching user-role → role-permission → scope match → true
- */
-
 import { useRbacStore, type RbacDepartment } from '@/stores/rbacStore';
-
-// ── Constants ──
-
-const GLOBAL_PERMISSIONS = new Set([
-  'dashboard:view',
-  'notification:read',
-  'profile:manage',
-]);
+import {
+  GLOBAL_PERMISSIONS,
+  ROLE_HIERARCHY,
+  ACCESS_LEVELS,
+  RBAC_CONFIG,
+  ROLES,
+  ELEVATED_ROLES,
+  type RoleLevel,
+} from '@/config';
 
 type StageAccessLevel = 'none' | 'read' | 'write';
 
-/** Role level hierarchy for owner filtering */
-const ROLE_HIERARCHY: Record<string, number> = {
-  super_admin: 5,
-  director: 4,
-  admin: 3,
-  manager: 2,
-  staff: 1,
-};
-
-/**
- * Parse stage code from permission code if present.
- * Pattern: entity:action:stageCode (e.g., prospect:write:prospecting → prospecting)
- */
 function extractStageFromPermission(code: string): string | null {
-  const parts = code.split(':');
-  if (parts.length === 3) return parts[2];
+  const parts = code.split(RBAC_CONFIG.SEPARATOR);
+  if (parts.length === RBAC_CONFIG.LENGTH_TO_CHECK) return parts[RBAC_CONFIG.INDEX_TO_CHECK];
   return null;
 }
 
@@ -53,13 +31,10 @@ class AuthorizationEngine {
   ): boolean {
     const store = useRbacStore.getState();
 
-    // Step 1: Global permissions apply to everyone
-    if (GLOBAL_PERMISSIONS.has(permissionCode)) return true;
+    if (GLOBAL_PERMISSIONS.includes(permissionCode)) return true;
 
-    // Step 2: Director bypass
     if (this.checkDirectorBypass(userId, permissionCode)) return true;
 
-    // Step 3: Get all active user roles
     const userRoles = store.userRoles.filter((ur) => {
       if (ur.userId !== userId) return false;
       if (ur.expiresAt && new Date(ur.expiresAt) <= new Date()) return false;
@@ -68,14 +43,12 @@ class AuthorizationEngine {
 
     if (userRoles.length === 0) return false;
 
-    // Step 4: Check each role — additive (any match = permitted)
     for (const ur of userRoles) {
       const rolePerms = store.rolePermissions.filter((rp) => rp.roleId === ur.roleId);
       for (const rp of rolePerms) {
         const perm = store.permissions.find((p) => p.id === rp.permissionId);
         if (!perm || perm.code !== permissionCode) continue;
 
-        // Check scope match
         if (rp.scopeType === 'global') return true;
         if (rp.scopeType === 'department') {
           const deptId = context?.departmentId || ur.scopeId;
@@ -84,7 +57,6 @@ class AuthorizationEngine {
         if (rp.scopeType === 'project') {
           if (rp.scopeId === context?.projectId || !rp.scopeId) return true;
         }
-        // Null scopeType = applies to any scope
         if (!rp.scopeType) return true;
       }
     }
@@ -104,23 +76,20 @@ class AuthorizationEngine {
   ): StageAccessLevel {
     const store = useRbacStore.getState();
     const stage = store.workflowStages.find((s) => s.code === currentStageCode);
-    if (!stage) return 'none';
+    if (!stage) return ACCESS_LEVELS.NONE;
 
-    // Elevated roles (super_admin, admin, director) bypass stage access check
-    if (this.hasElevatedRole(userId)) return 'write';
+    if (this.hasElevatedRole(userId)) return ACCESS_LEVELS.WRITE;
 
-    if (!activeDepartmentId) return 'none';
+    if (!activeDepartmentId) return ACCESS_LEVELS.NONE;
 
     const userDept = store.departments.find((d) => d.id === activeDepartmentId);
-    if (!userDept) return 'none';
+    if (!userDept) return ACCESS_LEVELS.NONE;
 
-    // Owner department → write access
-    if (userDept.code === stage.ownerDepartmentCode) return 'write';
+    if (userDept.code === stage.ownerDepartmentCode) return ACCESS_LEVELS.WRITE;
 
-    // Previous department → read access
-    if (stage.prevDepartmentCode && userDept.code === stage.prevDepartmentCode) return 'read';
+    if (stage.prevDepartmentCode && userDept.code === stage.prevDepartmentCode) return ACCESS_LEVELS.READ;
 
-    return 'none';
+    return ACCESS_LEVELS.NONE;
   }
 
   /**
@@ -155,7 +124,7 @@ class AuthorizationEngine {
     if (this.hasElevatedRole(userId)) return true;
 
     const access = this.getStageAccess(userId, recordStageCode, recordDepartmentId, activeDepartmentId);
-    return access === 'write';
+    return access === ACCESS_LEVELS.WRITE;
   }
 
   /**
@@ -182,7 +151,7 @@ class AuthorizationEngine {
     if (this.hasElevatedRole(userId)) return true;
 
     // For regular roles, also require write-level stage access
-    return this.getStageAccess(userId, stageCode, recordDepartmentId, activeDepartmentId) === 'write';
+    return this.getStageAccess(userId, stageCode, recordDepartmentId, activeDepartmentId) === ACCESS_LEVELS.WRITE;
   }
 
   /**
@@ -199,12 +168,12 @@ class AuthorizationEngine {
     const roleNames = store.roles
       .filter((r) => userRoleIds.includes(r.id))
       .map((r) => r.name)
-      .filter((name) => !['project_viewer', 'project_contributor', 'project_manager'].includes(name));
+      .filter((name) => ![ROLES.PROJECT_VIEWER, ROLES.PROJECT_CONTRIBUTOR, ROLES.PROJECT_MANAGER].includes(name));
 
-    let highest = 'staff';
+    let highest: string = ROLES.STAFF;
     let highestLevel = 0;
     for (const name of roleNames) {
-      const level = ROLE_HIERARCHY[name] || 0;
+      const level = ROLE_HIERARCHY[name as RoleLevel] || 0;
       if (level > highestLevel) {
         highestLevel = level;
         highest = name;
@@ -219,7 +188,7 @@ class AuthorizationEngine {
    */
   hasElevatedRole(userId: string): boolean {
     const role = this.getUserHighestRole(userId);
-    return role === 'manager' || role === 'admin' || role === 'director' || role === 'super_admin';
+    return ELEVATED_ROLES.includes(role);
   }
 
   /**
@@ -228,7 +197,7 @@ class AuthorizationEngine {
   checkDirectorBypass(userId: string, permissionCode: string): boolean {
     const store = useRbacStore.getState();
 
-    const directorRole = store.roles.find((r) => r.name === 'director');
+    const directorRole = store.roles.find((r) => r.name === ROLES.DIRECTOR);
     if (!directorRole) return false;
 
     const hasDirectorRole = store.userRoles.some(
@@ -236,7 +205,6 @@ class AuthorizationEngine {
     );
     if (!hasDirectorRole) return false;
 
-    // Check if director role has this permission mapped
     return store.rolePermissions
       .filter((rp) => rp.roleId === directorRole.id)
       .some((rp) => {
@@ -245,9 +213,6 @@ class AuthorizationEngine {
       });
   }
 
-  /**
-   * Build a list of department IDs that the user can access.
-   */
   buildDepartmentFilter(
     userId: string,
     options?: { includeProjectAccess?: boolean; activeDepartmentId?: string },
@@ -255,12 +220,10 @@ class AuthorizationEngine {
     const store = useRbacStore.getState();
     const deptIds = new Set<string>();
 
-    // From user roles (department scope)
     store.userRoles
       .filter((ur) => ur.userId === userId && ur.scopeType === 'department' && ur.scopeId)
       .forEach((ur) => deptIds.add(ur.scopeId!));
 
-    // From project membership
     if (options?.includeProjectAccess) {
       store.projectMembers
         .filter((pm) => pm.userId === userId)
@@ -281,8 +244,7 @@ class AuthorizationEngine {
   getAccessibleDepartments(userId: string): RbacDepartment[] {
     const store = useRbacStore.getState();
 
-    // Director sees all active departments
-    const directorRole = store.roles.find((r) => r.name === 'director');
+    const directorRole = store.roles.find((r) => r.name === ROLES.DIRECTOR);
     if (directorRole) {
       const isDirector = store.userRoles.some(
         (ur) => ur.userId === userId && ur.roleId === directorRole.id && ur.scopeType === 'global',
@@ -290,8 +252,7 @@ class AuthorizationEngine {
       if (isDirector) return store.departments.filter((d) => d.is_active);
     }
 
-    // Admin with global scope also sees all departments
-    const adminRole = store.roles.find((r) => r.name === 'admin');
+    const adminRole = store.roles.find((r) => r.name === ROLES.ADMIN);
     if (adminRole) {
       const isGlobalAdmin = store.userRoles.some(
         (ur) => ur.userId === userId && ur.roleId === adminRole.id && ur.scopeType === 'global',
@@ -299,8 +260,7 @@ class AuthorizationEngine {
       if (isGlobalAdmin) return store.departments.filter((d) => d.is_active);
     }
 
-    // Super Admin sees all departments
-    const superAdminRole = store.roles.find((r) => r.name === 'super_admin');
+    const superAdminRole = store.roles.find((r) => r.name === ROLES.SUPER_ADMIN);
     if (superAdminRole) {
       const isSuperAdmin = store.userRoles.some(
         (ur) => ur.userId === userId && ur.roleId === superAdminRole.id,

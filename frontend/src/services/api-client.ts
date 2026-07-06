@@ -1,9 +1,11 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/authStore';
+import { API, ROUTES, HTTP_STATUS } from '@/config';
 
 const apiClient = axios.create({
-  baseURL: '/api/v1',
+  baseURL: API.BASE_URL,
   headers: { 'Content-Type': 'application/json' },
+  timeout: API.TIMEOUT,
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -15,9 +17,9 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === HTTP_STATUS.UNAUTHORIZED) {
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      window.location.href = ROUTES.LOGIN;
     }
     return Promise.reject(error);
   },
