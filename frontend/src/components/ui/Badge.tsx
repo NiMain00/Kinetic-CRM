@@ -1,29 +1,31 @@
 import React from 'react';
 
 interface BadgeProps {
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple';
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple' | 'gold';
   size?: 'sm' | 'md';
   children: React.ReactNode;
   className?: string;
 }
 
 const variants = {
-  default: 'bg-secondary-container/50 text-on-secondary-container',
-  success: 'bg-success/10 text-success',
-  warning: 'bg-warning/10 text-warning',
-  danger: 'bg-danger/10 text-danger',
-  info: 'bg-info/10 text-info',
-  purple: 'bg-status-purple/10 text-status-purple',
+  default: 'bg-secondary-container text-secondary',
+  success: 'bg-success-container text-success',
+  warning: 'bg-warning-container text-warning',
+  danger: 'bg-danger-container text-danger',
+  info: 'bg-info-container text-info',
+  primary: 'bg-primary-container text-primary',
+  purple: 'bg-purple-100 text-status-purple',
+  gold: 'bg-gold-container text-on-gold',
 };
 
 const sizes = {
-  sm: 'px-2 py-0.5 text-[10px]',
-  md: 'px-2.5 py-1 text-xs',
+  sm: 'px-2.5 py-0.5 text-[10px]',
+  md: 'px-3 py-1 text-xs',
 };
 
 export default function Badge({ variant = 'default', size = 'sm', children, className = '' }: BadgeProps) {
   return (
-    <span className={`inline-flex items-center font-bold uppercase tracking-wider rounded-full ${variants[variant]} ${sizes[size]} ${className}`}>
+    <span className={`inline-flex items-center font-bold tracking-wide rounded-full ${variants[variant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   );

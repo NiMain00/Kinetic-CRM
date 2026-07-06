@@ -13,7 +13,7 @@ export interface User {
   createdAt: string;
 }
 
-export type UserRole = 'Super Admin' | 'Admin' | 'PM' | 'Branch Manager' | 'Dept Head' | 'Reviewer' | 'Staff';
+export type UserRole = 'Super Admin' | 'Admin' | 'PM' | 'Branch Manager' | 'Dept Head' | 'Management' | 'Reviewer' | 'Staff';
 
 export interface AuditLogEntry {
   id: string;
@@ -31,6 +31,7 @@ export interface AuditLogEntry {
   impact: 'Low' | 'Medium' | 'High';
 }
 
+/** KPI metric type used by KPI dashboard and target pages (not config). */
 export interface KpiTarget {
   id: string;
   name: string;

@@ -1,8 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import type { ApprovalItem, Project } from '@/types/domain';
-import { INITIAL_PROJECTS } from '@/services/mock-data';
 import { useAuthStore } from '@/stores/authStore';
 
 type ShowNotification = (message: string, type: 'success' | 'warning' | 'error') => void;
@@ -11,9 +9,9 @@ interface PageProps {
   onShowNotification?: ShowNotification;
   onNavigatePage?: (page: string) => void;
   onSelectProject?: (id: string) => void;
-  onOpenApproval?: (item: ApprovalItem) => void;
+  onOpenApproval?: (item: unknown) => void;
   onLoginSuccess?: (userData?: unknown) => void;
-  projects?: Project[];
+  projects?: unknown[];
 }
 
 export function withPageProps<T extends PageProps>(
@@ -38,13 +36,13 @@ export function withPageProps<T extends PageProps>(
         };
         navigate(pathMap[page] || `/${page}`);
       },
-      onSelectProject: (id) => navigate(`/projects/${id}`),
+      onSelectProject: (id) => navigate(`/projects/${id}/overview`),
       onOpenApproval: () => navigate('/approvals'),
       onLoginSuccess: (userData) => {
-        login('mock-token', userData || { name: 'User' });
+        login('', userData || { name: 'User' });
         navigate('/dashboard');
       },
-      projects: INITIAL_PROJECTS as unknown as Project[],
+      projects: [],
     };
 
     return <Component {...(props as T)} {...injectedProps} />;

@@ -3,23 +3,52 @@ import { useLocation, Link } from 'react-router-dom';
 
 const labelMap: Record<string, string> = {
   dashboard: 'Dashboard',
-  prospects: 'Prospects',
-  projects: 'Projects',
-  approvals: 'Approvals',
+  prospects: 'Prospek',
+  projects: 'Proyek',
+  approvals: 'Persetujuan',
   kpi: 'KPI Dashboard',
-  reports: 'Reports',
-  'master-data': 'Master Data',
-  users: 'Users',
-  audit: 'Audit Log',
-  notifications: 'Notifications',
-  config: 'Configuration',
-  profile: 'Profile',
-  new: 'New',
-  detail: 'Detail',
-  edit: 'Edit',
-  org: 'Organization Structure',
-  status: 'Project Status Master',
-  sla: 'SLA Configuration',
+  reports: 'Laporan',
+  'master-data': 'Data Master',
+  users: 'Pengguna',
+  'audit-log': 'Log Audit',
+  notifications: 'Notifikasi',
+  config: 'Konfigurasi',
+  profile: 'Profil',
+  new: 'Baru',
+  edit: 'Sunting',
+  org: 'Struktur Organisasi',
+  status: 'Status Proyek',
+  sla: 'Konfigurasi SLA',
+  roles: 'Manajemen Peran',
+  targets: 'Target',
+  workflow: 'Alur Kerja',
+  integration: 'Integrasi',
+  upload: 'Unggah',
+  period: 'Periode',
+  customers: 'Pelanggan',
+  competitors: 'Kompetitor',
+  categories: 'Kategori',
+  'document-types': 'Tipe Dokumen',
+  questions: 'Pertanyaan',
+  holidays: 'Hari Libur',
+  'loss-reasons': 'Alasan Gagal',
+  periods: 'Periode',
+  industries: 'Industri',
+  'project-statuses': 'Status Proyek',
+  'question-types': 'Tipe Pertanyaan',
+  departments: 'Departemen',
+  'audit-logs': 'Log Audit',
+  'approval-levels': 'Level Approval',
+  'notif-templates': 'Template Notifikasi',
+  list: 'Daftar',
+  log: 'Log',
+  progress: 'Kemajuan',
+  'win-loss': 'Menang/Kalah',
+  pipeline: 'Pipeline',
+  index: 'Indeks',
+  403: 'Akses Ditolak',
+  404: 'Halaman Tidak Ditemukan',
+  500: 'Kesalahan Server',
 };
 
 export default function Breadcrumb() {
@@ -29,9 +58,9 @@ export default function Breadcrumb() {
   if (segments.length === 0) return null;
 
   return (
-    <nav className="px-6 lg:px-8 py-2 bg-surface border-b border-border flex items-center gap-1 text-xs" aria-label="Breadcrumb">
-      <Link to="/dashboard" className="text-outline hover:text-primary transition-colors">
-        <span className="material-symbols-outlined text-sm">home</span>
+    <nav className="px-4 sm:px-8 lg:px-10 py-2 bg-background border-b border-border/30 flex items-center gap-1 text-xs overflow-x-auto scrollbar-none" aria-label="Navigasi halaman">
+      <Link to="/dashboard" className="text-outline hover:text-primary transition-colors shrink-0 touch-min-h flex items-center" aria-label="Beranda">
+        <span className="material-symbols-outlined text-sm sm:text-base" aria-hidden="true">home</span>
       </Link>
       {segments.map((seg, i) => {
         const path = '/' + segments.slice(0, i + 1).join('/');
@@ -40,11 +69,11 @@ export default function Breadcrumb() {
 
         return (
           <React.Fragment key={path}>
-            <span className="material-symbols-outlined text-outline text-xs">chevron_right</span>
+            <span className="material-symbols-outlined text-outline text-xs shrink-0" aria-hidden="true">chevron_right</span>
             {isLast ? (
-              <span className="text-on-surface font-semibold truncate max-w-[200px]">{label}</span>
+              <span className="text-on-surface font-semibold truncate max-w-[120px] sm:max-w-[200px] whitespace-nowrap" aria-current="page">{label}</span>
             ) : (
-              <Link to={path} className="text-outline hover:text-primary transition-colors truncate max-w-[200px]">
+              <Link to={path} className="text-outline hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-[200px] whitespace-nowrap touch-min-h flex items-center py-1">
                 {label}
               </Link>
             )}

@@ -10,7 +10,7 @@ export default function PageSkeleton() {
       </div>
 
       {/* Filter bar skeleton */}
-      <div className="h-12 bg-surface-container-high rounded-xl" />
+      <div className="h-12 bg-surface-container-high rounded-lg" />
 
       {/* Table skeleton */}
       <div className="space-y-3">

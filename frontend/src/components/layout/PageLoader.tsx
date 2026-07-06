@@ -7,8 +7,8 @@ interface PageLoaderProps {
 export default function PageLoader({ fullScreen = false }: PageLoaderProps) {
   const content = (
     <div className="flex items-center justify-center gap-3 text-primary">
-      <span className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-      <span className="font-label-sm text-sm text-secondary font-semibold">Loading...</span>
+      <span className="w-7 h-7 border-[3px] border-primary/20 border-t-primary rounded-full animate-spin" />
+      <span className="font-label-sm text-sm text-secondary font-semibold">Memuat...</span>
     </div>
   );
 

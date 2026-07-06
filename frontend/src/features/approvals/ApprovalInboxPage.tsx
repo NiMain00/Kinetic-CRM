@@ -1,378 +1,531 @@
-import React, { useState } from 'react';
-import type { ApprovalItem } from '../../types/domain';
-import { INITIAL_APPROVALS } from '../../services/mock-data';
+import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, Button, Modal } from '@/components/ui';
+import { PageContainer, PageHeader } from '@/components/shared';
+import type { ApprovalItem, SlaConfig } from '../../types/domain';
+import { useApprovalStore } from '@/stores/approvalStore';
+import { useProspectStore } from '@/stores/prospectStore';
+import { useProjectStore } from '@/stores/projectStore';
+import { useSlaConfigs, useNextPhaseMap } from '@/hooks/useConfigData';
+import { useNotificationStore } from '@/stores/notificationStore';
+import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
+import MentionTextarea from '@/components/shared/MentionTextarea';
+import { formatRelativeTime, formatCurrencyShort } from '@/utils/formatters';
 
 interface ApprovalInboxViewProps {
   onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
-  pendingCount: number;
-  setPendingCount: React.Dispatch<React.SetStateAction<number>>;
 }
+
+type FilterType = 'Semua' | 'Prospek' | 'RKS' | 'LPHS';
+
+function parseSlaConfig(type: string, slaConfigs: SlaConfig[]): { critH: number; warnH: number } | null {
+  const entityMap: Record<string, SlaConfig['entityType']> = { Prospek: 'prospek', RKS: 'rks', LPHS: 'lphs' };
+  const config = slaConfigs.find(s => s.entityType === entityMap[type] && s.active);
+  if (!config) return null;
+  const critH = config.unit === 'days' ? config.criticalThreshold * 24 : config.criticalThreshold;
+  const warnH = config.unit === 'days' ? config.warningThreshold * 24 : config.warningThreshold;
+  return { critH, warnH };
+}
+
+const TYPE_ICONS: Record<string, string> = {
+  Prospek: 'person_search',
+  RKS: 'description',
+  LPHS: 'assignment_turned_in',
+};
 
 export default function ApprovalInboxView({
   onShowNotification,
-  pendingCount,
-  setPendingCount,
 }: ApprovalInboxViewProps) {
-  const [approvals, setApprovals] = useState<ApprovalItem[]>(INITIAL_APPROVALS);
-  const [selectedItem, setSelectedItem] = useState<ApprovalItem | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [commentText, setCommentText] = useState('');
+  const navigate = useNavigate();
+  const { approvals, approvalHistory, approveItem, rejectItem } = useApprovalStore();
+  const { prospects, updateProspect } = useProspectStore();
+  const { projects, updateProject } = useProjectStore();
+  const slaConfigs = useSlaConfigs();
+  const addNotification = useNotificationStore((s) => s.addNotification);
+  const NEXT_PHASE_MAP = useNextPhaseMap();
+  const user = useAuthStore((s) => s.user);
+  const [filterType, setFilterType] = React.useState<FilterType>('Semua');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [rejectTarget, setRejectTarget] = React.useState<ApprovalItem | null>(null);
+  const [rejectReason, setRejectReason] = React.useState('');
+  const [isBulkReject, setIsBulkReject] = useState(false);
+  const allUsers = useUserStore((s) => s.users);
+  const mentionUsers = useMemo(
+    () => allUsers.map((u) => ({ id: u.id, name: u.fullName, role: u.role })),
+    [allUsers],
+  );
+  const currentUserId = user?.id || '';
 
-  const handleOpenReview = (item: ApprovalItem) => {
-    setSelectedItem(item);
-    setCommentText('');
-    setDrawerOpen(true);
+  const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
+  const userHistory = user?.id ? approvalHistory.filter((a) => a.assigneeUserId === user.id) : [];
+
+  const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
+    const sla = parseSlaConfig(type, slaConfigs);
+    if (!sla) return 'Normal';
+    const elapsedHours = (Date.now() - new Date(waitingSince).getTime()) / 3_600_000;
+    if (elapsedHours >= sla.critH) return 'Overdue';
+    if (elapsedHours >= sla.warnH) return 'Near Deadline';
+    return 'Normal';
   };
 
-  const handleCloseReview = () => {
-    setDrawerOpen(false);
-    setSelectedItem(null);
+  const getEntityMeta = (item: ApprovalItem) => {
+    if (item.entityType === 'prospect' && item.entityId) {
+      const p = prospects.find(pr => pr.id === item.entityId);
+      return { client: p?.client, value: p?.estimatedValue, author: p?.author };
+    }
+    if (item.entityType === 'project' && item.entityId) {
+      const p = projects.find(pr => pr.id === item.entityId);
+      return { client: p?.client, value: p?.estimatedValue, author: p?.author };
+    }
+    return {};
   };
 
-  const handleApprove = () => {
-    if (!selectedItem) return;
-    setApprovals(approvals.filter(a => a.id !== selectedItem.id));
-    setPendingCount(prev => Math.max(0, prev - 1));
-    onShowNotification(`Persetujuan untuk ${selectedItem.name} berhasil diberikan!`, 'success');
-    handleCloseReview();
+  const filteredApprovals = useMemo(() => {
+    const validApprovals = userApprovals.filter((a) => {
+      if (a.entityType === 'prospect' && a.entityId) {
+        return prospects.some((p) => p.id === a.entityId);
+      }
+      if (a.entityType === 'project' && a.entityId) {
+        return projects.some((p) => p.id === a.entityId);
+      }
+      return true;
+    });
+    const typeFiltered = filterType === 'Semua' ? validApprovals : validApprovals.filter((a) => a.type === filterType);
+    if (!searchQuery.trim()) return typeFiltered;
+    const q = searchQuery.toLowerCase();
+    return typeFiltered.filter(
+      (a) => a.name.toLowerCase().includes(q) || a.ref.toLowerCase().includes(q) || a.client?.toLowerCase().includes(q),
+    );
+  }, [userApprovals, filterType, searchQuery, prospects, projects]);
+
+  const handleReview = (item: ApprovalItem) => {
+    if (item.entityType === 'prospect' && item.entityId) {
+      navigate(`/prospects/${item.entityId}`);
+    } else if (item.entityType === 'project' && item.entityId) {
+      const tabMap: Record<string, string> = {
+        'RKS': 'review-rks',
+        'LPHS': 'lphs',
+      };
+      const tab = tabMap[item.type] || 'overview';
+      navigate(`/project/${item.entityId}/${tab}`);
+    }
   };
 
-  const handleReject = () => {
-    if (!selectedItem) return;
-    setApprovals(approvals.filter(a => a.id !== selectedItem.id));
-    setPendingCount(prev => Math.max(0, prev - 1));
-    onShowNotification(`Permintaan ${selectedItem.name} telah dikembalikan untuk revisi.`, 'warning');
-    handleCloseReview();
+  const handleInlineApprove = (item: ApprovalItem) => {
+    approveItem(item.id);
+    if (item.entityType === 'prospect' && item.entityId) {
+      const prospect = prospects.find(p => p.id === item.entityId);
+      if (prospect) {
+        updateProspect(item.entityId, { status: 'Approved' });
+        onShowNotification(`Prospek "${prospect.name}" berhasil disetujui.`, 'success');
+      }
+    } else if (item.entityType === 'project' && item.entityId) {
+      const project = projects.find(p => p.id === item.entityId);
+      if (project) {
+        const next = NEXT_PHASE_MAP[project.status];
+        if (next) {
+          updateProject(item.entityId, next);
+          onShowNotification(`Proyek "${project.name}" maju ke fase "${next.status}".`, 'success');
+        } else {
+          onShowNotification(`Proyek "${project.name}" sudah di fase terakhir.`, 'warning');
+        }
+      }
+    }
+    addNotification({
+      title: `${item.type} Disetujui`,
+      message: `${item.type} "${item.name}" telah disetujui dari Approval Inbox.`,
+      type: 'approval',
+      entityId: item.entityId,
+      entityType: item.entityType,
+    });
   };
 
-  const prospekApprovals = approvals.filter(a => a.type === 'Prospek');
-  const rksApprovals = approvals.filter(a => a.type === 'RKS');
-  const lphsApprovals = approvals.filter(a => a.type === 'LPHS');
+  const handleInlineReject = (item: ApprovalItem) => {
+    setRejectTarget(item);
+    setRejectReason('');
+    setIsBulkReject(false);
+  };
+
+  const confirmReject = () => {
+    if (!rejectTarget) return;
+    const item = rejectTarget;
+    rejectItem(item.id);
+    if (item.entityType === 'prospect' && item.entityId) {
+      const prospect = prospects.find(p => p.id === item.entityId);
+      if (prospect) {
+        updateProspect(item.entityId, { status: 'Revision' });
+        onShowNotification(`Prospek "${prospect.name}" dikembalikan untuk revisi.`, 'error');
+      }
+    } else if (item.entityType === 'project' && item.entityId) {
+      const project = projects.find(p => p.id === item.entityId);
+      if (project) {
+        updateProject(item.entityId, { status: 'Revision' });
+        onShowNotification(`Proyek "${project.name}" dikembalikan untuk revisi.`, 'error');
+      }
+    }
+    const reasonSuffix = rejectReason.trim() ? ` Alasan: ${rejectReason.trim()}` : '';
+    addNotification({
+      title: `${item.type} Revisi`,
+      message: `${item.type} "${item.name}" ditolak dan memerlukan revisi.${reasonSuffix}`,
+      type: 'revision',
+      entityId: item.entityId,
+      entityType: item.entityType,
+    });
+    setRejectTarget(null);
+    setRejectReason('');
+  };
+
+  const isAllSelected = filteredApprovals.length > 0 && filteredApprovals.every((a) => selectedIds.has(a.id));
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredApprovals.map((a) => a.id)));
+    }
+  };
+
+  const handleBulkApprove = () => {
+    selectedIds.forEach((id) => {
+      const item = approvals.find((a) => a.id === id);
+      if (item) handleInlineApprove(item);
+    });
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkReject = () => {
+    const first = approvals.find((a) => selectedIds.has(a.id));
+    if (first) {
+      setRejectTarget(first);
+      setRejectReason('');
+      setIsBulkReject(true);
+    }
+  };
+
+  const confirmBulkReject = () => {
+    if (!rejectTarget) return;
+    selectedIds.forEach((id) => {
+      const item = approvals.find((a) => a.id === id);
+      if (item) {
+        rejectItem(item.id);
+        const reasonSuffix = rejectReason.trim() ? ` Alasan: ${rejectReason.trim()}` : '';
+        addNotification({
+          title: `${item.type} Revisi`,
+          message: `${item.type} "${item.name}" ditolak dan memerlukan revisi.${reasonSuffix}`,
+          type: 'revision',
+          entityId: item.entityId,
+          entityType: item.entityType,
+        });
+      }
+    });
+    setRejectTarget(null);
+    setRejectReason('');
+    setSelectedIds(new Set());
+  };
+
+  const prospekApprovals = filteredApprovals.filter((a) => a.type === 'Prospek');
+  const rksApprovals = filteredApprovals.filter((a) => a.type === 'RKS');
+  const lphsApprovals = filteredApprovals.filter((a) => a.type === 'LPHS');
+
+  const slaBadgeClass = (status: string) => {
+    switch (status) {
+      case 'Overdue': return 'bg-danger text-white';
+      case 'Near Deadline': return 'bg-warning text-white';
+      default: return 'bg-success/10 text-success';
+    }
+  };
+
+  const slaBorderClass = (status: string) => {
+    switch (status) {
+      case 'Overdue': return 'border-l-danger';
+      case 'Near Deadline': return 'border-l-gold';
+      default: return 'border-l-success';
+    }
+  };
+
+  const filterButtonClass = (active: boolean) =>
+    `px-3 py-1 rounded-full text-caption-xs font-semibold touch-min-h whitespace-nowrap transition-all ${
+      active
+        ? 'bg-primary text-on-primary'
+        : 'bg-surface border border-border/60 text-on-surface hover:bg-surface-container'
+    }`;
+
+  const renderApprovalCard = (row: ApprovalItem) => {
+    const slaStatus = computeSlaStatus(row.waitingSince, row.type);
+    const meta = getEntityMeta(row);
+    return (
+      <div
+        key={row.id}
+        className={`bg-surface border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-all border-l-4 ${slaBorderClass(slaStatus)} ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <input
+              type="checkbox"
+              checked={selectedIds.has(row.id)}
+              onChange={() => toggleSelect(row.id)}
+              className="rounded border-border accent-primary w-4 h-4 mt-0.5 shrink-0"
+            />
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0 ${
+              row.type === 'Prospek' ? 'bg-primary' : row.type === 'RKS' ? 'bg-status-purple' : 'bg-status-orange'
+            }`}>
+              <span className="material-symbols-outlined text-[18px]">{TYPE_ICONS[row.type]}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="font-label-sm text-label-sm text-on-surface font-semibold truncate">{row.name}</p>
+                <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${slaBadgeClass(slaStatus)}`}>
+                  {slaStatus === 'Overdue' ? 'OVERDUE' : slaStatus === 'Near Deadline' ? 'KRITIS' : 'NORMAL'}
+                </span>
+              </div>
+              <p className="text-xs text-outline">Ref: {row.ref}</p>
+              {meta.client && <p className="text-xs text-secondary mt-0.5 truncate">{meta.client}</p>}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2 text-secondary min-w-0">
+            <span className="material-symbols-outlined text-[14px] shrink-0">schedule</span>
+            <span>{formatRelativeTime(row.waitingSince)}</span>
+          </div>
+          {meta.value ? (
+            <span className="font-medium text-on-surface text-xs" title={meta.value !== undefined ? `Rp ${meta.value.toLocaleString('id-ID')}` : ''}>
+              {formatCurrencyShort(meta.value)}
+            </span>
+          ) : (
+            <span className="text-xs text-outline">{row.branch}</span>
+          )}
+        </div>
+        <div className="flex gap-2 pt-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleReview(row)}
+            className="flex-1"
+          >
+            Review
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleInlineApprove(row)}
+            className="flex-1 bg-success text-white border-0 hover:opacity-90"
+          >
+            Setujui
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleInlineReject(row)}
+            className="flex-1 border-danger text-danger hover:bg-danger hover:text-white hover:border-danger"
+          >
+            Tolak
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
+  const groupSections: Array<{
+    label: string;
+    icon: string;
+    iconColor: string;
+    items: ApprovalItem[];
+  }> = [
+    { label: 'Prospek Approvals', icon: 'person_search', iconColor: 'text-primary', items: prospekApprovals },
+    { label: 'RKS (Rencana Kerja Syarat)', icon: 'description', iconColor: 'text-status-purple', items: rksApprovals },
+    { label: 'LPHS (Laporan Hasil Survey)', icon: 'assignment_turned_in', iconColor: 'text-status-orange', items: lphsApprovals },
+  ];
 
   return (
-    <div className="p-8 space-y-8 flex-1 overflow-y-auto relative">
-      {/* Title & Stats */}
-      <div className="flex items-end justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-outline font-caption-xs text-xs">
-            <span>Operations</span>
-            <span className="material-symbols-outlined text-xs">chevron_right</span>
-            <span className="text-primary font-semibold">Approval Inbox</span>
-          </div>
+    <PageContainer>
+      <PageHeader
+        title={
           <div className="flex items-center gap-4">
-            <h2 className="font-display-title text-display-title text-on-surface">Approval Inbox</h2>
+            <span>Approval Inbox</span>
             <span className="bg-primary text-on-primary px-3 py-0.5 rounded-full font-label-sm text-xs font-semibold">
-              {approvals.length} Pending
+              {userApprovals.length} Pending
             </span>
           </div>
-        </div>
+        }
+        description="Operations"
+      />
 
-        <div className="flex gap-2">
-          <button className="flex items-center gap-2 bg-white border border-border px-4 py-2 rounded-lg font-label-sm text-xs md:text-sm hover:bg-surface-container-low transition-all font-semibold">
-            <span className="material-symbols-outlined text-[18px]">history</span> View Audit Logs
-          </button>
-          <button className="flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg font-label-sm text-xs md:text-sm hover:bg-primary-container transition-all font-semibold-variant font-semibold">
-            <span className="material-symbols-outlined text-[18px]">bolt</span> Batch Approval
-          </button>
-        </div>
-      </div>
-
-      {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white border border-border p-4 rounded-lg shadow-sm flex flex-col justify-between h-28">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-on-surface">{approvals.length + 136}</span>
-            <span className="text-success font-label-sm text-sm font-semibold">+12%</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <Card padding="sm">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length}</span>
+            <span className="text-success font-label-sm text-sm font-semibold">Active</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-border p-4 rounded-lg shadow-sm flex flex-col justify-between h-28 border-l-4 border-l-danger">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-danger">5</span>
+        <Card padding="sm" className="border-l-4 border-l-danger">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl sm:text-3xl font-bold text-danger">{userApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Requires action</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-border p-4 rounded-lg shadow-sm flex flex-col justify-between h-28 border-l-4 border-l-warning">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-warning">8</span>
+        <Card padding="sm" className="border-l-4 border-l-gold">
+          <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl sm:text-3xl font-bold text-warning">{userApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Next 24 hours</span>
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white border border-border p-4 rounded-lg shadow-sm flex flex-col justify-between h-28">
-          <span className="text-outline font-caption-xs text-xs uppercase tracking-wider">Avg. Completion Time</span>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-on-surface">4.2h</span>
-            <span className="text-success font-label-sm text-sm font-semibold">-1.5h</span>
+        <Card padding="sm">
+          <p className="text-on-surface-variant font-caption-xs text-xs uppercase tracking-wider">Rata-rata Waktu Tunggu</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length > 0 ? (userApprovals.reduce((s, a) => s + (Date.now() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / userApprovals.length).toFixed(1) : userHistory.length > 0 ? (userHistory.reduce((s, a) => s + (new Date(a.resolvedAt).getTime() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / userHistory.length).toFixed(1) : '0.0'}h</span>
+            <span className="text-on-surface-variant font-label-sm text-sm font-semibold">Rata-rata</span>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Filter panel */}
-      <div className="bg-surface-container-low border border-border p-4 rounded-xl flex flex-wrap items-center gap-6">
-        <div className="flex items-center gap-3">
-          <span className="text-secondary font-label-sm text-label-sm">Tipe Approval:</span>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 bg-primary text-on-primary rounded-full text-caption-xs font-semibold">Semua</button>
-            <button className="px-3 py-1 bg-white border border-border text-on-surface rounded-full text-caption-xs font-semibold hover:bg-surface-variant">Prospek</button>
-            <button className="px-3 py-1 bg-white border border-border text-on-surface rounded-full text-caption-xs font-semibold hover:bg-surface-variant">RKS</button>
-            <button className="px-3 py-1 bg-white border border-border text-on-surface rounded-full text-caption-xs font-semibold hover:bg-surface-variant">LPHS</button>
+      <Card padding="sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama, ref, klien..."
+              className="w-full pl-9 pr-3 py-2 border border-border/60 rounded-xl text-sm bg-surface focus:ring-2 focus:ring-primary outline-none"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface">
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 overflow-x-auto scrollbar-none w-full sm:w-auto">
+            <span className="text-secondary font-label-sm text-label-sm whitespace-nowrap self-center">Tipe:</span>
+            {(['Semua', 'Prospek', 'RKS', 'LPHS'] as FilterType[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => { setFilterType(t); setSearchQuery(''); }}
+                className={filterButtonClass(filterType === t)}
+              >
+                {t}
+              </button>
+            ))}
           </div>
         </div>
-        <div className="h-6 w-[1px] bg-border hidden md:block"></div>
-        <div className="flex items-center gap-3">
-          <span className="text-secondary font-label-sm text-label-sm">SLA Status:</span>
-          <div className="flex gap-2">
-            <label className="flex items-center gap-2 bg-white border border-border px-3 py-1 rounded-lg cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded text-primary focus:ring-primary border-outline-variant" />
-              <span className="text-caption-xs font-semibold">Normal</span>
-            </label>
-            <label className="flex items-center gap-2 bg-white border border-border px-3 py-1 rounded-lg cursor-pointer">
-              <input type="checkbox" className="rounded text-warning focus:ring-warning border-outline-variant" />
-              <span className="text-caption-xs font-semibold text-warning">Near Deadline</span>
-            </label>
-            <label className="flex items-center gap-2 bg-white border border-border px-3 py-1 rounded-lg cursor-pointer">
-              <input type="checkbox" className="rounded text-danger focus:ring-danger border-outline-variant" />
-              <span className="text-caption-xs font-semibold text-danger">Overdue</span>
-            </label>
-          </div>
-        </div>
-      </div>
+      </Card>
 
-      {/* Grouped Lists */}
-      <div className="space-y-8 pb-12">
-        {/* Category: Prospek */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-primary">person_search</span>
-            <h3 className="font-heading-section text-heading-section">Prospek Approvals <span className="text-outline font-normal ml-2">({prospekApprovals.length})</span></h3>
-          </div>
-          <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr className="bg-surface-container-low border-b border-border">
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Candidate Name</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Branch</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Waiting Since</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">SLA Status</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {prospekApprovals.map(row => (
-                  <tr key={row.id} className="hover:bg-primary/5 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">BP</div>
-                        <div>
-                          <p className="font-label-sm text-label-sm text-on-surface font-semibold">{row.name}</p>
-                          <p className="font-caption-xs text-caption-xs text-outline">Ref: {row.ref}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-secondary">{row.branch}</td>
-                    <td className="px-6 py-4 font-mono-data text-mono-data text-on-surface">{row.waitingSince}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        row.slaStatus === 'Overdue' ? 'bg-danger/10 text-danger' : 'bg-warning/10 text-warning'
-                      }`}>{row.slaStatus}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleOpenReview(row)} className="bg-surface border border-border text-primary px-4 py-1.5 rounded font-label-sm text-sm hover:bg-primary hover:text-white transition-all shadow-sm font-semibold">Review</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {/* Bulk Action Bar */}
+      {someSelected && (
+        <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border border-primary/20 rounded-lg">
+          <span className="text-sm font-semibold text-on-surface">{selectedIds.size} item dipilih</span>
+          <div className="flex-1" />
+          <Button variant="primary" size="sm" onClick={handleBulkApprove}>
+            Setujui Semua
+          </Button>
+          <Button variant="danger" size="sm" onClick={handleBulkReject}>
+            Tolak Semua
+          </Button>
+          <button onClick={() => setSelectedIds(new Set())} className="text-sm text-outline hover:text-on-surface underline">
+            Batalkan
+          </button>
         </div>
+      )}
 
-        {/* Category: RKS */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-status-purple">description</span>
-            <h3 className="font-heading-section text-heading-section">RKS (Rencana Kerja Syarat) <span className="text-outline font-normal ml-2">({rksApprovals.length})</span></h3>
-          </div>
-          <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr className="bg-surface-container-low border-b border-border">
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Project Name</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Branch</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Waiting Since</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">SLA Status</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {rksApprovals.map(row => (
-                  <tr key={row.id} className="hover:bg-primary/5 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="font-label-sm text-label-sm text-on-surface font-semibold">{row.name}</p>
-                      <p className="font-caption-xs text-caption-xs text-outline">{row.ref}</p>
-                    </td>
-                    <td className="px-6 py-4 text-secondary">{row.branch}</td>
-                    <td className="px-6 py-4 font-mono-data text-mono-data text-on-surface">{row.waitingSince}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        row.slaStatus === 'Overdue' ? 'bg-danger/10 text-danger' : 'bg-success/10 text-success'
-                      }`}>{row.slaStatus}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleOpenReview(row)} className="bg-surface border border-border text-primary px-4 py-1.5 rounded font-label-sm text-sm hover:bg-primary hover:text-white transition-all shadow-sm font-semibold">Review</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Category: LPHS */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="material-symbols-outlined text-status-orange">assignment_turned_in</span>
-            <h3 className="font-heading-section text-heading-section">LPHS (Laporan Hasil Survey) <span className="text-outline font-normal ml-2">({lphsApprovals.length})</span></h3>
-          </div>
-          <div className="bg-white border border-border rounded-lg overflow-hidden shadow-sm">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr className="bg-surface-container-low border-b border-border">
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Survey Site</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Branch</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">Waiting Since</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface uppercase tracking-wider text-xs">SLA Status</th>
-                  <th className="px-6 py-3 font-label-sm text-label-sm text-on-surface text-right uppercase tracking-wider text-xs">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {lphsApprovals.map(row => (
-                  <tr key={row.id} className="hover:bg-primary/5 transition-colors group">
-                    <td className="px-6 py-4">
-                      <p className="font-label-sm text-label-sm text-on-surface font-semibold">{row.name}</p>
-                      <p className="font-caption-xs text-caption-xs text-outline">{row.ref}</p>
-                    </td>
-                    <td className="px-6 py-4 text-secondary">{row.branch}</td>
-                    <td className="px-6 py-4 font-mono-data text-mono-data text-on-surface">{row.waitingSince}</td>
-                    <td className="px-6 py-4">
-                      <span className="bg-warning/10 text-warning px-2 py-0.5 rounded text-[10px] font-bold uppercase">{row.slaStatus}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleOpenReview(row)} className="bg-surface border border-border text-primary px-4 py-1.5 rounded font-label-sm text-sm hover:bg-primary hover:text-white transition-all shadow-sm font-semibold">Review</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* SlideDrawer Overlay helper (APPR-02 Review Approval Request Drawer) */}
-      <div
-        className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${
-          drawerOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        onClick={handleCloseReview}
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-0 top-0 w-full max-w-lg h-full bg-white shadow-2xl transition-transform duration-300 flex flex-col"
-          style={{ transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)' }}
-        >
-          {/* Header */}
-          <div className="p-6 border-b border-border flex justify-between items-center bg-surface-container-lowest">
-            <div>
-              <span className="text-caption-xs font-bold text-primary uppercase select-none tracking-widest text-xs">
-                Active Desk Review
-              </span>
-              <h4 className="font-subheading-entity text-subheading-entity text-xl">Review Approval Request</h4>
+      {/* Card-based Approval Lists */}
+      <div className="space-y-6 sm:space-y-8 pb-12">
+        {groupSections.map(section => section.items.length > 0 && (
+          <div key={section.label} className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className={`material-symbols-outlined ${section.iconColor}`}>{section.icon}</span>
+              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">{section.label} <span className="text-outline font-normal ml-2">({section.items.length})</span></h3>
             </div>
-            <button className="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center border" onClick={handleCloseReview}>
-              <span className="material-symbols-outlined text-sm">close</span>
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {section.items.map(renderApprovalCard)}
+            </div>
           </div>
+        ))}
 
-          {/* Scrollable details */}
-          <div className="flex-grow overflow-y-auto p-6 space-y-6">
-            {selectedItem && (
-              <div className="space-y-4">
-                <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
-                  <span className="bg-primary text-on-primary text-[10px] uppercase font-bold px-2 py-0.5 rounded">
-                    {selectedItem.type} Submission Code: {selectedItem.ref}
+        {filteredApprovals.length === 0 && (
+          <div className="text-center py-12">
+            <span className="material-symbols-outlined text-5xl text-outline mb-4 block">inbox</span>
+            <p className="text-secondary font-label-sm">Tidak ada approval yang pending.</p>
+          </div>
+        )}
+
+        {/* Approval History */}
+        {approvalHistory.length > 0 && (
+          <div className="space-y-4 pt-6 border-t border-border">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-outline">history</span>
+              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Riwayat Persetujuan <span className="text-outline font-normal ml-2">({approvalHistory.length})</span></h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {approvalHistory.map((item) => (
+                <div key={item.id} className="bg-surface border border-border/60 rounded-xl p-4 flex items-start gap-3">
+                  <span className={`material-symbols-outlined text-[20px] mt-0.5 ${item.action === 'approved' ? 'text-success' : 'text-danger'}`}>
+                    {item.action === 'approved' ? 'check_circle' : 'cancel'}
                   </span>
-                  <h5 className="text-xl font-bold mt-2 text-on-surface">{selectedItem.name}</h5>
-                  <p className="text-xs text-outline">Registered &amp; submitted at {selectedItem.waitingSince} - {selectedItem.branch}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <span className="text-[11px] text-outline uppercase font-bold">Branch Office</span>
-                    <p className="text-sm font-semibold">{selectedItem.branch}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[11px] text-outline uppercase font-bold">Priority Status</span>
-                    <p className={`text-sm font-semibold ${selectedItem.slaStatus === 'Overdue' ? 'text-danger' : 'text-warning'}`}>
-                      {selectedItem.slaStatus}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
+                    <p className="text-xs text-outline">Ref: {item.ref} · {item.type}</p>
+                    <p className="text-xs text-secondary mt-0.5">
+                      {item.action === 'approved' ? 'Disetujui' : 'Ditolak'} · {formatRelativeTime(item.resolvedAt)}
                     </p>
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-border">
-                  <span className="text-[11px] text-outline uppercase font-bold block mb-2">Submitted Documents</span>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 border border-border rounded hover:bg-surface-container-low cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-danger">picture_as_pdf</span>
-                        <span className="text-sm font-medium">LPH_Technical_Draft_v1.pdf</span>
-                      </div>
-                      <span className="material-symbols-outlined text-outline text-lg">visibility</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 border border-border rounded hover:bg-surface-container-low cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-success">task</span>
-                        <span className="text-sm font-medium">BOM_Internal_Prices_Sheet.xlsx</span>
-                      </div>
-                      <span className="material-symbols-outlined text-outline text-lg">visibility</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 space-y-2">
-                  <label className="font-label-sm text-sm text-on-surface-variant font-semibold">Approval Comments</label>
-                  <textarea
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    className="w-full border border-border rounded-lg text-sm focus:ring-primary focus:border-primary p-3 outline-none focus:ring-1 resize-none"
-                    placeholder="Tulis alasan, instruksi atau catatan opsional untuk draf revisi..."
-                    rows={3}
-                  />
-                </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
+        )}
+      </div>
 
-          {/* Sticky footer actions */}
-          <div className="p-6 bg-surface-container-low border-t border-border grid grid-cols-2 gap-4">
-            <button
-              onClick={handleReject}
-              className="py-2.5 border border-danger text-danger font-bold rounded-lg hover:bg-danger hover:text-white transition-all font-semibold"
-            >
-              Reject / Revise Request
-            </button>
-            <button
-              onClick={handleApprove}
-              className="py-2.5 bg-success text-on-primary font-bold rounded-lg hover:opacity-90 transition-all font-semibold"
-            >
-              Approve Now
-            </button>
+      {/* Reject Confirmation Modal */}
+      <Modal
+        isOpen={rejectTarget !== null}
+        onClose={() => setRejectTarget(null)}
+        title="Tolak Persetujuan"
+        size="sm"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setRejectTarget(null)}>Batal</Button>
+            <Button variant="danger" size="md" onClick={isBulkReject ? confirmBulkReject : confirmReject}>
+              {isBulkReject ? `Tolak ${selectedIds.size} Item` : 'Tolak'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-3">
+          <p className="text-sm text-secondary">
+            Apakah Anda yakin ingin menolak persetujuan untuk <strong>{rejectTarget?.name}</strong>?
+          </p>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-xs text-on-surface-variant">Alasan Penolakan (opsional)</label>
+            <MentionTextarea
+              value={rejectReason}
+              onChange={setRejectReason}
+              users={mentionUsers}
+              currentUserId={currentUserId}
+              placeholder="Jelaskan alasan penolakan... (gunakan @ untuk mention)"
+              rows={3}
+              aria-label="Alasan penolakan"
+            />
           </div>
         </div>
-      </div>
-    </div>
+      </Modal>
+    </PageContainer>
   );
 }

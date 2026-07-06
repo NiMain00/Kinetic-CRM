@@ -1,1 +1,137 @@
-export default function UserDetailPage() { return null; }
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useUserStore } from '@/stores/userStore';
+
+const actionBadge: Record<string, string> = {
+  CREATE: 'bg-success/10 text-success',
+  UPDATE: 'bg-primary/10 text-primary',
+  DELETE: 'bg-danger/10 text-danger',
+  APPROVE: 'bg-status-teal/10 text-status-teal',
+  REJECT: 'bg-status-orange/10 text-status-orange',
+  REVISE: 'bg-warning/10 text-warning',
+  UPLOAD: 'bg-info/10 text-info',
+  LOGIN: 'bg-secondary-container/50 text-on-secondary-container',
+  LOGOUT: 'bg-secondary-container/50 text-on-secondary-container',
+};
+
+export default function UserDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const getUserById = useUserStore((s) => s.getUserById);
+  const user = getUserById(id || '');
+  const auditLogs: any[] = [];
+
+  if (!user) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-background">
+        <div className="text-center space-y-3">
+          <span className="material-symbols-outlined text-6xl text-outline">search_off</span>
+          <h2 className="text-xl font-bold text-on-surface">Pengguna Tidak Ditemukan</h2>
+          <p className="text-secondary text-sm">Pengguna dengan ID {id} tidak tersedia.</p>
+          <button onClick={() => navigate('/users')} className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-semibold text-sm hover:bg-primary-light transition-all">Kembali ke Daftar</button>
+        </div>
+      </div>
+    );
+  }
+
+  const initials = user.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase();
+  const roleBadge: Record<string, string> = {
+    'Super Admin': 'bg-danger/10 text-danger',
+    Admin: 'bg-status-purple/10 text-status-purple',
+    PM: 'bg-primary/10 text-primary',
+    'Branch Manager': 'bg-status-teal/10 text-status-teal',
+    'Dept Head': 'bg-status-indigo/10 text-status-indigo',
+    Reviewer: 'bg-warning/10 text-warning',
+    Staff: 'bg-secondary-container/50 text-on-secondary-container',
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Profile Card */}
+        <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="w-20 h-20 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-2xl shrink-0">{initials}</div>
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-xl font-extrabold text-on-surface">{user.fullName}</h1>
+                <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${roleBadge[user.role] || ''}`}>{user.role}</span>
+                <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.status === 'active' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>{user.status === 'active' ? 'Aktif' : 'Non-Aktif'}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm mt-3">
+                <div className="flex items-center gap-2 text-secondary">
+                  <span className="material-symbols-outlined text-[18px] text-outline">mail</span>
+                  {user.email}
+                </div>
+                <div className="flex items-center gap-2 text-secondary">
+                  <span className="material-symbols-outlined text-[18px] text-outline">person</span>
+                  @{user.username}
+                </div>
+                <div className="flex items-center gap-2 text-secondary">
+                  <span className="material-symbols-outlined text-[18px] text-outline">phone</span>
+                  {user.phone || '-'}
+                </div>
+                <div className="flex items-center gap-2 text-secondary">
+                  <span className="material-symbols-outlined text-[18px] text-outline">business</span>
+                  {user.branch}
+                </div>
+                <div className="flex items-center gap-2 text-secondary">
+                  <span className="material-symbols-outlined text-[18px] text-outline">category</span>
+                  {user.department}
+                </div>
+                <div className="flex items-center gap-2 text-secondary">
+                  <span className="material-symbols-outlined text-[18px] text-outline">calendar_month</span>
+                  Bergabung {user.createdAt}
+                </div>
+              </div>
+            </div>
+            <button onClick={() => navigate(`/users/${user.id}/edit`)} className="px-5 py-2.5 bg-primary text-on-primary rounded-xl font-semibold text-sm hover:bg-primary-light transition-all flex items-center gap-2 shrink-0" aria-label="Edit pengguna">
+              <span className="material-symbols-outlined text-[18px]">edit</span>
+              Edit
+            </button>
+          </div>
+        </div>
+
+        {/* Activity Log */}
+        <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
+          <h3 className="font-bold text-sm text-on-surface mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[20px]">history</span>
+            Aktivitas Terbaru
+          </h3>
+          <div className="overflow-x-auto scrollbar-none table-mobile-compact">
+            <table className="w-full text-left text-xs table-auto" aria-label="Aktivitas pengguna">
+              <thead>
+                <tr className="bg-surface-container-low border-b border-border">
+                  <th className="px-4 py-3 font-semibold">Waktu</th>
+                  <th className="px-4 py-3 font-semibold">Aksi</th>
+                  <th className="px-4 py-3 font-semibold">Entitas</th>
+                  <th className="px-4 py-3 font-semibold">Ringkasan</th>
+                  <th className="px-4 py-3 font-semibold">Dampak</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-surface-container transition-colors">
+                    <td className="px-4 py-3 font-mono text-outline">{log.timestamp}</td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold badge-compact ${actionBadge[log.action] || 'bg-secondary-container/50 text-on-secondary-container'}`}>{log.action}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="font-semibold text-on-surface">{log.entityName}</span>
+                      <span className="text-outline ml-1">({log.entityType})</span>
+                    </td>
+                    <td className="px-4 py-3 text-secondary">{log.summary}</td>
+                    <td className="px-4 py-3">
+                      <span className={`font-semibold ${log.impact === 'High' ? 'text-danger' : log.impact === 'Medium' ? 'text-warning' : 'text-secondary'}`}>{log.impact}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,4 +1,8 @@
-import React from 'react';
+import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import { navItems, filterNavItems, type NavItem } from '@/routes/nav-items';
+import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
+import { authz } from '@/services/authz';
 
 interface SidebarProps {
   activeTab: string;
@@ -6,7 +10,35 @@ interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   pendingApprovalsCount: number;
+  unreadCount?: number;
   onLogout?: () => void;
+  userRole?: string;
+  userPermissions?: string[];
+  mobile?: boolean;
+  onClose?: () => void;
+}
+
+function useSwipe(onClose?: () => void) {
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  }, []);
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return;
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    if (Math.abs(dx) > Math.abs(dy) && dx < -60) {
+      onClose?.();
+    }
+    touchStartRef.current = null;
+  }, [onClose]);
+
+  return { onTouchStart, onTouchEnd };
 }
 
 export default function Sidebar({
@@ -15,137 +47,225 @@ export default function Sidebar({
   collapsed,
   setCollapsed,
   pendingApprovalsCount,
+  unreadCount = 0,
   onLogout,
+  userRole = 'Staff',
+  userPermissions = [],
+  mobile = false,
+  onClose,
 }: SidebarProps) {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'prospects', label: 'Prospects', icon: 'group' },
-    { id: 'projects', label: 'Projects', icon: 'tactic' },
-    {
-      id: 'approvals',
-      label: 'Approval Inbox',
-      icon: 'fact_check',
-      badge: pendingApprovalsCount > 0 ? pendingApprovalsCount : undefined,
-    },
-    { id: 'kpi', label: 'KPI Dashboard', icon: 'monitoring' },
-    { id: 'reports', label: 'Reports', icon: 'analytics' },
-    { id: 'master_data', label: 'Master Data', icon: 'database' },
-    { id: 'users', label: 'User Management', icon: 'people' },
-    { id: 'audit', label: 'Audit Trail', icon: 'history' },
-    { id: 'notifications', label: 'Notification Center', icon: 'notifications' },
-  ];
+  const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole, userPermissions), [userRole, userPermissions]);
+  const swipeHandlers = useSwipe(onClose);
+  const [showDeptSwitch, setShowDeptSwitch] = React.useState(false);
+  const authUser = useAuthStore((s) => s.user);
+  const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (authUser as any)?.departmentId;
+  const rbacDepartments = useRbacStore((s) => s.departments);
+  const activeDept = rbacDepartments.find((d) => d.id === activeDeptId);
+  const deptName = activeDept?.name || (authUser as any)?.departmentName || '';
+  const deptCode = activeDept?.code || (authUser as any)?.departmentCode || '';
 
-  const configItems = [
-    { id: 'config_org', label: 'Organization Structure', icon: 'account_tree' },
-    { id: 'config_status', label: 'Project Status Master', icon: 'settings' },
-    { id: 'config_notifications', label: 'Notification Settings', icon: 'notifications_active' },
-    { id: 'config_sla', label: 'SLA Configuration', icon: 'alarm' },
-  ];
+  useEffect(() => {
+    if (mobile) {
+      document.body.classList.add('body-scroll-lock');
+    }
+    return () => {
+      document.body.classList.remove('body-scroll-lock');
+    };
+  }, [mobile]);
+
+  const handleNavigate = (path: string) => {
+    setActiveTab(path);
+    if (mobile && onClose) onClose();
+  };
+
+  const isPathActive = (itemPath: string): boolean => {
+    if (activeTab === itemPath) return true;
+    const activeSeg = activeTab.split('/')[1];
+    const itemSeg = itemPath.split('/')[1];
+    if (activeSeg === 'project' && itemSeg === 'projects') return true;
+    if (itemPath !== '/' && activeTab.startsWith(itemPath + '/')) {
+      const hasChildItem = navItems.some(
+        (other) => other.path !== itemPath && other.path.startsWith(itemPath + '/'),
+      );
+      if (hasChildItem) return false;
+      return true;
+    }
+    return false;
+  };
+
+  const navListRef = useRef<HTMLDivElement>(null);
+
+  const onNavKeyDown = (e: React.KeyboardEvent) => {
+    const buttons = navListRef.current?.querySelectorAll<HTMLButtonElement>('button');
+    if (!buttons || buttons.length === 0) return;
+    const idx = Array.from(buttons).indexOf(document.activeElement as HTMLButtonElement);
+    if (idx === -1) return;
+    let next: number;
+    if (e.key === 'ArrowDown') next = (idx + 1) % buttons.length;
+    else if (e.key === 'ArrowUp') next = (idx - 1 + buttons.length) % buttons.length;
+    else return;
+    e.preventDefault();
+    buttons[next].focus();
+  };
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive = isPathActive(item.path);
+    const badge = item.label === 'Persetujuan' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
+
+    return (
+      <button
+        key={item.path}
+        onClick={() => handleNavigate(item.path)}
+        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
+          isActive
+            ? 'bg-primary-container/40 text-primary font-semibold border-primary'
+            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
+        }`}
+        aria-label={item.label}
+      >
+        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+          {item.icon}
+        </span>
+        {!collapsed && <span className="truncate">{item.label}</span>}
+        {!collapsed && badge !== undefined && badge > 0 && (
+          <span className="ml-auto bg-orange-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full" aria-label={`${badge} notifikasi`}>
+            {badge}
+          </span>
+        )}
+      </button>
+    );
+  };
 
   return (
     <aside
-      className={`h-screen sticky left-0 top-0 bg-surface-container-lowest border-r border-border shadow-sm flex flex-col py-8 transition-all duration-300 z-50 shrink-0 ${
-        collapsed ? 'w-20' : 'w-72'
-      }`}
+      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-surface border-r border-border/60 shrink-0 ${
+        collapsed ? (mobile ? 'w-64' : 'w-18') : 'w-64'
+      } ${mobile ? 'slide-in-left' : 'transition-all duration-300'}`}
     >
-      {/* Brand Header */}
-      <div className={`px-6 mb-8 transition-opacity duration-200 ${collapsed ? 'text-center' : ''}`}>
-        <h1 className="font-display-title text-display-title text-primary tracking-tight truncate">
-          {collapsed ? 'K' : 'Kinetic CRM'}
-        </h1>
-        {!collapsed && (
-          <p className="font-caption-xs text-caption-xs text-secondary-fixed-variant uppercase tracking-widest mt-1">
-            Enterprise Operations
-          </p>
-        )}
-      </div>
-
-      {/* Navigation list */}
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
-        {menuItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left font-label-sm text-label-sm ${
-                isActive
-                  ? 'text-primary font-bold border-l-4 border-primary bg-surface-container-high'
-                  : 'text-secondary hover:bg-surface-container-high hover:text-primary'
-              }`}
-            >
-              <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-secondary'}`}>
-                {item.icon}
-              </span>
-              {!collapsed && <span className="truncate">{item.label}</span>}
-              {!collapsed && item.badge !== undefined && (
-                <span className="ml-auto bg-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-
-        {/* Section divider */}
-        <div className="pt-4 pb-2">
-          {!collapsed ? (
-            <p className="px-4 text-[10px] font-bold uppercase text-outline tracking-wider">System Config</p>
-          ) : (
-            <hr className="border-border mx-2" />
-          )}
-        </div>
-
-        {configItems.map((item) => {
-          const isActive = activeTab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-left font-label-sm text-label-sm ${
-                isActive
-                  ? 'text-primary font-bold border-l-4 border-primary bg-surface-container-high'
-                  : 'text-secondary hover:bg-surface-container-high hover:text-primary'
-              }`}
-            >
-              <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-secondary'}`}>
-                {item.icon}
-              </span>
-              {!collapsed && <span className="truncate">{item.label}</span>}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Logout button */}
-      {onLogout && (
-        <div className="px-4 mb-2 select-none">
-          <button
-            onClick={onLogout}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all text-left font-label-sm text-label-sm cursor-pointer ${
-              collapsed ? 'justify-center' : ''
-            }`}
-            title="Keluar / Log Out dari Sesi"
-          >
-            <span className="material-symbols-outlined text-[22px] text-red-500">
-              logout
-            </span>
-            {!collapsed && <span className="font-bold">Log Out</span>}
-          </button>
-        </div>
+      {mobile && (
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={onClose}
+          aria-hidden="true"
+        />
       )}
 
-      {/* Collapse button */}
-      <div className="px-4 mt-auto">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center gap-2 py-2.5 text-secondary font-label-sm text-label-sm border border-border rounded-lg hover:bg-surface-container-low transition-all"
-        >
-          <span className="material-symbols-outlined text-lg transition-transform duration-300">
-            {collapsed ? 'keyboard_double_arrow_right' : 'keyboard_double_arrow_left'}
-          </span>
-          {!collapsed && <span>Collapse</span>}
-        </button>
+      <div
+        className={`relative z-10 flex flex-col h-full py-5 ${mobile ? 'w-64 shadow-2xl' : ''}`}
+        {...(mobile ? swipeHandlers : {})}
+      >
+        {/* Brand Header */}
+        <div className={`px-5 mb-6 transition-opacity duration-200 ${collapsed && !mobile ? 'text-center' : ''}`}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
+              <span className="text-white font-bold text-xl">K</span>
+            </div>
+            {(!collapsed || mobile) && (
+              <div>
+                <h1 className="font-display-title text-on-surface text-lg tracking-tight truncate">
+                  Kinetic CRM
+                </h1>
+                <p className="font-caption-xs text-outline uppercase tracking-widest text-[10px]">
+                  OPERASI PERUSAHAAN
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Active Department Badge */}
+        {(!collapsed || mobile) && deptName && (
+          <div className="px-3 mb-3">
+            <div className="flex items-center gap-2 px-3 py-2 bg-primary-container/30 rounded-lg border border-primary/10">
+              <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary text-[16px]">business</span>
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-bold text-primary truncate">{deptName}</p>
+                <p className="text-[9px] text-outline uppercase tracking-wider">{deptCode}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Department Switcher (multiple departments) */}
+        {(!collapsed || mobile) && (() => {
+          const uid = (authUser as { id?: string })?.id;
+          if (!uid) return null;
+          const allDepts = authz.getAccessibleDepartments(uid);
+          if (allDepts.length <= 1) return null;
+          const otherDepts = allDepts.filter((d) => d.id !== activeDeptId);
+          if (otherDepts.length === 0) return null;
+          return (
+            <div className="px-3 mb-3">
+              <button
+                onClick={() => setShowDeptSwitch(!showDeptSwitch)}
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] text-outline hover:text-on-surface transition-colors"
+              >
+                <span>Ganti Department</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  {showDeptSwitch ? 'expand_less' : 'expand_more'}
+                </span>
+              </button>
+              {showDeptSwitch && (
+                <div className="mt-1 space-y-1">
+                  {otherDepts.map((dept) => (
+                    <button
+                      key={dept.id}
+                      onClick={() => {
+                        useAuthStore.getState().setActiveDepartment(dept.id);
+                        setShowDeptSwitch(false);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs text-on-surface-variant hover:bg-surface-container transition-colors"
+                    >
+                      <div className="w-5 h-5 rounded bg-surface-container-low flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[12px]">business</span>
+                      </div>
+                      <span className="truncate">{dept.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Navigation list */}
+        <nav ref={navListRef} className="flex-1 px-3 space-y-0.5 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
+          {allowedNavItems.map(renderNavItem)}
+        </nav>
+
+        {/* Logout button */}
+        {onLogout && (
+          <div className="px-3 mb-2">
+            <button
+              onClick={onLogout}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-danger hover:bg-danger-container/20 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h border-l-[3px] border-transparent ${
+                collapsed && !mobile ? 'justify-center' : ''
+              }`}
+              title="Keluar"
+              aria-label="Keluar"
+            >
+              <span className="material-symbols-outlined text-[22px]">logout</span>
+              {(!collapsed || mobile) && <span className="font-semibold">Keluar</span>}
+            </button>
+          </div>
+        )}
+
+        {/* Collapse button (desktop only) */}
+        {!mobile && (
+          <div className="px-3 mt-auto">
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-full flex items-center justify-center gap-2 py-2 text-outline font-label-sm text-label-sm rounded-lg hover:bg-surface-container hover:text-on-surface-variant transition-all touch-min-h"
+              aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+            >
+              <span className="material-symbols-outlined text-lg transition-transform duration-300">
+                {collapsed ? 'keyboard_double_arrow_right' : 'chevron_left'}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </aside>
   );

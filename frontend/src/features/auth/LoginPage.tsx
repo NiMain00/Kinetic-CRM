@@ -1,284 +1,230 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { Button } from '@/components/ui';
+import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
+import { useNotificationStore } from '@/stores/notificationStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useUserStore } from '@/stores/userStore';
+import { useInputConfigStore } from '@/stores/inputConfigStore';
+import { authService } from '@/services/auth';
+const DEMO_ACCOUNTS = [
+  { id: 'user-1', name: 'Super Administrator', username: 'superadmin', password: 'admin123', role: 'Super Admin' },
+  { id: 'user-2', name: 'Bambang Permadi', username: 'bambang', password: 'admin123', role: 'PM' },
+  { id: 'user-3', name: 'Rina Marlina', username: 'rina', password: 'admin123', role: 'Branch Manager' },
+  { id: 'user-4', name: 'Deni Saputra', username: 'deni', password: 'staff123', role: 'Staff Finance' },
+  { id: 'user-5', name: 'Siti Rahmawati', username: 'siti', password: 'staff123', role: 'Staff Procurement' },
+  { id: 'user-6', name: 'Ahmad Sulistyo', username: 'ahmad', password: 'staff123', role: 'Staff PM' },
+];
 
-interface LoginViewProps {
-  onLoginSuccess: (userData: { fullName: string; email: string; roleName: string; avatarUrl?: string }) => void;
-  onShowNotification: (message: string, type: 'success' | 'warning' | 'error') => void;
-}
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const login = useAuthStore((s) => s.login);
 
-export default function LoginView({ onLoginSuccess, onShowNotification }: LoginViewProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // Ready-to-use dummy account presets
-  const DUMMY_ACCOUNTS = [
-    {
-      label: 'Alexander Pierce (Branch Manager)',
-      username: 'a.pierce@kinetic-corp.com',
-      password: 'password123',
-      fullName: 'Alexander Pierce',
-      roleName: 'Branch Manager',
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWDEhx9DDyQcza1Ly6ob2GvUr0RcKFg_ZWPWDX3R89h599PQ2OzX6K21-q2Bb6wr08y-sjWBdJ0UmyRJEjaEB7mRRTEILqTd1oApCKVAcFeJesIsCQ52_trToPbTyXHoo1Ed8D8c6Z0inMzS44qG749ofXtaBpSw-btx_MFUMYLzJsAg_aaXXLqufa_N2Jw2s6ca5NfTPTnJJf0CH5RFHVv38b591w568UukqO4CLBCdt0GAI6TWz8IG_d8Fg4dMoJ1zEMVwF3E3rs'
-    },
-    {
-      label: 'Sarah Jenkins (Project Officer)',
-      username: 'sjenkins_officer',
-      password: 'adminSecured77',
-      fullName: 'Sarah Jenkins',
-      roleName: 'Project Officer',
-      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/female-prof-1'
-    },
-    {
-      label: 'Guest Viewer (Access Minimal)',
-      username: 'viewer_guest',
-      password: 'guestPasswordOnly',
-      fullName: 'Rian Hidayat',
-      roleName: 'Commercial Analyst',
-      avatarUrl: 'https://lh3.googleusercontent.com/base-avatars/male-prof-2'
-    }
-  ];
-
-  const handleSelectPreset = (preset: typeof DUMMY_ACCOUNTS[0]) => {
-    setUsername(preset.username);
-    setPassword(preset.password);
-    onShowNotification(`Kredensial untuk ${preset.fullName} berhasil dimuat.`, 'success');
+  const selectAccount = (acct: { username: string; password: string }) => {
+    setUsername(acct.username);
+    setPassword(acct.password);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username.trim() || !password.trim()) {
-      onShowNotification('Harap masukkan username/surel dan password.', 'warning');
+      toast.error('Harap masukkan username dan password.');
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate network delay for realistic experience
-    setTimeout(() => {
+    try {
+      const res = await authService.login({ username: username.trim(), password });
+      const { token, user } = res.data;
+
+      login(token, {
+        id: user.id,
+        fullName: user.fullName,
+        name: user.fullName,
+        email: user.email,
+        roleName: user.userRoles?.[0]?.role?.name || '',
+        branchName: user.orgUnit?.name || '',
+        roleId: user.userRoles?.[0]?.roleId || '',
+        scopeType: user.userRoles?.[0]?.scopeType || 'global',
+      });
+
+      // Fetch user roles dari API (tidak blocking)
+      useRbacStore.getState().fetchUserRoles(user.id);
+      useNotificationStore.getState().fetchNotifications();
+
+      // Fetch master data dari API
+      const masterStore = useMasterDataStore.getState();
+      masterStore.fetchEntity('industries');
+      masterStore.fetchEntity('categories');
+      masterStore.fetchEntity('competitors');
+      masterStore.fetchEntity('questionTypes');
+      masterStore.fetchQuestions();
+      masterStore.fetchEntity('projectStatuses');
+      masterStore.fetchEntity('departments');
+      masterStore.fetchEntity('users');
+      masterStore.fetchEntity('roles');
+      masterStore.fetchEntity('items');
+      useInputConfigStore.getState().fetchGroups();
+
+      // Fetch users untuk user management page
+      useUserStore.getState().fetchUsers();
+
+      navigate('/dashboard');
+      toast.success(`Selamat datang, ${user.fullName}!`);
+    } catch {
+      toast.error('Username atau password salah.');
+    } finally {
       setIsLoading(false);
-
-      // Check against our dummy users list
-      const matchedUser = DUMMY_ACCOUNTS.find(
-        (acc) =>
-          acc.username.toLowerCase() === username.trim().toLowerCase() &&
-          acc.password === password
-      );
-
-      // Allow login with any credentials but default to Alexander Pierce if custom
-      if (matchedUser) {
-        onLoginSuccess({
-          fullName: matchedUser.fullName,
-          email: matchedUser.username,
-          roleName: matchedUser.roleName,
-          avatarUrl: matchedUser.avatarUrl,
-        });
-        onShowNotification(`Selamat datang kembali, ${matchedUser.fullName}! Berhasil masuk sebagai ${matchedUser.roleName}.`, 'success');
-      } else {
-        // Dynamic fallback logic so they can test custom accounts too
-        if (password.length >= 6) {
-          const autoName = username.split('@')[0];
-          const capitalized = autoName.charAt(0).toUpperCase() + autoName.slice(1);
-          onLoginSuccess({
-            fullName: capitalized,
-            email: username,
-            roleName: 'Custom Enterprise User',
-          });
-          onShowNotification(`Login Berhasil (Akun Kustom)! Selamat datang, ${capitalized}.`, 'success');
-        } else {
-          onShowNotification('Login gagal. Password harus minimal 6 karakter untuk akun kustom atau pilih akun dummy yang tersedia.', 'error');
-        }
-      }
-    }, 1000);
+    }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 text-slate-800 p-4 transition-colors">
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100 grid grid-cols-1 md:grid-cols-12">
-        
-        {/* Left Side: Brand & Dummy Account Presets */}
-        <div className="md:col-span-5 bg-gradient-to-br from-primary via-primary/95 to-[#003460] p-8 text-white flex flex-col justify-between relative overflow-hidden">
-          {/* Accent circles */}
-          <div className="absolute -top-16 -left-16 w-48 h-48 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
-          <div className="absolute -bottom-20 -right-10 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
-
-          <div className="relative z-10 space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
-                <span className="material-symbols-outlined text-white text-2xl font-bold">corporate_fare</span>
-              </div>
-              <div>
-                <h1 className="font-extrabold text-base tracking-wider leading-none">KINETIC CRM</h1>
-                <p className="text-[10px] text-white/70">Enterprise Workspace Portal</p>
-              </div>
-            </div>
-
-            
-          </div>
-
-          <div className="relative z-10 mt-8 space-y-4">
-            <div className="border-t border-white/10 pt-4">
-              <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest block mb-2.5">
-                Pilih Akun Dummy (Klik untuk Auto-Fill)
-              </span>
-              <div className="space-y-2">
-                {DUMMY_ACCOUNTS.map((preset) => (
-                  <button
-                    key={preset.username}
-                    type="button"
-                    onClick={() => handleSelectPreset(preset)}
-                    className="w-full bg-white/10 hover:bg-white/15 active:scale-98 transition-all p-2.5 rounded-lg border border-white/5 text-left flex items-center gap-3 group cursor-pointer"
-                  >
-                    <img
-                      src={preset.avatarUrl}
-                      alt={preset.fullName}
-                      className="w-7 h-7 rounded-full object-cover border border-white/20 shrink-0"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold leading-none truncate group-hover:text-amber-300 transition-colors">
-                        {preset.fullName}
-                      </p>
-                      <p className="text-[10px] text-white/75 truncate mt-0.5">{preset.roleName}</p>
-                    </div>
-                    <span className="material-symbols-outlined text-sm opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
-                      arrow_forward_ios
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <p className="text-[10px] text-white/50 text-center font-mono">
-              Version 2.4.1 (Stable Build)
-            </p>
-          </div>
+    <div className="min-h-screen w-full flex">
+      {/* Left Panel — Brand (hidden on mobile) */}
+      <div className="hidden lg:flex w-[40%] bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.06]">
+          <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-primary blur-3xl" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-primary-lighter blur-3xl" />
         </div>
-
-        {/* Right Side: Act of Login Form */}
-        <div className="md:col-span-7 p-8 flex flex-col justify-center">
-          
-          <div className="max-w-md w-full mx-auto space-y-6">
-            <div className="space-y-1">
-              <h3 className="text-xl font-extrabold text-slate-800">Silakan Masuk</h3>
-              <p className="text-xs text-slate-400">Gunakan akun dummy di sebelah kiri atau masukkan kredensial korporasi Anda.</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              
-              <div className="space-y-1.5 text-left">
-                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Username atau Surel</label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                    person
-                  </span>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Contoh: a.pierce@kinetic-corp.com"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-left"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5 text-left">
-                <div className="flex justify-between items-center">
-                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Kata Sandi (Password)</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onShowNotification('Fitur reset password hanya tersedia via admin regional cabang.', 'warning');
-                    }}
-                    className="text-[11.5px] font-semibold text-primary hover:underline cursor-pointer"
-                  >
-                    Lupa sandi?
-                  </button>
-                </div>
-                
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                    lock
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:bg-white focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-left"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none text-sm material-symbols-outlined select-none"
-                  >
-                    {showPassword ? 'visibility_off' : 'visibility'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember/T&C checks */}
-              <div className="flex items-center justify-between pointer-events-auto">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)}
-                    className="rounded border-slate-300 text-primary focus:ring-primary w-4 h-4"
-                  />
-                  <span className="text-xs text-slate-500">Ingat Akun ini</span>
-                </label>
-                
-                <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded">
-                  <span className="material-symbols-outlined text-xs">vpn_key</span>
-                  Aman 256-bit SSL
-                </span>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-primary hover:brightness-105 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-2.5 rounded-lg text-xs font-bold shadow-md active:scale-99 transition-all cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                {isLoading ? (
-                  <>
-                    <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4.5 h-4.5 inline-block"></span>
-                    <span>Memverifikasi Kredensial...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-[16px]">login</span>
-                    <span>Masuk ke Workspace</span>
-                  </>
-                )}
-              </button>
-
-            </form>
-
-            <div className="relative flex py-2 items-center">
-              <div className="flex-grow border-t border-slate-100"></div>
-              <span className="flex-shrink mx-3 text-[10px] text-slate-400 uppercase tracking-widest font-mono">Bantuan Teknis</span>
-              <div className="flex-grow border-t border-slate-100"></div>
-            </div>
-
-            {/* Quick manual hints */}
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-1 text-[11px] text-left text-slate-500">
-              <p className="font-bold text-slate-700">💡 Membantu Pengujian / Demo:</p>
-              <p className="leading-relaxed">
-                Anda juga dapat mengetik sandi sendiri. Setiap akun kustom dengan panjang sandi di atas 6 karakter akan berhasil login langsung untuk mempermudah evaluasi visual.
-              </p>
-            </div>
-
+        <div className="relative z-10 text-center">
+          <div className="w-20 h-20 rounded-2xl bg-primary shadow-lg flex items-center justify-center mx-auto mb-6">
+            <span className="text-white font-bold text-4xl">K</span>
           </div>
-
+          <h2 className="font-display-title text-2xl text-primary-dark dark:text-primary-light font-bold mb-2">
+            Kinetic CRM
+          </h2>
+          <p className="text-primary-dark/70 dark:text-primary-light/70 text-sm max-w-xs">
+            Kelola proyek dan pengadaan perusahaan lebih efektif dalam satu platform terintegrasi.
+          </p>
         </div>
-
       </div>
+
+      {/* Right Panel — Form */}
+      <div className="w-full lg:w-[60%] flex items-center justify-center p-4 sm:p-8 bg-surface">
+        <div className="w-full max-w-md">
+          {/* Mobile brand — visible only on mobile */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
+              <span className="material-symbols-outlined text-primary text-3xl">corporate_fare</span>
+            </div>
+            <h1 className="font-display-title text-xl text-on-surface">KINETIC CRM</h1>
+            <p className="text-caption-xs text-secondary mt-0.5">Enterprise Workspace Portal</p>
+          </div>
+
+          <div className="bg-surface rounded-xl p-6 sm:p-8">
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="login-username" className="text-caption-xs font-semibold text-secondary uppercase tracking-wider">Username atau Email</label>
+              <input
+                id="login-username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Masukkan username"
+                className="w-full px-3 py-2.5 bg-surface-container-low border border-border/60 rounded-xl text-sm focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                autoFocus
+                aria-required="true"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <label htmlFor="login-password" className="text-caption-xs font-semibold text-secondary uppercase tracking-wider">Password</label>
+                <Link to="/forgot-password" className="text-caption-xs font-semibold text-primary hover:underline">
+                  Lupa password?
+                </Link>
+              </div>
+              <div className="relative">
+                <input
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Masukkan password"
+                  className="w-full px-3 py-2.5 bg-surface-container-low border border-border/60 rounded-xl text-sm focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all pr-10"
+                  aria-required="true"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-on-surface text-sm material-symbols-outlined"
+                >
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={() => setRememberMe(!rememberMe)}
+                  className="rounded border-border text-primary focus:ring-primary w-4 h-4"
+                  aria-label="Ingat saya"
+                />
+                <span className="text-caption-xs text-secondary">Ingat saya</span>
+              </label>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              size="lg"
+              className="w-full"
+              leftIcon={isLoading ? undefined : <span className="material-symbols-outlined text-lg">login</span>}
+              isLoading={isLoading}
+            >
+              {isLoading ? 'Memproses...' : 'Masuk'}
+            </Button>
+          </form>
+
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-caption-xs text-secondary text-center mb-3">
+              Pilih akun demo untuk masuk otomatis
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((acct) => {
+                const isSelected = username === acct.username;
+                return (
+                  <button
+                    key={acct.username}
+                    type="button"
+                    onClick={() => selectAccount(acct)}
+                    className={`flex items-center gap-2.5 p-2.5 rounded-xl border-2 transition-all cursor-pointer text-left ${
+                      isSelected
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-surface-container hover:border-primary/30 hover:bg-surface-container-lowest'
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-on-surface truncate">{acct.name}</p>
+                      <p className="text-[9px] text-secondary truncate leading-tight">{acct.role}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <p className="text-caption-xs text-secondary text-center mt-4">
+          &copy; {new Date().getFullYear()} Kinetic CRM. All rights reserved.
+        </p>
+      </div>
+    </div>
     </div>
   );
 }

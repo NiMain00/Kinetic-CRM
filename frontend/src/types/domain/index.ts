@@ -1,13 +1,124 @@
+export interface Customer {
+  id: string;
+  name: string;
+  code: string;
+  type: 'swasta' | 'bumn' | 'pemerintah' | 'asing';
+  city: string;
+  npwp?: string;
+  picName: string;
+  picPosition: string;
+  picPhone: string;
+  industryId?: string;
+  providerExisting?: string;
+  isNew?: boolean;
+  needsVerification?: boolean;
+  verifiedAt?: string;
+  verifiedBy?: string;
+}
+
 export interface Prospect {
   id: string;
   name: string;
   client: string;
-  status: 'Prospecting' | 'Waiting PM' | 'Revision' | 'Approved';
+  customerId?: string;
+  customerType?: 'existing' | 'new';
+  customerData?: Customer;
+  status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor' | 'Revision' | 'Approved';
+  prospectType?: 'non_potensial' | 'potensial';
+  potensiUnit: number;
   author: string;
   date: string;
   estimatedValue?: number;
   description?: string;
+  branch?: string;
   answers?: Record<string, string>;
+  industryId?: string;
+  providerExisting?: string;
+  projectType?: string;
+  isConverted?: boolean;
+  projectId?: string;
+  createdByUserId?: string;
+  departmentId?: string;
+  currentStageId?: string;
+  ownerUserId?: string;
+  timeline?: TimelineEvent[];
+  documents?: DocGroup[];
+}
+
+export interface RksData {
+  nomorTender: string;
+  namaTender: string;
+  deadlineTender: string;
+  aanwijzing: string;
+  workLocation: string;
+  mainScope: string;
+  additionalNotes: string;
+  uploadedFiles: Array<{ name: string; size: string; time: string }>;
+  answers?: Record<string, string>;
+}
+
+export interface LphsDepartmentApproval {
+  departmentId: string;
+  departmentName: string;
+  status: 'pending' | 'reviewing' | 'approved' | 'revision';
+  approverName?: string;
+  reviewNotes?: string;
+  approvedAt?: string;
+  revisionNotes?: string;
+  revisionRound: number;
+  isTargetedRevision: boolean;
+}
+
+export interface LphsData {
+  lphsFileName?: string;
+  lphsFileSize?: string;
+  lphsExternalUrl?: string;
+  siosFileName?: string;
+  siosFileSize?: string;
+  selectedDepartments: string[];
+  departmentsLocked: boolean;
+  pmStatus: 'pending' | 'reviewing' | 'approved' | 'revision';
+  pmApprovedAt?: string;
+  mgmtStatus: 'pending' | 'approved' | 'revision';
+  mgmtApprovedAt?: string;
+  overallStatus: 'draft' | 'dept_review' | 'mgmt_review' | 'approved' | 'revision';
+  submittedAt?: string;
+  finalApprovedAt?: string;
+  departmentApprovals: LphsDepartmentApproval[];
+}
+
+export interface CompetitorEntry {
+  id: string;
+  name: string;
+  estPrice: number;
+  advantages: string[];
+  notes: string;
+}
+
+export interface MilestoneEntry {
+  id: string;
+  name: string;
+  completed: boolean;
+  date?: string;
+}
+
+export interface DocumentEntry {
+  id: string;
+  name: string;
+  size: string;
+  uploadDate: string;
+  uploader: string;
+  version: string;
+  icon: string;
+  iconColor: string;
+}
+
+export interface DocGroup {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+  documents: DocumentEntry[];
 }
 
 export interface Project {
@@ -22,13 +133,22 @@ export interface Project {
   date: string;
   progress: number;
   estimatedValue: number;
-  type: 'Tender' | 'Prospecting';
+  type: string;
+  sourceProspectId?: string;
+  providerExisting?: string;
   deadlineTender?: string;
+  createdByUserId?: string;
+  departmentId?: string;
+  currentStageId?: string;
+  ownerUserId?: string;
+  scopeDepartments?: string[];
+  branch?: string;
   pricing?: {
     value: number;
     margin: number;
     note: string;
     referenceUrl?: string;
+    bottomPrice?: number;
   };
   winnerDetails?: {
     outcome: 'menang' | 'kalah' | null;
@@ -37,12 +157,31 @@ export interface Project {
     duration?: number;
     loseReason?: string;
     loseNote?: string;
+    spkDocument?: { name: string; size: string; time: string } | null;
   };
   delivery?: {
     startDate?: string;
     endDate?: string;
+    actualEndDate?: string;
     note?: string;
+    isCompleted?: boolean;
+    completedAt?: string;
+    completedBy?: string;
   };
+  rks?: RksData;
+  lphs?: LphsData;
+  competitors?: CompetitorEntry[];
+  documents?: DocGroup[];
+  timeline?: TimelineEvent[];
+}
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  roleId: string;
+  departmentId: string;
+  assignedBy: string;
 }
 
 export interface ApprovalItem {
@@ -53,7 +192,12 @@ export interface ApprovalItem {
   waitingSince: string;
   slaStatus: 'Overdue' | 'Near Deadline' | 'Normal';
   type: 'Prospek' | 'RKS' | 'LPHS';
+  resourceType: 'prospect' | 'rks' | 'lphs_sios';
+  resourceId: string;
   client?: string;
+  entityId?: string;
+  entityType?: 'prospect' | 'project';
+  assigneeUserId?: string;
 }
 
 export interface TimelineEvent {
@@ -71,3 +215,8 @@ export interface TimelineEvent {
 }
 
 export * from './users';
+export * from './item';
+export * from './master-item';
+
+// NOTE: Some parts of the app use a different Prospect/Project typing model.
+// This file re-exports the canonical domain types. Update them carefully.
