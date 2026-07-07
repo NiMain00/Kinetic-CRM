@@ -67,7 +67,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
       description: `${competitors.length} kompetitor tercatat dalam analisis.`,
     };
     addTimelineEvent(project.id, event);
-    navigate(`/project/${project.id}/pemenang`);
+    navigate(`/projects/${project.id}/pemenang`);
     onShowNotification?.('Analisis kompetitor selesai. Lanjut ke penentuan hasil tender.', 'success');
   };
 

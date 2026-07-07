@@ -73,7 +73,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
     };
     addTimelineEvent(project.id, event);
     // Navigate to kompetitor tab
-    navigate(`/project/${project.id}/kompetitor`);
+    navigate(`/projects/${project.id}/kompetitor`);
     onShowNotification?.('Harga berhasil dikonfirmasi. Lanjut ke analisis kompetitor.', 'success');
   };
 

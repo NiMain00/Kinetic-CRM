@@ -10,6 +10,7 @@ import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { useActiveOptions } from '@/hooks/useInputConfig';
+import { useInputConfigStore } from '@/stores/inputConfigStore';
 import type { Prospect } from '@/types/domain';
 
 interface ProspectsViewProps {
@@ -31,10 +32,12 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const authUser = useAuthStore((s) => s.user);
   const { can } = useAuthz();
 
+  const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
   useEffect(() => { fetchProspects(); }, [fetchProspects]);
+  useEffect(() => { fetchGroups(); }, [fetchGroups]);
   const { isStaffOnly, userId } = useOwnerFilter();
 
-  const [activeFilter, setActiveFilter] = useState<string>('All');
+  const [activeFilter, setActiveFilter] = useState<string>('all');
   const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
@@ -71,45 +74,36 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     return true;
   });
 
+  const tabFilterMap: Record<string, (p: Prospect) => boolean> = useMemo(() => ({
+    all: () => true,
+    my_prospects: (p) => p.ownerUserId === authUser?.id,
+    recent: (p) => {
+      const d = new Date(p.date);
+      const weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      return !isNaN(d.getTime()) && d >= weekAgo;
+    },
+    needs_review: (p) => p.customerData?.needsVerification === true || p.status === 'Waiting Supervisor',
+    won: (p) => p.status === 'Approved',
+    lost: (p) => p.status === 'Non Potensial',
+  }), [authUser?.id]);
+
   const tabCounts = useMemo(() => {
     return prospectFilterTabOptions.map(opt => {
-      const tab = opt.value;
-      let count: number;
-      if (tab === 'All') {
-        count = visibleProspects.length;
-      } else if (tab === 'Non Potensial') {
-        count = visibleProspects.filter(p => p.status === 'Non Potensial' || p.prospectType === 'non_potensial').length;
-      } else if (tab === 'Potensial') {
-        count = visibleProspects.filter(p => p.status === 'Potensial' || p.prospectType === 'potensial').length;
-      } else if (tab === 'Butuh Approval') {
-        count = visibleProspects.filter(p => p.customerData?.needsVerification === true || p.status === 'Waiting Supervisor').length;
-      } else {
-        count = visibleProspects.filter(p => p.status === tab).length;
-      }
-      return count;
+      const filterFn = tabFilterMap[opt.value];
+      if (!filterFn) return 0;
+      return visibleProspects.filter(filterFn).length;
     });
-  }, [visibleProspects, prospectFilterTabOptions]);
-
-
+  }, [visibleProspects, prospectFilterTabOptions, tabFilterMap]);
 
   const filteredProspects = useMemo(() => visibleProspects.filter(p => {
     const q = debouncedSearch.toLowerCase();
     const matchesSearch = !q || p.name.toLowerCase().includes(q) ||
                           p.client.toLowerCase().includes(q);
-    let matchesTab: boolean;
-    if (activeFilter === 'All') {
-      matchesTab = true;
-    } else if (activeFilter === 'Non Potensial') {
-      matchesTab = p.status === 'Non Potensial' || p.prospectType === 'non_potensial';
-    } else if (activeFilter === 'Potensial') {
-      matchesTab = p.status === 'Potensial' || p.prospectType === 'potensial';
-    } else if (activeFilter === 'Butuh Approval') {
-      matchesTab = p.customerData?.needsVerification === true || p.status === 'Waiting Supervisor';
-    } else {
-      matchesTab = p.status === activeFilter;
-    }
+    const filterFn = tabFilterMap[activeFilter];
+    const matchesTab = filterFn ? filterFn(p) : true;
     return matchesSearch && matchesTab;
-  }), [visibleProspects, debouncedSearch, activeFilter]);
+  }), [visibleProspects, debouncedSearch, activeFilter, tabFilterMap]);
 
   const sortedProspects = useMemo(() => {
     if (!sortKey) return filteredProspects;

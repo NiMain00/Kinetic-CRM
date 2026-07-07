@@ -381,7 +381,7 @@ export default function ProspectDetailPage() {
         )}
 
         {isConverted && (
-          <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">visibility</span>} onClick={() => navigate(`/project/${prospect.projectId}/overview`)}>
+          <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">visibility</span>} onClick={() => navigate(`/projects/${prospect.projectId}/overview`)}>
             Lihat Proyek
           </Button>
         )}
@@ -893,7 +893,7 @@ export default function ProspectDetailPage() {
                           <p className="font-semibold text-on-surface">{relatedProject.progress}%</p>
                         </div>
                       </div>
-                      <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>} onClick={() => navigate(`/project/${relatedProject.id}/overview`)}>
+                      <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>} onClick={() => navigate(`/projects/${relatedProject.id}/overview`)}>
                         Buka Detail Proyek
                       </Button>
                     </div>

@@ -112,7 +112,7 @@ export default function ApprovalInboxView({
         'LPHS': 'lphs',
       };
       const tab = tabMap[item.type] || 'overview';
-      navigate(`/project/${item.entityId}/${tab}`);
+      navigate(`/projects/${item.entityId}/${tab}`);
     }
   };
 

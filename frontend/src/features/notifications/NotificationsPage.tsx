@@ -256,7 +256,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                       markAsRead(n.id);
                     }
                     if (n.entityId && n.entityType) {
-                      navigate(n.entityType === 'project' ? `/project/${n.entityId}` : `/prospects/${n.entityId}`);
+                      navigate(n.entityType === 'project' ? `/projects/${n.entityId}` : `/prospects/${n.entityId}`);
                     }
                   }}
                   className={`border-l-4 rounded-xl shadow-xs border border-border transition-all hover:shadow-md cursor-pointer relative overflow-hidden ${

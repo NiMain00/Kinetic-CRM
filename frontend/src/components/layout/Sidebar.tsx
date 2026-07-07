@@ -80,9 +80,6 @@ export default function Sidebar({
 
   const isPathActive = (itemPath: string): boolean => {
     if (activeTab === itemPath) return true;
-    const activeSeg = activeTab.split('/')[1];
-    const itemSeg = itemPath.split('/')[1];
-    if (activeSeg === 'project' && itemSeg === 'projects') return true;
     if (itemPath !== '/' && activeTab.startsWith(itemPath + '/')) {
       const hasChildItem = navItems.some(
         (other) => other.path !== itemPath && other.path.startsWith(itemPath + '/'),

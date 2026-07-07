@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
+import { BulkActions } from '@/components/shared';
 import { useProcurementStore } from './procurementStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthz } from '@/hooks/useAuthz';
@@ -30,6 +31,8 @@ export default function ProcurementListPage() {
   const deleteProcurement = useProcurementStore((s) => s.deleteProcurement);
   const [deleteTarget, setDeleteTarget] = useState<Procurement | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
   const filtered = useMemo(() => {
     return procurements
@@ -82,6 +85,30 @@ export default function ProcurementListPage() {
     setDeleteTarget(null);
   };
 
+  const handleBatchDelete = useCallback(() => {
+    selectedRows.forEach(id => deleteProcurement(id));
+    toast.success(`${selectedRows.size} pengadaan berhasil dihapus.`);
+    setSelectedRows(new Set());
+    setSelectionMode(false);
+  }, [selectedRows, deleteProcurement]);
+
+  const toggleAllRows = useCallback(() => {
+    if (selectedRows.size === filtered.length && filtered.length > 0) {
+      setSelectedRows(new Set());
+    } else {
+      setSelectedRows(new Set(filtered.map(p => p.id)));
+    }
+  }, [selectedRows, filtered]);
+
+  const toggleRow = useCallback((id: string) => {
+    setSelectedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Header */}
@@ -133,6 +160,20 @@ export default function ProcurementListPage() {
               </option>
             ))}
           </select>
+          {can('pengadaan:write') && (
+            <button
+              onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
+              className={`p-2 rounded-lg border transition-all ${
+                selectionMode
+                  ? 'bg-primary/10 border-primary/30 text-primary'
+                  : 'border-border/60 text-secondary hover:bg-surface-container'
+              }`}
+              title={selectionMode ? 'Tutup mode pilih' : 'Mode pilih'}
+              aria-label={selectionMode ? 'Tutup mode pilih' : 'Aktifkan mode pilih'}
+            >
+              <span className="material-symbols-outlined text-[18px]">checklist</span>
+            </button>
+          )}
           <span className="text-xs text-secondary">
             {filtered.length} pengadaan
           </span>
@@ -165,10 +206,31 @@ export default function ProcurementListPage() {
           </div>
         ) : (
           <div className="bg-surface rounded-xl border border-border shadow-card overflow-hidden">
+            {selectionMode && selectedRows.size > 0 && (
+              <div className="px-4 pt-4">
+                <BulkActions
+                  selectedCount={selectedRows.size}
+                  onClearSelection={() => { setSelectedRows(new Set()); setSelectionMode(false); }}
+                  onBatchDelete={handleBatchDelete}
+                  deleteConfirmMessage={`Apakah Anda yakin ingin menghapus ${selectedRows.size} pengadaan yang dipilih? Tindakan ini tidak dapat dibatalkan.`}
+                />
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-surface-container border-b border-border">
+                    {selectionMode && (
+                      <th className="px-4 py-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={filtered.length > 0 && selectedRows.size === filtered.length}
+                          onChange={toggleAllRows}
+                          className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                          aria-label="Pilih semua"
+                        />
+                      </th>
+                    )}
                     <th className="text-left px-4 py-3 font-semibold text-secondary">
                       Nama Proyek
                     </th>
@@ -198,9 +260,20 @@ export default function ProcurementListPage() {
                   {filtered.map((p) => (
                     <tr
                       key={p.id}
-                      onClick={() => navigate(`/procurement/${p.id}`)}
+                      onClick={() => { if (!selectionMode) navigate(`/procurement/${p.id}`); }}
                       className="border-b border-border/50 hover:bg-surface-container/50 cursor-pointer transition-colors"
                     >
+                      {selectionMode && (
+                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.has(p.id)}
+                            onChange={() => toggleRow(p.id)}
+                            className="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                            aria-label={`Pilih ${p.code}`}
+                          />
+                        </td>
+                      )}
                       <td className="px-4 py-3 text-on-surface-variant truncate max-w-60">
                         {(() => {
                           const projectName = getProjectName(p);

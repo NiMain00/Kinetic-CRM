@@ -411,3 +411,31 @@ html {
     animation: none;
   }
 }
+
+/* Make entire date input clickable to open picker (not just the icon) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  opacity: 0;
+  cursor: pointer;
+}
+input[type="date"] {
+  position: relative;
+}
+/* Firefox: cover entire input with the picker button */
+input[type="date"]::-moz-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  opacity: 0;
+  cursor: pointer;
+}

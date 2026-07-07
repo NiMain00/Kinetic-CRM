@@ -180,7 +180,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       };
       addTimelineEvent(project.id, event);
       onShowNotification?.('RKS berhasil dikirim. Melanjutkan ke tahap Harga...', 'success');
-      navigate(`/project/${project.id}/harga`);
+      navigate(`/projects/${project.id}/harga`);
     } else {
       // Tender: tetap ke Review RKS
       updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
@@ -211,7 +211,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       };
       addTimelineEvent(project.id, event);
       onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
-      navigate(`/project/${project.id}/review-rks`);
+      navigate(`/projects/${project.id}/review-rks`);
     }
   };
 
