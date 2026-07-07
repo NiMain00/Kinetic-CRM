@@ -25,5 +25,3 @@ test-results/
 # Build cache
 *.tsbuildinfo
 .vite/
-PROJECT_PROGRESS_TRACKER_old.xlsx
-KINETIC_CRM_DOCUMENTATION_TRACKER.xlsx

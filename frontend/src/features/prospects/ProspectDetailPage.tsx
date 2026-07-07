@@ -115,7 +115,6 @@ export default function ProspectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const getProspectById = useProspectStore((s) => s.getProspectById);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const addProspectTimelineEvent = useProspectStore((s) => s.addTimelineEvent);
@@ -143,7 +142,7 @@ export default function ProspectDetailPage() {
   const userRole = authUser?.roleName;
   const isSuperAdmin = userRole === 'Super Admin';
 
-  const prospect = getProspectById(id || '');
+  const prospect = useProspectStore((s) => id ? s.entities[id] : undefined);
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentText, setCommentText] = useState('');
