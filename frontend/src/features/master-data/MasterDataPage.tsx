@@ -61,14 +61,6 @@ export default function MasterDataView(_props: MasterDataViewProps) {
     );
   }, [debouncedSearch]);
 
-  const handleCardClick = useCallback((entry: MasterDataEntry) => {
-    if (entry.path) {
-      navigate(entry.path);
-    } else {
-      navigate(`/master-data/${entry.id}`);
-    }
-  }, [navigate]);
-
   const handleResetSearch = useCallback(() => {
     setSearchQuery('');
   }, []);
@@ -140,7 +132,6 @@ export default function MasterDataView(_props: MasterDataViewProps) {
         entries={filteredConfig}
         getCount={getCount}
         getActiveCount={(e) => getActiveCount(store, e) ?? 0}
-        onCardClick={handleCardClick}
         onResetSearch={handleResetSearch}
         searchQuery={searchQuery}
       />

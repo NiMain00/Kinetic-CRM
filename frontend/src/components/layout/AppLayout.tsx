@@ -56,11 +56,6 @@ export default function AppLayout() {
 
   const isFullBleed = location.pathname.includes('/diskusi');
 
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    setMobileSidebarOpen(false);
-  };
-
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -70,8 +65,6 @@ export default function AppLayout() {
     <div className="flex h-screen overflow-hidden bg-background">
       {mobileSidebarOpen && (
         <Sidebar
-          activeTab={location.pathname}
-          setActiveTab={handleNavigate}
           collapsed={false}
           setCollapsed={() => {}}
           pendingApprovalsCount={pendingApprovalsCount}
@@ -86,8 +79,6 @@ export default function AppLayout() {
 
       <div className={`hidden md:flex ${sidebarOpen ? 'w-64' : 'w-18'} transition-all duration-300 shrink-0`}>
         <Sidebar
-          activeTab={location.pathname}
-          setActiveTab={handleNavigate}
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
           pendingApprovalsCount={pendingApprovalsCount}
@@ -103,9 +94,9 @@ export default function AppLayout() {
           userName={userName}
           roleName={userRole}
           notificationCount={pendingApprovalsCount}
-          onNotificationsClick={() => navigate('/notifications')}
-          onProfileClick={() => navigate('/profile')}
-          onConfigClick={() => navigate('/config')}
+          notificationsTo="/notifications"
+          profileTo="/profile"
+          configTo="/config"
           onMenuClick={() => setMobileSidebarOpen(true)}
           onHelpClick={() => setShortcutHelpOpen((v) => !v)}
         />

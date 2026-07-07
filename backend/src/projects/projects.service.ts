@@ -12,9 +12,18 @@ export class ProjectsService {
     if (params?.search) {
       where.OR = [{ name: { contains: params.search } }, { code: { contains: params.search } }, { client: { contains: params.search } }];
     }
+    if (params?.result) {
+      where.tenderResult = { result: params.result };
+    }
+    if (params?.excludeResult) {
+      const excluded = params.excludeResult.split(',');
+      where.NOT = [
+        { tenderResult: { result: { in: excluded } } },
+      ];
+    }
 
     const page = params?.page || 1;
-    const perPage = 20;
+    const perPage = params?.perPage || 200;
     const [data, total] = await Promise.all([
       this.prisma.project.findMany({
         where, skip: (page - 1) * perPage, take: perPage, orderBy: { createdAt: 'desc' },

@@ -518,14 +518,14 @@ async function main() {
     { id: 'ico-pft-3', groupId: 'icg-prospect-filter-tabs', value: 'my_prospects', label: 'Prospek Saya', sortOrder: 3 },
     { id: 'ico-pft-4', groupId: 'icg-prospect-filter-tabs', value: 'recent', label: 'Terbaru', sortOrder: 4 },
     { id: 'ico-pft-5', groupId: 'icg-prospect-filter-tabs', value: 'won', label: 'Menang', sortOrder: 5 },
-    { id: 'ico-pft-6', groupId: 'icg-prospect-filter-tabs', value: 'lost', label: 'Hilang', sortOrder: 6 },
+    { id: 'ico-pft-6', groupId: 'icg-prospect-filter-tabs', value: 'lost', label: 'Kalah', sortOrder: 6 },
     // ── pipeline_tabs ──
     { id: 'ico-pl-1', groupId: 'icg-pipeline-tabs', value: 'all', label: 'Semua', sortOrder: 1 },
     { id: 'ico-pl-2', groupId: 'icg-pipeline-tabs', value: 'prospecting', label: 'Prospecting', sortOrder: 2 },
     { id: 'ico-pl-3', groupId: 'icg-pipeline-tabs', value: 'tender', label: 'Tender', sortOrder: 3 },
     { id: 'ico-pl-4', groupId: 'icg-pipeline-tabs', value: 'negotiation', label: 'Negosiasi', sortOrder: 4 },
     { id: 'ico-pl-5', groupId: 'icg-pipeline-tabs', value: 'won', label: 'Menang', sortOrder: 5 },
-    { id: 'ico-pl-6', groupId: 'icg-pipeline-tabs', value: 'lost', label: 'Hilang', sortOrder: 6 },
+    { id: 'ico-pl-6', groupId: 'icg-pipeline-tabs', value: 'lost', label: 'Kalah', sortOrder: 6 },
     // ── account_statuses ──
     { id: 'ico-as-1', groupId: 'icg-account-statuses', value: 'active', label: 'Aktif', sortOrder: 1, colorHex: '#10B981' },
     { id: 'ico-as-2', groupId: 'icg-account-statuses', value: 'inactive', label: 'Non-Aktif', sortOrder: 2, colorHex: '#EF4444' },

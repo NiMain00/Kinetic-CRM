@@ -18,6 +18,17 @@ const PAGE_SIZE = 20;
 
 const terminalStatuses = ['Selesai', 'Kalah', 'Cancelled', 'Dibatalkan'];
 
+function getTabFetchParams(tab: string): Record<string, string> {
+  switch (tab) {
+    case 'prospecting': return { type: 'prospecting' };
+    case 'tender': return { type: 'tender' };
+    case 'negotiation': return { type: 'tender', excludeResult: 'won,lost' };
+    case 'won': return { result: 'won' };
+    case 'lost': return { result: 'lost' };
+    default: return {};
+  }
+}
+
 function getDeadlineInfo(dateStr?: string): { label: string; variant: 'success' | 'warning' | 'danger' | 'default' } | null {
   if (!dateStr) return null;
   const date = new Date(dateStr);
@@ -57,6 +68,7 @@ export default function ProjectListPage() {
   const fetchProjects = useProjectStore((s) => s.fetchProjects);
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
+  useEffect(() => { fetchProjects(getTabFetchParams(activeTab)); }, [activeTab, fetchProjects]);
 
   // Derive progress from project status for display (mirrors ProjectDetailPage logic)
   const deriveProgress = useCallback((status: string) => {
@@ -86,19 +98,6 @@ export default function ProjectListPage() {
       list = list.filter((p) => !p.ownerUserId || p.ownerUserId === userId);
     }
 
-    if (activeTab === 'aktif') {
-      list = list.filter((p) => {
-        const isTerminal = terminalStatuses.includes(p.status) || terminalStatuses.includes(p.phase);
-        return !isTerminal && p.winnerDetails?.outcome !== 'menang' && p.winnerDetails?.outcome !== 'kalah';
-      });
-    } else if (activeTab === 'menang') {
-      list = list.filter((p) => p.winnerDetails?.outcome === 'menang');
-    } else if (activeTab === 'kalah') {
-      list = list.filter((p) => p.winnerDetails?.outcome === 'kalah');
-    } else if (activeTab === 'selesai') {
-      list = list.filter((p) => terminalStatuses.includes(p.status) || terminalStatuses.includes(p.phase));
-    }
-
     if (debouncedSearch.trim()) {
       const q = debouncedSearch.toLowerCase();
       list = list.filter(
@@ -121,7 +120,7 @@ export default function ProjectListPage() {
       if (!isNaN(max)) list = list.filter((p) => p.estimatedValue <= max);
     }
     return list;
-  }, [activeTab, debouncedSearch, projects, filterValues, isStaffOnly, userId]);
+  }, [debouncedSearch, projects, filterValues, isStaffOnly, userId]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(
@@ -389,7 +388,7 @@ export default function ProjectListPage() {
           <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Nilai</p>
           <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrencyShort(filtered.reduce((s, p) => s + p.estimatedValue, 0))}</p>
         </Card>
-        <button onClick={() => handleTabClick('aktif')} className="text-left">
+        <button onClick={() => handleTabClick('tender')} className="text-left">
           <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
             <p className="text-outline text-xs font-semibold uppercase tracking-wider">Active</p>
             <p className="text-2xl font-bold text-success mt-1">
@@ -400,7 +399,7 @@ export default function ProjectListPage() {
             </p>
           </Card>
         </button>
-        <button onClick={() => handleTabClick('menang')} className="text-left">
+        <button onClick={() => handleTabClick('won')} className="text-left">
           <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
             <p className="text-outline text-xs font-semibold uppercase tracking-wider">Won</p>
             <p className="text-2xl font-bold text-status-purple mt-1">{filtered.filter((p) => p.winnerDetails?.outcome === 'menang').length}</p>

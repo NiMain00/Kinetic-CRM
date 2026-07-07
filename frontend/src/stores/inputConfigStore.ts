@@ -124,13 +124,14 @@ export const useInputConfigStore = create<InputConfigState>()(
     }),
     {
       name: 'kinetic-input-config',
-      version: 3,
+      version: 4,
       partialize: (state) => {
         const { loading, ...rest } = state as any;
         return rest;
       },
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
+        if (version < 4) return { groups: [] };
         return { groups: current.groups || [] };
       },
     },

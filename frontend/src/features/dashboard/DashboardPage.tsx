@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui';
+import { Link, useNavigate } from 'react-router-dom';
 import { PageContainer, ActivityFeed } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useApprovalStore } from '@/stores/approvalStore';
@@ -165,44 +164,40 @@ export default function DashboardPage() {
           </span>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate('/prospects/new')}
-            leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
+          <Link
+            to="/prospects/new"
+            className="inline-flex items-center gap-1.5 bg-primary text-white hover:bg-primary-light shadow-sm hover:shadow-md active:shadow-sm px-3.5 py-1.5 text-xs rounded-lg transition-all"
           >
+            <span className="material-symbols-outlined text-[16px]">add</span>
             Prospek Baru
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/projects/new')}
-            leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
+          </Link>
+          <Link
+            to="/projects/new"
+            className="inline-flex items-center gap-1.5 bg-surface text-primary border border-primary/30 hover:bg-primary/5 px-3.5 py-1.5 text-xs rounded-lg transition-all"
           >
+            <span className="material-symbols-outlined text-[16px]">add</span>
             Proyek Baru
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/approvals')}
-            leftIcon={<span className="material-symbols-outlined text-[16px]">fact_check</span>}
+          </Link>
+          <Link
+            to="/approvals"
+            className="inline-flex items-center gap-1.5 bg-surface text-primary border border-primary/30 hover:bg-primary/5 px-3.5 py-1.5 text-xs rounded-lg transition-all"
           >
+            <span className="material-symbols-outlined text-[16px]">fact_check</span>
             Approval
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/reports/calendar')}
-            leftIcon={<span className="material-symbols-outlined text-[16px]">calendar_month</span>}
+          </Link>
+          <Link
+            to="/reports/calendar"
+            className="inline-flex items-center gap-1.5 bg-surface text-primary border border-primary/30 hover:bg-primary/5 px-3.5 py-1.5 text-xs rounded-lg transition-all"
           >
+            <span className="material-symbols-outlined text-[16px]">calendar_month</span>
             Kalender
-          </Button>
+          </Link>
         </div>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
+        <Link to="/projects" className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer block">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">account_balance_wallet</span>
@@ -220,9 +215,9 @@ export default function DashboardPage() {
               <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#4CAF50" opacity="0.5" />
             </svg>
           </div>
-        </div>
+        </Link>
 
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/approvals')}>
+        <Link to="/approvals" className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer block">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-warning-container text-warning">
               <span className="material-symbols-outlined">fact_check</span>
@@ -237,9 +232,9 @@ export default function DashboardPage() {
               <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#F59E0B" opacity="0.5" />
             </svg>
           </div>
-        </div>
+        </Link>
 
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/projects')}>
+        <Link to="/projects" className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer block">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-danger-container text-danger">
               <span className="material-symbols-outlined">alarm</span>
@@ -254,9 +249,9 @@ export default function DashboardPage() {
               <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#EF4444" opacity="0.5" />
             </svg>
           </div>
-        </div>
+        </Link>
 
-        <div className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer" onClick={() => navigate('/reports/kpi')}>
+        <Link to="/reports/kpi" className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer block">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 rounded-xl bg-primary/10 text-primary">
               <span className="material-symbols-outlined">military_tech</span>
@@ -271,7 +266,7 @@ export default function DashboardPage() {
               <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#4CAF50" opacity="0.5" />
             </svg>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Charts Row */}
@@ -329,13 +324,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex justify-center border-t border-border/60 pt-2.5">
-            <button
-              onClick={() => navigate('/reports')}
+            <Link
+              to="/reports"
               className="flex items-center gap-1.5 text-primary font-label-sm text-xs hover:underline"
             >
               Lihat Selengkapnya
               <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -381,13 +376,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex justify-center border-t border-border/60 pt-2.5 mt-1">
-            <button
-              onClick={() => navigate('/reports')}
+            <Link
+              to="/reports"
               className="flex items-center gap-1.5 text-primary font-label-sm text-xs hover:underline"
             >
               Lihat Detail
               <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-            </button>
+            </Link>
           </div>
         </div>
       </div>
@@ -400,12 +395,12 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-primary text-xl">folder</span>
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Proyek Terbaru</h4>
             </div>
-            <button
-              onClick={() => navigate('/projects')}
+            <Link
+              to="/projects"
               className="text-primary font-label-sm hover:underline text-xs sm:text-sm font-semibold touch-min-h flex items-center"
             >
               Lihat Semua
-            </button>
+            </Link>
           </div>
 
           {recentProjects.length === 0 ? (
@@ -413,7 +408,7 @@ export default function DashboardPage() {
           ) : isMobile ? (
             <div className="p-3 space-y-3">
               {recentProjects.map((project) => (
-                <div key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="bg-surface-container-low rounded-2xl p-4 border border-border/60 active:scale-[0.99] transition-transform cursor-pointer">
+                <Link key={project.id} to={`/projects/${project.id}`} className="block bg-surface-container-low rounded-2xl p-4 border border-border/60 active:scale-[0.99] transition-transform cursor-pointer">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0 mr-2">
                       <p className="font-label-sm text-on-surface text-sm font-medium">{project.name}</p>
@@ -427,7 +422,7 @@ export default function DashboardPage() {
                     <span className="text-xs text-secondary">{project.client}</span>
                     <span className="text-xs text-secondary">{formatCurrency(project.estimatedValue)}</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (
@@ -445,7 +440,7 @@ export default function DashboardPage() {
                   {recentProjects.map((project) => (
                     <tr key={project.id} onClick={() => navigate(`/projects/${project.id}`)} className="hover:bg-primary/5 transition-colors group cursor-pointer">
                       <td className="px-5 py-3">
-                        <p className="font-label-sm text-on-surface text-sm font-medium">{project.name}</p>
+                        <Link to={`/projects/${project.id}`} className="font-label-sm text-on-surface text-sm font-medium hover:text-primary transition-colors">{project.name}</Link>
                         <p className="text-xs text-secondary font-mono">{project.code}</p>
                       </td>
                       <td className="px-5 py-3 text-secondary text-xs">{project.client}</td>
@@ -469,12 +464,12 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-primary text-xl">history</span>
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Aktivitas Terbaru</h4>
             </div>
-            <button
-              onClick={() => navigate('/notifications')}
+            <Link
+              to="/notifications"
               className="text-primary font-label-sm hover:underline text-xs sm:text-sm font-semibold touch-min-h flex items-center"
             >
               Lihat Semua
-            </button>
+            </Link>
           </div>
           <div className="flex-1 overflow-y-auto max-h-[360px]">
             <ActivityFeed maxItems={10} showFilter={false} />
