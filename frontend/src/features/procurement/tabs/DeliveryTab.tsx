@@ -174,12 +174,30 @@ export default function DeliveryTab({ procurement }: Props) {
   const handleSaveProgress = () => {
     if (!procurement.id) return;
     updateProcurement(procurement.id, { progressNotes, progress: progressVal });
+    addTimelineEvent(procurement.id, {
+      id: `evt-${Date.now()}`,
+      title: 'Progress Pengadaan Diperbarui',
+      actor: procurement.createdBy,
+      role: 'Procurement',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'status_change',
+      description: `Progress pengadaan diperbarui ke ${progressVal}%.`,
+    });
     toast.success('Progress berhasil disimpan');
   };
 
   const handleContinueToClosing = () => {
     if (!procurement.id) return;
     updateProcurement(procurement.id, { progressNotes, progress: progressVal });
+    addTimelineEvent(procurement.id, {
+      id: `evt-${Date.now()}`,
+      title: 'Lanjut ke Penutupan',
+      actor: procurement.createdBy,
+      role: 'Procurement',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'submit',
+      description: 'Delivery selesai, pengadaan dilanjutkan ke tahap penutupan.',
+    });
     toast.success('Progress disimpan. Silakan tutup pengadaan di tab Closing.');
     navigate(`/procurement/${procurement.id}/closing`);
   };

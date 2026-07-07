@@ -333,6 +333,15 @@ export default function ProspectDetailPage() {
       return;
     }
     verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
+    addProspectTimelineEvent(prospect.id, {
+      id: `evt-${prospect.id}-verified-${Date.now()}`,
+      title: 'Customer Diverifikasi',
+      actor: authUser?.fullName || authUser?.name || 'Super Admin',
+      role: userRole || 'Super Admin',
+      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      type: 'approve',
+      description: `Customer "${customer.name}" telah diverifikasi.`,
+    });
     toast.success('Customer berhasil diverifikasi!');
   };
 
@@ -529,7 +538,7 @@ export default function ProspectDetailPage() {
                 <InfoPill icon="inventory_2" color="teal" label={`${prospect.potensiUnit} Unit`} />
                 <InfoPill icon="location_on" color="blue" label={prospect.branch || '-'} />
                 <InfoPill icon="person" color="purple" label={prospect.author} />
-                <InfoPill icon="calendar_today" color="gold" label={prospect.date} />
+                <InfoPill icon="calendar_today" color="gold" label={formatDate(prospect.date)} />
               </div>
             </div>
 

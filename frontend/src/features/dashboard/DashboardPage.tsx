@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const [currentDateString, setCurrentDateString] = useState('');
   const { approvals } = useApprovalStore();
   const { projects } = useProjectStore();
+  const fetchProjects = useProjectStore((s) => s.fetchProjects);
   const user = useAuthStore((s) => s.user);
   const { stats: apiStats, chartData: apiChartData, statusDistribution: apiDist, loading: dashLoading, fetchAll } = useDashboardStore();
 
@@ -23,6 +24,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchAll();
+    fetchProjects();
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('id-ID', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -74,33 +76,33 @@ export default function DashboardPage() {
     const monthlyLose = [0, 0, 0, 0, 0, 0];
 
     projects.forEach((p) => {
-      const dateStr = p.winnerDetails?.startDate || p.date;
+      const dateStr = p.date;
       if (!dateStr) return;
       const d = new Date(dateStr);
       if (isNaN(d.getTime())) return;
       const month = d.getMonth();
       if (month < 0 || month > 5) return;
-      if (p.winnerDetails?.outcome === 'menang') monthlyWin[month]++;
-      else if (p.winnerDetails?.outcome === 'kalah') monthlyLose[month]++;
+      if (p.status === 'Selesai' || p.winnerDetails?.outcome === 'menang') monthlyWin[month]++;
+      else if (['Dibatalkan', 'Kalah'].includes(p.status) || p.winnerDetails?.outcome === 'kalah') monthlyLose[month]++;
     });
 
     const maxVal = Math.max(...monthlyWin.map((v, i) => v + monthlyLose[i]), 1);
 
     return months.map((m, i) => ({
       month: m,
-      win: Math.max(5, Math.round((monthlyWin[i] / maxVal) * 100)),
-      lose: Math.max(5, Math.round((monthlyLose[i] / maxVal) * 100)),
+      win: maxVal === 0 ? 0 : Math.round((monthlyWin[i] / maxVal) * 100),
+      lose: maxVal === 0 ? 0 : Math.round((monthlyLose[i] / maxVal) * 100),
     }));
   }, [apiChartData, projects]);
 
   const statusDistribution = useMemo(() => {
     if (apiDist) {
-      const { inProgress, completed, postponed, total } = apiDist;
-      return { berjalan: inProgress, planning: 0, review: postponed, selesai: completed, total };
+      const { inProgress, completed, postponed, planning, total } = apiDist;
+      return { berjalan: inProgress, planning, review: postponed, selesai: completed, total };
     }
-    const berjalan = projects.filter((p) => !['Selesai', 'Dibatalkan'].includes(p.status) && !p.winnerDetails?.outcome).length;
-    const planning = projects.filter((p) => ['Dibuat', 'Potensial'].includes(p.status)).length;
-    const review = projects.filter((p) => ['Review Departemen', 'LPHS/SIOS', 'Revisi', 'Waiting Supervisor', 'Revision'].includes(p.status)).length;
+    const berjalan = projects.filter((p) => !['Selesai', 'Dibatalkan', 'Kalah'].includes(p.status) && !p.winnerDetails?.outcome).length;
+    const planning = projects.filter((p) => ['Dibuat', 'Potensial', 'rks'].includes(p.status)).length;
+    const review = projects.filter((p) => ['Review Departemen', 'LPHS/SIOS', 'lphs', 'Revisi', 'Waiting Supervisor', 'Revision'].includes(p.status)).length;
     const selesai = projects.filter((p) => p.status === 'Selesai' || p.winnerDetails?.outcome === 'menang').length;
     const total = berjalan + planning + review + selesai;
     return { berjalan, planning, review, selesai, total };

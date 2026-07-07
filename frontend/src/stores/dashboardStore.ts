@@ -22,22 +22,20 @@ export const useDashboardStore = create<DashboardState>()((set) => ({
 
   fetchAll: async () => {
     set({ loading: true, error: null });
-    try {
-      const [statsRes, trendRes, distRes, deadlinesRes] = await Promise.all([
-        dashboardService.getStats(),
-        dashboardService.getWinLossTrend(),
-        dashboardService.getStatusDistribution(),
-        dashboardService.getCriticalDeadlines(),
-      ]);
-      set({
-        stats: statsRes.data.data || statsRes.data as any,
-        chartData: trendRes.data.data || trendRes.data as any,
-        statusDistribution: distRes.data.data || distRes.data as any,
-        criticalDeadlines: deadlinesRes.data.data || deadlinesRes.data as any,
-        loading: false,
-      });
-    } catch {
-      set({ loading: false, error: 'Gagal memuat data dashboard' });
-    }
+    const [statsRes, trendRes, distRes, deadlinesRes] = await Promise.allSettled([
+      dashboardService.getStats(),
+      dashboardService.getWinLossTrend(),
+      dashboardService.getStatusDistribution(),
+      dashboardService.getCriticalDeadlines(),
+    ]);
+    const extract = (r: PromiseSettledResult<any>) =>
+      r.status === 'fulfilled' ? (r.value.data?.data ?? r.value.data ?? null) : null;
+    set({
+      stats: extract(statsRes) as DashboardStats | null,
+      chartData: (extract(trendRes) as ChartDataPoint[] | null) ?? [],
+      statusDistribution: extract(distRes) as StatusDistribution | null,
+      criticalDeadlines: (extract(deadlinesRes) as CriticalDeadline[] | null) ?? [],
+      loading: false,
+    });
   },
 }));

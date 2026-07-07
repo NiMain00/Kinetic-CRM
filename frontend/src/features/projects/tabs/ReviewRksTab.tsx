@@ -116,6 +116,16 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   };
 
   const handleSaveReview = () => {
+    if (!project?.id) return;
+    addTimelineEvent(project.id, {
+      id: `evt-${Date.now()}`,
+      title: 'Review RKS Disimpan',
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'comment',
+      description: reviewNotes || 'Review RKS disimpan sebagai draft.',
+    });
     onShowNotification?.('Review RKS berhasil disimpan.', 'success');
   };
 

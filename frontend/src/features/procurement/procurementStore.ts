@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import type { Procurement, ProcurementStatus } from '@/types/domain/procurement';
 import type { TimelineEvent, DocGroup } from '@/types/domain';
 import { generateProcurementCode } from '@/types/domain/procurement';
+import { useRelationStore } from '@/stores/relationStore';
+import { eventBus } from '@/services/eventBridge';
 
 interface ProcurementState {
   /** Normalized entity map */
@@ -22,6 +24,7 @@ interface ProcurementState {
   deleteProcurement: (id: string) => void;
   getProcurementById: (id: string) => Procurement | undefined;
   addTimelineEvent: (id: string, event: TimelineEvent) => void;
+  forcePersist: () => void;
   updateDocuments: (id: string, docs: DocGroup[]) => void;
 }
 
@@ -111,24 +114,78 @@ export const useProcurementStore = create<ProcurementState>()(
           return { ...r, ids: s.ids };
         }),
 
-      deleteProcurement: (id) =>
+      deleteProcurement: (id) => {
+        const proc = get().entities[id];
         set((s) => {
           const entities = { ...s.entities };
           delete entities[id];
           const ids = s.ids.filter((i) => i !== id);
           return { entities, ids, procurements: deriveProcurements(entities, ids) };
-        }),
+        });
+        // Bersihkan relasi di relationStore biar re-create bisa jalan
+        if (proc?.sourceProjectId) {
+          useRelationStore.getState().unlinkProjectToProcurement(proc.sourceProjectId, id);
+        }
+        // Emit event supaya handler lain (misal di eventHandlers.ts) jalan
+        setTimeout(() => {
+          eventBus.emit({
+            type: 'PROCUREMENT_DELETED',
+            procurementId: id,
+            projectId: proc?.sourceProjectId,
+            timestamp: new Date().toISOString(),
+          });
+        }, 0);
+        // Force persist immediately biar ga balik lagi pas refresh
+        get().forcePersist();
+      },
 
       getProcurementById: (id) => get().entities[id],
 
-      addTimelineEvent: (id, event) =>
+      addTimelineEvent: (id, event) => {
         set((s) => {
           const r = updateOne(s.entities, s.ids, id, (e) => ({
             ...e,
             timeline: [...(e.timeline || []), event],
           }));
           return { ...r, ids: s.ids };
-        }),
+        });
+        // force persist segera agar data tidak hilang jika user navigasi
+        setTimeout(() => {
+          try {
+            const s = get();
+            const partial = { entities: s.entities, ids: s.ids };
+            const key = 'kinetic-procurement';
+            const raw = localStorage.getItem(key);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              parsed.state = partial;
+              localStorage.setItem(key, JSON.stringify(parsed));
+            }
+          } catch (e) {
+            console.error('[procurement-persist] forcePersist error:', e);
+          }
+        }, 0);
+      },
+      forcePersist: () => {
+        if (typeof window !== 'undefined') {
+          setTimeout(() => {
+            const s = get();
+            const partial = { entities: s.entities, ids: s.ids };
+            try {
+              const key = 'kinetic-procurement';
+              const raw = localStorage.getItem(key);
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                parsed.state = partial;
+                parsed.version = 3;
+                localStorage.setItem(key, JSON.stringify(parsed));
+              }
+            } catch (e) {
+              console.error('[procurement-persist] forcePersist error:', e);
+            }
+          }, 0);
+        }
+      },
 
       updateDocuments: (id, docs) =>
         set((s) => {
@@ -138,7 +195,7 @@ export const useProcurementStore = create<ProcurementState>()(
     }),
     {
       name: 'kinetic-procurement',
-      version: 2,
+      version: 3,
       merge: (persisted: unknown, current: ProcurementState) => {
         if (!persisted || typeof persisted !== 'object') return current;
         const p = persisted as Partial<ProcurementState>;
@@ -159,6 +216,22 @@ export const useProcurementStore = create<ProcurementState>()(
           const raw = current.procurements || [];
           const { entities, ids } = normalizeProcurements(raw);
           return { entities, ids, procurements: deriveProcurements(entities, ids) };
+        }
+
+        // v2→v3: hapus event yg ter-clone dari proyek (RKS, LPHS, Harga, Kompetitor, dll.)
+        // tapi pertahankan event yg murni pengadaan (Pengadaan Dibuat, dll.)
+        if (version < 3 && current.entities) {
+          const projectKeywords = ['RKS', 'LPHS', 'SIOS', 'Harga', 'Kompetitor', 'Peserta', 'Menang', 'Kalah', 'Proyek', 'Review RKS', 'Customer Diverifikasi'];
+          const entities = { ...current.entities };
+          for (const key of Object.keys(entities)) {
+            const old = entities[key];
+            if (!old.timeline?.length) continue;
+            const filtered = old.timeline.filter(
+              (evt: any) => !projectKeywords.some((kw) => (evt.title || '').toLowerCase().includes(kw.toLowerCase()))
+            );
+            entities[key] = { ...old, timeline: filtered.length > 0 ? filtered : [] };
+          }
+          return { ...current, entities, procurements: entities ? deriveProcurements(entities, current.ids || []) : [] };
         }
 
         // Ensure derived `procurements` for loads from direct persist

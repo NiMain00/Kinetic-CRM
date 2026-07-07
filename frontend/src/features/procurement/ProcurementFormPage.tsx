@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useProcurementStore } from './procurementStore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useRelationStore } from '@/stores/relationStore';
 import { formatCurrency } from '@/utils/formatters';
 
 export default function ProcurementFormPage() {
@@ -50,6 +51,10 @@ export default function ProcurementFormPage() {
       phase: prNumber ? 'Purchase Request' : 'Draft',
     });
 
+    // Simpan relasi di relationStore biar PROJECT_WON dll tahu sudah ada procurement
+    if (sourceProjectId) {
+      useRelationStore.getState().linkProjectToProcurement(sourceProjectId, procurement.id);
+    }
     toast.success(`Pengadaan ${procurement.code} berhasil dibuat`);
     navigate(`/procurement/${procurement.id}`);
   };

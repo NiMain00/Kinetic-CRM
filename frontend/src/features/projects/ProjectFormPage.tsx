@@ -116,9 +116,10 @@ export default function ProjectFormPage() {
       return;
     }
     setDeptError('');
-    const ts = Date.now();
+      const ts = Date.now();
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     const projectId = `PR-${ts}`;
+    const currentTime = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const newProject: Project = {
       id: projectId,
       code: `PRJ-${String(projectCount + 1).padStart(4, '0')}-${ts}-${rand}`,
@@ -138,6 +139,15 @@ export default function ProjectFormPage() {
       departmentId: user?.departmentId || 'dept-pm',
       currentStageId: 'stage-in-project',
       sourceProspectId: fromProspect?.id,
+      timeline: [{
+        id: `evt-${projectId}-created-${Date.now()}`,
+        title: 'Proyek Dibuat',
+        actor: user?.fullName || user?.name || 'System',
+        role: 'Project Manager',
+        time: currentTime,
+        type: 'status_change',
+        description: `Proyek "${data.name.trim()}" berhasil dibuat.`,
+      }],
     };
 
     try {

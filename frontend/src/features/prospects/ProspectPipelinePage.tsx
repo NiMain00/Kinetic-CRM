@@ -6,6 +6,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useOwnerFilter } from '@/hooks/useOwnerFilter';
+import { formatDate } from '@/utils/formatters';
 import type { Prospect } from '@/types/domain';
 
 interface Props {
@@ -51,7 +52,7 @@ function ProspectCard({
           </p>
         </div>
         <span className="text-[10px] font-mono-data text-outline whitespace-nowrap shrink-0 mt-0.5">
-          {prospect.date}
+          {formatDate(prospect.date)}
         </span>
       </div>
 
