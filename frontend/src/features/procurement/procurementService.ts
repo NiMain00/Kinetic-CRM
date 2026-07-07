@@ -43,7 +43,7 @@ export function createProcurementFromProject(project: Project): Procurement {
 
     // ── Deep clone (immutable copy) ─────────────────────────────────────
     documents: project.documents ? deepClone(project.documents) : [],
-    timeline: project.timeline ? deepClone(project.timeline) : [],
+    timeline: [], // tidak clone timeline proyek — biar terpisah, hanya event pengadaan saja
   });
 
   // Add timeline event for the creation

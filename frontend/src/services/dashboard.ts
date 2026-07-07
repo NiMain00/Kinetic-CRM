@@ -20,6 +20,7 @@ export interface StatusDistribution {
   inProgress: number;
   completed: number;
   postponed: number;
+  planning: number;
   total: number;
 }
 

@@ -79,6 +79,7 @@ function mapApiProspect(p: any): Prospect {
   }
   return {
     ...p,
+    timeline: p.timeline || p.timelineEvents || [],
     projectId: p.convertedToProjectId || p.projectId,
     estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : undefined,
     answers: Object.keys(answers).length > 0 ? answers : undefined,
@@ -140,10 +141,13 @@ export const useProspectStore = create<ProspectState>()(
         if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
         if (timeline?.length) {
           clean.timelineEvents = {
-            create: timeline.map((evt: any) => ({
-              ...evt,
-              time: evt.time ? new Date(evt.time).toISOString() : undefined,
-            })),
+            create: timeline.map((evt: any) => {
+              const { id, prospectId, projectId, createdAt, ...rest } = evt;
+              return {
+                ...rest,
+                time: evt.time ? new Date(evt.time).toISOString() : undefined,
+              };
+            }),
           };
         }
         if (data.answers && Object.keys(data.answers).length > 0) {
@@ -169,10 +173,13 @@ export const useProspectStore = create<ProspectState>()(
         if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
         if (timeline?.length) {
           clean.timelineEvents = {
-            create: timeline.map((evt: any) => ({
-              ...evt,
-              time: evt.time ? new Date(evt.time).toISOString() : undefined,
-            })),
+            create: timeline.map((evt: any) => {
+              const { id, prospectId, projectId, createdAt, ...rest } = evt;
+              return {
+                ...rest,
+                time: evt.time ? new Date(evt.time).toISOString() : undefined,
+              };
+            }),
           };
         }
         if (data.answers && Object.keys(data.answers).length > 0) {

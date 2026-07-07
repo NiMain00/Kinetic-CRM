@@ -61,6 +61,14 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
 
   const handleConfirmPricing = () => {
     if (!project?.id) return;
+    // Force immediate save ke backend (clear debounce)
+    if ((window as any).__pricingDebounce) clearTimeout((window as any).__pricingDebounce);
+    updateProjectPricing(project.id, {
+      value: hargaPenawaran,
+      margin: marginPercentage,
+      note: pricingNotes,
+      bottomPrice,
+    });
     // Add timeline event
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
@@ -88,12 +96,33 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
       notes: newCompNote || '-',
     };
     addProjectCompetitor(project.id, newItem);
+    addTimelineEvent(project.id, {
+      id: `evt-${Date.now()}`,
+      title: `Kompetitor Ditambahkan: ${newCompName}`,
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'comment',
+      description: `Kompetitor "${newCompName}" dengan estimasi harga ${formatCurrency(newItem.estPrice)} ditambahkan.`,
+    });
     setNewCompName(''); setNewCompPrice(''); setNewCompAdv(''); setNewCompNote('');
   };
 
   const handleRemoveCompetitor = (competitorId: string) => {
     if (!project?.id) return;
+    const removed = competitors.find(c => c.id === competitorId);
     removeProjectCompetitor(project.id, competitorId);
+    if (removed) {
+      addTimelineEvent(project.id, {
+        id: `evt-${Date.now()}`,
+        title: `Kompetitor Dihapus: ${removed.name}`,
+        actor: project.author,
+        role: 'Project Manager',
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        type: 'comment',
+        description: `Kompetitor "${removed.name}" dihapus dari daftar.`,
+      });
+    }
     onShowNotification?.('Kompetitor berhasil dihapus.', 'success');
   };
 

@@ -7,6 +7,7 @@ import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { lphsSiosService } from '@/services/lphs-sios';
 import { Card, Button, Badge } from '@/components/ui';
 
 interface TabProps {
@@ -77,6 +78,15 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     if (pmApproved && deptsAllApproved && notYetAdvanced) {
       updateLphsStatus(project.id, { overallStatus: 'mgmt_review', mgmtStatus: 'pending' });
       updateProjectLphs(project.id, { ...lphs, overallStatus: 'mgmt_review', mgmtStatus: 'pending' });
+      addTimelineEvent(project.id, {
+        id: `evt-${Date.now()}`,
+        title: 'Semua Approval Terpenuhi',
+        actor: 'System',
+        role: 'System',
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        type: 'approve',
+        description: 'PM dan semua departemen telah menyetujui LPHS/SIOS. Management review dimulai.',
+      });
     }
   }, [lphs.pmStatus, lphs.departmentApprovals, lphs.overallStatus]);
 
@@ -184,6 +194,20 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     updateProjectLphs(project.id, newLphs);
     updateProject(project.id, { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' });
 
+    // Persist ke backend
+    lphsSiosService.save(project.id, {
+      lphsFileName: newLphs.lphsFileName || null,
+      lphsFileSize: newLphs.lphsFileSize || null,
+      lphsExternalUrl: newLphs.lphsExternalUrl || null,
+      siosFileName: newLphs.siosFileName || null,
+      siosFileSize: newLphs.siosFileSize || null,
+      selectedDepartments: JSON.stringify(selectedDepts),
+      departmentsLocked: true,
+      pmApprovalStatus: 'reviewing',
+      overallStatus: 'dept_review',
+      submittedAt: new Date(),
+    } as any).catch((err) => console.error('[lphs-save] Gagal:', err));
+
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
       title: 'Dokumen LPHS/SIOS Disubmit',
@@ -229,6 +253,9 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     updateLphsStatus(project.id, { pmStatus: 'approved' });
     updateProjectLphs(project.id, { ...lphs, pmStatus: 'approved', pmApprovedAt: new Date().toISOString() });
     setLphs(prev => ({ ...prev, pmStatus: 'approved', pmApprovedAt: new Date().toISOString() }));
+
+    // Persist ke backend
+    lphsSiosService.reviewPm(project.id, 'approve').catch((err) => console.error('[lphs-pm] Gagal:', err));
 
     // Remove LPHS approval from inbox
     const existingApproval = useApprovalStore.getState().approvals.find(a => a.entityId === project.id && a.type === 'LPHS');
@@ -278,6 +305,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     const updated = lphs.departmentApprovals.map(a => a.departmentId === deptId ? approval : a);
     updateProjectLphs(project.id, { ...lphs, departmentApprovals: updated });
     setLphs(prev => ({ ...prev, departmentApprovals: updated }));
+
+    // Persist ke backend
+    lphsSiosService.reviewDepartment(project.id, {
+      departmentId: deptId,
+      status: 'approved',
+      reviewerId: authUser?.id || 'system',
+    } as any).catch((err) => console.error('[lphs-dept] Gagal:', err));
 
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
@@ -329,6 +363,14 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     updateProjectLphs(project.id, updatedLphs);
     setLphs(updatedLphs);
 
+    // Persist ke backend
+    lphsSiosService.reviewDepartment(project.id, {
+      departmentId,
+      status: 'revision',
+      notes,
+      reviewerId: authUser?.id || 'system',
+    } as any).catch((err) => console.error('[lphs-dept-rev] Gagal:', err));
+
     const dept = departments.find(d => d.id === departmentId);
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
@@ -350,6 +392,9 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     updateLphsStatus(project.id, { mgmtStatus: 'approved', overallStatus: 'approved' });
     updateProjectLphs(project.id, { ...lphs, mgmtStatus: 'approved', mgmtApprovedAt: new Date().toISOString(), overallStatus: 'approved', finalApprovedAt: new Date().toISOString() });
     setLphs(prev => ({ ...prev, mgmtStatus: 'approved', mgmtApprovedAt: new Date().toISOString(), overallStatus: 'approved', finalApprovedAt: new Date().toISOString() }));
+
+    // Persist ke backend
+    lphsSiosService.reviewMgmt(project.id, 'approve').catch((err) => console.error('[lphs-mgmt] Gagal:', err));
 
     // Remove LPHS approval from inbox
     const existingApproval = useApprovalStore.getState().approvals.find(a => a.entityId === project.id && a.type === 'LPHS');
@@ -429,6 +474,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     updateProjectLphs(project.id, updatedLphs);
     setLphs(updatedLphs);
 
+    // Persist ke backend
+    if (revisionDialog.role === 'pm') {
+      lphsSiosService.reviewPm(project.id, 'revision', revisionDialog.notes).catch((err) => console.error('[lphs-pm-rev] Gagal:', err));
+    } else {
+      lphsSiosService.reviewMgmt(project.id, 'revision', revisionDialog.notes).catch((err) => console.error('[lphs-mgmt-rev] Gagal:', err));
+    }
+
     // Remove LPHS approval from inbox (action taken)
     const existingApproval = useApprovalStore.getState().approvals.find(a => a.entityId === project.id && a.type === 'LPHS');
     if (existingApproval) removeApproval(existingApproval.id);
@@ -459,6 +511,11 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     const updatedLphs = { ...lphs, departmentApprovals: updatedApprovals, overallStatus: 'dept_review' as const };
     updateProjectLphs(project.id, updatedLphs);
     setLphs(updatedLphs);
+
+    // Persist ke backend
+    lphsSiosService.save(project.id, {
+      overallStatus: 'dept_review',
+    } as any).catch((err) => console.error('[lphs-reupload] Gagal:', err));
 
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,

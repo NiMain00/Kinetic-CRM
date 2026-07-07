@@ -9,6 +9,7 @@ import { useAuthz } from '@/hooks/useAuthz';
 import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
+import { formatDate } from '@/utils/formatters';
 import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import type { Prospect } from '@/types/domain';
@@ -358,7 +359,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       <span className="material-symbols-outlined text-[14px] shrink-0">business</span>
                       <span className="truncate" title={row.client}>{row.client}</span>
                     </div>
-                    <span className="text-secondary shrink-0">{row.date}</span>
+                    <span className="text-secondary shrink-0">{formatDate(row.date)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -529,7 +530,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                           <span className="text-on-surface text-xs truncate" title={row.author || ''}>{row.author || '-'}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden" title={row.date || ''}>{row.date || '-'}</td>
+                      <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden" title={row.date || ''}>{row.date ? formatDate(row.date) : '-'}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           {row.status === 'Approved' && !row.isConverted && (

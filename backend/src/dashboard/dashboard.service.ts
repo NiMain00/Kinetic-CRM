@@ -74,31 +74,46 @@ export class DashboardService {
       });
     }
 
+    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+
     const wonResults = await this.prisma.tenderResult.findMany({
-      where: {
-        result: 'won',
-        decidedAt: {
-          gte: new Date(now.getFullYear(), now.getMonth() - 5, 1),
-        },
-      },
+      where: { result: 'won', decidedAt: { gte: sixMonthsAgo } },
       select: { decidedAt: true },
     });
     const lostResults = await this.prisma.tenderResult.findMany({
-      where: {
-        result: 'lost',
-        decidedAt: {
-          gte: new Date(now.getFullYear(), now.getMonth() - 5, 1),
-        },
-      },
+      where: { result: 'lost', decidedAt: { gte: sixMonthsAgo } },
       select: { decidedAt: true },
     });
 
+    if (wonResults.length > 0 || lostResults.length > 0) {
+      return months.map((m) => {
+        const win = wonResults.filter(
+          (r) => r.decidedAt.getMonth() === m.index && r.decidedAt.getFullYear() === m.year,
+        ).length;
+        const lose = lostResults.filter(
+          (r) => r.decidedAt.getMonth() === m.index && r.decidedAt.getFullYear() === m.year,
+        ).length;
+        return { month: m.label, win, lose };
+      });
+    }
+
+    const projects = await this.prisma.project.findMany({
+      where: { deletedAt: null, createdAt: { gte: sixMonthsAgo } },
+      select: { status: true, createdAt: true },
+    });
+
     return months.map((m) => {
-      const win = wonResults.filter(
-        (r) => r.decidedAt.getMonth() === m.index && r.decidedAt.getFullYear() === m.year,
+      const win = projects.filter(
+        (p) =>
+          p.status === 'Selesai' &&
+          p.createdAt.getMonth() === m.index &&
+          p.createdAt.getFullYear() === m.year,
       ).length;
-      const lose = lostResults.filter(
-        (r) => r.decidedAt.getMonth() === m.index && r.decidedAt.getFullYear() === m.year,
+      const lose = projects.filter(
+        (p) =>
+          ['Dibatalkan', 'Kalah'].includes(p.status) &&
+          p.createdAt.getMonth() === m.index &&
+          p.createdAt.getFullYear() === m.year,
       ).length;
       return { month: m.label, win, lose };
     });
@@ -110,29 +125,21 @@ export class DashboardService {
       select: { status: true, tenderResult: { select: { result: true } } },
     });
 
-    const inProgress = allProjects.filter(
-      (p) =>
-        !['Selesai', 'Dibatalkan'].includes(p.status) && !p.tenderResult,
-    ).length;
-    const planning = allProjects.filter((p) =>
-      ['Dibuat', 'Potensial'].includes(p.status),
-    ).length;
-    const review = allProjects.filter((p) =>
-      [
-        'Review Departemen',
-        'LPHS/SIOS',
-        'Revisi',
-        'Waiting Supervisor',
-        'Revision',
-      ].includes(p.status),
-    ).length;
+    const planningStatuses = ['Dibuat', 'Potensial', 'rks', 'RKS'];
+    const reviewStatuses = ['Review Departemen', 'LPHS/SIOS', 'lphs', 'Revisi', 'Waiting Supervisor', 'Revision'];
+    const completedStatuses = ['Selesai', 'Dibatalkan'];
+
+    const planning = allProjects.filter((p) => planningStatuses.includes(p.status)).length;
+    const review = allProjects.filter((p) => reviewStatuses.includes(p.status)).length;
     const completed = allProjects.filter(
-      (p) =>
-        p.status === 'Selesai' || p.tenderResult?.result === 'won',
+      (p) => completedStatuses.includes(p.status) || p.tenderResult?.result === 'won',
+    ).length;
+    const inProgress = allProjects.filter(
+      (p) => !planningStatuses.includes(p.status) && !reviewStatuses.includes(p.status) && !completedStatuses.includes(p.status) && p.tenderResult?.result !== 'won',
     ).length;
     const total = allProjects.length;
 
-    return { inProgress, completed, postponed: review, total };
+    return { inProgress, completed, postponed: review, planning, total };
   }
 
   async getCriticalDeadlines() {

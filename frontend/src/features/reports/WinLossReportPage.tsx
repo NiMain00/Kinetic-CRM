@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
-import { formatCurrencyShort as formatCurrency } from '@/utils/formatters';
+import { formatCurrencyShort as formatCurrency, formatDate } from '@/utils/formatters';
 
 function formatCurrencyFull(value: number): string {
   return `Rp ${value.toLocaleString('id-ID')}`;
@@ -223,7 +223,7 @@ export default function WinLossReportPage() {
                         <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold badge-compact ${r.result === 'WIN' ? 'bg-success/10 text-success' : 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'}`}>{r.result}</span>
                       </td>
                       <td className="px-6 py-4 text-secondary">{r.competitor}</td>
-                      <td className="px-6 py-4 text-outline">{r.date}</td>
+                      <td className="px-6 py-4 text-outline">{formatDate(r.date)}</td>
                     </tr>
                   ))
                 )}

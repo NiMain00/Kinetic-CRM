@@ -38,7 +38,7 @@ export class ProjectsService {
         lphsSios: { include: { departmentReviews: { include: { department: true, reviewer: { select: { id: true, fullName: true } } } }, targetedRevisions: true } },
         priceSubmission: true, projectCompetitors: { include: { competitor: true } },
         tenderResult: true, deliveryTarget: true,
-        timelineEvents: { orderBy: { time: 'desc' } },
+        timelineEvents: { orderBy: { time: 'desc' }, include: { actorUser: { select: { fullName: true } } } },
         category: true, statusDef: true, prospect: true,
         createdBy: { select: { id: true, fullName: true } },
         ownerUser: { select: { id: true, fullName: true } },

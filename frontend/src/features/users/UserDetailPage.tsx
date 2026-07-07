@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useUserStore } from '@/stores/userStore';
+import { formatDate } from '@/utils/formatters';
 
 const actionBadge: Record<string, string> = {
   CREATE: 'bg-success/10 text-success',
@@ -82,7 +83,7 @@ export default function UserDetailPage() {
                 </div>
                 <div className="flex items-center gap-2 text-secondary">
                   <span className="material-symbols-outlined text-[18px] text-outline">calendar_month</span>
-                  Bergabung {user.createdAt}
+                  Bergabung {formatDate(user.createdAt)}
                 </div>
               </div>
             </div>

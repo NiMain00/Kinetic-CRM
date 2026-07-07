@@ -6,6 +6,7 @@ import type { Column } from '@/components/ui';
 import type { KpiTarget } from '@/types/domain/users';
 import { useMasterPeriods } from '@/hooks/useConfigData';
 import { usePermission } from '@/hooks/usePermission';
+import { formatDate } from '@/utils/formatters';
 
 interface TargetForm {
   name: string;
@@ -156,7 +157,7 @@ export default function KPITargetsPage() {
     {
       key: 'createdAt',
       header: 'Created',
-      render: row => <span className="text-[10px] text-outline font-mono">{row.createdAt}</span>,
+      render: row => <span className="text-[10px] text-outline font-mono">{formatDate(row.createdAt)}</span>,
     },
     {
       key: 'id',

@@ -10,10 +10,62 @@ import type {
   TimelineEvent,
 } from '@/types/domain';
 import { projectService } from '@/services/projects';
+import { masterDataService } from '@/services/master-data';
+import { useMasterDataStore } from './masterDataStore';
 import { useApprovalStore } from './approvalStore';
 import { useNotificationStore } from './notificationStore';
 import { useProcurementStore } from '@/features/procurement/procurementStore';
 import { eventBus } from '@/services/eventBridge';
+
+async function persistCompetitorsToBackend(projectId: string, competitors: CompetitorEntry[]) {
+  try {
+    const masterStore = useMasterDataStore.getState();
+    const masterComps = masterStore.competitors || [];
+    const creates: Array<{ competitorId: string; competitorPrice: number | null; advantageNote: string | null; notes: string | null }> = [];
+
+    for (const comp of competitors) {
+      const existing = masterComps.find(
+        (mc) => mc.name.toLowerCase() === comp.name.toLowerCase(),
+      );
+      if (existing) {
+        creates.push({
+          competitorId: existing.id,
+          competitorPrice: comp.estPrice || null,
+          advantageNote: comp.advantages?.join('\n') || null,
+          notes: comp.notes || null,
+        });
+      } else {
+        try {
+          const res = await masterDataService.create('competitors', {
+            name: comp.name,
+            code: comp.name.substring(0, 50),
+            isActive: true,
+          } as any);
+          const newComp = res.data?.data || res.data;
+          creates.push({
+            competitorId: newComp.id,
+            competitorPrice: comp.estPrice || null,
+            advantageNote: comp.advantages?.join('\n') || null,
+            notes: comp.notes || null,
+          });
+        } catch {
+          console.warn('[competitor-persist] Gagal buat competitor:', comp.name);
+        }
+      }
+    }
+
+    if (creates.length > 0) {
+      await projectService.update(projectId, {
+        projectCompetitors: {
+          deleteMany: {},
+          create: creates,
+        },
+      } as any);
+    }
+  } catch (err) {
+    console.error('[competitor-persist] Gagal:', err);
+  }
+}
 
 interface ProjectState {
   entities: Record<string, Project>;
@@ -33,9 +85,9 @@ interface ProjectState {
   updateLphsDepartmentApproval: (id: string, approval: LphsDepartmentApproval) => void;
   updateLphsStatus: (id: string, status: Partial<Pick<LphsData, 'pmStatus' | 'mgmtStatus' | 'overallStatus'>>) => void;
   updateProjectPricing: (id: string, pricing: Partial<Project['pricing']>) => void;
-  updateProjectCompetitors: (id: string, competitors: CompetitorEntry[]) => void;
-  addProjectCompetitor: (id: string, competitor: CompetitorEntry) => void;
-  removeProjectCompetitor: (id: string, competitorId: string) => void;
+  updateProjectCompetitors: (id: string, competitors: CompetitorEntry[]) => Promise<void>;
+  addProjectCompetitor: (id: string, competitor: CompetitorEntry) => Promise<void>;
+  removeProjectCompetitor: (id: string, competitorId: string) => Promise<void>;
   updateProjectWinner: (id: string, winnerDetails: Partial<Project['winnerDetails']>) => void;
   updateProjectDelivery: (id: string, delivery: Partial<Project['delivery']>) => void;
   addTimelineEvent: (id: string, event: TimelineEvent) => void;
@@ -80,9 +132,96 @@ function updateEntity(
   return { entities: next, projects: deriveProjects(next, ids) };
 }
 
-function mapApiProject(p: any): Project {
+function mapBackendLphsToFrontend(lphsSios: any): LphsData {
+  const mapPmStatus = (s: string): 'pending' | 'reviewing' | 'approved' | 'revision' => {
+    if (s === 'approved') return 'approved';
+    if (s === 'revision_requested') return 'revision';
+    if (s === 'pending_pm') return 'pending';
+    return 'reviewing';
+  };
+  const mapMgmtStatus = (s: string): 'pending' | 'approved' | 'revision' => {
+    if (s === 'approved') return 'approved';
+    if (s === 'revision_requested') return 'revision';
+    return 'pending';
+  };
   return {
-    ...p,
+    lphsFileName: lphsSios.lphsFileName || undefined,
+    lphsFileSize: lphsSios.lphsFileSize || undefined,
+    lphsExternalUrl: lphsSios.lphsExternalUrl || undefined,
+    siosFileName: lphsSios.siosFileName || undefined,
+    siosFileSize: lphsSios.siosFileSize || undefined,
+    selectedDepartments: lphsSios.selectedDepartments
+      ? (typeof lphsSios.selectedDepartments === 'string'
+          ? JSON.parse(lphsSios.selectedDepartments)
+          : lphsSios.selectedDepartments)
+      : [],
+    departmentsLocked: lphsSios.departmentsLocked || false,
+    pmStatus: mapPmStatus(lphsSios.pmApprovalStatus),
+    mgmtStatus: mapMgmtStatus(lphsSios.mgmtApprovalStatus),
+    overallStatus: (['draft', 'dept_review', 'mgmt_review', 'approved', 'revision'] as const).includes(lphsSios.overallStatus)
+      ? lphsSios.overallStatus
+      : 'draft',
+    submittedAt: lphsSios.submittedAt ? new Date(lphsSios.submittedAt).toISOString() : undefined,
+    pmApprovedAt: lphsSios.pmApprovedAt ? new Date(lphsSios.pmApprovedAt).toISOString() : undefined,
+    mgmtApprovedAt: lphsSios.mgmtApprovedAt ? new Date(lphsSios.mgmtApprovedAt).toISOString() : undefined,
+    finalApprovedAt: lphsSios.finalApprovedAt ? new Date(lphsSios.finalApprovedAt).toISOString() : undefined,
+    departmentApprovals: Array.isArray(lphsSios.departmentReviews)
+      ? lphsSios.departmentReviews.map((dr: any) => ({
+          departmentId: dr.departmentId,
+          departmentName: dr.department?.name || dr.departmentId,
+          status: dr.approvalStatus === 'approved' ? 'approved' : dr.approvalStatus === 'revision_requested' ? 'revision' : 'reviewing',
+          approverName: dr.reviewer?.fullName || undefined,
+          approvedAt: dr.reviewedAt ? new Date(dr.reviewedAt).toISOString() : undefined,
+          reviewNotes: dr.comment || undefined,
+          revisionRound: dr.revisionRound || 0,
+          isTargetedRevision: dr.isTargetedRevision || false,
+        }))
+      : [],
+  };
+}
+
+function mapApiProject(p: any): Project {
+  const { priceSubmission: ps, projectCompetitors, tenderResult, deliveryTarget, lphsSios, ...rest } = p;
+  return {
+    ...rest,
+    pricing: ps ? {
+      value: Number(ps.ourPrice),
+      margin: Number(ps.marginPercentage),
+      note: ps.note || '',
+      bottomPrice: ps.bottomPrice ? Number(ps.bottomPrice) : undefined,
+    } : p.pricing || undefined,
+    competitors: Array.isArray(projectCompetitors)
+      ? projectCompetitors.map((pc: any) => ({
+          id: pc.id,
+          name: pc.competitor?.name || pc.competitorId,
+          estPrice: Number(pc.competitorPrice) || 0,
+          advantages: pc.advantageNote ? pc.advantageNote.split('\n').filter(Boolean) : [],
+          notes: pc.notes || '',
+        }))
+      : p.competitors || [],
+    winnerDetails: tenderResult ? {
+      outcome: tenderResult.result === 'won' ? 'menang' : tenderResult.result === 'lost' ? 'kalah' : null,
+      contractValue: tenderResult.contractValue ? Number(tenderResult.contractValue) : undefined,
+      startDate: p.winnerDetails?.startDate || undefined,
+      duration: p.winnerDetails?.duration || undefined,
+      loseReason: p.winnerDetails?.loseReason || undefined,
+      loseNote: tenderResult.lossReasonNote || p.winnerDetails?.loseNote || undefined,
+      spkDocument: tenderResult.spkDocument ? (typeof tenderResult.spkDocument === 'string' ? JSON.parse(tenderResult.spkDocument) : tenderResult.spkDocument) : p.winnerDetails?.spkDocument || undefined,
+    } : p.winnerDetails || undefined,
+    lphs: lphsSios ? mapBackendLphsToFrontend(lphsSios) : p.lphs || undefined,
+    delivery: deliveryTarget ? {
+      startDate: deliveryTarget.startDate || undefined,
+      endDate: deliveryTarget.endDate || undefined,
+      actualEndDate: deliveryTarget.actualEndDate || undefined,
+      note: deliveryTarget.note || undefined,
+      isCompleted: deliveryTarget.isCompleted || undefined,
+      completedAt: deliveryTarget.completedAt || undefined,
+      completedBy: deliveryTarget.completedBy || undefined,
+    } : p.delivery || undefined,
+    timeline: (p.timeline || p.timelineEvents || []).map((evt: any) => ({
+      ...evt,
+      actor: evt.actorUser?.fullName || evt.actor,
+    })),
     estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : 0,
     author: p.author || p.ownerUser?.fullName || p.createdBy?.fullName || p.createdByUserId || '',
     date: p.date || p.createdAt || '',
@@ -117,7 +256,17 @@ export const useProjectStore = create<ProjectState>()(
           const project = res.data.data ? mapApiProject(res.data.data) : mapApiProject(res.data);
           if (project?.id) {
             set((s) => {
-              const entities = { ...s.entities, [project.id]: project };
+              const existing = s.entities[id];
+              const merged = {
+                ...project,
+                // Data lokal selalu diutamakan — baru fallback ke API
+                competitors: existing?.competitors?.length ? existing.competitors : (project.competitors || []),
+                winnerDetails: existing?.winnerDetails || project.winnerDetails || undefined,
+                delivery: existing?.delivery || project.delivery || undefined,
+                pricing: existing?.pricing || project.pricing || undefined,
+                lphs: existing?.lphs || project.lphs || undefined,
+              };
+              const entities = { ...s.entities, [project.id]: merged };
               const ids = s.ids.includes(project.id) ? s.ids : [...s.ids, project.id];
               return { entities, ids, projects: deriveProjects(entities, ids) };
             });
@@ -155,6 +304,18 @@ export const useProjectStore = create<ProjectState>()(
         if (clean.estimatedValue !== undefined) {
           clean.estimatedValue = Number(clean.estimatedValue);
         }
+        if (timeline?.length) {
+          clean.timelineEvents = {
+            create: timeline.map((evt: any) => {
+              const { id, projectId, prospectId, createdAt, ...rest } = evt;
+              return {
+                ...rest,
+                actor: clean.createdByUserId || clean.ownerUserId || evt.actor,
+                time: evt.time ? new Date(evt.time).toISOString() : undefined,
+              };
+            }),
+          };
+        }
         const res = await projectService.create(clean);
         const project = mapApiProject(res.data.data || res.data);
         set((s) => {
@@ -175,6 +336,20 @@ export const useProjectStore = create<ProjectState>()(
         } else if (/^\d{4}-\d{2}-\d{2}$/.test(clean.deadlineTender)) {
           clean.deadlineTender = clean.deadlineTender + 'T00:00:00.000Z';
         }
+        if (timeline?.length) {
+          const proj = get().entities[id];
+          const actorId = proj?.createdByUserId || proj?.ownerUserId;
+          clean.timelineEvents = {
+            create: timeline.map((evt: any) => {
+              const { id, projectId, prospectId, createdAt, ...rest } = evt;
+              return {
+                ...rest,
+                actor: actorId || evt.actor,
+                time: evt.time ? new Date(evt.time).toISOString() : undefined,
+              };
+            }),
+          };
+        }
         await projectService.update(id, clean);
         const current = get().entities[id];
         set((s) => {
@@ -194,6 +369,23 @@ export const useProjectStore = create<ProjectState>()(
             entityId: id,
             entityType: 'project',
           });
+          // Cek apakah sudah ada timeline event untuk perubahan status ini (dicegah duplikasi)
+          const hasStatusEvent = (data.timeline || []).some(
+            (e: any) => e.type === 'status_change' && e.title?.includes('Status Proyek Berubah')
+          );
+          if (!hasStatusEvent) {
+            get().addTimelineEvent(id, {
+              id: `evt-${id}-status-${Date.now()}`,
+              title: 'Status Proyek Berubah',
+              actor: 'System',
+              role: 'System',
+              time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+              type: 'status_change',
+              prevVal: current.status,
+              newVal: data.status,
+              description: `Status berubah dari "${current.status}" menjadi "${data.status}".`,
+            });
+          }
         }
       },
 
@@ -231,11 +423,59 @@ export const useProjectStore = create<ProjectState>()(
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, rks }));
           return { ...r, ids: s.ids };
         }),
-      updateProjectLphs: (id, lphs) =>
+      updateProjectLphs: (id, lphs) => {
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, lphs }));
           return { ...r, ids: s.ids };
-        }),
+        });
+        const proj = get().entities[id];
+        if (!proj) return;
+        const deptStr = Array.isArray(lphs.selectedDepartments) ? JSON.stringify(lphs.selectedDepartments) : lphs.selectedDepartments;
+        const mapStatus = (s: string) => {
+          if (s === 'approved') return 'approved';
+          if (s === 'revision') return 'revision_requested';
+          if (s === 'pending') return 'pending_pm';
+          return s === 'reviewing' ? 'reviewing' : s;
+        };
+        projectService.update(id, {
+          lphsSios: {
+            upsert: {
+              create: {
+                lphsFileName: lphs.lphsFileName || null,
+                lphsFileSize: lphs.lphsFileSize || null,
+                lphsExternalUrl: lphs.lphsExternalUrl || null,
+                siosFileName: lphs.siosFileName || null,
+                siosFileSize: lphs.siosFileSize || null,
+                selectedDepartments: deptStr || null,
+                departmentsLocked: lphs.departmentsLocked || false,
+                pmApprovalStatus: mapStatus(lphs.pmStatus) as any,
+                mgmtApprovalStatus: mapStatus(lphs.mgmtStatus) as any,
+                overallStatus: lphs.overallStatus || 'draft',
+                submittedAt: lphs.submittedAt ? new Date(lphs.submittedAt) : null,
+                pmApprovedAt: lphs.pmApprovedAt ? new Date(lphs.pmApprovedAt) : null,
+                mgmtApprovedAt: lphs.mgmtApprovedAt ? new Date(lphs.mgmtApprovedAt) : null,
+                finalApprovedAt: lphs.finalApprovedAt ? new Date(lphs.finalApprovedAt) : null,
+              },
+              update: {
+                lphsFileName: lphs.lphsFileName || null,
+                lphsFileSize: lphs.lphsFileSize || null,
+                lphsExternalUrl: lphs.lphsExternalUrl || null,
+                siosFileName: lphs.siosFileName || null,
+                siosFileSize: lphs.siosFileSize || null,
+                selectedDepartments: deptStr || null,
+                departmentsLocked: lphs.departmentsLocked || false,
+                pmApprovalStatus: mapStatus(lphs.pmStatus) as any,
+                mgmtApprovalStatus: mapStatus(lphs.mgmtStatus) as any,
+                overallStatus: lphs.overallStatus || 'draft',
+                submittedAt: lphs.submittedAt ? new Date(lphs.submittedAt) : null,
+                pmApprovedAt: lphs.pmApprovedAt ? new Date(lphs.pmApprovedAt) : null,
+                mgmtApprovedAt: lphs.mgmtApprovedAt ? new Date(lphs.mgmtApprovedAt) : null,
+                finalApprovedAt: lphs.finalApprovedAt ? new Date(lphs.finalApprovedAt) : null,
+              },
+            },
+          },
+        } as any).catch((err) => console.error('[lphs-persist] Gagal:', err));
+      },
       updateLphsDepartmentApproval: (id, approval) =>
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => {
@@ -259,43 +499,105 @@ export const useProjectStore = create<ProjectState>()(
           });
           return { ...r, ids: s.ids };
         }),
-      updateProjectPricing: (id, pricing) =>
+      updateProjectPricing: (id, pricing) => {
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
             ...e,
             pricing: { ...e.pricing, ...pricing } as Project['pricing'],
           }));
           return { ...r, ids: s.ids };
-        }),
-      updateProjectCompetitors: (id, competitors) =>
+        });
+        // Debounce persist ke backend
+        if ((window as any).__pricingDebounce) clearTimeout((window as any).__pricingDebounce);
+        (window as any).__pricingDebounce = setTimeout(() => {
+          const proj = get().entities[id];
+          if (!proj) return;
+          projectService.update(id, {
+            priceSubmission: {
+              upsert: {
+                create: {
+                  ourPrice: proj.pricing?.value || 0,
+                  marginPercentage: proj.pricing?.margin || 0,
+                  note: proj.pricing?.note || null,
+                  bottomPrice: proj.pricing?.bottomPrice || null,
+                  submittedBy: proj.createdByUserId || 'system',
+                },
+                update: {
+                  ourPrice: proj.pricing?.value || 0,
+                  marginPercentage: proj.pricing?.margin || 0,
+                  note: proj.pricing?.note || null,
+                  bottomPrice: proj.pricing?.bottomPrice || null,
+                },
+              },
+            },
+          } as any).catch((err: any) => console.error('[pricing-persist] Gagal:', err));
+        }, 800);
+      },
+      updateProjectCompetitors: async (id, competitors) => {
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, competitors }));
           return { ...r, ids: s.ids };
-        }),
-      addProjectCompetitor: (id, competitor) =>
+        });
+        await persistCompetitorsToBackend(id, competitors);
+      },
+      addProjectCompetitor: async (id, competitor) => {
+        let newList: CompetitorEntry[] = [];
+        set((s) => {
+          const existing = s.entities[id]?.competitors || [];
+          newList = [...existing, competitor];
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            competitors: newList,
+          }));
+          return { ...r, ids: s.ids };
+        });
+        await persistCompetitorsToBackend(id, newList);
+      },
+      removeProjectCompetitor: async (id, competitorId) => {
+        let newList: CompetitorEntry[] = [];
+        set((s) => {
+          const existing = s.entities[id]?.competitors || [];
+          newList = existing.filter((c) => c.id !== competitorId);
+          const r = updateEntity(s.entities, s.ids, id, (e) => ({
+            ...e,
+            competitors: newList,
+          }));
+          return { ...r, ids: s.ids };
+        });
+        await persistCompetitorsToBackend(id, newList);
+      },
+      updateProjectWinner: (id, winnerDetails) => {
+        const wd: Partial<Project['winnerDetails']> = winnerDetails ?? {};
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
             ...e,
-            competitors: [...(e.competitors || []), competitor],
+            winnerDetails: { ...e.winnerDetails, ...wd } as Project['winnerDetails'],
           }));
           return { ...r, ids: s.ids };
-        }),
-      removeProjectCompetitor: (id, competitorId) =>
-        set((s) => {
-          const r = updateEntity(s.entities, s.ids, id, (e) => ({
-            ...e,
-            competitors: (e.competitors || []).filter((c) => c.id !== competitorId),
-          }));
-          return { ...r, ids: s.ids };
-        }),
-      updateProjectWinner: (id, winnerDetails) =>
-        set((s) => {
-          const r = updateEntity(s.entities, s.ids, id, (e) => ({
-            ...e,
-            winnerDetails: { ...e.winnerDetails, ...winnerDetails } as Project['winnerDetails'],
-          }));
-          return { ...r, ids: s.ids };
-        }),
+        });
+        const proj = get().entities[id];
+        if (!proj || !wd.outcome) return;
+        const decidedBy = proj.createdByUserId || proj.ownerUserId || 'system';
+        projectService.update(id, {
+          tenderResult: {
+            upsert: {
+              create: {
+                result: wd.outcome === 'menang' ? 'won' : 'lost' as const,
+                contractValue: wd.contractValue ?? null,
+                lossReasonNote: wd.loseNote || wd.loseReason || null,
+                spkDocument: wd.spkDocument ? JSON.stringify(wd.spkDocument) : null,
+                decidedBy,
+              },
+              update: {
+                result: wd.outcome === 'menang' ? 'won' : 'lost' as const,
+                contractValue: wd.contractValue ?? null,
+                lossReasonNote: wd.loseNote || wd.loseReason || null,
+                spkDocument: wd.spkDocument ? JSON.stringify(wd.spkDocument) : null,
+              },
+            },
+          },
+        } as any).catch((err) => console.error('[winner-persist] Gagal:', err));
+      },
       updateProjectDelivery: (id, delivery) =>
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
@@ -304,14 +606,37 @@ export const useProjectStore = create<ProjectState>()(
           }));
           return { ...r, ids: s.ids };
         }),
-      addTimelineEvent: (id, event) =>
+      addTimelineEvent: (id, event) => {
+        const idSet = new Set(get().entities[id]?.timeline?.map((e) => e.id));
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
             ...e,
             timeline: [...(e.timeline || []), event],
           }));
           return { ...r, ids: s.ids };
-        }),
+        });
+        // Hanya persist ke backend jika event id belum ada (cegah duplikat dari status_change auto)
+        if (event.id && idSet.has(event.id)) return;
+        // Gunakan user ID (bukan display name) untuk FK actor → User.id
+        const proj = get().entities[id];
+        const actorId = proj?.createdByUserId || proj?.ownerUserId || event.actor;
+        projectService.update(id, {
+          timelineEvents: {
+            create: {
+              title: event.title,
+              actor: actorId,
+              role: event.role || null,
+              time: event.time ? new Date(event.time).toISOString() : new Date().toISOString(),
+              type: event.type,
+              description: event.description || null,
+              prevVal: event.prevVal || null,
+              newVal: event.newVal || null,
+              fileName: event.fileName || null,
+              fileSize: event.fileSize || null,
+            },
+          },
+        } as any).catch((err) => console.error('[timeline-persist] Gagal menyimpan event:', err));
+      },
       updateProjectDocuments: (id, documents) =>
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, documents }));

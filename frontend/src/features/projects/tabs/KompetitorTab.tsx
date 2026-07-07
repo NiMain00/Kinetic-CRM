@@ -36,6 +36,15 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
       notes: newCompNote || '-',
     };
     addProjectCompetitor(project.id, newItem);
+    addTimelineEvent(project.id, {
+      id: `evt-${Date.now()}`,
+      title: `Kompetitor Ditambahkan: ${newCompName}`,
+      actor: project.author,
+      role: 'Project Manager',
+      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: 'comment',
+      description: `Kompetitor "${newCompName}" dengan estimasi harga ${formatCurrency(newItem.estPrice)} ditambahkan.`,
+    });
     setNewCompName('');
     setNewCompPrice('');
     setNewCompAdv('');
@@ -45,7 +54,19 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
 
   const handleRemoveCompetitor = (competitorId: string) => {
     if (!project?.id) return;
+    const removed = competitors.find(c => c.id === competitorId);
     removeProjectCompetitor(project.id, competitorId);
+    if (removed) {
+      addTimelineEvent(project.id, {
+        id: `evt-${Date.now()}`,
+        title: `Kompetitor Dihapus: ${removed.name}`,
+        actor: project.author,
+        role: 'Project Manager',
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        type: 'comment',
+        description: `Kompetitor "${removed.name}" dihapus dari daftar.`,
+      });
+    }
     onShowNotification?.('Kompetitor berhasil dihapus.', 'success');
   };
 
@@ -55,8 +76,11 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
   const isLowestCompetitor = (row: CompetitorEntry) =>
     lowestCompetitorPrice > 0 && row.estPrice === lowestCompetitorPrice;
 
-  const handleConfirmCompetitor = () => {
+  const handleConfirmCompetitor = async () => {
     if (!project?.id) return;
+    // Pastikan semua kompetitor tersimpan ke backend sebelum navigasi
+    const store = useProjectStore.getState();
+    await store.updateProjectCompetitors(project.id, competitors);
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
       title: 'Analisis Kompetitor Selesai',
