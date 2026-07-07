@@ -4,8 +4,9 @@ import toast from 'react-hot-toast';
 import { useProjectStore } from '@/stores/projectStore';
 import { useConfigStore } from '@/stores/configStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
-import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
+import { StatusBadge, PageContainer, PageHeader, BulkActions } from '@/components/shared';
 import { Button, Card, Table, Modal, type Column } from '@/components/ui';
 import { exportCSV } from '@/utils/export';
 import { useActiveOptions } from '@/hooks/useInputConfig';
@@ -33,12 +34,15 @@ export default function ProjectListPage() {
   const navigate = useNavigate();
   const { can } = useAuthz();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [activeTab, setActiveTab] = useState<string>('all');
   const pipelineTabOptions = useActiveOptions('pipeline_tabs');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const [drawerProject, setDrawerProject] = useState<typeof projects[number] | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<typeof projects[number] | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const deleteProject = useProjectStore((s) => s.deleteProject);
   const [filterValues, setFilterValues] = useState<Record<string, string>>({
     client: '',
@@ -95,8 +99,8 @@ export default function ProjectListPage() {
       list = list.filter((p) => terminalStatuses.includes(p.status) || terminalStatuses.includes(p.phase));
     }
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -117,7 +121,7 @@ export default function ProjectListPage() {
       if (!isNaN(max)) list = list.filter((p) => p.estimatedValue <= max);
     }
     return list;
-  }, [activeTab, search, projects, filterValues, isStaffOnly, userId]);
+  }, [activeTab, debouncedSearch, projects, filterValues, isStaffOnly, userId]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(
@@ -139,6 +143,31 @@ export default function ProjectListPage() {
     setActiveTab(tab);
     setCurrentPage(1);
   };
+
+  const handleBatchDelete = useCallback(() => {
+    selectedRows.forEach(id => deleteProject(id));
+    toast.success(`${selectedRows.size} proyek berhasil dihapus.`);
+    setSelectedRows(new Set());
+    setSelectionMode(false);
+  }, [selectedRows, deleteProject]);
+
+  const handleBatchExport = useCallback(() => {
+    const selected = displayFiltered.filter(p => selectedRows.has(p.id));
+    exportCSV(
+      selected,
+      [
+        { header: 'Kode', accessor: (p) => p.code },
+        { header: 'Nama Proyek', accessor: (p) => p.name },
+        { header: 'Klien', accessor: (p) => p.client },
+        { header: 'PIC', accessor: (p) => p.author },
+        { header: 'Status', accessor: (p) => p.status },
+        { header: 'Nilai', accessor: (p) => formatCurrency(p.estimatedValue) },
+        { header: 'Progress', accessor: (p) => `${p.progress}%` },
+        { header: 'Tanggal', accessor: (p) => p.date },
+      ],
+      'daftar_proyek',
+    );
+  }, [selectedRows, displayFiltered]);
 
   const projectColumns: Column<typeof projects[number]>[] = [
     {
@@ -224,7 +253,7 @@ export default function ProjectListPage() {
         <div className="flex items-center justify-end gap-1">
           {can('project:write') && (
             <button
-              onClick={(e) => { e.stopPropagation(); navigate(`/project/${p.id}/edit`); }}
+              onClick={(e) => { e.stopPropagation(); navigate(`/projects/${p.id}/edit`); }}
               className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all"
               title="Edit Proyek"
             >
@@ -322,6 +351,20 @@ export default function ProjectListPage() {
           >
             <span className="material-symbols-outlined text-sm">filter_alt</span>
           </button>
+          {can('project:write') && (
+            <button
+              onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
+              className={`p-2 rounded-xl border transition-all ${
+                selectionMode
+                  ? 'bg-primary/10 border-primary/30 text-primary'
+                  : 'border-border/60 text-secondary hover:bg-surface-container'
+              }`}
+              title={selectionMode ? 'Tutup mode pilih' : 'Mode pilih'}
+              aria-label={selectionMode ? 'Tutup mode pilih' : 'Aktifkan mode pilih'}
+            >
+              <span className="material-symbols-outlined text-sm">checklist</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -366,11 +409,24 @@ export default function ProjectListPage() {
       </div>
 
       <Card padding="none">
+        {selectionMode && selectedRows.size > 0 && (
+          <div className="px-4 sm:px-6 pt-4">
+            <BulkActions
+              selectedCount={selectedRows.size}
+              onClearSelection={() => { setSelectedRows(new Set()); setSelectionMode(false); }}
+              onBatchDelete={handleBatchDelete}
+              onBatchExport={handleBatchExport}
+              deleteConfirmMessage={`Apakah Anda yakin ingin menghapus ${selectedRows.size} proyek yang dipilih? Tindakan ini tidak dapat dibatalkan.`}
+            />
+          </div>
+        )}
         <Table
           columns={projectColumns}
           data={displayPaginated}
           keyExtractor={(p) => p.id}
           onRowClick={(p) => setDrawerProject(p)}
+          selectedRows={selectionMode ? selectedRows : undefined}
+          onSelectionChange={selectionMode ? setSelectedRows : undefined}
           emptyState={
             <div className="py-12 text-center">
               <span className="material-symbols-outlined text-5xl text-outline mb-4 block">folder_off</span>
@@ -391,7 +447,7 @@ export default function ProjectListPage() {
             <Button
               variant="primary"
               size="md"
-              onClick={() => { if (drawerProject) { const id = drawerProject.id; setDrawerProject(null); navigate(`/project/${id}/overview`); } }}
+              onClick={() => { if (drawerProject) { const id = drawerProject.id; setDrawerProject(null); navigate(`/projects/${id}/overview`); } }}
             >
               Buka Detail
             </Button>

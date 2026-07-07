@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
 import { useOrgBranches } from '@/hooks/useConfigData';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { formatCurrencyShort as formatCurrency } from '@/utils/formatters';
 
@@ -39,6 +40,7 @@ export default function PipelineReportPage() {
   const [viewMode, setViewMode] = useState<'count' | 'value'>('count');
   const [branchFilter, setBranchFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
   const { pipelineRecords, funnelSteps, totalPipelineValue, totalActiveProjects, growthForecast, avgAging } = useMemo(() => {
     const pipelineRecords: PipelineRecord[] = projects.map((p) => ({
@@ -120,11 +122,14 @@ export default function PipelineReportPage() {
     return { pipelineRecords, funnelSteps, totalPipelineValue, totalActiveProjects, growthForecast, avgAging };
   }, [projects, viewMode]);
 
-  const filtered = pipelineRecords.filter((r) => {
-    const matchBranch = branchFilter === 'All' || r.branch === branchFilter;
-    const matchSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchBranch && matchSearch;
-  });
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    return pipelineRecords.filter((r) => {
+      const matchBranch = branchFilter === 'All' || r.branch === branchFilter;
+      const matchSearch = !q || r.name.toLowerCase().includes(q);
+      return matchBranch && matchSearch;
+    });
+  }, [pipelineRecords, branchFilter, debouncedSearch]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">

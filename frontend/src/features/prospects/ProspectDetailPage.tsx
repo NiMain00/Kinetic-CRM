@@ -381,7 +381,7 @@ export default function ProspectDetailPage() {
         )}
 
         {isConverted && (
-          <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">visibility</span>} onClick={() => navigate(`/project/${prospect.projectId}/overview`)}>
+          <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">visibility</span>} onClick={() => navigate(`/projects/${prospect.projectId}/overview`)}>
             Lihat Proyek
           </Button>
         )}
@@ -893,7 +893,7 @@ export default function ProspectDetailPage() {
                           <p className="font-semibold text-on-surface">{relatedProject.progress}%</p>
                         </div>
                       </div>
-                      <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>} onClick={() => navigate(`/project/${relatedProject.id}/overview`)}>
+                      <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>} onClick={() => navigate(`/projects/${relatedProject.id}/overview`)}>
                         Buka Detail Proyek
                       </Button>
                     </div>
@@ -926,13 +926,11 @@ export default function ProspectDetailPage() {
           </>
         }
       >
-        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini? Tindakan ini tidak dapat dibatalkan.</p>
-        {isConverted && (
-          <p className="text-sm text-danger mt-2 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px]">warning</span>
-            Proyek terkait ({prospect.projectId}) juga akan dihapus.
-          </p>
-        )}
+        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini?</p>
+        <p className="text-sm text-danger mt-2 flex items-center gap-1">
+          <span className="material-symbols-outlined text-[16px]">warning</span>
+          Semua proyek yang berasal dari prospek ini juga akan dihapus. Tindakan ini tidak dapat dibatalkan.
+        </p>
       </Modal>
     </div>
   );

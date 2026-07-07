@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { MasterItem } from '@/types/domain/master-item';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface ItemSelectorProps {
   value: string | null;
@@ -19,6 +20,7 @@ export default function ItemSelector({
 }: ItemSelectorProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const ref = useRef<HTMLDivElement>(null);
 
   const allItems = useMasterDataStore((s) => s.items);
@@ -31,13 +33,15 @@ export default function ItemSelector({
   );
 
   const filtered = useMemo(
-    () =>
-      items.filter(
+    () => {
+      const q = debouncedSearch.toLowerCase();
+      return !q ? items : items.filter(
         (i) =>
-          i.name.toLowerCase().includes(search.toLowerCase()) ||
-          i.sku.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [items, search],
+          i.name.toLowerCase().includes(q) ||
+          i.sku.toLowerCase().includes(q),
+      );
+    },
+    [items, debouncedSearch],
   );
 
   const selectedItem = value

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterPeriod } from '@/stores/masterDataStore';
 
 export default function MasterPeriodPage() {
@@ -11,11 +12,15 @@ export default function MasterPeriodPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterPeriod | null>(null);
   const [form, setForm] = useState<Partial<MasterPeriod>>({});
 
-  const filtered = periods.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => periods.filter(p => {
+    const q = debouncedSearch.toLowerCase();
+    return !q || p.name.toLowerCase().includes(q);
+  }), [periods, debouncedSearch]);
 
   const openCreate = () => {
     setEditing(null);

@@ -1,11 +1,13 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Stepper, type StepperStep } from '@/components/ui';
+import { rksService } from '@/services/rks';
 
 interface TabProps {
   project?: Project;
@@ -47,10 +49,16 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
     return qt?.code || 'text';
   };
 
+  const toDateInput = (v: any) => {
+    if (!v) return '';
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+  };
+
   // Initialize from project.rks or defaults
   const [nomorTender, setNomorTender] = useState(project?.rks?.nomorTender || '');
   const [namaTender, setNamaTender] = useState(project?.rks?.namaTender || project?.name || '');
-  const [deadlineTender, setDeadlineTender] = useState(project?.rks?.deadlineTender || project?.deadlineTender || '');
+  const [deadlineTender, setDeadlineTender] = useState(toDateInput(project?.rks?.deadlineTender || project?.deadlineTender));
   const [aanwijzing, setAanwijzing] = useState(project?.rks?.aanwijzing || 'Tidak / Belum Ada');
   const [workLocation, setWorkLocation] = useState(project?.rks?.workLocation || project?.location || '');
   const [mainScope, setMainScope] = useState(project?.rks?.mainScope || '');
@@ -68,7 +76,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   useEffect(() => {
     setNomorTender(project?.rks?.nomorTender || '');
     setNamaTender(project?.rks?.namaTender || project?.name || '');
-    setDeadlineTender(project?.rks?.deadlineTender || project?.deadlineTender || '');
+    setDeadlineTender(toDateInput(project?.rks?.deadlineTender || project?.deadlineTender));
     setAanwijzing(project?.rks?.aanwijzing || 'Tidak / Belum Ada');
     setWorkLocation(project?.rks?.workLocation || project?.location || '');
     setMainScope(project?.rks?.mainScope || '');
@@ -97,7 +105,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
 
   const handleSave = () => {
     if (!project?.id) return;
-    updateProjectRks(project.id, {
+    const rksData = {
       nomorTender,
       namaTender,
       deadlineTender,
@@ -106,13 +114,15 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       mainScope,
       additionalNotes,
       uploadedFiles,
-    });
+    };
+    updateProjectRks(project.id, rksData);
+    rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
   };
 
   const handleSubmit = () => {
     if (!project?.id) return;
     // Persist RKS data first
-    updateProjectRks(project.id, {
+    const rksData = {
       nomorTender,
       namaTender,
       deadlineTender,
@@ -121,7 +131,9 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       mainScope,
       additionalNotes,
       uploadedFiles,
-    });
+    };
+    updateProjectRks(project.id, rksData);
+    rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
     // Add timeline event
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
@@ -140,7 +152,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   const handlePertanyaanSubmit = () => {
     if (!project?.id) return;
     // Save all RKS data including answers
-    updateProjectRks(project.id, {
+    const rksData = {
       nomorTender,
       namaTender,
       deadlineTender,
@@ -150,7 +162,9 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       additionalNotes,
       uploadedFiles,
       answers,
-    });
+    };
+    updateProjectRks(project.id, rksData);
+    rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
 
     if (project.type === 'prospecting') {
       // Prospecting: skip Review RKS & LPHS/SIOS, langsung ke Harga
@@ -166,7 +180,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       };
       addTimelineEvent(project.id, event);
       onShowNotification?.('RKS berhasil dikirim. Melanjutkan ke tahap Harga...', 'success');
-      navigate(`/project/${project.id}/harga`);
+      navigate(`/projects/${project.id}/harga`);
     } else {
       // Tender: tetap ke Review RKS
       updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
@@ -197,7 +211,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       };
       addTimelineEvent(project.id, event);
       onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
-      navigate(`/project/${project.id}/review-rks`);
+      navigate(`/projects/${project.id}/review-rks`);
     }
   };
 
@@ -220,7 +234,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
         </div>
       </div>
 
-      <Stepper steps={RKS_STEPS} currentStep={currentStep} />
+      <Stepper steps={RKS_STEPS} currentStep={currentStep} onStepClick={setCurrentStep} />
 
       {currentStep === 0 && (
         <div className="space-y-6">

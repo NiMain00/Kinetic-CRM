@@ -88,7 +88,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
       entityId: project.id,
       entityType: 'project',
     });
-    navigate(`/project/${project.id}/lphs`);
+    navigate(`/projects/${project.id}/lphs`);
   };
 
   const handleRevisi = () => {
@@ -112,7 +112,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
       entityId: project.id,
       entityType: 'project',
     });
-    navigate(`/project/${project.id}/rks`);
+    navigate(`/projects/${project.id}/rks`);
   };
 
   const handleSaveReview = () => {

@@ -4,6 +4,7 @@ import { Button, Modal } from '@/components/ui';
 import { useRbacStore } from '@/stores/rbacStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { authz } from '@/services/authz';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { RbacDepartment, RbacRole, RbacUserRole, RbacRolePermission, RbacPermission, WorkflowStage } from '@/stores/rbacStore';
 
 // ── Constants ──
@@ -597,21 +598,22 @@ function RolePermissionsTab() {
 
   // Search filter
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
   // Scope type preference for newly added permissions
   const [defaultScope, setDefaultScope] = useState<'department' | 'global'>('department');
 
   // Filtered groups & flattened perm list
   const filteredGroups = useMemo(() => {
-    if (!searchQuery.trim()) return MODULE_GROUPS;
-    const q = searchQuery.toLowerCase();
+    if (!debouncedSearch.trim()) return MODULE_GROUPS;
+    const q = debouncedSearch.toLowerCase();
     return MODULE_GROUPS.map(mg => ({
       ...mg,
       perms: mg.perms.filter(p =>
         p.code.toLowerCase().includes(q) || p.label.toLowerCase().includes(q) || mg.name.toLowerCase().includes(q)
       ),
     })).filter(mg => mg.perms.length > 0);
-  }, [searchQuery]);
+  }, [debouncedSearch]);
 
   // Stats per role (assigned / total)
   const roleStats = useMemo(() => {

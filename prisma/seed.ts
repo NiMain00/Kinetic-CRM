@@ -480,7 +480,8 @@ async function main() {
     { id: 'icg-workflow-entity-tabs', key: 'workflow_entity_tabs', name: 'Tab Entitas Workflow', description: 'Tab filter pada halaman konfigurasi workflow', category: 'workflow' as const, isSystem: true },
   ];
   for (const g of inputConfigGroups) {
-    await prisma.inputConfigGroup.upsert({ where: { id: g.id }, update: {}, create: g });
+    const { id, ...data } = g;
+    await prisma.inputConfigGroup.upsert({ where: { id }, update: data, create: g });
   }
 
   const inputConfigOptions = [
@@ -513,9 +514,9 @@ async function main() {
     { id: 'ico-su-4', groupId: 'icg-sla-units', value: 'bulan', label: 'Bulan', sortOrder: 4 },
     // ── prospect_filter_tabs ──
     { id: 'ico-pft-1', groupId: 'icg-prospect-filter-tabs', value: 'all', label: 'Semua', sortOrder: 1 },
-    { id: 'ico-pft-2', groupId: 'icg-prospect-filter-tabs', value: 'my_prospects', label: 'Prospek Saya', sortOrder: 2 },
-    { id: 'ico-pft-3', groupId: 'icg-prospect-filter-tabs', value: 'recent', label: 'Terbaru', sortOrder: 3 },
-    { id: 'ico-pft-4', groupId: 'icg-prospect-filter-tabs', value: 'needs_review', label: 'Perlu Review', sortOrder: 4 },
+    { id: 'ico-pft-2', groupId: 'icg-prospect-filter-tabs', value: 'needs_review', label: 'Perlu Review', sortOrder: 2 },
+    { id: 'ico-pft-3', groupId: 'icg-prospect-filter-tabs', value: 'my_prospects', label: 'Prospek Saya', sortOrder: 3 },
+    { id: 'ico-pft-4', groupId: 'icg-prospect-filter-tabs', value: 'recent', label: 'Terbaru', sortOrder: 4 },
     { id: 'ico-pft-5', groupId: 'icg-prospect-filter-tabs', value: 'won', label: 'Menang', sortOrder: 5 },
     { id: 'ico-pft-6', groupId: 'icg-prospect-filter-tabs', value: 'lost', label: 'Hilang', sortOrder: 6 },
     // ── pipeline_tabs ──
@@ -535,7 +536,8 @@ async function main() {
     { id: 'ico-wet-3', groupId: 'icg-workflow-entity-tabs', value: 'lphs', label: 'LPHS', sortOrder: 3 },
   ];
   for (const o of inputConfigOptions) {
-    await prisma.inputConfigOption.upsert({ where: { id: o.id }, update: {}, create: o });
+    const { id, ...data } = o;
+    await prisma.inputConfigOption.upsert({ where: { id }, update: data, create: o });
   }
 
   console.log('Seed completed successfully!');

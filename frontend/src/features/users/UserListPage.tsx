@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/stores/userStore';
 import type { UserRole } from '@/types/domain/users';
 import { usePermission } from '@/hooks/usePermission';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 
 const ALL_ROLES: UserRole[] = ['Super Admin', 'Admin', 'PM', 'Branch Manager', 'Dept Head', 'Reviewer', 'Staff'];
@@ -23,16 +24,18 @@ export default function UserListPage() {
   const navigate = useNavigate();
   const { can } = usePermission();
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
   const users = useUserStore((s) => s.users);
 
-  const filtered = users.filter((u) => {
-    const matchSearch = u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase());
+  const filtered = useMemo(() => users.filter((u) => {
+    const q = debouncedSearch.toLowerCase();
+    const matchSearch = !q || u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
-  });
+  }), [users, debouncedSearch, roleFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

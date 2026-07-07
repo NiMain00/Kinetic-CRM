@@ -212,7 +212,7 @@ export default function ProjectDetailView({
   };
 
   const handleTabChange = (path: string) => {
-    navigate(`/project/${projectId}/${path}`);
+    navigate(`/projects/${projectId}/${path}`);
   };
 
   const handleApproveProject = () => {
@@ -246,17 +246,24 @@ export default function ProjectDetailView({
 
   const handleRevision = () => {
     if (!projectId || !project) return;
-    updateProject(projectId, { status: 'Revision', phase: 'Revisi' });
-    addTimelineEvent(projectId, {
-      id: `evt-${Date.now()}`,
-      title: 'Proyek Direvisi',
-      actor: 'System',
-      role: 'System',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'revision',
-      description: 'Proyek dikembalikan ke tahap revisi.',
-    });
-    toast.success('Proyek dikembalikan ke tahap revisi.');
+    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    const currentIdx = active.findIndex((p) => p.status === project.status);
+    if (currentIdx > 0) {
+      const prev = active[currentIdx - 1];
+      updateProject(projectId, { status: prev.status, phase: prev.phase });
+      addTimelineEvent(projectId, {
+        id: `evt-${Date.now()}`,
+        title: 'Proyek Direvisi',
+        actor: 'System',
+        role: 'System',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'revision',
+        description: `Proyek dikembalikan ke tahap ${prev.phase}.`,
+      });
+      toast.success(`Proyek dikembalikan ke tahap ${prev.phase}.`);
+    } else {
+      toast.error('Proyek sudah berada di tahap paling awal.');
+    }
   };
 
   const handleShowNotification = (message: string, type: 'success' | 'warning' | 'error') => {
@@ -282,7 +289,7 @@ export default function ProjectDetailView({
           <span className="material-symbols-outlined text-[12px] sm:text-[14px] text-outline">chevron_right</span>
           <button
             type="button"
-            onClick={() => navigate(`/project/${projectId}/overview`)}
+            onClick={() => navigate(`/projects/${projectId}/overview`)}
             className="hover:text-primary transition-colors font-semibold text-xs sm:text-sm text-on-surface-variant truncate max-w-[80px] sm:max-w-none"
           >
             {project.code}
@@ -300,7 +307,7 @@ export default function ProjectDetailView({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <button
-              onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/project/${projectId}/overview`)}
+              onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/projects/${projectId}/overview`)}
               className="p-1 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-surface shrink-0 touch-min"
             >
               <span className="material-symbols-outlined text-primary text-[18px] sm:text-[20px]">arrow_back</span>
@@ -361,7 +368,7 @@ export default function ProjectDetailView({
               steps={tabs}
               currentStepIndex={currentStepIndex}
               accessibleUpToIndex={accessibleUpToIndex}
-              onStepClick={(path) => navigate(`/project/${projectId}/${path}`)}
+              onStepClick={(path) => navigate(`/projects/${projectId}/${path}`)}
               isStepUnlocked={(index) => {
                 const step = tabs[index];
                 const status = project.status;

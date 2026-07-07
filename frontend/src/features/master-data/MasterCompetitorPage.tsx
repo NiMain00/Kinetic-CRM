@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card, CurrencyInput } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterCompetitor } from '@/stores/masterDataStore';
 import { formatCurrency } from '@/utils/formatters';
 
@@ -12,11 +13,15 @@ export default function MasterCompetitorPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterCompetitor | null>(null);
   const [form, setForm] = useState<Partial<MasterCompetitor>>({});
 
-  const filtered = competitors.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => competitors.filter(c => {
+    const q = debouncedSearch.toLowerCase();
+    return !q || c.name.toLowerCase().includes(q);
+  }), [competitors, debouncedSearch]);
 
   const openCreate = () => {
     setEditing(null);

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterQuestion } from '@/stores/masterDataStore';
 import { masterDataService } from '@/services/master-data';
 
@@ -119,16 +120,18 @@ export default function MasterQuestionPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterQuestion | null>(null);
   const [form, setForm] = useState<Partial<MasterQuestion>>({});
   const [contextFilter, setContextFilter] = useState<'all' | 'prospect' | 'rks' | 'both'>('all');
 
-  const filtered = questions.filter(q => {
-    const matchesSearch = q.question_text.toLowerCase().includes(search.toLowerCase());
+  const filtered = useMemo(() => questions.filter(q => {
+    const qSearch = debouncedSearch.toLowerCase();
+    const matchesSearch = !qSearch || q.question_text.toLowerCase().includes(qSearch);
     const matchesContext = contextFilter === 'all' || q.context === contextFilter;
     return matchesSearch && matchesContext;
-  });
+  }), [questions, debouncedSearch, contextFilter]);
 
   const openCreate = () => {
     setEditing(null);

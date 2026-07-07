@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { useInputConfigMutations } from '@/hooks/useInputConfig';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { InputConfigGroup, InputOption, InputConfigCategory, InputConfigGroupKey } from '@/types/input-config';
 
 const CATEGORY_TABS: { key: InputConfigCategory | 'all'; label: string }[] = [
@@ -40,14 +41,15 @@ export default function ConfigInputPage() {
   const [activeCategory, setActiveCategory] = useState<InputConfigCategory | 'all'>('all');
   const [drawer, setDrawer] = useState<DrawerState>(EMPTY_DRAWER);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
   const filteredGroups = useMemo(() => {
     let result = groups;
     if (activeCategory !== 'all') {
       result = result.filter((g) => g.category === activeCategory);
     }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       result = result.filter(
         (g) =>
           g.name.toLowerCase().includes(q) ||
@@ -56,7 +58,7 @@ export default function ConfigInputPage() {
       );
     }
     return result.sort((a, b) => a.name.localeCompare(b.name));
-  }, [groups, activeCategory, searchQuery]);
+  }, [groups, activeCategory, debouncedSearch]);
 
   const totalOptions = useMemo(
     () => groups.reduce((sum, g) => sum + g.options.length, 0),

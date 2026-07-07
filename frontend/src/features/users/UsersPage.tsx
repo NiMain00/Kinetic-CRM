@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { User, UserRole } from '../../types/domain/users';
 import { useActiveOptions } from '@/hooks/useInputConfig';
 import { useMasterRoles, useOrgBranches, useOrgDepartments } from '@/hooks/useConfigData';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useUserStore } from '@/stores/userStore';
 
 interface UsersViewProps {
@@ -32,6 +33,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
   const deptOptions = useMemo(() => departments.map(d => d.name), [departments]);
   const accountStatusOptions = useActiveOptions('account_statuses');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [roleFilter, setRoleFilter] = useState<UserRole | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -102,12 +104,13 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
     onShowNotification(`Pengguna ${target?.fullName} berhasil dihapus.`, 'warning');
   };
 
-  const filteredUsers = users.filter(u => {
-    const matchesSearch = u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase()) || u.username.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredUsers = useMemo(() => users.filter(u => {
+    const q = debouncedSearch.toLowerCase();
+    const matchesSearch = !q || u.fullName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.username.toLowerCase().includes(q);
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || u.status === statusFilter;
     return matchesSearch && matchesRole && matchesStatus;
-  });
+  }), [users, debouncedSearch, roleFilter, statusFilter]);
 
   const roleBadgeClass = (role: UserRole) => {
     const map: Record<string, string> = { 'Super Admin': 'bg-danger/10 text-danger', 'Admin': 'bg-status-purple/10 text-status-purple', 'PM': 'bg-primary/10 text-primary', 'Branch Manager': 'bg-status-teal/10 text-status-teal', 'Dept Head': 'bg-status-indigo/10 text-status-indigo', 'Management': 'bg-amber-100 text-amber-700 dark:text-amber-400', 'Reviewer': 'bg-warning/10 text-warning', 'Staff': 'bg-secondary-container/50 text-on-secondary-container' };

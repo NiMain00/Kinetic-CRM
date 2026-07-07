@@ -55,6 +55,8 @@ export class ProspectsService {
 
   async delete(id: string) {
     await this.get(id);
-    return this.prisma.prospect.update({ where: { id }, data: { deletedAt: new Date() } });
+    const now = new Date();
+    await this.prisma.project.updateMany({ where: { sourceProspectId: id, deletedAt: null }, data: { deletedAt: now } });
+    return this.prisma.prospect.update({ where: { id }, data: { deletedAt: now } });
   }
 }

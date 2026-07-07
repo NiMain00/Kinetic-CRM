@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useMentionAutocomplete, type MentionUser } from '@/hooks/useMentionAutocomplete';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { AtSign } from 'lucide-react';
 
 interface MentionTextareaProps {
@@ -44,10 +45,15 @@ export default function MentionTextarea({
     }
   }, [value]);
 
+  const debouncedValue = useDebouncedValue(value, 300);
+
+  useEffect(() => {
+    detectMention(debouncedValue);
+  }, [debouncedValue, detectMention]);
+
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     onChange(newValue);
-    detectMention(newValue);
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterHoliday } from '@/stores/masterDataStore';
 
 export default function MasterHolidayPage() {
@@ -11,6 +12,7 @@ export default function MasterHolidayPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [yearFilter, setYearFilter] = useState<number | 'all'>('all');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterHoliday | null>(null);
@@ -18,10 +20,10 @@ export default function MasterHolidayPage() {
 
   const years = [...new Set(holidays.map(h => h.year))].sort();
 
-  const filtered = holidays.filter(h => {
-    const q = search.toLowerCase();
-    return (h.name.toLowerCase().includes(q)) && (yearFilter === 'all' || h.year === yearFilter);
-  });
+  const filtered = useMemo(() => holidays.filter(h => {
+    const q = debouncedSearch.toLowerCase();
+    return (!q || h.name.toLowerCase().includes(q)) && (yearFilter === 'all' || h.year === yearFilter);
+  }), [holidays, debouncedSearch, yearFilter]);
 
   const openCreate = () => {
     setEditing(null);

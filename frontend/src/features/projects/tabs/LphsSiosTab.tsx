@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Project, LphsData, LphsDepartmentApproval, TimelineEvent, ApprovalItem } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useRbacStore } from '@/stores/rbacStore';
+import type { RbacDepartment } from '@/stores/rbacStore';
+import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
@@ -44,7 +46,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   const updateLphsDepartmentApproval = useProjectStore((s) => s.updateLphsDepartmentApproval);
   const updateLphsStatus = useProjectStore((s) => s.updateLphsStatus);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
-  const departments = useRbacStore((s) => s.departments);
+  const departments = useMasterDataStore((s) => s.departments as unknown as RbacDepartment[]);
   const authUser = useAuthStore((s) => s.user);
   const addApproval = useApprovalStore((s) => s.addApproval);
   const removeApproval = useApprovalStore((s) => s.removeApproval);
@@ -66,6 +68,18 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     }
   }, [project?.id]);
 
+  // Auto-advance to management review once PM and all departments have approved
+  useEffect(() => {
+    if (!project?.id) return;
+    const pmApproved = lphs.pmStatus === 'approved';
+    const deptsAllApproved = lphs.departmentApprovals.length > 0 && lphs.departmentApprovals.every(a => a.status === 'approved');
+    const notYetAdvanced = lphs.overallStatus !== 'mgmt_review' && lphs.overallStatus !== 'approved';
+    if (pmApproved && deptsAllApproved && notYetAdvanced) {
+      updateLphsStatus(project.id, { overallStatus: 'mgmt_review', mgmtStatus: 'pending' });
+      updateProjectLphs(project.id, { ...lphs, overallStatus: 'mgmt_review', mgmtStatus: 'pending' });
+    }
+  }, [lphs.pmStatus, lphs.departmentApprovals, lphs.overallStatus]);
+
   // Determine user role capabilities
   const userRole = authUser?.roleName || '';
   const isSuperAdmin = userRole === 'Super Admin';
@@ -76,7 +90,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
   const activeDepartments = useMemo(() => {
     // Untuk proyek Tender: filter berdasarkan scope departments yang sudah diatur
-    if (project?.type === 'Tender' && project?.scopeDepartments && project.scopeDepartments.length > 0) {
+    if ((project?.type === 'Tender' || project?.type === 'tender') && project?.scopeDepartments && project.scopeDepartments.length > 0) {
       return departments.filter(d => d.is_active && project.scopeDepartments!.includes(d.id));
     }
     // Fallback: tampilkan semua departemen aktif (Prospecting / data lama)

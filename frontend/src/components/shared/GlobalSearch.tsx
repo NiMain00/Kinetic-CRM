@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface SearchResult {
   label: string;
@@ -28,10 +29,24 @@ const searchIndex: SearchResult[] = [
 
 export default function GlobalSearch({ className = '' }: { className?: string }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const debouncedQuery = useDebouncedValue(query, 300);
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const ref = useRef<HTMLDivElement>(null);
+
+  const results = useMemo(() => {
+    if (!debouncedQuery.trim()) return [];
+    const q = debouncedQuery.toLowerCase();
+    return searchIndex.filter((r) => r.label.toLowerCase().includes(q) || r.category?.toLowerCase().includes(q));
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  }, [debouncedQuery]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -61,17 +76,11 @@ export default function GlobalSearch({ className = '' }: { className?: string })
 
   const handleSearch = (value: string) => {
     setQuery(value);
-    if (!value.trim()) { setResults([]); setIsOpen(false); return; }
-    const q = value.toLowerCase();
-    const filtered = searchIndex.filter((r) => r.label.toLowerCase().includes(q) || r.category?.toLowerCase().includes(q));
-    setResults(filtered);
-    setIsOpen(true);
   };
 
   const handleSelect = (result: SearchResult) => {
     navigate(result.path);
     setQuery('');
-    setResults([]);
     setIsOpen(false);
   };
 

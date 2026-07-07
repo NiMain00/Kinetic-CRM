@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Modal, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterCustomer } from '@/stores/masterDataStore';
 
 const typeLabels: Record<string, string> = { swasta: 'Swasta', bumn: 'BUMN', pemerintah: 'Pemerintah', asing: 'Asing' };
@@ -14,17 +15,18 @@ export default function MasterCustomerPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<MasterCustomer | null>(null);
   const [form, setForm] = useState<Partial<MasterCustomer>>({});
 
-  const filtered = customers.filter(c => {
-    const q = search.toLowerCase();
-    const matchSearch = c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.pic_name.toLowerCase().includes(q);
+  const filtered = useMemo(() => customers.filter(c => {
+    const q = debouncedSearch.toLowerCase();
+    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.pic_name.toLowerCase().includes(q);
     const matchType = typeFilter === 'all' || c.type === typeFilter;
     return matchSearch && matchType;
-  });
+  }), [customers, debouncedSearch, typeFilter]);
 
   const openCreate = () => {
     setEditing(null);

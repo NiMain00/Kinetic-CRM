@@ -30,6 +30,8 @@ function App() {
     return unsub;
   }, []);
 
+
+
   // Register domain event handlers once at startup
   const initRef = useRef(false);
   useEffect(() => {

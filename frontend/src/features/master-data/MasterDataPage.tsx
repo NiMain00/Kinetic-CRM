@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { masterDataConfig, masterDataCategories, MasterDataGrid, SearchMasterData, MasterDataDetailView } from './components';
 import type { MasterDataEntry } from './components';
 
@@ -39,6 +40,7 @@ export default function MasterDataView(_props: MasterDataViewProps) {
   const { entity } = useParams();
   const store = useMasterDataStore();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
   const getCount = useCallback((entry: MasterDataEntry) => {
     const data = (store as any)[entry.storeKey];
@@ -50,14 +52,14 @@ export default function MasterDataView(_props: MasterDataViewProps) {
   }, [getCount]);
 
   const filteredConfig = useMemo(() => {
-    if (!searchQuery) return masterDataConfig;
-    const q = searchQuery.toLowerCase();
+    if (!debouncedSearch) return masterDataConfig;
+    const q = debouncedSearch.toLowerCase();
     return masterDataConfig.filter(
       (item) =>
         item.name.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [debouncedSearch]);
 
   const handleCardClick = useCallback((entry: MasterDataEntry) => {
     if (entry.path) {

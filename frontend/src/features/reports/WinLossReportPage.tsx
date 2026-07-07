@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '@/stores/projectStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { formatCurrencyShort as formatCurrency } from '@/utils/formatters';
 
@@ -24,6 +25,7 @@ export default function WinLossReportPage() {
   const { projects } = useProjectStore();
   const [dateRange, setDateRange] = useState('Current Month');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
   const { records, totalWon, totalLost, totalProjects, winRate, totalValueWon, monthlyChart } = useMemo(() => {
     const records: WinLossRecord[] = projects
@@ -81,7 +83,10 @@ export default function WinLossReportPage() {
     return { records, totalWon, totalLost, totalProjects: totalRecords, winRate, totalValueWon, monthlyChart };
   }, [projects]);
 
-  const filtered = records.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()) || r.client.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filtered = useMemo(() => {
+    const q = debouncedSearch.toLowerCase();
+    return !q ? records : records.filter((r) => r.name.toLowerCase().includes(q) || r.client.toLowerCase().includes(q));
+  }, [records, debouncedSearch]);
 
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">

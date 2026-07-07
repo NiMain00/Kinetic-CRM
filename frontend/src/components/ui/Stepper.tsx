@@ -9,10 +9,17 @@ interface StepperProps {
   steps: StepperStep[];
   currentStep: number;
   className?: string;
+  onStepClick?: (step: number) => void;
 }
 
-export default function Stepper({ steps, currentStep, className = '' }: StepperProps) {
+export default function Stepper({ steps, currentStep, className = '', onStepClick }: StepperProps) {
   const isMobile = useIsMobile();
+
+  const handleClick = (index: number) => {
+    if (onStepClick && index <= currentStep + 1) {
+      onStepClick(index);
+    }
+  };
 
   if (isMobile) {
     return (
@@ -22,7 +29,7 @@ export default function Stepper({ steps, currentStep, className = '' }: StepperP
           const isActive = index === currentStep;
 
           return (
-            <div key={step.label} className="flex items-start gap-3">
+            <button key={step.label} onClick={() => handleClick(index)} type="button" className="flex items-start gap-3 text-left w-full">
               <div className="flex flex-col items-center shrink-0">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
@@ -42,7 +49,7 @@ export default function Stepper({ steps, currentStep, className = '' }: StepperP
               <div className={`pt-1.5 text-sm ${isActive || isCompleted ? 'text-primary font-semibold' : 'text-secondary'}`}>
                 {step.label}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -56,7 +63,7 @@ export default function Stepper({ steps, currentStep, className = '' }: StepperP
         const isActive = index === currentStep;
 
         return (
-          <div key={step.label} className="flex flex-col gap-2">
+          <button key={step.label} onClick={() => handleClick(index)} type="button" className="flex flex-col gap-2 text-left">
             <div
               className={`h-1.5 rounded-full transition-colors duration-300 ${
                 isCompleted ? 'bg-success' : isActive ? 'bg-primary' : 'bg-surface-container-high'
@@ -75,7 +82,7 @@ export default function Stepper({ steps, currentStep, className = '' }: StepperP
               </span>
               <span className="text-xs">{index + 1}. {step.label}</span>
             </div>
-          </div>
+          </button>
         );
       })}
     </div>

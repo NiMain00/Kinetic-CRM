@@ -64,6 +64,7 @@ export default function ProjectFormPage() {
 
   // State untuk scope & team
   const [selectedDeptIds, setSelectedDeptIds] = useState<string[]>([]);
+  const [deptError, setDeptError] = useState('');
   const [members, setMembers] = useState<MemberEntry[]>([]);
   const [newMemberDept, setNewMemberDept] = useState('');
   const [newMemberUser, setNewMemberUser] = useState('');
@@ -75,6 +76,7 @@ export default function ProjectFormPage() {
     setSelectedDeptIds((prev) =>
       prev.includes(deptId) ? prev.filter((id) => id !== deptId) : [...prev, deptId],
     );
+    setDeptError('');
     // Remove members from deselected departments
     setMembers((prev) => prev.filter((m) => m.deptId !== deptId));
   };
@@ -109,6 +111,11 @@ export default function ProjectFormPage() {
   const getRoleName = (roleId: string) => roles.find((r) => r.id === roleId)?.name.replace(/_/g, ' ') || roleId;
 
   const onSubmit = async (data: ProjectFormData) => {
+    if (selectedDeptIds.length === 0) {
+      setDeptError('Pilih minimal satu departemen yang terlibat.');
+      return;
+    }
+    setDeptError('');
     const ts = Date.now();
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     const projectId = `PR-${ts}`;
@@ -158,7 +165,7 @@ export default function ProjectFormPage() {
       }
 
       toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
-      navigate(`/project/${projectId}/overview`);
+      navigate(`/projects/${projectId}/overview`);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || err?.message || 'Gagal menyimpan proyek. Silakan coba lagi.');
     }
@@ -294,9 +301,8 @@ export default function ProjectFormPage() {
                 );
               })}
             </div>
+            {deptError && <p className="text-xs text-danger">{deptError}</p>}
           </Card>
-
-          {/* ── Anggota per Departemen ── */}
           {selectedDeptIds.length > 0 && (
             <Card padding="lg" className="space-y-5">
               <div>
@@ -410,8 +416,8 @@ export default function ProjectFormPage() {
                 <div className="text-xs text-secondary">
                   <span className="font-bold text-primary">{members.length}</span> Anggota
                 </div>
-              </div>
-            </Card>
+            </div>
+          </Card>
           )}
 
           {/* ── Actions ── */}

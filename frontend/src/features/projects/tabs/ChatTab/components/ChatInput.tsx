@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Paperclip, Smile, AtSign } from 'lucide-react';
 import type { ChatUser } from '@/types/chat';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface ChatInputProps {
   onSendMessage: (content: string) => void;
@@ -19,11 +20,31 @@ export default function ChatInput({ onSendMessage, onTyping, onFileUpload, users
   const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
+  const debouncedText = useDebouncedValue(text, 300);
+
   const filteredUsers = users.filter(
     (u) =>
       u.id !== currentUserId &&
       u.name.toLowerCase().includes(mentionQuery.toLowerCase())
   );
+
+  // Debounced mention detection
+  useEffect(() => {
+    const cursorPos = debouncedText.length;
+    const textBeforeCursor = debouncedText.slice(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+    if (lastAtIndex >= 0) {
+      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+      if (!textAfterAt.includes('\n') && (lastAtIndex === 0 || textBeforeCursor[lastAtIndex - 1] === ' ' || textBeforeCursor[lastAtIndex - 1] === '\n')) {
+        setMentionQuery(textAfterAt);
+        setShowMentions(true);
+        setMentionIndex(0);
+        return;
+      }
+    }
+    setShowMentions(false);
+  }, [debouncedText]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -41,23 +62,6 @@ export default function ChatInput({ onSendMessage, onTyping, onFileUpload, users
     onTyping(true);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => onTyping(false), 2000);
-
-    // Detect @mention trigger
-    const cursorPos = value.length;
-    const textBeforeCursor = value.slice(0, cursorPos);
-    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-
-    if (lastAtIndex >= 0) {
-      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
-      // Only show if there's no space before cursor after @ (or just started typing after @)
-      if (!textAfterAt.includes('\n') && lastAtIndex === 0 || textBeforeCursor[lastAtIndex - 1] === ' ' || textBeforeCursor[lastAtIndex - 1] === '\n') {
-        setMentionQuery(textAfterAt);
-        setShowMentions(true);
-        setMentionIndex(0);
-        return;
-      }
-    }
-    setShowMentions(false);
   }, [onTyping]);
 
   const insertMention = useCallback((user: ChatUser) => {
