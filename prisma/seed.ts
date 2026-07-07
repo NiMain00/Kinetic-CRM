@@ -100,6 +100,7 @@ async function main() {
 
   // ── ROLES ───────────────────────────────────────────────────────
   const roleData = [
+    { id: 'role-supervisor', name: 'Supervisor', isSystem: true },
     { id: 'role-superadmin', name: 'Super Admin', isSystem: true },
     { id: 'role-director', name: 'Director', isSystem: true },
     { id: 'role-admin', name: 'Admin', isSystem: true },
@@ -157,7 +158,7 @@ async function main() {
   await prisma.rolePermission.deleteMany();
   const allPermIds = permissionData.map(p => p.id);
   const rpData = [];
-  for (const roleId of ['role-superadmin', 'role-director', 'role-admin']) {
+  for (const roleId of ['role-superadmin', 'role-director', 'role-admin', 'role-supervisor']) {
     for (const permId of allPermIds) {
       rpData.push({ roleId, permissionId: permId, scopeType: 'global' as const, accessLevel: 'write' as const });
     }
@@ -185,31 +186,49 @@ async function main() {
   const passwordHash = await bcrypt.hash('admin123', 10);
   const staffHash = await bcrypt.hash('staff123', 10);
 
-  const userData = [
-    { id: 'user-1', username: 'superadmin', fullName: 'Super Administrator', email: 'superadmin@kinetic.id', passwordHash, phone: '0811-1111-1111', orgUnitId: deptIT.id },
-    { id: 'user-2', username: 'bambang', fullName: 'Bambang Permadi', email: 'bambang@kinetic.id', passwordHash, phone: '0812-2222-2222', orgUnitId: deptPM.id },
-    { id: 'user-3', username: 'rina', fullName: 'Rina Marlina', email: 'rina@kinetic.id', passwordHash, phone: '0813-3333-3333', orgUnitId: deptMarketing.id },
-    { id: 'user-4', username: 'deni', fullName: 'Deni Saputra', email: 'deni@kinetic.id', passwordHash: staffHash, phone: '0814-4444-4444', orgUnitId: deptFinance.id },
-    { id: 'user-5', username: 'siti', fullName: 'Siti Rahmawati', email: 'siti@kinetic.id', passwordHash: staffHash, phone: '0815-5555-5555', orgUnitId: deptProcurement.id },
-    { id: 'user-6', username: 'ahmad', fullName: 'Ahmad Sulistyo', email: 'ahmad@kinetic.id', passwordHash: staffHash, phone: '0816-6666-6666', orgUnitId: deptPM.id },
-  ];
-
-  for (const u of userData) {
-    await prisma.user.upsert({ where: { id: u.id }, update: {}, create: u as any });
+  interface UserRoleSeed {
+    roleId: string; scopeType: 'global' | 'department'; scopeId?: string;
   }
 
-  // ── USER ROLES ──────────────────────────────────────────────────
-  const userRoleData = [
-    { userId: 'user-1', roleId: 'role-superadmin', scopeType: 'global' as const },
-    { userId: 'user-2', roleId: 'role-pm', scopeType: 'department' as const, scopeId: deptPM.id },
-    { userId: 'user-3', roleId: 'role-bm', scopeType: 'department' as const, scopeId: deptMarketing.id },
-    { userId: 'user-4', roleId: 'role-staff', scopeType: 'department' as const, scopeId: deptFinance.id },
-    { userId: 'user-5', roleId: 'role-staff', scopeType: 'department' as const, scopeId: deptProcurement.id },
-    { userId: 'user-6', roleId: 'role-staff', scopeType: 'department' as const, scopeId: deptPM.id },
+  interface UserSeed {
+    id: string; username: string; fullName: string; email: string;
+    passwordHash: string; phone: string; orgUnitId: string;
+    roles: UserRoleSeed[];
+  }
+
+  const userData: UserSeed[] = [
+    { id: 'user-1', username: 'superadmin', fullName: 'Super Administrator', email: 'superadmin@kinetic.id', passwordHash, phone: '0811-1111-1111', orgUnitId: deptIT.id, roles: [
+      { roleId: 'role-superadmin', scopeType: 'global' },
+      { roleId: 'role-supervisor', scopeType: 'global' },
+    ]},
+    { id: 'user-2', username: 'bambang', fullName: 'Bambang Permadi', email: 'bambang@kinetic.id', passwordHash, phone: '0812-2222-2222', orgUnitId: deptPM.id, roles: [
+      { roleId: 'role-pm', scopeType: 'department', scopeId: deptPM.id },
+    ]},
+    { id: 'user-3', username: 'rina', fullName: 'Rina Marlina', email: 'rina@kinetic.id', passwordHash, phone: '0813-3333-3333', orgUnitId: deptMarketing.id, roles: [
+      { roleId: 'role-bm', scopeType: 'department', scopeId: deptMarketing.id },
+    ]},
+    { id: 'user-4', username: 'deni', fullName: 'Deni Saputra', email: 'deni@kinetic.id', passwordHash: staffHash, phone: '0814-4444-4444', orgUnitId: deptFinance.id, roles: [
+      { roleId: 'role-staff', scopeType: 'department', scopeId: deptFinance.id },
+    ]},
+    { id: 'user-5', username: 'siti', fullName: 'Siti Rahmawati', email: 'siti@kinetic.id', passwordHash: staffHash, phone: '0815-5555-5555', orgUnitId: deptProcurement.id, roles: [
+      { roleId: 'role-staff', scopeType: 'department', scopeId: deptProcurement.id },
+    ]},
+    { id: 'user-6', username: 'ahmad', fullName: 'Ahmad Sulistyo', email: 'ahmad@kinetic.id', passwordHash: staffHash, phone: '0816-6666-6666', orgUnitId: deptPM.id, roles: [
+      { roleId: 'role-staff', scopeType: 'department', scopeId: deptPM.id },
+    ]},
   ];
 
-  for (const ur of userRoleData) {
-    await prisma.userRole.create({ data: ur });
+  // Hapus semua user_role lama agar tidak ada duplikat, lalu buat ulang
+  await prisma.userRole.deleteMany();
+  let roleIdx = 0;
+  for (const u of userData) {
+    const { roles, ...userFields } = u;
+    await prisma.user.upsert({ where: { id: u.id }, update: {}, create: userFields as any });
+    for (const r of roles) {
+      await prisma.userRole.create({
+        data: { id: `ur-${u.id}-${roleIdx++}`, userId: u.id, ...r },
+      });
+    }
   }
 
   // ── MASTER DATA ─────────────────────────────────────────────────

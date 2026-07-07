@@ -17,6 +17,7 @@ export type DomainEvent =
       type: 'PROJECT_DELETED';
       projectId: string;
       projectName: string;
+      sourceProspectId?: string;
       timestamp: string;
     }
   | {

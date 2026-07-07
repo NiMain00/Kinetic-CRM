@@ -39,6 +39,15 @@ export class RbacService {
     });
   }
 
+  async getAllUserRoles() {
+    return this.prisma.userRole.findMany({
+      include: {
+        user: { select: { id: true, username: true, fullName: true, email: true } },
+        role: { select: { id: true, name: true } },
+      },
+    });
+  }
+
   async getWorkflowStages() {
     return this.prisma.workflowStage.findMany({
       include: { slaConfig: true },

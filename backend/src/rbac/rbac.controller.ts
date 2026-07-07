@@ -27,6 +27,11 @@ export class RbacController {
     return this.rbacService.removeUserRole(id);
   }
 
+  @Get('user-roles')
+  async getAllUserRoles() {
+    return this.rbacService.getAllUserRoles();
+  }
+
   @Get('users/:userId/roles')
   async getUserRoles(@Param('userId') userId: string) {
     return this.rbacService.getUserRoles(userId);

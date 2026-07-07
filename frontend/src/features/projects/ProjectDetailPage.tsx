@@ -11,6 +11,7 @@ import { useStatusStepMap, useNextPhaseMap } from '@/hooks/useConfigData';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useConfigStore } from '@/stores/configStore';
 import { useRbacStore } from '@/stores/rbacStore';
+import { prospectService } from '@/services/prospects';
 
 // Tab components
 import OverviewTab from './tabs/OverviewTab';
@@ -185,12 +186,24 @@ export default function ProjectDetailView({
 
   const confirmDeleteProject = () => {
     if (!projectId) return;
-    // Jika proyek berasal dari prospek, reset status konversi
+    // Reset prospect langsung di store & backend
     if (project.sourceProspectId) {
-      updateProspect(project.sourceProspectId, {
-        isConverted: false,
-        projectId: undefined,
+      // 1. Store update — immediate UI feedback
+      useProspectStore.setState((s) => {
+        const entity = s.entities[project.sourceProspectId!];
+        if (!entity) return s;
+        return {
+          entities: {
+            ...s.entities,
+            [project.sourceProspectId!]: { ...entity, isConverted: false, projectId: undefined },
+          },
+        };
       });
+      // 2. Background API call — persist ke backend (fire-and-forget)
+      prospectService.update(project.sourceProspectId!, {
+        isConverted: false,
+        projectId: null,
+      }).catch(() => {});
     }
     deleteProject(projectId);
     toast.success('Proyek berhasil dihapus.');

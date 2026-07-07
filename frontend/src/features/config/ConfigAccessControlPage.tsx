@@ -446,7 +446,7 @@ function UserAssignmentsTab() {
         });
       }
     }
-    return groups.sort((a, b) => a.user.name.localeCompare(b.user.name));
+    return groups.sort((a, b) => (a.user.name || '').localeCompare(b.user.name || ''));
   }, [masterUsers, userRoles]);
 
   const getUserName = (uid: string) => masterUsers.find(u => u.id === uid)?.name || uid;
