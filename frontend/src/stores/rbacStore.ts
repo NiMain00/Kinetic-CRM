@@ -93,6 +93,7 @@ interface RbacState {
   deletePermission: (id: string) => void;
 
   fetchUserRoles: (userId: string) => Promise<void>;
+  fetchAllUserRoles: () => Promise<void>;
   assignUserRole: (userId: string, roleId: string, scopeType: RbacUserRole['scopeType'], scopeId?: string) => void;
   removeUserRole: (userRoleId: string) => void;
   getUserRoles: (userId: string) => RbacUserRole[];
@@ -180,6 +181,20 @@ export const useRbacStore = create<RbacState>()(
             return { userRoles: [...otherRoles, ...newRoles] };
           });
         } catch { /* fallback ke seed data */ }
+      },
+      fetchAllUserRoles: async () => {
+        try {
+          const res = await rbacService.getAllUserRoles();
+          const apiRoles = res.data?.data || res.data || [];
+          const allRoles = apiRoles.map((ur: any) => ({
+            id: ur.id,
+            userId: ur.userId,
+            roleId: ur.roleId,
+            scopeType: ur.scopeType || 'global',
+            scopeId: ur.scopeId || undefined,
+          }));
+          set({ userRoles: allRoles });
+        } catch { /* fallback ke data yang ada */ }
       },
       assignUserRole: async (userId, roleId, scopeType, scopeId) => {
         try {

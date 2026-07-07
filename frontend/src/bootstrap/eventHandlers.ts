@@ -80,15 +80,27 @@ export function registerEventHandlers(): void {
   // ── PROJECT DELETED ─────────────────────────────────────────────────
   // Cascade: delete all linked procurements, clean up relations, and reset prospect conversion.
   eventBus.onEvent('PROJECT_DELETED', (event) => {
-    const { projectId } = event;
+    const { projectId, sourceProspectId } = event;
     const relationStore = useRelationStore.getState();
 
-    // Reset prospect conversion if linked
-    const linkedProspect = relationStore.getProspectByProject(projectId);
+    // Reset prospect conversion if linked (from event payload or relation store)
+    const linkedProspect = sourceProspectId || relationStore.getProspectByProject(projectId);
     if (linkedProspect) {
+      useProspectStore.setState((s) => {
+        const entity = s.entities[linkedProspect];
+        if (!entity) return s;
+        return {
+          entities: {
+            ...s.entities,
+            [linkedProspect]: { ...entity, isConverted: false, projectId: undefined },
+          },
+        };
+      });
+      // Background API call — persist to backend
       useProspectStore.getState().updateProspect(linkedProspect, {
         isConverted: false,
-      });
+        projectId: null,
+      } as any).catch(() => {});
     }
 
     // Get all linked procurements

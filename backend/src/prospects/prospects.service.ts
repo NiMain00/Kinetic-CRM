@@ -46,8 +46,8 @@ export class ProspectsService {
     await this.get(id);
     // Map projectId (frontend) ke convertedToProjectId (Prisma model)
     const mapped = { ...data };
-    if (mapped.projectId !== undefined) {
-      mapped.convertedToProjectId = mapped.projectId;
+    if ('projectId' in mapped) {
+      mapped.convertedToProjectId = mapped.projectId ?? null;
       delete mapped.projectId;
     }
     return this.prisma.prospect.update({ where: { id }, data: mapped });

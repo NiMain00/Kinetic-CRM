@@ -13,6 +13,7 @@ import { projectService } from '@/services/projects';
 import { useApprovalStore } from './approvalStore';
 import { useNotificationStore } from './notificationStore';
 import { useProcurementStore } from '@/features/procurement/procurementStore';
+import { eventBus } from '@/services/eventBridge';
 
 interface ProjectState {
   entities: Record<string, Project>;
@@ -197,6 +198,7 @@ export const useProjectStore = create<ProjectState>()(
       },
 
       deleteProject: async (id) => {
+        const project = get().entities[id];
         await projectService.delete(id);
         const approvalStore = useApprovalStore.getState();
         approvalStore.approvals
@@ -205,6 +207,15 @@ export const useProjectStore = create<ProjectState>()(
         const deleteProc = useProcurementStore.getState().deleteProcurement;
         const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
         linked.forEach((p) => deleteProc(p.id));
+        if (project) {
+          eventBus.emit({
+            type: 'PROJECT_DELETED',
+            projectId: id,
+            projectName: project.name,
+            sourceProspectId: project.sourceProspectId,
+            timestamp: new Date().toISOString(),
+          });
+        }
         set((s) => {
           const entities = { ...s.entities };
           delete entities[id];

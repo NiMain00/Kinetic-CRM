@@ -277,7 +277,7 @@ export default function ProspectDetailPage() {
       description: `Prospek "${prospect.name}" diajukan ulang setelah revisi.`,
     });
     addApproval({
-      id: `app-prospect-${prospect.id}`,
+      id: `app-prospect-${prospect.id}-${Date.now()}`,
       ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
       name: prospect.name,
       branch: prospect.branch || 'Jakarta Pusat',

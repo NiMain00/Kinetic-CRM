@@ -273,7 +273,7 @@ export default function ProspectFormPage() {
       // Auto-create approval item when submitting to PM
       if (status === 'Waiting Supervisor') {
         addApproval({
-          id: `app-prospect-${prospectId}`,
+          id: `app-prospect-${prospectId}-${Date.now()}`,
           ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
           name: formName,
           branch: userBranch,

@@ -58,8 +58,8 @@ export default function LoginPage() {
         scopeType: user.userRoles?.[0]?.scopeType || 'global',
       });
 
-      // Fetch user roles dari API (tidak blocking)
-      useRbacStore.getState().fetchUserRoles(user.id);
+      // Fetch semua user-role assignments dari API (tidak blocking)
+      useRbacStore.getState().fetchAllUserRoles();
       useNotificationStore.getState().fetchNotifications();
 
       // Fetch master data dari API

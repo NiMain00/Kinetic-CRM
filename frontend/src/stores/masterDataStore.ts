@@ -287,7 +287,15 @@ export const useMasterDataStore = create<MasterDataState>()(
           let data = res.data?.data || res.data || [];
           const list = Array.isArray(data) ? data : [];
           // transform camelCase API keys → snake_case untuk konsistensi dengan frontend
-          set((s) => ({ [entity]: list.map((item: any) => camelToSnakeKeys(item)) as any, loading: { ...s.loading, [entity]: false } } as any));
+          const normalized = list.map((item: any) => {
+            const transformed = camelToSnakeKeys(item);
+            // pastikan field name terisi dari full_name untuk user entity
+            if (entity === 'users' && !transformed.name && transformed.full_name) {
+              transformed.name = transformed.full_name;
+            }
+            return transformed;
+          });
+          set((s) => ({ [entity]: normalized as any, loading: { ...s.loading, [entity]: false } } as any));
         } catch {
           set((s) => ({ loading: { ...s.loading, [entity]: false } }));
         }
