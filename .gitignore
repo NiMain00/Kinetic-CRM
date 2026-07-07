@@ -15,6 +15,7 @@ md-Kinetic-CRM/
 # Playwright
 playwright-report/
 test-results/
+/playwright.config.ts
 
 # IDE
 .vscode/
