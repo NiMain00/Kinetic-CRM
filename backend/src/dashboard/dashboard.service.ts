@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getStats() {
+  async getStats(userId?: string) {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 86400000);
 
@@ -32,7 +32,7 @@ export class DashboardService {
         _sum: { estimatedValue: true },
       }),
       this.prisma.approval.count({
-        where: { status: 'pending' },
+        where: { status: 'pending', ...(userId ? { assignedToUserId: userId } : {}) },
       }),
       this.prisma.project.count({
         where: {
