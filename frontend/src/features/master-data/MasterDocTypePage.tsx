@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterDocType } from '@/stores/masterDataStore';
 
 const CATEGORIES = ['Tender', 'Prospecting', 'Both'];
@@ -13,11 +14,15 @@ export default function MasterDocTypePage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterDocType | null>(null);
   const [form, setForm] = useState<Partial<MasterDocType>>({});
 
-  const filtered = docTypes.filter(d => d.name.toLowerCase().includes(search.toLowerCase()) || d.code.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => docTypes.filter(d => {
+    const q = debouncedSearch.toLowerCase();
+    return !q || d.name.toLowerCase().includes(q) || d.code.toLowerCase().includes(q);
+  }), [docTypes, debouncedSearch]);
 
   const openCreate = () => {
     setEditing(null);

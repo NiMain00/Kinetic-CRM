@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface CalendarEvent {
   date: string;
@@ -38,6 +39,7 @@ export default function CalendarView({ events, onDateClick, onAddEvent }: Calend
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [filterTypes, setFilterTypes] = useState<Set<string>>(new Set(['deadline', 'delivery', 'milestone', 'holiday']));
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
@@ -45,13 +47,13 @@ export default function CalendarView({ events, onDateClick, onAddEvent }: Calend
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
       if (!filterTypes.has(ev.type)) return false;
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+      if (debouncedSearch) {
+        const q = debouncedSearch.toLowerCase();
         return ev.title.toLowerCase().includes(q) || (ev.subtitle && ev.subtitle.toLowerCase().includes(q));
       }
       return true;
     });
-  }, [events, filterTypes, searchQuery]);
+  }, [events, filterTypes, debouncedSearch]);
 
   const eventMap = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();

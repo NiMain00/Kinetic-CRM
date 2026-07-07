@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterCategory } from '@/stores/masterDataStore';
 
 const COLORS = ['#2563EB', '#7C3AED', '#0D9488', '#D97706', '#0284C7', '#DC2626', '#16A34A', '#6B7280', '#EC4899', '#F59E0B'];
@@ -13,12 +14,16 @@ export default function MasterCategoryPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterCategory | null>(null);
   const [form, setForm] = useState<Partial<MasterCategory>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.code.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => categories.filter(c => {
+    const q = debouncedSearch.toLowerCase();
+    return !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
+  }), [categories, debouncedSearch]);
 
   const openCreate = () => {
     setEditing(null);

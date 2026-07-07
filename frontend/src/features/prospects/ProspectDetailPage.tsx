@@ -926,13 +926,11 @@ export default function ProspectDetailPage() {
           </>
         }
       >
-        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini? Tindakan ini tidak dapat dibatalkan.</p>
-        {isConverted && (
-          <p className="text-sm text-danger mt-2 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px]">warning</span>
-            Proyek terkait ({prospect.projectId}) juga akan dihapus.
-          </p>
-        )}
+        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini?</p>
+        <p className="text-sm text-danger mt-2 flex items-center gap-1">
+          <span className="material-symbols-outlined text-[16px]">warning</span>
+          Semua proyek yang berasal dari prospek ini juga akan dihapus. Tindakan ini tidak dapat dibatalkan.
+        </p>
       </Modal>
     </div>
   );

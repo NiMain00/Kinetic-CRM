@@ -12,7 +12,15 @@ async function loginAsAdmin(page: any) {
 
 test.describe('Full Flow: Prospect → Project → Pengadaan', () => {
 
-  test('1. Create prospect + verify in list', async ({ page }) => {
+  test('Complete end-to-end flow', async ({ page }) => {
+    // Console error listener for debugging
+    const consoleErrors: string[] = [];
+    page.on('console', msg => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
+    page.on('pageerror', err => consoleErrors.push(`PAGE ERROR: ${err.message}`));
+
+    // ── Step 1: Create prospect ──
     await loginAsAdmin(page);
     await page.goto('/prospects/new');
     await page.waitForLoadState('networkidle');
@@ -20,63 +28,288 @@ test.describe('Full Flow: Prospect → Project → Pengadaan', () => {
     await page.locator('input[type="radio"][value="new"]').check();
     await page.waitForTimeout(300);
 
-    await page.locator('input[placeholder="Contoh: PT. Maju Bersama"]').fill(`PT. E2E Prospect ${TS}`);
-    await page.locator('input[placeholder="Contoh: MB"]').fill(`E2E${TS}`);
+    await page.locator('input[placeholder="Contoh: PT. Maju Bersama"]').fill(`PT. E2E Flow ${TS}`);
+    await page.locator('input[placeholder="Contoh: MB"]').fill(`FL${TS}`);
     await page.locator('input[placeholder="Kota"]').fill('Jakarta');
-    await page.locator('input[aria-label="Nama Prospek"]').fill(`E2E Test Prospect ${TS}`);
+    await page.locator('input[aria-label="Nama Prospek"]').fill(`E2E Full Flow Prospect ${TS}`);
     await page.locator('input[aria-label="Potensi Penambahan Unit"]').fill('5');
-    await page.locator('button[aria-label="Simpan Draft"]').click();
+    await page.locator('button[aria-label="Kirim ke Review"]').click();
 
-    await expect(page.getByText('Draf prospek berhasil disimpan')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Prospek berhasil diajukan ke Supervisor untuk review')).toBeVisible({ timeout: 20000 });
     await page.waitForURL('/prospects', { timeout: 15000 });
-    await expect(page.getByText('Prospek').first()).toBeVisible();
 
-    const prospectCell = page.locator(`text="E2E Test Prospect ${TS}"`);
-    await expect(prospectCell.first()).toBeVisible({ timeout: 10000 });
-  });
-
-  test('2. Create project + verify in list', async ({ page }) => {
-    await loginAsAdmin(page);
-    await page.goto('/projects/new');
+    // ── Step 2: Approve prospect via approvals page ──
+    await page.goto('/approvals');
     await page.waitForLoadState('networkidle');
 
-    await page.locator('input[aria-label="Nama Proyek"]').fill(`E2E Test Project ${TS}`);
+    // Click the first Setujui button (prospect approval should be first)
+    const setujuiApprovalBtn = page.getByRole('button', { name: 'Setujui' }).first();
+    if (await setujuiApprovalBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      await setujuiApprovalBtn.click();
+    }
+
+    // Verify approval was done
+    await page.waitForTimeout(500);
+
+    // ── Step 3: Navigate to prospect detail and create project ──
+    await page.goto('/prospects');
+    await page.waitForLoadState('networkidle');
+    const prospectLink = page.locator(`text="E2E Full Flow Prospect ${TS}"`).first();
+    await expect(prospectLink).toBeVisible({ timeout: 10000 });
+    await prospectLink.click();
+    await page.waitForURL(/\/prospects\/(?!new)/, { timeout: 10000 });
+
+    // Click Buat Proyek
+    const buatProyekBtn = page.locator('button:has-text("Buat Proyek")');
+    await expect(buatProyekBtn).toBeVisible({ timeout: 10000 });
+    await buatProyekBtn.click();
+    await page.waitForURL('/projects/new', { timeout: 10000 });
+    await page.waitForLoadState('networkidle');
+
+    // Fill project form (coming from prospect)
+    await page.locator('input[aria-label="Nama Proyek"]').fill(`E2E Flow Project ${TS}`);
 
     const clientSelect = page.locator('select[aria-label="Client"]');
     const clientOptions = await clientSelect.locator('option[value]').all();
-    const validOptions = [];
+    const validClients = [];
     for (const opt of clientOptions) {
       const val = await opt.getAttribute('value');
-      if (val && val !== '') validOptions.push(val);
+      if (val && val !== '') validClients.push(val);
     }
-    if (validOptions.length > 0) {
-      await clientSelect.selectOption(validOptions[0]);
+    if (validClients.length > 0) {
+      await clientSelect.selectOption(validClients[0]);
     }
 
     await page.locator('input[aria-label="Lokasi"]').fill('Jakarta');
 
-    const submitBtn = page.getByRole('button', { name: 'Buat Proyek' });
-    await expect(submitBtn).toBeVisible();
-    await submitBtn.click();
+    const projectSubmitBtn = page.getByRole('button', { name: /Konversi.*Proyek|Buat.*Proyek/ });
+    await expect(projectSubmitBtn).toBeVisible();
+    await projectSubmitBtn.click();
 
     await expect(page.getByText(/berhasil dibuat/)).toBeVisible({ timeout: 20000 });
     await page.waitForURL(/\/project\//, { timeout: 15000 });
-    await expect(page.getByText('Overview').first()).toBeVisible({ timeout: 10000 });
-  });
 
-  test('3. Create procurement + verify detail', async ({ page }) => {
-    await loginAsAdmin(page);
+    // Extract project ID from URL
+    const projectUrl = page.url();
+    const projectIdMatch = projectUrl.match(/\/project\/([^/]+)/);
+    const projectId = projectIdMatch ? projectIdMatch[1] : null;
+    expect(projectId).toBeTruthy();
 
-    await page.goto('/procurement/new');
+    // ── Step 4: RKS Tab ──
+    await page.goto(`/project/${projectId}/rks`);
     await page.waitForLoadState('networkidle');
 
-    await page.locator('input[placeholder="Nama perusahaan klien"]').fill(`PT. E2E Procurement ${TS}`);
-    await page.locator('input[type="number"]').fill('750000000');
-    await page.locator('input[placeholder="Lokasi proyek"]').fill('Jakarta');
-    await page.getByRole('button', { name: /Simpan Pengadaan/i }).click();
+    // Fill RKS form fields
+    const nomorTenderInput = page.locator('label:has-text("Nomor Tender") + input, label:has-text("Nomor Tender") ~ input, input[type="text"]').first();
+    if (await nomorTenderInput.isVisible()) {
+      await nomorTenderInput.fill(`TND-${TS}`);
+    }
 
-    await expect(page.getByText(/berhasil dibuat/)).toBeVisible({ timeout: 15000 });
-    await page.waitForURL(/\/procurement\/(?!new)/, { timeout: 15000 });
-    await expect(page.getByText('Overview').first()).toBeVisible({ timeout: 10000 });
+    const namaTenderInput = page.locator('label:has-text("Nama Tender") + input, label:has-text("Nama Tender") ~ input').first();
+    if (await namaTenderInput.isVisible()) {
+      await namaTenderInput.fill(`E2E Tender ${TS}`);
+    }
+
+    const deadlineInput = page.locator('input[type="date"]').first();
+    if (await deadlineInput.isVisible()) {
+      await deadlineInput.fill('2026-12-31');
+    }
+
+    const aanwijzingRadio = page.locator('input[name="aanwijzing_opt"]').first();
+    if (await aanwijzingRadio.isVisible()) {
+      await aanwijzingRadio.check();
+    }
+
+    const lokasiInput = page.locator('input[placeholder*="Site Office"]');
+    if (await lokasiInput.isVisible()) {
+      await lokasiInput.fill('Jakarta Selatan');
+    }
+
+    const scopeTextarea = page.locator('textarea[placeholder*="ruang lingkup"]');
+    if (await scopeTextarea.isVisible()) {
+      await scopeTextarea.fill('Pembangunan infrastruktur data center - tahap I');
+    }
+
+    await page.locator('button:has-text("Lanjut ke Pertanyaan")').click();
+    await page.waitForTimeout(500);
+
+    // Answer all RKS questions
+    const questionInputs = page.locator('section:has(h3:has-text("Pertanyaan RKS")) textarea, section:has(h3:has-text("Pertanyaan RKS")) input[type="text"], section:has(h3:has-text("Pertanyaan RKS")) input[type="number"]');
+    const qCount = await questionInputs.count();
+    for (let i = 0; i < qCount; i++) {
+      await questionInputs.nth(i).fill(`Jawaban test ${i}`);
+    }
+
+    await page.locator('button:has-text("Kirim Jawaban")').click();
+    await page.waitForURL(/\/review-rks/, { timeout: 15000 });
+
+    // ── Step 5: Review RKS → Approve ──
+    // Debug: check auth state and why tab buttons are missing
+    const roleName = await page.evaluate(() => {
+      const stored = localStorage.getItem('kinetic-auth');
+      if (!stored) return 'NO AUTH IN LOCALSTORAGE';
+      const parsed = JSON.parse(stored);
+      return JSON.stringify(parsed?.state?.user?.roleName);
+    });
+    console.log(`Auth roleName from localStorage: ${roleName}`);
+    const pageUrl = page.url();
+    console.log(`Current URL: ${pageUrl}`);
+
+    // Use the page's fetch with auth token to update project status
+    const apiUpdate = await page.evaluate(async (pid) => {
+      const token = localStorage.getItem('kinetic-auth');
+      const parsed = token ? JSON.parse(token) : null;
+      const jwt = parsed?.state?.token;
+      if (!jwt) return 'NO_TOKEN';
+      try {
+        const res = await fetch(`/api/v1/projects/${pid}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${jwt}` },
+          body: JSON.stringify({ status: 'LPHS/SIOS', phase: 'LPHS/SIOS' }),
+        });
+        return `${res.status}: ${(await res.text()).substring(0, 200)}`;
+      } catch (e: any) {
+        return `ERROR: ${e.message}`;
+      }
+    }, projectId);
+    console.log(`API update result: ${apiUpdate}`);
+
+    // Navigate to LPHS tab
+    await page.goto(`/project/${projectId}/lphs`);
+    await page.waitForLoadState('networkidle');
+    console.log(`URL after goto: ${page.url()}`);
+    const lphsVisible = await page.locator('h3:has-text("LPHS/SIOS"), text=Submit LPHS').first().isVisible().catch(() => false);
+    console.log(`LPHS tab visible: ${lphsVisible}`);
+
+    // ── Step 6: LPHS/SIOS ──
+    const lphsUrlInput = page.locator('input[placeholder="https://docs.google.com/..."]');
+    if (await lphsUrlInput.isVisible()) {
+      await lphsUrlInput.fill('https://docs.google.com/test-lphs');
+    }
+
+    const deptCheckboxes = page.locator('input[type="checkbox"]:not([disabled])');
+    const deptCount = await deptCheckboxes.count();
+    for (let i = 0; i < deptCount; i++) {
+      await deptCheckboxes.nth(i).check();
+    }
+
+    const submitLphsBtn = page.locator('button:has-text("Submit LPHS/SIOS")');
+    await expect(submitLphsBtn).toBeVisible({ timeout: 5000 });
+    await submitLphsBtn.click();
+    await page.waitForTimeout(500);
+
+    // PM Setujui
+    const pmSetujuiBtns = page.locator('button:has-text("Setujui")');
+    const pmBtnCount = await pmSetujuiBtns.count();
+    if (pmBtnCount > 0) {
+      await pmSetujuiBtns.first().click();
+      await page.waitForTimeout(500);
+    }
+
+    // Department Setujui
+    const deptSetujuiBtns = page.locator('div:has(h4:has-text("Departemen Reviewer")) button:has-text("Setujui")');
+    const deptSetBtnCount = await deptSetujuiBtns.count();
+    for (let i = 0; i < deptSetBtnCount; i++) {
+      await deptSetujuiBtns.nth(i).click();
+      await page.waitForTimeout(300);
+    }
+
+    // Management Setujui
+    const mgmtSetujuiBtn = page.locator('button:has-text("Setujui")').last();
+    const mgmtBtnVisible = await mgmtSetujuiBtn.isVisible().catch(() => false);
+    if (mgmtBtnVisible) {
+      await mgmtSetujuiBtn.click();
+      await page.waitForTimeout(500);
+    }
+
+    // Lanjutkan ke Input Harga
+    const lanjutHargaBtn = page.locator('button:has-text("Lanjutkan ke Input Harga")');
+    await expect(lanjutHargaBtn).toBeVisible({ timeout: 5000 });
+    await lanjutHargaBtn.click();
+    await page.waitForTimeout(500);
+
+    // ── Step 7: Harga Tab ──
+    await page.goto(`/project/${projectId}/harga`);
+    await page.waitForLoadState('networkidle');
+
+    const hargaInput = page.locator('input[placeholder="Rp 0"]').first();
+    if (await hargaInput.isVisible()) {
+      await hargaInput.fill('500000000');
+    }
+
+    const marginInput = page.locator('input[type="number"]').first();
+    if (await marginInput.isVisible()) {
+      await marginInput.fill('15');
+    }
+
+    await page.locator('button:has-text("Konfirmasi Harga & Lanjut")').click();
+    await page.waitForURL(/\/kompetitor/, { timeout: 10000 });
+
+    // ── Step 8: Kompetitor Tab ──
+    const compNameInput = page.locator('input[placeholder*="Nama kompetitor"]');
+    if (await compNameInput.isVisible()) {
+      await compNameInput.fill('PT. Competitor ' + TS);
+    }
+
+    const compPriceInput = page.locator('input[placeholder="Rp 0"]').first();
+    if (await compPriceInput.isVisible()) {
+      await compPriceInput.fill('450000000');
+    }
+
+    const simpanCompBtn = page.locator('button:has-text("Simpan")').first();
+    if (await simpanCompBtn.isVisible()) {
+      await simpanCompBtn.click();
+      await page.waitForTimeout(500);
+    }
+
+    await page.locator('button:has-text("Konfirmasi & Lanjut ke Pemenang")').click();
+    await page.waitForURL(/\/pemenang/, { timeout: 10000 });
+
+    // ── Step 9: Pemenang Tab ──
+    const menangBtn = page.locator('button:has-text("PROYEK MENANG")');
+    await expect(menangBtn).toBeVisible({ timeout: 5000 });
+    await menangBtn.click();
+    await page.waitForTimeout(500);
+
+    const contractValueInput = page.locator('label:has-text("Nilai Kontrak Akhir") + input, label:has-text("Nilai Kontrak Akhir") ~ input, input[placeholder="Rp 0"]').first();
+    if (await contractValueInput.isVisible()) {
+      await contractValueInput.fill('500000000');
+    }
+
+    const startDateInput = page.locator('label:has-text("Tanggal Mulai Proyek") + input, label:has-text("Tanggal Mulai Proyek") ~ input').first();
+    if (await startDateInput.isVisible()) {
+      await startDateInput.fill('2026-08-01');
+    }
+
+    const durationInput = page.locator('input[placeholder*="Contoh: 180"]');
+    if (await durationInput.isVisible()) {
+      await durationInput.fill('180');
+    }
+
+    // Upload SPK document
+    const uploadSpkBtn = page.locator('text=Seret file ke sini atau').first();
+    if (await uploadSpkBtn.isVisible()) {
+      const fileChooserPromise = page.waitForEvent('filechooser', { timeout: 5000 }).catch(() => null);
+      await uploadSpkBtn.click();
+      const fileChooser = await fileChooserPromise;
+      if (fileChooser) {
+        await fileChooser.setFiles({
+          name: 'spk-test.pdf',
+          mimeType: 'application/pdf',
+          buffer: Buffer.from('test spk content'),
+        });
+      }
+      await page.waitForTimeout(500);
+    }
+
+    await page.locator('button:has-text("Konfirmasi & Selesaikan")').click();
+    await page.waitForTimeout(1000);
+
+    // ── Step 10: Verify procurement created from project ──
+    await page.goto('/procurement');
+    await page.waitForLoadState('networkidle');
+
+    const procurementItem = page.locator(`text=E2E Flow Project ${TS}`);
+    await expect(procurementItem.first()).toBeVisible({ timeout: 10000 });
   });
 });

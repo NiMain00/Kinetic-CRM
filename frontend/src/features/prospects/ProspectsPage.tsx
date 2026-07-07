@@ -7,6 +7,7 @@ import { useProspectStore } from '@/stores/prospectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useOwnerFilter } from '@/hooks/useOwnerFilter';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { useActiveOptions } from '@/hooks/useInputConfig';
 import type { Prospect } from '@/types/domain';
@@ -36,6 +37,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortField | null>(null);
@@ -90,9 +92,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
 
 
 
-  const filteredProspects = visibleProspects.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          p.client.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredProspects = useMemo(() => visibleProspects.filter(p => {
+    const q = debouncedSearch.toLowerCase();
+    const matchesSearch = !q || p.name.toLowerCase().includes(q) ||
+                          p.client.toLowerCase().includes(q);
     let matchesTab: boolean;
     if (activeFilter === 'All') {
       matchesTab = true;
@@ -106,7 +109,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
       matchesTab = p.status === activeFilter;
     }
     return matchesSearch && matchesTab;
-  });
+  }), [visibleProspects, debouncedSearch, activeFilter]);
 
   const sortedProspects = useMemo(() => {
     if (!sortKey) return filteredProspects;
@@ -626,7 +629,11 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </>
         }
       >
-        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini dari draf? Tindakan ini tidak dapat dibatalkan.</p>
+        <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus prospek ini?</p>
+        <p className="text-sm text-danger mt-2 flex items-center gap-1">
+          <span className="material-symbols-outlined text-[16px]">warning</span>
+          Semua proyek yang berasal dari prospek ini juga akan dihapus. Tindakan ini tidak dapat dibatalkan.
+        </p>
       </Modal>
     </PageContainer>
   );

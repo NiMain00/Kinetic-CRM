@@ -246,17 +246,24 @@ export default function ProjectDetailView({
 
   const handleRevision = () => {
     if (!projectId || !project) return;
-    updateProject(projectId, { status: 'Revision', phase: 'Revisi' });
-    addTimelineEvent(projectId, {
-      id: `evt-${Date.now()}`,
-      title: 'Proyek Direvisi',
-      actor: 'System',
-      role: 'System',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'revision',
-      description: 'Proyek dikembalikan ke tahap revisi.',
-    });
-    toast.success('Proyek dikembalikan ke tahap revisi.');
+    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    const currentIdx = active.findIndex((p) => p.status === project.status);
+    if (currentIdx > 0) {
+      const prev = active[currentIdx - 1];
+      updateProject(projectId, { status: prev.status, phase: prev.phase });
+      addTimelineEvent(projectId, {
+        id: `evt-${Date.now()}`,
+        title: 'Proyek Direvisi',
+        actor: 'System',
+        role: 'System',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'revision',
+        description: `Proyek dikembalikan ke tahap ${prev.phase}.`,
+      });
+      toast.success(`Proyek dikembalikan ke tahap ${prev.phase}.`);
+    } else {
+      toast.error('Proyek sudah berada di tahap paling awal.');
+    }
   };
 
   const handleShowNotification = (message: string, type: 'success' | 'warning' | 'error') => {

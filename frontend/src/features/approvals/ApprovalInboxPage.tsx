@@ -10,6 +10,7 @@ import { useSlaConfigs, useNextPhaseMap } from '@/hooks/useConfigData';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import MentionTextarea from '@/components/shared/MentionTextarea';
 import { formatRelativeTime, formatCurrencyShort } from '@/utils/formatters';
 
@@ -47,10 +48,12 @@ export default function ApprovalInboxView({
   const user = useAuthStore((s) => s.user);
   const [filterType, setFilterType] = React.useState<FilterType>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rejectTarget, setRejectTarget] = React.useState<ApprovalItem | null>(null);
   const [rejectReason, setRejectReason] = React.useState('');
   const [isBulkReject, setIsBulkReject] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const allUsers = useUserStore((s) => s.users);
   const mentionUsers = useMemo(
     () => allUsers.map((u) => ({ id: u.id, name: u.fullName, role: u.role })),
@@ -93,12 +96,12 @@ export default function ApprovalInboxView({
       return true;
     });
     const typeFiltered = filterType === 'Semua' ? validApprovals : validApprovals.filter((a) => a.type === filterType);
-    if (!searchQuery.trim()) return typeFiltered;
-    const q = searchQuery.toLowerCase();
+    if (!debouncedSearch.trim()) return typeFiltered;
+    const q = debouncedSearch.toLowerCase();
     return typeFiltered.filter(
       (a) => a.name.toLowerCase().includes(q) || a.ref.toLowerCase().includes(q) || a.client?.toLowerCase().includes(q),
     );
-  }, [userApprovals, filterType, searchQuery, prospects, projects]);
+  }, [userApprovals, filterType, debouncedSearch, prospects, projects]);
 
   const handleReview = (item: ApprovalItem) => {
     if (item.entityType === 'prospect' && item.entityId) {
@@ -469,26 +472,35 @@ export default function ApprovalInboxView({
         {/* Approval History */}
         {approvalHistory.length > 0 && (
           <div className="space-y-4 pt-6 border-t border-border">
-            <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center gap-3 w-full text-left"
+            >
               <span className="material-symbols-outlined text-outline">history</span>
-              <h3 className="font-heading-section text-heading-section text-sm sm:text-base">Riwayat Persetujuan <span className="text-outline font-normal ml-2">({approvalHistory.length})</span></h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {approvalHistory.map((item) => (
-                <div key={item.id} className="bg-surface border border-border/60 rounded-xl p-4 flex items-start gap-3">
-                  <span className={`material-symbols-outlined text-[20px] mt-0.5 ${item.action === 'approved' ? 'text-success' : 'text-danger'}`}>
-                    {item.action === 'approved' ? 'check_circle' : 'cancel'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
-                    <p className="text-xs text-outline">Ref: {item.ref} · {item.type}</p>
-                    <p className="text-xs text-secondary mt-0.5">
-                      {item.action === 'approved' ? 'Disetujui' : 'Ditolak'} · {formatRelativeTime(item.resolvedAt)}
-                    </p>
+              <h3 className="font-heading-section text-heading-section text-sm sm:text-base flex-1">Riwayat Persetujuan <span className="text-outline font-normal ml-2">({approvalHistory.length})</span></h3>
+              <span className="material-symbols-outlined text-outline transition-transform" style={{ transform: showHistory ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                expand_more
+              </span>
+            </button>
+            {showHistory && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {approvalHistory.map((item) => (
+                  <div key={item.id} className="bg-surface border border-border/60 rounded-xl p-4 flex items-start gap-3">
+                    <span className={`material-symbols-outlined text-[20px] mt-0.5 ${item.action === 'approved' ? 'text-success' : 'text-danger'}`}>
+                      {item.action === 'approved' ? 'check_circle' : 'cancel'}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-on-surface truncate">{item.name}</p>
+                      <p className="text-xs text-outline">Ref: {item.ref} · {item.type}</p>
+                      <p className="text-xs text-secondary mt-0.5">
+                        {item.action === 'approved' ? 'Disetujui' : 'Ditolak'} · {formatRelativeTime(item.resolvedAt)}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

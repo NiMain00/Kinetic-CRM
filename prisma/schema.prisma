@@ -976,6 +976,7 @@ model Rks {
   workLocation    String?  @map("work_location") @db.VarChar(255)
   mainScope       String?  @map("main_scope") @db.Text
   additionalNotes String?  @map("additional_notes") @db.Text
+  answers         Json?    @map("answers")
   status          RksStatus @default(draft)
   revisionNumber  Int      @default(1) @map("revision_number")
   submittedAt     DateTime? @map("submitted_at")

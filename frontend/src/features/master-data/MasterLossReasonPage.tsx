@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useMasterDataStore, type MasterLossReason } from '@/stores/masterDataStore';
 
 export default function MasterLossReasonPage() {
@@ -11,11 +12,15 @@ export default function MasterLossReasonPage() {
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<MasterLossReason | null>(null);
   const [form, setForm] = useState<Partial<MasterLossReason>>({});
 
-  const filtered = lossReasons.filter(r => r.name.toLowerCase().includes(search.toLowerCase()) || r.code.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => lossReasons.filter(r => {
+    const q = debouncedSearch.toLowerCase();
+    return !q || r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q);
+  }), [lossReasons, debouncedSearch]);
 
   const openCreate = () => {
     setEditing(null);

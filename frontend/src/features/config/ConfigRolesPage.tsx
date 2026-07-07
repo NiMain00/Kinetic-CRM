@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { Button, Modal } from '@/components/ui';
 import { useMasterDataStore, type MasterRole } from '@/stores/masterDataStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface ModulePerm {
   key: string;
@@ -105,13 +106,14 @@ export default function ConfigRolesPage() {
   const [formDescription, setFormDescription] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [draftPermissions, setDraftPermissions] = useState<Record<string, string[]>>({});
   const [saving, setSaving] = useState(false);
   const filteredRoles = useMemo(() => {
-    if (!searchQuery.trim()) return roles;
-    const q = searchQuery.toLowerCase();
+    if (!debouncedSearch.trim()) return roles;
+    const q = debouncedSearch.toLowerCase();
     return roles.filter(r => r.name.toLowerCase().includes(q) || (r.description && r.description.toLowerCase().includes(q)));
-  }, [roles, searchQuery]);
+  }, [roles, debouncedSearch]);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();

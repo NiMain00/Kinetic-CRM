@@ -9,6 +9,7 @@ import type {
   OrgUnit,
   ProjectPhase,
 } from '@/types/domain/config';
+import { DEFAULT_PROJECT_PHASES } from '@/utils/constants';
 
 type ConfigEntityType = 'slaConfigs' | 'kpiTargets' | 'workflows' | 'connectors' | 'orgUnits';
 
@@ -55,7 +56,7 @@ export const useConfigStore = create<ConfigState>()(
         ],
       },
       orgUnits: [],
-      projectPhases: [],
+      projectPhases: DEFAULT_PROJECT_PHASES,
 
       getConfigData: <T>(entity: ConfigEntityType) => get()[entity] as unknown as T[],
 
@@ -96,9 +97,12 @@ export const useConfigStore = create<ConfigState>()(
     }),
     {
       name: 'kinetic-config',
-      version: 4,
+      version: 5,
       migrate: (persistedState: any, version: number) => {
         let current = persistedState || {};
+        if (!current.projectPhases || current.projectPhases.length === 0) {
+          current = { ...current, projectPhases: DEFAULT_PROJECT_PHASES };
+        }
         return current;
       },
     },

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import type { AuditLogEntry } from '../../types/domain/users';
 
@@ -18,17 +19,19 @@ const ACTION_COLORS: Record<string, string> = {
 export default function AuditPage() {
   const [logs] = useState<AuditLogEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [impactFilter, setImpactFilter] = useState<'all' | 'Low' | 'Medium' | 'High'>('all');
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const filteredLogs = logs.filter(l => {
-    const matchesSearch = l.summary.toLowerCase().includes(searchQuery.toLowerCase()) || l.actor.toLowerCase().includes(searchQuery.toLowerCase()) || l.entityName.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredLogs = useMemo(() => logs.filter(l => {
+    const q = debouncedSearch.toLowerCase();
+    const matchesSearch = !q || l.summary.toLowerCase().includes(q) || l.actor.toLowerCase().includes(q) || l.entityName.toLowerCase().includes(q);
     const matchesAction = actionFilter === 'all' || l.action === actionFilter;
     const matchesImpact = impactFilter === 'all' || l.impact === impactFilter;
     return matchesSearch && matchesAction && matchesImpact;
-  });
+  }), [logs, debouncedSearch, actionFilter, impactFilter]);
 
   const handleOpenDetail = (log: AuditLogEntry) => {
     setSelectedLog(log);

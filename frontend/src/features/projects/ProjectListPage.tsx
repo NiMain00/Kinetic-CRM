@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useProjectStore } from '@/stores/projectStore';
 import { useConfigStore } from '@/stores/configStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 import { StatusBadge, PageContainer, PageHeader } from '@/components/shared';
 import { Button, Card, Table, Modal, type Column } from '@/components/ui';
@@ -33,6 +34,7 @@ export default function ProjectListPage() {
   const navigate = useNavigate();
   const { can } = useAuthz();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [activeTab, setActiveTab] = useState<string>('all');
   const pipelineTabOptions = useActiveOptions('pipeline_tabs');
   const [currentPage, setCurrentPage] = useState(1);
@@ -95,8 +97,8 @@ export default function ProjectListPage() {
       list = list.filter((p) => terminalStatuses.includes(p.status) || terminalStatuses.includes(p.phase));
     }
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const q = debouncedSearch.toLowerCase();
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -117,7 +119,7 @@ export default function ProjectListPage() {
       if (!isNaN(max)) list = list.filter((p) => p.estimatedValue <= max);
     }
     return list;
-  }, [activeTab, search, projects, filterValues, isStaffOnly, userId]);
+  }, [activeTab, debouncedSearch, projects, filterValues, isStaffOnly, userId]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(

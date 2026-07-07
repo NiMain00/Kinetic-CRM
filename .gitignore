@@ -4,11 +4,13 @@ dist/
 coverage/
 .DS_Store
 *.log
+*.png
 *.xls*
 .env*
 !.env.example
 /storage/
 docker/nginx/ssl/
+md-Kinetic-CRM/
 
 # Playwright
 playwright-report/

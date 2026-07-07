@@ -5,6 +5,7 @@ import { Modal, Button } from '@/components/ui';
 import { useProcurementStore } from './procurementStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthz } from '@/hooks/useAuthz';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { formatCurrency } from '@/utils/formatters';
 import type { Procurement, ProcurementStatus } from '@/types/domain/procurement';
 
@@ -24,6 +25,7 @@ export default function ProcurementListPage() {
   const procurements = useProcurementStore((s) => s.procurements);
   const { can } = useAuthz();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebouncedValue(search, 300);
   const [statusFilter, setStatusFilter] = useState<ProcurementStatus | 'all'>('all');
   const deleteProcurement = useProcurementStore((s) => s.deleteProcurement);
   const [deleteTarget, setDeleteTarget] = useState<Procurement | null>(null);
@@ -33,8 +35,8 @@ export default function ProcurementListPage() {
     return procurements
       .filter((p) => {
         if (statusFilter !== 'all' && p.status !== statusFilter) return false;
-        if (search) {
-          const q = search.toLowerCase();
+        if (debouncedSearch) {
+          const q = debouncedSearch.toLowerCase();
           const projectName = getProjectName(p);
           return (
             p.code.toLowerCase().includes(q) ||
@@ -48,7 +50,7 @@ export default function ProcurementListPage() {
         return true;
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }, [procurements, statusFilter, search]);
+  }, [procurements, statusFilter, debouncedSearch]);
 
   const projects = useProjectStore((s) => s.projects);
   const projectNameMap = useMemo(() => {
