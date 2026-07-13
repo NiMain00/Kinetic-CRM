@@ -97,7 +97,7 @@ export default function ConfigInputPage() {
     setDrawer(EMPTY_DRAWER);
   };
 
-  const handleSaveOption = (e: React.FormEvent) => {
+  const handleSaveOption = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!drawer.groupKey) return;
     if (!drawer.formValue || !drawer.formLabel) {
@@ -105,46 +105,57 @@ export default function ConfigInputPage() {
       return;
     }
 
-    if (drawer.editingOption) {
-      updateOption(drawer.groupKey, drawer.editingOption.value, {
-        value: drawer.formValue,
-        label: drawer.formLabel,
-        sort_order: Number(drawer.formOrder) || 1,
-        color_hex: drawer.formColor || undefined,
-      });
-      toast.success(`Opsi "${drawer.formLabel}" berhasil diperbarui.`);
-    } else {
-      const group = getGroup(drawer.groupKey);
-      if (group && group.options.some((o) => o.value === drawer.formValue)) {
-        toast.error(`Value "${drawer.formValue}" sudah ada di grup ini.`);
-        return;
+    try {
+      if (drawer.editingOption) {
+        await updateOption(drawer.groupKey, drawer.editingOption.value, {
+          value: drawer.formValue,
+          label: drawer.formLabel,
+          sort_order: Number(drawer.formOrder) || 1,
+          color_hex: drawer.formColor || undefined,
+        });
+        toast.success(`Opsi "${drawer.formLabel}" berhasil diperbarui.`);
+      } else {
+        const group = getGroup(drawer.groupKey);
+        if (group && group.options.some((o) => o.value === drawer.formValue)) {
+          toast.error(`Value "${drawer.formValue}" sudah ada di grup ini.`);
+          return;
+        }
+        await addOption(drawer.groupKey, {
+          value: drawer.formValue,
+          label: drawer.formLabel,
+          sort_order: Number(drawer.formOrder) || 1,
+          is_active: true,
+          color_hex: drawer.formColor || undefined,
+        });
+        toast.success(`Opsi "${drawer.formLabel}" berhasil ditambahkan.`);
       }
-      addOption(drawer.groupKey, {
-        value: drawer.formValue,
-        label: drawer.formLabel,
-        sort_order: Number(drawer.formOrder) || 1,
-        is_active: true,
-        color_hex: drawer.formColor || undefined,
-      });
-      toast.success(`Opsi "${drawer.formLabel}" berhasil ditambahkan.`);
+      handleCloseDrawer();
+    } catch {
+      toast.error('Gagal menyimpan opsi. Silakan coba lagi.');
     }
-    handleCloseDrawer();
   };
 
-  const handleDeleteOption = (groupKey: InputConfigGroupKey, option: InputOption) => {
-    if (window.confirm(`Hapus opsi "${option.label}" (${option.value})?`)) {
-      deleteOption(groupKey, option.value);
+  const handleDeleteOption = async (groupKey: InputConfigGroupKey, option: InputOption) => {
+    if (!window.confirm(`Hapus opsi "${option.label}" (${option.value})?`)) return;
+    try {
+      await deleteOption(groupKey, option.value);
       toast.success(`Opsi "${option.label}" dihapus.`);
+    } catch {
+      toast.error('Gagal menghapus opsi. Silakan coba lagi.');
     }
   };
 
-  const handleToggleOption = (groupKey: InputConfigGroupKey, value: string) => {
-    toggleOption(groupKey, value);
-    const group = getGroup(groupKey);
-    const option = group?.options.find((o) => o.value === value);
-    toast.success(
-      `Opsi "${option?.label || value}" sekarang ${option?.is_active ? 'NON-AKTIF' : 'AKTIF'}.`,
-    );
+  const handleToggleOption = async (groupKey: InputConfigGroupKey, value: string) => {
+    try {
+      await toggleOption(groupKey, value);
+      const group = getGroup(groupKey);
+      const option = group?.options.find((o) => o.value === value);
+      toast.success(
+        `Opsi "${option?.label || value}" sekarang ${option?.is_active ? 'NON-AKTIF' : 'AKTIF'}.`,
+      );
+    } catch {
+      toast.error('Gagal mengubah status opsi. Silakan coba lagi.');
+    }
   };
 
   return (

@@ -88,18 +88,7 @@ export default function ProjectDetailView({
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  if (!project) {
-    return (
-      <div className="py-20 text-center space-y-4">
-        <span className="material-symbols-outlined text-5xl text-outline">search_off</span>
-        <h3 className="font-heading-section text-base text-on-surface">Project not found</h3>
-        <p className="text-sm text-outline">The project you are looking for does not exist or has been removed.</p>
-        <button onClick={() => onNavigatePage('projects')} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold">Back to Projects</button>
-      </div>
-    );
-  }
-
-  // Single source of truth for tabs & stepper
+  // Single source of truth for tabs & stepper — MUST be before early return to keep hook count stable
   const tabs = React.useMemo(() => {
     // Non-potensial: hanya Overview, Timeline, Dokumen, Diskusi
     if (isFromNonPotensial) {
@@ -129,6 +118,33 @@ export default function ProjectDetailView({
     }
     return items;
   }, [project.type, isFromNonPotensial, project.status, project.winnerDetails?.outcome]);
+
+  // Auto-sync prospect data ke project jika ada sourceProspect — also before early return
+  useEffect(() => {
+    if (projectId && sourceProspect && project) {
+      const updates: Partial<Project> = {};
+      if (sourceProspect.estimatedValue && sourceProspect.estimatedValue !== project.estimatedValue) {
+        updates.estimatedValue = sourceProspect.estimatedValue;
+      }
+      if (sourceProspect.client && sourceProspect.client !== project.client) {
+        updates.client = sourceProspect.client;
+      }
+      if (Object.keys(updates).length > 0) {
+        updateProject(projectId, updates);
+      }
+    }
+  }, [sourceProspect?.estimatedValue, sourceProspect?.client]);
+
+  if (!project) {
+    return (
+      <div className="py-20 text-center space-y-4">
+        <span className="material-symbols-outlined text-5xl text-outline">search_off</span>
+        <h3 className="font-heading-section text-base text-on-surface">Project not found</h3>
+        <p className="text-sm text-outline">The project you are looking for does not exist or has been removed.</p>
+        <button onClick={() => onNavigatePage('projects')} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold">Back to Projects</button>
+      </div>
+    );
+  }
 
   const activeTab = tabs.find(t => t.path === (urlTab || 'overview'))?.label || 'Overview';
   const isOverview = activeTab === 'Overview';
@@ -162,22 +178,6 @@ export default function ProjectDetailView({
   };
 
   const activeTabIndex = tabs.findIndex(t => t.path === (urlTab || 'overview'));
-
-  // Auto-sync prospect data ke project jika ada sourceProspect
-  useEffect(() => {
-    if (projectId && sourceProspect && project) {
-      const updates: Partial<Project> = {};
-      if (sourceProspect.estimatedValue && sourceProspect.estimatedValue !== project.estimatedValue) {
-        updates.estimatedValue = sourceProspect.estimatedValue;
-      }
-      if (sourceProspect.client && sourceProspect.client !== project.client) {
-        updates.client = sourceProspect.client;
-      }
-      if (Object.keys(updates).length > 0) {
-        updateProject(projectId, updates);
-      }
-    }
-  }, [sourceProspect?.estimatedValue, sourceProspect?.client]);
 
   const handleDeleteProject = () => {
     if (!projectId) return;

@@ -30,6 +30,7 @@ const ENTITY_MAP: Record<string, string> = {
   rfqs: 'rfq',
   tasks: 'task',
   inputConfigGroups: 'inputConfigGroup',
+  inputConfigOptions: 'inputConfigOption',
 };
 
 @Injectable()
@@ -96,6 +97,10 @@ export class MasterService {
   async delete(entity: string, id: string) {
     const model = this.getModel(entity);
     await this.get(entity, id);
+    // InputConfigOption tidak punya kolom deletedAt → hard delete
+    if (entity === 'inputConfigOptions') {
+      return model.delete({ where: { id } });
+    }
     return model.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 }
