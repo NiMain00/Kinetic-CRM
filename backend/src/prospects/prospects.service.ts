@@ -56,15 +56,15 @@ export class ProspectsService {
   async delete(id: string) {
     await this.get(id);
     return this.prisma.$transaction(async (tx) => {
-      const linked = await tx.project.findMany({ where: { sourceProspectId: id } });
+      const linked = await tx.project.findMany({ where: { sourceProspectId: id, deletedAt: null } });
       for (const proj of linked) {
-        const procurements = await tx.procurement.findMany({ where: { sourceProjectId: proj.id } });
-        for (const pc of procurements) {
-          await tx.procurement.delete({ where: { id: pc.id } });
-        }
-        await tx.project.delete({ where: { id: proj.id } });
+        await tx.procurement.updateMany({
+          where: { sourceProjectId: proj.id, deletedAt: null },
+          data: { deletedAt: new Date() },
+        });
+        await tx.project.update({ where: { id: proj.id }, data: { deletedAt: new Date() } });
       }
-      return tx.prospect.delete({ where: { id } });
+      return tx.prospect.update({ where: { id }, data: { deletedAt: new Date() } });
     });
   }
 }

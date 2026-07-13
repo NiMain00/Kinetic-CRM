@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { SlaConfig } from '@/types/domain/config';
 import { useConfigStore } from '@/stores/configStore';
 import { useActiveOptions } from '@/hooks/useInputConfig';
@@ -12,7 +12,12 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
   const addConfigData = useConfigStore((s) => s.addConfigData);
   const updateConfigData = useConfigStore((s) => s.updateConfigData);
   const deleteConfigData = useConfigStore((s) => s.deleteConfigData);
+  const fetchSlaConfigs = useConfigStore((s) => s.fetchSlaConfigs);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    fetchSlaConfigs();
+  }, [fetchSlaConfigs]);
   const [editingConfig, setEditingConfig] = useState<SlaConfig | null>(null);
 
   const entityTypeOptions = useActiveOptions('sla_entity_types');
@@ -45,27 +50,31 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
     setDrawerOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formWarning || !formCritical) {
       onShowNotification('Nama dan threshold wajib diisi.', 'error');
       return;
     }
-    if (editingConfig) {
-      updateConfigData('slaConfigs', editingConfig.id, { name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive });
-      onShowNotification(`SLA ${formName} berhasil diperbarui.`, 'success');
-    } else {
-      const newConfig: SlaConfig = { id: `SLA-${String(configs.length + 1).padStart(3, '0')}`, name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive };
-      addConfigData('slaConfigs', newConfig);
-      onShowNotification(`SLA ${formName} berhasil ditambahkan.`, 'success');
+    try {
+      if (editingConfig) {
+        await updateConfigData('slaConfigs', editingConfig.id, { name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive });
+        onShowNotification(`SLA ${formName} berhasil diperbarui.`, 'success');
+      } else {
+        const newConfig: SlaConfig = { id: `SLA-${String(configs.length + 1).padStart(3, '0')}`, name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive };
+        await addConfigData('slaConfigs', newConfig);
+        onShowNotification(`SLA ${formName} berhasil ditambahkan.`, 'success');
+      }
+      setDrawerOpen(false);
+    } catch {
+      onShowNotification('Gagal menyimpan SLA. Silakan coba lagi.', 'error');
     }
-    setDrawerOpen(false);
   };
 
-  const handleToggle = (id: string) => {
+  const handleToggle = async (id: string) => {
     const target = configs.find(c => c.id === id);
     if (target) {
-      updateConfigData('slaConfigs', id, { active: !target.active });
+      await updateConfigData('slaConfigs', id, { active: !target.active });
       onShowNotification(`SLA ${target.name} sekarang ${target.active ? 'NON-AKTIF' : 'AKTIF'}.`, 'success');
     }
   };

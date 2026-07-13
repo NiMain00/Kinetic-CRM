@@ -66,9 +66,11 @@ export default function ProjectListPage() {
   const { isStaffOnly, userId } = useOwnerFilter();
   const projectPhases = useConfigStore((s) => s.projectPhases);
   const fetchProjects = useProjectStore((s) => s.fetchProjects);
+  const fetchProjectPhases = useConfigStore((s) => s.fetchProjectPhases);
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
   useEffect(() => { fetchProjects(getTabFetchParams(activeTab)); }, [activeTab, fetchProjects]);
+  useEffect(() => { fetchProjectPhases(); }, [fetchProjectPhases]);
 
   // Derive progress from project status for display (mirrors ProjectDetailPage logic)
   const deriveProgress = useCallback((status: string) => {

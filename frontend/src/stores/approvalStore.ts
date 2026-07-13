@@ -38,7 +38,13 @@ export const useApprovalStore = create<ApprovalState>()(
         try {
           const res = await masterDataService.get('approvals', { perPage: 100 });
           const list = res.data?.data || res.data || [];
-          set({ approvals: Array.isArray(list) ? (list as any) : [], loading: false });
+          const normalized = Array.isArray(list)
+            ? (list as any[]).map((a) => ({
+                ...a,
+                assigneeUserId: a.assigneeUserId ?? a.assignedToUserId,
+              }))
+            : [];
+          set({ approvals: normalized, loading: false });
         } catch { set({ loading: false }); }
       },
 

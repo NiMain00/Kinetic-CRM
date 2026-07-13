@@ -61,6 +61,11 @@ export default function ProjectDetailView({
 
   // Derive progress from current status
   const projectPhases = useConfigStore((s) => s.projectPhases);
+  const fetchProjectPhases = useConfigStore((s) => s.fetchProjectPhases);
+
+  useEffect(() => {
+    fetchProjectPhases();
+  }, [fetchProjectPhases]);
   const displayProgress = React.useMemo(() => {
     if (!project) return 0;
     const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
@@ -108,13 +113,13 @@ export default function ProjectDetailView({
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
     ];
-    if (project.type === 'tender') {
+    if (project?.type === 'tender') {
       items.splice(3, 0, { label: 'Review RKS', path: 'review-rks' });
     } else {
       items.splice(3, 1);
     }
     return items;
-  }, [project.type, isFromNonPotensial, project.status, project.winnerDetails?.outcome]);
+  }, [project?.type, isFromNonPotensial, project?.status, project?.winnerDetails?.outcome]);
 
   // Auto-sync prospect data ke project jika ada sourceProspect — also before early return
   useEffect(() => {

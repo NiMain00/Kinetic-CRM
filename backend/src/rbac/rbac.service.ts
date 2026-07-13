@@ -72,7 +72,7 @@ export class RbacService {
         name: data.name,
         unitType: (data.unitType as any) || 'department',
         isActive: data.isActive ?? true,
-        address: data.description || null,
+        description: data.description || null,
       },
     });
   }
@@ -87,7 +87,7 @@ export class RbacService {
         ...(data.code !== undefined ? { code: data.code } : {}),
         ...(data.name !== undefined ? { name: data.name } : {}),
         ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
-        ...(data.description !== undefined ? { address: data.description } : {}),
+        ...(data.description !== undefined ? { description: data.description } : {}),
       },
     });
   }

@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Modal, Card } from '@/components/ui';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useCustomerStore } from '@/stores/customerStore';
-import type { Customer } from '@/stores/customerStore';
+import type { Customer } from '@/types/domain';
 
 const typeLabels: Record<string, string> = { swasta: 'Swasta', bumn: 'BUMN', pemerintah: 'Pemerintah', asing: 'Asing' };
 const typeVariants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple'> = { swasta: 'default', bumn: 'info', pemerintah: 'warning', asing: 'purple' };
@@ -22,14 +22,14 @@ export default function MasterCustomerPage() {
 
   const filtered = useMemo(() => customers.filter(c => {
     const q = debouncedSearch.toLowerCase();
-    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.pic_name || '').toLowerCase().includes(q);
+    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.picName || '').toLowerCase().includes(q);
     const matchType = typeFilter === 'all' || c.type === typeFilter;
     return matchSearch && matchType;
   }), [customers, debouncedSearch, typeFilter]);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ type: 'swasta', is_active: true } as any);
+    setForm({ type: 'swasta', isActive: true } as any);
     setModalOpen(true);
   };
 
@@ -41,7 +41,7 @@ export default function MasterCustomerPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.code || !form.pic_name) {
+    if (!form.name || !form.code || !form.picName) {
       toast.error('Nama, Kode, dan PIC wajib diisi');
       return;
     }
@@ -60,7 +60,7 @@ export default function MasterCustomerPage() {
   const toggleStatus = async (id: string) => {
     const current = customers.find(c => c.id === id);
     if (current) {
-      await updateCustomer(id, { is_active: !current.is_active } as any);
+      await updateCustomer(id, { isActive: !current.isActive } as any);
       toast.success('Status customer diubah');
     }
   };
@@ -131,13 +131,13 @@ export default function MasterCustomerPage() {
                         <td className="px-6 py-4 font-mono text-outline">{c.code}</td>
                         <td className="px-6 py-4"><Badge variant={typeVariants[c.type]}>{typeLabels[c.type]}</Badge></td>
                         <td className="px-6 py-4">
-                          <div className="text-secondary">{c.pic_name}</div>
-                          <div className="text-[10px] text-outline">{c.pic_email}</div>
+                          <div className="text-secondary">{c.picName}</div>
+                          <div className="text-[10px] text-outline">{c.picEmail}</div>
                         </td>
                         <td className="px-6 py-4 text-outline">{c.city}</td>
                         <td className="px-6 py-4 text-center">
-                          <button onClick={() => toggleStatus(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${c.is_active ? 'bg-success' : 'bg-border'}`} aria-label={`Toggle status ${c.name}`}>
-                            <span className={`w-4 h-4 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform duration-200 ${c.is_active ? 'translate-x-2' : '-translate-x-2'}`} />
+                          <button onClick={() => toggleStatus(c.id)} className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer ${c.isActive ? 'bg-success' : 'bg-border'}`} aria-label={`Toggle status ${c.name}`}>
+                            <span className={`w-4 h-4 bg-surface-container-lowest rounded-full shadow-xs transform transition-transform duration-200 ${c.isActive ? 'translate-x-2' : '-translate-x-2'}`} />
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -170,7 +170,7 @@ export default function MasterCustomerPage() {
           </div>
           <div className="space-y-2">
             <label className="font-semibold text-secondary block">Tipe Customer *</label>
-            <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as MasterCustomer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+              <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as Customer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
               <option value="swasta">Swasta</option>
               <option value="bumn">BUMN</option>
               <option value="pemerintah">Pemerintah</option>
@@ -180,17 +180,17 @@ export default function MasterCustomerPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="font-semibold text-secondary block">Nama PIC *</label>
-              <input type="text" value={form.pic_name || ''} onChange={e => setForm({ ...form, pic_name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama kontak person" required />
+              <input type="text" value={form.picName || ''} onChange={e => setForm({ ...form, picName: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama kontak person" required />
             </div>
             <div className="space-y-2">
               <label className="font-semibold text-secondary block">Email PIC</label>
-              <input type="email" value={form.pic_email || ''} onChange={e => setForm({ ...form, pic_email: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="email@perusahaan.com" />
+              <input type="email" value={form.picEmail || ''} onChange={e => setForm({ ...form, picEmail: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="email@perusahaan.com" />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="font-semibold text-secondary block">Telepon PIC</label>
-              <input type="text" value={form.pic_phone || ''} onChange={e => setForm({ ...form, pic_phone: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="021-xxxxxxx" />
+              <input type="text" value={form.picPhone || ''} onChange={e => setForm({ ...form, picPhone: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="021-xxxxxxx" />
             </div>
             <div className="space-y-2">
               <label className="font-semibold text-secondary block">Kota</label>
@@ -200,8 +200,8 @@ export default function MasterCustomerPage() {
           <div className="space-y-2">
             <label className="font-semibold text-secondary block">Status</label>
             <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="custStatus" checked={form.is_active !== false} onChange={() => setForm({ ...form, is_active: true })} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
-              <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="custStatus" checked={form.is_active === false} onChange={() => setForm({ ...form, is_active: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
+              <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="custStatus" checked={form.isActive !== false} onChange={() => setForm({ ...form, isActive: true })} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
+              <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="custStatus" checked={form.isActive === false} onChange={() => setForm({ ...form, isActive: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
             </div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-border">

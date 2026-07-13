@@ -311,8 +311,9 @@ model OrgUnit {
   unitType   OrgUnitType @map("unit_type")
   city       String?     @db.VarChar(100)
   province   String?     @db.VarChar(100)
-  address    String?     @db.Text
-  phone      String?     @db.VarChar(50)
+  address    String?   @db.Text
+  description String?  @db.Text  @map("description")
+  phone      String?   @db.VarChar(50)
   isActive   Boolean     @default(true) @map("is_active")
   sortOrder  Int         @default(0) @map("sort_order")
   createdAt  DateTime    @default(now()) @map("created_at")
@@ -896,7 +897,7 @@ model Project {
   progress         Int      @default(0)
   estimatedValue   Decimal?   @map("estimated_value") @db.Decimal(18, 2)
   deadlineTender   DateTime? @map("deadline_tender") @db.Date
-  sourceProspectId String?  @map("source_prospect_id")
+  sourceProspectId String?  @unique @map("source_prospect_id")
   customerId      String?  @map("customer_id")
   providerExisting String?  @map("provider_existing") @db.VarChar(255)
   branch           String?  @db.VarChar(100)
@@ -1616,6 +1617,63 @@ model IntegrationConfiguration {
   @@map("integration_configurations")
 }
 
+model KpiTarget {
+  id          String   @id @default(uuid()) @map("id")
+  name        String   @db.VarChar(200)
+  category    String   @map("category") @db.VarChar(50)
+  targetValue Float    @map("target_value")
+  actualValue Float    @map("actual_value") @default(0)
+  unit        String   @db.VarChar(20)
+  period      String   @db.VarChar(50)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("kpi_targets")
+}
+
+model ProjectPhase {
+  id       String  @id @default(uuid()) @map("id")
+  status   String  @db.VarChar(100)
+  phase    String  @db.VarChar(100)
+  order    Int     @map("order") @default(0)
+  isActive Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("project_phases")
+}
+
+model WorkflowStep {
+  id           String  @id @default(uuid()) @map("id")
+  entityType   String  @map("entity_type") @db.VarChar(50)
+  name         String  @db.VarChar(200)
+  order        Int     @map("order") @default(0)
+  description  String? @db.Text
+  assigneeRole String  @map("assignee_role") @db.VarChar(100)
+  isRequired   Boolean @default(true) @map("is_required")
+  isActive     Boolean @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("workflow_steps")
+}
+
+model SlaPolicy {
+  id                String   @id @default(uuid()) @map("id")
+  name              String   @db.VarChar(200)
+  entityType        String   @map("entity_type") @db.VarChar(50) @unique
+  warningThreshold  Int      @map("warning_threshold")
+  criticalThreshold Int      @map("critical_threshold")
+  unit              String   @db.VarChar(20)
+  escalationRole    String   @map("escalation_role") @db.VarChar(100)
+  active            Boolean  @default(true)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("sla_policies")
+}
+
 model AiRequestLog {
   id            String          @id @default(uuid()) @map("id")
   requestedBy   String          @map("requested_by")
@@ -1706,6 +1764,7 @@ model Procurement {
   createdByUserId     String?           @map("created_by_user_id")
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
+  deletedAt           DateTime?         @map("deleted_at")
 
   project     Project? @relation(fields: [sourceProjectId], references: [id])
   creator     User?    @relation("ProcurementCreated", fields: [createdByUserId], references: [id])

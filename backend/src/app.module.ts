@@ -11,6 +11,7 @@ import { ProspectsModule } from './prospects/prospects.module';
 import { RksModule } from './rks/rks.module';
 import { LphsModule } from './lphs/lphs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ConfigModule } from './config/config.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     RksModule,
     LphsModule,
     DashboardModule,
+    ConfigModule,
   ],
 })
 export class AppModule {}

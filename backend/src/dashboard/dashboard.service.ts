@@ -11,7 +11,6 @@ export class DashboardService {
 
     const [
       totalProjects,
-      activeProjects,
       wonProjects,
       totalValueResult,
       pendingApprovals,
@@ -19,10 +18,6 @@ export class DashboardService {
       activeProjectsCount,
     ] = await Promise.all([
       this.prisma.project.count({ where: { deletedAt: null } }),
-      this.prisma.project.findMany({
-        where: { deletedAt: null, status: { notIn: ['Selesai', 'Kalah'] } },
-        select: { estimatedValue: true },
-      }),
       this.prisma.project.findMany({
         where: { deletedAt: null, tenderResult: { result: 'won' } },
         select: { id: true },

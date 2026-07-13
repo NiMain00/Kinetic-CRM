@@ -8,9 +8,13 @@ export interface Customer {
   picName: string;
   picPosition: string;
   picPhone: string;
+  picEmail?: string;
+  address?: string;
+  province?: string;
   industryId?: string;
   providerExisting?: string;
   isNew?: boolean;
+  isActive?: boolean;
   needsVerification?: boolean;
   verifiedAt?: string;
   verifiedBy?: string;

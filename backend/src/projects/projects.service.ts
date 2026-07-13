@@ -75,12 +75,12 @@ export class ProjectsService {
   async delete(id: string) {
     await this.get(id);
     return this.prisma.$transaction(async (tx) => {
-      // Procurement references the project without ON DELETE CASCADE, so remove them first
-      const procurements = await tx.procurement.findMany({ where: { sourceProjectId: id } });
-      for (const pc of procurements) {
-        await tx.procurement.delete({ where: { id: pc.id } });
-      }
-      return tx.project.delete({ where: { id } });
+      // Procurement references the project without ON DELETE CASCADE, so soft-delete them first
+      await tx.procurement.updateMany({
+        where: { sourceProjectId: id, deletedAt: null },
+        data: { deletedAt: new Date() },
+      });
+      return tx.project.update({ where: { id }, data: { deletedAt: new Date() } });
     });
   }
 }

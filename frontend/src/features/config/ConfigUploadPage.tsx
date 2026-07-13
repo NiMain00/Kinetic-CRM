@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Card } from '@/components/ui';
 import toast from 'react-hot-toast';
 import { useConfigStore } from '@/stores/configStore';
@@ -15,6 +15,7 @@ const ALL_EXTENSIONS = [
 export default function ConfigUploadPage() {
   const uploadConfig = useConfigStore((s) => s.uploadConfig);
   const updateUploadConfig = useConfigStore((s) => s.updateUploadConfig);
+  const fetchUploadConfig = useConfigStore((s) => s.fetchUploadConfig);
 
   const [formMaxSize, setFormMaxSize] = useState(String(uploadConfig.maxFileSizeMb));
   const [formMaxFiles, setFormMaxFiles] = useState(String(uploadConfig.maxFilesPerUpload));
@@ -22,15 +23,33 @@ export default function ConfigUploadPage() {
   const [formCompression, setFormCompression] = useState(uploadConfig.enableCompression);
   const [selectedExtensions, setSelectedExtensions] = useState<string[]>(uploadConfig.allowedExtensions);
 
-  const handleSave = () => {
-    updateUploadConfig({
-      maxFileSizeMb: Number(formMaxSize),
-      maxFilesPerUpload: Number(formMaxFiles),
-      storagePath: formStoragePath,
-      enableCompression: formCompression,
-      allowedExtensions: selectedExtensions,
-    });
-    toast.success('Pengaturan upload berhasil disimpan.');
+  useEffect(() => {
+    fetchUploadConfig();
+  }, [fetchUploadConfig]);
+
+  useEffect(() => {
+    if (uploadConfig.id) {
+      setFormMaxSize(String(uploadConfig.maxFileSizeMb));
+      setFormMaxFiles(String(uploadConfig.maxFilesPerUpload));
+      setFormStoragePath(uploadConfig.storagePath);
+      setFormCompression(uploadConfig.enableCompression);
+      setSelectedExtensions(uploadConfig.allowedExtensions);
+    }
+  }, [uploadConfig]);
+
+  const handleSave = async () => {
+    try {
+      await updateUploadConfig({
+        maxFileSizeMb: Number(formMaxSize),
+        maxFilesPerUpload: Number(formMaxFiles),
+        storagePath: formStoragePath,
+        enableCompression: formCompression,
+        allowedExtensions: selectedExtensions,
+      });
+      toast.success('Pengaturan upload berhasil disimpan.');
+    } catch {
+      toast.error('Gagal menyimpan pengaturan. Silakan coba lagi.');
+    }
   };
 
   const handleToggleExtension = (ext: string) => {

@@ -9,6 +9,24 @@ import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useUserStore } from '@/stores/userStore';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { authService } from '@/services/auth';
+import { ROLE_HIERARCHY } from '@/config/constants';
+
+const normalizeRoleName = (name: string) => name.toLowerCase().replace(/[\s-]+/g, '_');
+
+function highestRoleName(roles: { role?: { name?: string } }[] = []): string {
+  let best = '';
+  let bestLevel = -1;
+  for (const ur of roles) {
+    const name = ur.role?.name;
+    if (!name) continue;
+    const level = ROLE_HIERARCHY[normalizeRoleName(name) as keyof typeof ROLE_HIERARCHY] ?? 0;
+    if (level > bestLevel) {
+      bestLevel = level;
+      best = name;
+    }
+  }
+  return best;
+}
 const DEMO_ACCOUNTS = [
   { id: 'user-1', name: 'Super Administrator', username: 'superadmin', password: 'admin123', role: 'Super Admin' },
   { id: 'user-2', name: 'Bambang Permadi', username: 'bambang', password: 'admin123', role: 'PM' },
@@ -52,14 +70,17 @@ export default function LoginPage() {
         fullName: user.fullName,
         name: user.fullName,
         email: user.email,
-        roleName: user.userRoles?.[0]?.role?.name || '',
+        roleName: highestRoleName(user.userRoles) || user.userRoles?.[0]?.role?.name || '',
         branchName: user.orgUnit?.name || '',
         roleId: user.userRoles?.[0]?.roleId || '',
         scopeType: user.userRoles?.[0]?.scopeType || 'global',
       });
 
-      // Fetch semua user-role assignments dari API (tidak blocking)
-      useRbacStore.getState().fetchAllUserRoles();
+      // Fetch semua user-role assignments DAN role->permission dari API (tidak blocking)
+      const rbacStore = useRbacStore.getState();
+      rbacStore.fetchAllUserRoles();
+      rbacStore.fetchRoles();
+      rbacStore.fetchPermissions();
       useNotificationStore.getState().fetchNotifications();
 
       // Fetch master data dari API

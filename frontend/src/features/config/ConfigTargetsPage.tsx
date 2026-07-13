@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Card, Input, Select } from '@/components/ui';
 import toast from 'react-hot-toast';
 import type { KpiTarget } from '@/types/domain/config';
@@ -10,7 +10,12 @@ export default function ConfigTargetsPage() {
   const targets = useConfigStore((s) => s.kpiTargets);
   const addConfigData = useConfigStore((s) => s.addConfigData);
   const updateConfigData = useConfigStore((s) => s.updateConfigData);
+  const fetchKpiTargets = useConfigStore((s) => s.fetchKpiTargets);
   const [selectedPeriod, setSelectedPeriod] = useState('Q2 2026');
+
+  useEffect(() => {
+    fetchKpiTargets();
+  }, [fetchKpiTargets]);
   const [showForm, setShowForm] = useState(false);
   const [editingTarget, setEditingTarget] = useState<KpiTarget | null>(null);
   const [formName, setFormName] = useState('');
@@ -41,30 +46,34 @@ export default function ConfigTargetsPage() {
     setShowForm(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formTargetValue) {
       toast.error('Nama dan nilai target wajib diisi.');
       return;
     }
-    if (editingTarget) {
-      updateConfigData('kpiTargets', editingTarget.id, { name: formName, category: formCategory as KpiTarget['category'], targetValue: Number(formTargetValue), unit: formUnit, description: formDescription });
-      toast.success(`Target ${formName} berhasil diperbarui.`);
-    } else {
-      const newTarget: KpiTarget = {
-        id: `TGT-${String(targets.length + 1).padStart(3, '0')}`,
-        name: formName,
-        category: formCategory as KpiTarget['category'],
-        targetValue: Number(formTargetValue),
-        actualValue: 0,
-        unit: formUnit,
-        period: selectedPeriod,
-        description: formDescription,
-      };
-      addConfigData('kpiTargets', newTarget);
-      toast.success(`Target ${formName} berhasil ditambahkan.`);
+    try {
+      if (editingTarget) {
+        await updateConfigData('kpiTargets', editingTarget.id, { name: formName, category: formCategory as KpiTarget['category'], targetValue: Number(formTargetValue), unit: formUnit, description: formDescription });
+        toast.success(`Target ${formName} berhasil diperbarui.`);
+      } else {
+        const newTarget: KpiTarget = {
+          id: `TGT-${String(targets.length + 1).padStart(3, '0')}`,
+          name: formName,
+          category: formCategory as KpiTarget['category'],
+          targetValue: Number(formTargetValue),
+          actualValue: 0,
+          unit: formUnit,
+          period: selectedPeriod,
+          description: formDescription,
+        };
+        await addConfigData('kpiTargets', newTarget);
+        toast.success(`Target ${formName} berhasil ditambahkan.`);
+      }
+      setShowForm(false);
+    } catch {
+      toast.error('Gagal menyimpan target. Silakan coba lagi.');
     }
-    setShowForm(false);
   };
 
   const formatValue = (t: KpiTarget) => {

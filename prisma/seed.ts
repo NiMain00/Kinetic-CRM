@@ -123,31 +123,60 @@ async function main() {
   }
 
   // ── PERMISSIONS ────────────────────────────────────────────────
+  // Kode permission HARUS cocok dengan konstanta PERMISSIONS di frontend
+  // (lihat frontend/src/config/constants.ts) agar matrix Role Permissions
+  // dan semua pengecekan can(...) bisa resolve.
   const permissionData = [
+    { id: 'perm-dashboard-view', code: 'dashboard:view', name: 'View Dashboard', module: 'dashboard' },
+    { id: 'perm-notification-read', code: 'notification:read', name: 'Read Notifications', module: 'notification' },
+    { id: 'perm-profile-manage', code: 'profile:manage', name: 'Manage Profile', module: 'profile' },
+
     { id: 'perm-user-read', code: 'user:read', name: 'Read Users', module: 'user' },
     { id: 'perm-user-write', code: 'user:write', name: 'Create/Edit Users', module: 'user' },
     { id: 'perm-user-delete', code: 'user:delete', name: 'Delete Users', module: 'user' },
+
     { id: 'perm-prospect-read', code: 'prospect:read', name: 'Read Prospects', module: 'prospect' },
-    { id: 'perm-prospect-write', code: 'prospect:write', name: 'Create/Edit Prospects', module: 'prospect' },
+    { id: 'perm-prospect-create', code: 'prospect:create', name: 'Create Prospects', module: 'prospect' },
+    { id: 'perm-prospect-edit', code: 'prospect:edit', name: 'Edit Prospects', module: 'prospect' },
     { id: 'perm-prospect-delete', code: 'prospect:delete', name: 'Delete Prospects', module: 'prospect' },
+    { id: 'perm-prospect-write-prospecting', code: 'prospect:write:prospecting', name: 'Write (Prospecting)', module: 'prospect' },
+    { id: 'perm-prospect-approve-transition', code: 'prospect:approve:transition', name: 'Approve Transition', module: 'prospect' },
+
     { id: 'perm-project-read', code: 'project:read', name: 'Read Projects', module: 'project' },
-    { id: 'perm-project-write', code: 'project:write', name: 'Create/Edit Projects', module: 'project' },
+    { id: 'perm-project-create', code: 'project:create', name: 'Create Projects', module: 'project' },
+    { id: 'perm-project-edit', code: 'project:edit', name: 'Edit Projects', module: 'project' },
+    { id: 'perm-project-write', code: 'project:write', name: 'Write Projects', module: 'project' },
     { id: 'perm-project-delete', code: 'project:delete', name: 'Delete Projects', module: 'project' },
+    { id: 'perm-project-manage-members', code: 'project:manage:members', name: 'Manage Members', module: 'project' },
+    { id: 'perm-project-manage-scope', code: 'project:manage:scope', name: 'Manage Scope', module: 'project' },
+
     { id: 'perm-customer-read', code: 'customer:read', name: 'Read Customers', module: 'customer' },
     { id: 'perm-customer-write', code: 'customer:write', name: 'Create/Edit Customers', module: 'customer' },
-    { id: 'perm-rbac-read', code: 'rbac:read', name: 'Read RBAC', module: 'rbac' },
-    { id: 'perm-rbac-write', code: 'rbac:write', name: 'Manage RBAC', module: 'rbac' },
-    { id: 'perm-rks-read', code: 'rks:read', name: 'Read RKS', module: 'rks' },
-    { id: 'perm-rks-write', code: 'rks:write', name: 'Manage RKS', module: 'rks' },
-    { id: 'perm-lphs-read', code: 'lphs:read', name: 'Read LPHS', module: 'lphs' },
-    { id: 'perm-lphs-write', code: 'lphs:write', name: 'Manage LPHS', module: 'lphs' },
-    { id: 'perm-procurement-read', code: 'procurement:read', name: 'Read Procurement', module: 'procurement' },
-    { id: 'perm-procurement-write', code: 'procurement:write', name: 'Manage Procurement', module: 'procurement' },
-    { id: 'perm-report-read', code: 'report:read', name: 'Read Reports', module: 'report' },
-    { id: 'perm-settings-read', code: 'settings:read', name: 'Read Settings', module: 'settings' },
-    { id: 'perm-settings-write', code: 'settings:write', name: 'Manage Settings', module: 'settings' },
+
+    { id: 'perm-pengadaan-read', code: 'pengadaan:read', name: 'Read Pengadaan', module: 'pengadaan' },
+    { id: 'perm-pengadaan-create', code: 'pengadaan:create', name: 'Create Pengadaan', module: 'pengadaan' },
+    { id: 'perm-pengadaan-write', code: 'pengadaan:write', name: 'Write Pengadaan', module: 'pengadaan' },
+    { id: 'perm-pengadaan-delete', code: 'pengadaan:delete', name: 'Delete Pengadaan', module: 'pengadaan' },
+
+    { id: 'perm-report-view-department', code: 'report:view:department', name: 'View Dept Reports', module: 'report' },
+    { id: 'perm-report-view-crossdept', code: 'report:view:crossdept', name: 'View Cross-Dept Reports', module: 'report' },
+
+    { id: 'perm-config-access', code: 'config:access', name: 'Access System Config', module: 'config' },
+
     { id: 'perm-master-read', code: 'master:read', name: 'Read Master Data', module: 'master' },
     { id: 'perm-master-write', code: 'master:write', name: 'Manage Master Data', module: 'master' },
+
+    { id: 'perm-rbac-read', code: 'rbac:read', name: 'Read RBAC', module: 'rbac' },
+    { id: 'perm-rbac-write', code: 'rbac:write', name: 'Manage RBAC', module: 'rbac' },
+
+    { id: 'perm-rks-read', code: 'rks:read', name: 'Read RKS', module: 'rks' },
+    { id: 'perm-rks-write', code: 'rks:write', name: 'Manage RKS', module: 'rks' },
+
+    { id: 'perm-lphs-read', code: 'lphs:read', name: 'Read LPHS', module: 'lphs' },
+    { id: 'perm-lphs-write', code: 'lphs:write', name: 'Manage LPHS', module: 'lphs' },
+
+    { id: 'perm-settings-read', code: 'settings:read', name: 'Read Settings', module: 'settings' },
+    { id: 'perm-settings-write', code: 'settings:write', name: 'Manage Settings', module: 'settings' },
   ];
 
   for (const p of permissionData) {
