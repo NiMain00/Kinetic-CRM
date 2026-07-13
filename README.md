@@ -1,6 +1,5 @@
 <div align="center">
   <h1>Kinetic CRM</h1>
-  <p><strong>Sistem Manajemen Penjualan & Tender Terintegrasi</strong></p>
 </div>
 
 <p align="center">
