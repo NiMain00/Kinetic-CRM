@@ -511,5 +511,5 @@ Hak cipta © PT. Kinetic Cerdas Indonesia. Seluruh hak cipta dilindungi undang-u
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by PT. Kinetic Cerdas Indonesia</sub>
+  <sub>Built with ❤️</sub>
 </div>
