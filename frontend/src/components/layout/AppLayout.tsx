@@ -54,8 +54,6 @@ export default function AppLayout() {
     : [];
   const userPermissions = [...new Set([...oldPermissions, ...newRbacPerms])];
 
-  const isFullBleed = location.pathname.includes('/diskusi');
-
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -103,13 +101,9 @@ export default function AppLayout() {
         <Breadcrumb />
         <ShortcutHelpModal isOpen={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />
         <main className="flex-1 flex flex-col min-h-0 bg-background">
-          {isFullBleed ? (
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-10 py-3 sm:py-4">
             <Outlet />
-          ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-10 py-3 sm:py-4">
-              <Outlet />
-            </div>
-          )}
+          </div>
         </main>
       </div>
     </div>

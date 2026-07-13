@@ -23,7 +23,6 @@ import KompetitorTab from './tabs/KompetitorTab';
 import PemenangTab from './tabs/PemenangTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
-import ChatTab from './tabs/ChatTab';
 import TasksTab from './tabs/TasksTab';
 
 interface ProjectDetailViewProps {
@@ -90,13 +89,12 @@ export default function ProjectDetailView({
 
   // Single source of truth for tabs & stepper — MUST be before early return to keep hook count stable
   const tabs = React.useMemo(() => {
-    // Non-potensial: hanya Overview, Timeline, Dokumen, Diskusi
+    // Non-potensial: hanya Overview, Timeline, Dokumen
     if (isFromNonPotensial) {
       return [
         { label: 'Overview', path: 'overview' },
         { label: 'Timeline', path: 'timeline' },
         { label: 'Dokumen', path: 'dokumen' },
-        { label: 'Diskusi', path: 'diskusi' },
       ];
     }
     const items: Array<{ label: string; path: string }> = [
@@ -109,7 +107,6 @@ export default function ProjectDetailView({
       { label: 'Pemenang', path: 'pemenang' },
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
-      { label: 'Diskusi', path: 'diskusi' },
     ];
     if (project.type === 'tender') {
       items.splice(3, 0, { label: 'Review RKS', path: 'review-rks' });
@@ -162,8 +159,8 @@ export default function ProjectDetailView({
     // Terminal states (Selesai, Kalah): all tabs unlocked
     if (project.status === 'Selesai' || project.status === 'Kalah') return false;
 
-    // Timeline, Dokumen, Diskusi, Tasks & RKS: always unlocked
-    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Diskusi' || tab.label === 'Tasks' || tab.label === 'RKS') return false;
+    // Timeline, Dokumen, Tasks & RKS: always unlocked
+    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Tasks' || tab.label === 'RKS') return false;
 
     // Harga, Kompetitor, Pemenang: terkunci sampai project mencapai atau melewati fase LPHS/SIOS
     if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
@@ -270,8 +267,6 @@ export default function ProjectDetailView({
     onShowNotification(message, type);
   };
 
-  const isChatTab = activeTab === 'Diskusi';
-
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
@@ -327,13 +322,7 @@ export default function ProjectDetailView({
       </section>
 
       {/* Main scrollable area — stepper, tab nav, and tab content all scroll together */}
-      {isChatTab ? (
-        /* Chat tab: full-height, no scroll wrapper needed (chat has its own scroll) */
-        <div className="flex-1 overflow-hidden">
-          <ChatTab project={project} onShowNotification={handleShowNotification} />
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
           {/* Dynamic Stepper */}
           {isOverview && !(project.type === 'prospecting' && isFromNonPotensial) && (
             <PhaseStepper
@@ -458,7 +447,6 @@ export default function ProjectDetailView({
             </div>
           </div>
         </div>
-      )}
       {/* Delete Confirmation Modal */}
       <Modal
         isOpen={showDeleteModal}

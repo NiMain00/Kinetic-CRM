@@ -16,7 +16,6 @@ import DeliveryTab from './tabs/DeliveryTab';
 import ClosingTab from './tabs/ClosingTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
-import DiskusiTab from './tabs/DiskusiTab';
 import SuppliersTab from './tabs/SuppliersTab';
 import RfqTab from './tabs/RfqTab';
 import ApprovalTab from './tabs/ApprovalTab';
@@ -57,7 +56,6 @@ export default function ProcurementDetailView() {
       { label: 'Suppliers', path: 'suppliers' },
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
-      { label: 'Diskusi', path: 'diskusi' },
     ];
     return items;
   }, []);
@@ -78,7 +76,6 @@ export default function ProcurementDetailView() {
     if (
       tab.label === 'Timeline' ||
       tab.label === 'Dokumen' ||
-      tab.label === 'Diskusi' ||
       tab.label === 'Suppliers' ||
       tab.label === 'RFQ' ||
       tab.label === 'Delivery' ||
@@ -303,9 +300,6 @@ export default function ProcurementDetailView() {
                 )}
                 {activeTab === 'Dokumen' && (
                   <DokumenTab procurement={procurement} />
-                )}
-                {activeTab === 'Diskusi' && (
-                  <DiskusiTab procurement={procurement} />
                 )}
               </>
             )}

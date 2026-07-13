@@ -1,158 +1,142 @@
 # Kinetic CRM
 
-Fullstack CRM built with **NestJS** (backend) + **React** (frontend) + **MySQL 8**.
+Fullstack CRM built with **NestJS** (backend) + **React 19** (frontend) + **MySQL 8**.
 
 ## Prerequisites
 
-- Node.js >= 18
-- npm
-- Docker (recommended for MySQL + Redis)
-- MySQL 8 (manual setup)
+- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (required for MySQL, Redis, and the app containers)
+- Node.js >= 18 (only needed to run Prisma migrations/seeds from host)
 
 ## Project Structure
 
 ```
 ├── backend/          # NestJS API (port 4000)
-├── docker/           # Docker Compose files
-├── frontend/         # Frontend container build (Dockerfile)
-├── prisma/           # Prisma schema & migrations (root)
+├── docker/           # Docker Compose files & config
+│   ├── docker-compose.yml
+│   ├── docker-compose.override.yml  # Development overrides
+│   ├── nginx/        # Nginx config (SSL, reverse proxy)
+│   └── mysql/        # MySQL config & init scripts
+├── frontend/         # React + Vite (port 3000)
+├── prisma/           # Prisma schema, migrations & seed
 ├── e2e/              # Playwright E2E tests
-├── .env.example      # Environment template
+├── .env              # Environment variables
 └── package.json      # Frontend (Vite + React) + Prisma scripts
 ```
 
-## Quick Start
+## Quick Start (Docker)
 
-### 1. Clone & Install
-
-```bash
-git clone <repo-url> kinetic-crm
-cd kinetic-crm
-
-# Install frontend & Prisma deps (root)
-npm install
-
-# Install backend deps
-cd backend && npm install && cd ..
-```
-
-### 2. Setup Database & Redis
-
-**Option A — Docker (recommended):**
+### 1. Start all containers
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d mysql redis
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker/.env up -d --build
 ```
 
-> Compose file is inside the `docker/` directory.
+This starts:
+| Service     | Container name     | Port            |
+| ----------- | ------------------ | --------------- |
+| Frontend    | `kinetic_frontend` | `:3000`         |
+| Backend     | `kinetic_backend`  | `:4000`         |
+| MySQL       | `kinetic_mysql`    | `:3306`         |
+| Redis       | `kinetic_redis`    | `:6379`         |
+| Nginx       | `kinetic_nginx`    | `:80`, `:443`   |
 
-**Option B — Manual:**
-- Create a MySQL database named `kinetic_crm`
-- Ensure Redis is running on `localhost:6379`
-
-### 3. Configure Environment
-
-```bash
-cp .env.example .env
-```
-
-Then edit `.env`. Key variables to adjust:
-
-| Variable          | Description            | Default                              |
-| ----------------- | ---------------------- | ------------------------------------ |
-| `DB_DATABASE`     | Database name          | `kinetic_crm`                        |
-| `DB_USERNAME`     | Database user          | `kinetic_user`                       |
-| `DB_PASSWORD`     | Database password      | `secret`                             |
-| `JWT_SECRET`      | JWT signing secret     | *(change this!)*                     |
-| `REDIS_PASSWORD`  | Redis password         | `redispass`                          |
-| `DATABASE_URL`    | Prisma connection URL  | *auto from DB_ vars in Docker only*  |
-
-For local (non-Docker) development, add this line to `.env`:
-
-```
-DATABASE_URL="mysql://kinetic_user:secret@localhost:3306/kinetic_crm"
-```
-
-> For Docker-based local dev, you can use `.env.local` (auto-loaded by Compose):
+> The `.env` file must exist in the `docker/` directory. Copy it from the root:
 > ```bash
-> cp .env.local.example .env.local
+> copy .env docker\.env
 > ```
 
-### 4. Run Migrations & Seed
+### 2. Run database migration & seed
 
 ```bash
-npx prisma migrate dev
+$env:DATABASE_URL="mysql://kinetic_user:secret@localhost:3306/kinetic_crm"
+npx prisma migrate deploy
 npx prisma db seed
 ```
 
-### 5. Start Development Servers
+> If the user `kinetic_user` doesn't exist (first run), create it:
+> ```bash
+> docker exec kinetic_mysql mysql -uroot -prootpass -e "CREATE USER IF NOT EXISTS 'kinetic_user'@'%' IDENTIFIED BY 'secret'; GRANT ALL PRIVILEGES ON *.* TO 'kinetic_user'@'%'; FLUSH PRIVILEGES;"
+> ```
 
-**Backend** (terminal 1):
-
-```bash
-cd backend && npm run start:dev
-```
-
-Runs on **http://localhost:4000**.
-
-**Frontend** (terminal 2):
+### 3. Restart backend (so it picks up the new schema)
 
 ```bash
-npm run dev
+docker restart kinetic_backend
 ```
 
-Runs on **http://localhost:3000**.
+Wait ~30 seconds for NestJS to compile.
 
-### 6. Login
+### 4. Access & Login
 
-Default credentials after seeding:
+Open **http://localhost:3000**
 
-| Username    | Password | Role         |
-| ----------- | -------- | ------------ |
-| superadmin  | admin123 | Super Admin  |
-| admin       | admin123 | Admin        |
+| Username    | Password  | Role           |
+| ----------- | --------- | -------------- |
+| superadmin  | admin123  | Super Admin    |
+| bambang     | admin123  | PM             |
+| rina        | admin123  | Branch Manager |
+| deni        | staff123  | Staff (Finance) |
+| siti        | staff123  | Staff (Procurement) |
+| ahmad       | staff123  | Staff (PM)     |
 
-## Docker (Full Stack)
-
-Run all services (Nginx, Frontend, Backend, MySQL, Redis, Scheduler):
+## Useful Commands
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+# View container status
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# View backend logs
+docker logs kinetic_backend --tail 20
+
+# Restart a service (e.g. after code changes)
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env restart backend
+
+# Rebuild and restart a service
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env up -d --build backend
+
+# Stop all containers
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env down
+
+# Stop all and remove volumes (wipes database)
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env down -v
+
+# Access MySQL inside container
+docker exec -it kinetic_mysql mysql -ukinetic_user -psecret kinetic_crm
+
+# Connect via DBeaver
+# Host: localhost | Port: 3306 | Database: kinetic_crm | User: kinetic_user | Password: secret
 ```
 
-## Available Scripts
+## Environment Variables
 
-### Root (`package.json`)
+Key variables in `.env`:
 
-| Script            | Description                          |
-| ----------------- | ------------------------------------ |
-| `npm run dev`     | Start Vite frontend on port 3000     |
-| `npm run build`   | Type-check + build frontend          |
-| `npm run lint`    | TypeScript type-checking             |
-| `npm run preview` | Preview Vite production build        |
-| `npm run clean`   | Remove dist directory                |
+| Variable          | Description         | Default        |
+| ----------------- | ------------------- | -------------- |
+| `DB_DATABASE`     | Database name       | `kinetic_crm`  |
+| `DB_USERNAME`     | Database user       | `kinetic_user` |
+| `DB_PASSWORD`     | Database password   | `secret`       |
+| `REDIS_PASSWORD`  | Redis password      | `redispass`    |
+| `JWT_SECRET`      | JWT signing secret  | *(change me)*  |
+| `GEMINI_API_KEY`  | Google Gemini API   | *(optional)*   |
 
-### Backend (`backend/package.json`)
+## Common Issues
 
-| Script               | Description                    |
-| -------------------- | ------------------------------ |
-| `npm run start:dev`  | Watch mode on port 4000        |
-| `npm run build`      | Build NestJS backend           |
-| `npm run start:prod` | Run built backend              |
-| `npm run lint`       | Backend TypeScript check       |
-| `npm run format`     | Format code with Prettier      |
+### Backend keeps restarting / unhealthy
+Wait ~30-60 seconds for NestJS to compile. Check logs with `docker logs kinetic_backend`.
 
-### Prisma
+### ERR_CONNECTION_REFUSED on login
+Backend is still compiling. Wait and refresh.
 
-| Command                    | Description                     |
-| -------------------------- | ------------------------------- |
-| `npx prisma migrate dev`   | Run pending migrations          |
-| `npx prisma db seed`       | Seed database                   |
-| `npx prisma studio`        | Open Prisma Studio DB browser   |
+### `Answers` column missing in RKS table
+Run the SQL fix:
+```bash
+docker exec kinetic_mysql mysql -uroot -prootpass kinetic_crm -e "ALTER TABLE rks ADD COLUMN answers JSON NULL AFTER additional_notes;"
+```
 
 ## Tech Stack
 
 - **Frontend:** React 19, Vite 6, TypeScript, Tailwind CSS 4, Zustand, React Router 7, Zod, TanStack Query
-- **Backend:** NestJS 10, Prisma 5, MySQL 8, Redis, JWT, Passport, class-validator
-- **Infra:** Docker, Nginx
+- **Backend:** NestJS 10, Prisma 5, MySQL 8, JWT, Passport, class-validator
+- **Infra:** Docker, Nginx (SSL reverse proxy)
 - **Test:** Playwright

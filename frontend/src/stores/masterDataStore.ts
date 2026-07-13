@@ -238,9 +238,9 @@ interface MasterDataState {
   fetchEntity: (entity: EntityType) => Promise<void>;
   fetchQuestions: () => Promise<void>;
   getData: <T>(entity: EntityType) => T[];
-  addData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, item: T) => void;
-  updateData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, id: string, data: Partial<T>) => void;
-  deleteData: (entity: EntityType, id: string) => void;
+  addData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, item: T) => Promise<void>;
+  updateData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, id: string, data: Partial<T>) => Promise<void>;
+  deleteData: (entity: EntityType, id: string) => Promise<void>;
 }
 
 function camelToSnakeKeys(obj: Record<string, unknown>): Record<string, unknown> {
@@ -254,6 +254,32 @@ function camelToSnakeKeys(obj: Record<string, unknown>): Record<string, unknown>
     }
   }
   return result;
+}
+
+// Field relasi yang tidak punya kolom skalar di Prisma → di-strip saat write ke API
+const RELATION_ONLY_FIELDS: Record<string, string[]> = {
+  roles: ['permissions'],
+  questions: ['options'],
+};
+
+function snakeToCamelKeys(obj: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key of Object.keys(obj)) {
+    const camelKey = key.replace(/_([a-z])/g, (_m, c) => c.toUpperCase());
+    result[camelKey] = obj[key];
+  }
+  return result;
+}
+
+// Siapkan payload untuk API: convert snake→camel, strip id & field relasi
+function toApiPayload(entity: EntityType, item: Record<string, unknown>): Record<string, unknown> {
+  const stripped: Record<string, unknown> = { ...item };
+  delete stripped.id;
+  const relationFields = RELATION_ONLY_FIELDS[entity];
+  if (relationFields) {
+    for (const f of relationFields) delete stripped[f];
+  }
+  return snakeToCamelKeys(stripped);
 }
 
 export const useMasterDataStore = create<MasterDataState>()(
@@ -331,18 +357,33 @@ export const useMasterDataStore = create<MasterDataState>()(
       },
 
       getData: <T>(entity: EntityType) => get()[entity] as unknown as T[],
-      addData: <T>(entity: EntityType, item: T) =>
-        set((s) => ({ [entity]: [...(s[entity] as any[]), item] } as any)),
-      updateData: <T extends { id: string }>(entity: EntityType, id: string, data: Partial<T>) =>
-        set((s) => ({
-          [entity]: (s[entity] as any[]).map((item: any) =>
-            item.id === id ? { ...item, ...data } : item
-          ),
-        } as any)),
-      deleteData: (entity: EntityType, id: string) =>
-        set((s) => ({
-          [entity]: (s[entity] as any[]).filter((item: any) => item.id !== id),
-        } as any)),
+      addData: async <T extends Record<string, any>>(entity: EntityType, item: T) => {
+        try {
+          await masterDataService.create(entity, toApiPayload(entity, item));
+          await get().fetchEntity(entity);
+        } catch (err) {
+          console.error(`[masterDataStore] addData(${entity}) failed:`, err);
+          throw err;
+        }
+      },
+      updateData: async <T extends { id: string }>(entity: EntityType, id: string, data: Partial<T>) => {
+        try {
+          await masterDataService.update(entity, id, toApiPayload(entity, data as Record<string, unknown>));
+          await get().fetchEntity(entity);
+        } catch (err) {
+          console.error(`[masterDataStore] updateData(${entity}) failed:`, err);
+          throw err;
+        }
+      },
+      deleteData: async (entity: EntityType, id: string) => {
+        try {
+          await masterDataService.delete(entity, id);
+          await get().fetchEntity(entity);
+        } catch (err) {
+          console.error(`[masterDataStore] deleteData(${entity}) failed:`, err);
+          throw err;
+        }
+      },
     }),
     {
       name: 'kinetic-master-data',
