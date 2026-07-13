@@ -1,11 +1,6 @@
 <div align="center">
   <h1>Kinetic CRM</h1>
 </div>
-
-<p align="center">
-  Kinetic CRM (sebelumnya <em>Sales & Tender Management System / STMS</em>) adalah aplikasi enterprise berbasis web yang mendigitalisasi dan menstandarisasi seluruh siklus bisnis — mulai dari identifikasi prospek hingga penyelesaian tender proyek.
-</p>
-
 ---
 
 ## Daftar Isi
@@ -504,9 +499,6 @@ Juga tersedia:
 ---
 
 ## Lisensi
-
-Hak cipta © PT. Kinetic Cerdas Indonesia. Seluruh hak cipta dilindungi undang-undang.
-
 ---
 
 <div align="center">
