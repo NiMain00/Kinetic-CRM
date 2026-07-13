@@ -68,7 +68,10 @@ export default function ProjectDetailView({
   }, [fetchProjectPhases]);
   const displayProgress = React.useMemo(() => {
     if (!project) return 0;
-    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    if (project.status === 'Selesai' || project.status === 'Kalah') return 100;
+    const active = projectPhases
+      .filter((p) => p.isActive && p.status !== 'Kalah')
+      .sort((a, b) => a.order - b.order);
     const idx = active.findIndex((p) => p.status === project.status);
     if (idx < 0) return project.progress ?? 0;
     return Math.round((idx / (active.length - 1)) * 100);
@@ -121,10 +124,20 @@ export default function ProjectDetailView({
     return items;
   }, [project?.type, isFromNonPotensial, project?.status, project?.winnerDetails?.outcome]);
 
-  // Stepper steps: exclude non-phase tabs (Timeline, Dokumen, Tasks)
+  // Stepper steps: derived from project lifecycle phases, NOT from tabs
   const stepperSteps = React.useMemo(() => {
-    return tabs.filter(t => !['Timeline', 'Dokumen', 'Tasks'].includes(t.label));
-  }, [tabs]);
+    const activePhases = projectPhases
+      .filter(p => p.isActive && p.status !== 'Kalah')
+      .sort((a, b) => a.order - b.order);
+    const tabPathByLabel: Record<string, string> = {};
+    tabs.forEach(t => { tabPathByLabel[t.label] = t.path; });
+    tabPathByLabel['Draft'] = 'overview';
+    tabPathByLabel['Selesai'] = 'overview';
+    return activePhases.map(p => ({
+      label: p.phase,
+      path: tabPathByLabel[p.phase] || 'overview',
+    }));
+  }, [projectPhases, tabs]);
 
   // Auto-sync prospect data ke project jika ada sourceProspect — also before early return
   useEffect(() => {
@@ -343,13 +356,14 @@ export default function ProjectDetailView({
             <PhaseStepper
               steps={stepperSteps}
               currentStepIndex={stepperIndex >= 0 ? stepperIndex : 0}
-              accessibleUpToIndex={stepperIndex >= 0 ? stepperIndex : 0}
+              accessibleUpToIndex={isTerminal ? stepperSteps.length : (stepperIndex >= 0 ? stepperIndex : 0)}
               onStepClick={(path) => navigate(`/projects/${projectId}/${path}`)}
               isStepUnlocked={(index) => {
                 const step = stepperSteps[index];
+                if (!step) return false;
                 const st = project.status;
                 const isBeforeLphs = st === 'RKS' || st === 'Review RKS' || st === 'Draft' || st === 'Revision';
-                return ['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && !isBeforeLphs;
+                return step.label === 'Harga' && !isBeforeLphs;
               }}
             />
           )}

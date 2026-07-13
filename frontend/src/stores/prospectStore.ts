@@ -137,7 +137,7 @@ export const useProspectStore = create<ProspectState>()(
         }),
 
       createProspect: async (data) => {
-        const { author, date, customerData, timeline, ...clean } = data as any;
+        const { id, author, date, customerData, timeline, ...clean } = data as any;
         if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
         if (timeline?.length) {
           clean.timelineEvents = {
@@ -191,7 +191,21 @@ export const useProspectStore = create<ProspectState>()(
             })),
           };
         }
-        await prospectService.update(id, clean);
+        try {
+          await prospectService.update(id, clean);
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            console.warn(`[prospectStore] Prospect ${id} not found on backend, removing from local store`);
+            set((s) => {
+              const entities = { ...s.entities };
+              delete entities[id];
+              const ids = s.ids.filter((i) => i !== id);
+              return { entities, ids, prospects: deriveProspects(entities, ids) };
+            });
+            return;
+          }
+          throw err;
+        }
         set((s) => {
           const existing = s.entities[id];
           if (!existing) return s;
@@ -201,7 +215,12 @@ export const useProspectStore = create<ProspectState>()(
       },
 
       deleteProspect: async (id) => {
-        await prospectService.delete(id);
+        try {
+          await prospectService.delete(id);
+        } catch (err: any) {
+          if (err?.response?.status !== 404) throw err;
+          console.warn(`[prospectStore] Prospect ${id} not found on backend, removing from local store anyway`);
+        }
         const prospect = get().entities[id];
         if (prospect) {
           eventBus.emit({

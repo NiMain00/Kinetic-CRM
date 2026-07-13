@@ -150,17 +150,18 @@ export default function ProjectFormPage() {
       }],
     };
 
-    try {
-      await createProject(newProject);
+      try {
+        const created = await createProject(newProject);
+        const savedId = created?.id || projectId;
 
       // Simpan project departments
       selectedDeptIds.forEach((deptId) => {
-        addProjectDept(projectId, deptId);
+        addProjectDept(savedId, deptId);
       });
 
       // Simpan project members
       members.forEach((m) => {
-        addProjMember(projectId, m.userId, m.roleId, m.deptId, user?.id || '');
+        addProjMember(savedId, m.userId, m.roleId, m.deptId, user?.id || '');
       });
 
       // Jika dari prospek, emit event
@@ -168,14 +169,14 @@ export default function ProjectFormPage() {
         eventBus.emit({
           type: 'PROSPECT_CONVERTED',
           prospectId: fromProspect.id,
-          projectId,
+          projectId: savedId,
           projectName: data.name.trim(),
           timestamp: new Date().toISOString(),
         });
       }
 
       toast.success(`Proyek "${newProject.name}" berhasil dibuat.`);
-      navigate(`/projects/${projectId}/overview`);
+      navigate(`/projects/${savedId}/overview`);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || err?.message || 'Gagal menyimpan proyek. Silakan coba lagi.');
     }

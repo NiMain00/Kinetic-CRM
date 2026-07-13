@@ -78,8 +78,10 @@ export const useRelationStore = create<RelationState>()(
               await masterDataService.delete('entityRelations', relId);
             }
           }
-        } catch (err) {
-          console.error('[relationStore] unlinkProspectToProject API failed:', err);
+        } catch (err: any) {
+          if (err?.response?.status !== 404) {
+            console.error('[relationStore] unlinkProspectToProject API failed:', err);
+          }
         }
         set((s) => {
           const next = { ...s.prospectToProject };
@@ -122,8 +124,10 @@ export const useRelationStore = create<RelationState>()(
           if (relId) {
             await masterDataService.delete('entityRelations', relId);
           }
-        } catch (err) {
-          console.error('[relationStore] unlinkProjectToProcurement API failed:', err);
+        } catch (err: any) {
+          if (err?.response?.status !== 404) {
+            console.error('[relationStore] unlinkProjectToProcurement API failed:', err);
+          }
         }
         set((s) => {
           const existing = s.projectToProcurement[projectId];
@@ -155,8 +159,10 @@ export const useRelationStore = create<RelationState>()(
               await masterDataService.delete('entityRelations', relId);
             }
           }
-        } catch (err) {
-          console.error('[relationStore] removeAllProjectLinks API failed:', err);
+        } catch (err: any) {
+          if (err?.response?.status !== 404) {
+            console.error('[relationStore] removeAllProjectLinks API failed:', err);
+          }
         }
         set((s) => {
           const next = { ...s.projectToProcurement };

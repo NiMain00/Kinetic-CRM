@@ -297,7 +297,7 @@ export const useProjectStore = create<ProjectState>()(
         }),
 
       createProject: async (data) => {
-        const { pricing, competitors, winnerDetails, delivery, rks, lphs, timeline, ...clean } = data as any;
+        const { id, pricing, competitors, winnerDetails, delivery, rks, lphs, timeline, ...clean } = data as any;
         if (clean.scopeDepartments && Array.isArray(clean.scopeDepartments)) {
           clean.scopeDepartments = JSON.stringify(clean.scopeDepartments);
         }
@@ -355,7 +355,21 @@ export const useProjectStore = create<ProjectState>()(
             }),
           };
         }
-        await projectService.update(id, clean);
+        try {
+          await projectService.update(id, clean);
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            console.warn(`[projectStore] Project ${id} not found on backend, removing from local store`);
+            set((s) => {
+              const entities = { ...s.entities };
+              delete entities[id];
+              const ids = s.ids.filter((i) => i !== id);
+              return { entities, ids, projects: deriveProjects(entities, ids) };
+            });
+            return;
+          }
+          throw err;
+        }
         const current = get().entities[id];
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
@@ -399,8 +413,12 @@ export const useProjectStore = create<ProjectState>()(
         try {
           await projectService.delete(id);
         } catch (err: any) {
-          console.error('[projectStore] deleteProject API gagal, coba soft-delete langsung:', err?.response?.data || err);
-          throw err;
+          if (err?.response?.status === 404) {
+            console.warn(`[projectStore] Project ${id} not found on backend, removing from local store anyway`);
+          } else {
+            console.error('[projectStore] deleteProject API gagal:', err?.response?.data || err);
+            throw err;
+          }
         }
         // Hapus dari store lokal setelah sukses API
         const approvalStore = useApprovalStore.getState();
@@ -438,7 +456,17 @@ export const useProjectStore = create<ProjectState>()(
             clean.answers = JSON.stringify(clean.answers);
           }
           await projectService.update(id, { rks: { upsert: { create: clean, update: clean } } } as any);
-        } catch (err) {
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            console.warn(`[projectStore] Project ${id} not found on backend for RKS update, removing from local store`);
+            set((s) => {
+              const entities = { ...s.entities };
+              delete entities[id];
+              const ids = s.ids.filter((i) => i !== id);
+              return { entities, ids, projects: deriveProjects(entities, ids) };
+            });
+            return;
+          }
           console.error('[projectStore] updateProjectRks API failed:', err);
         }
         set((s) => {

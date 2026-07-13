@@ -74,7 +74,10 @@ export default function ProjectListPage() {
 
   // Derive progress from project status for display (mirrors ProjectDetailPage logic)
   const deriveProgress = useCallback((status: string) => {
-    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    if (status === 'Selesai' || status === 'Kalah') return 100;
+    const active = projectPhases
+      .filter((p) => p.isActive && p.status !== 'Kalah')
+      .sort((a, b) => a.order - b.order);
     const idx = active.findIndex((p) => p.status === status);
     if (idx >= 0 && active.length > 1) {
       return Math.round((idx / (active.length - 1)) * 100);
