@@ -1,18 +1,19 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { MasterDataEntry } from './masterDataConfig';
 
 interface MasterDataCardProps {
   config: MasterDataEntry;
   count: number;
   activeCount?: number;
-  onClick: () => void;
+  to: string;
 }
 
-export default function MasterDataCard({ config, count, activeCount, onClick }: MasterDataCardProps) {
+export default function MasterDataCard({ config, count, activeCount, to }: MasterDataCardProps) {
   return (
-    <button
-      onClick={onClick}
-      className="group relative w-full text-left bg-surface rounded-xl border border-border/50 shadow-sm p-3 transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-green-400/50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 active:scale-[0.98] overflow-hidden"
+    <Link
+      to={to}
+      className="group relative w-full text-left bg-surface rounded-xl border border-border/50 shadow-sm p-3 transition-all duration-200 hover:shadow-xl hover:-translate-y-1 hover:border-green-400/50 focus:outline-none focus:ring-2 focus:ring-primary/20 active:scale-[0.98] overflow-hidden"
     >
       <div className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-transparent group-hover:bg-green-400/40 transition-colors" />
       <div className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-transparent group-hover:bg-green-400/40 transition-colors" />
@@ -40,6 +41,6 @@ export default function MasterDataCard({ config, count, activeCount, onClick }: 
         </div>
         <span className="material-symbols-outlined text-base text-outline/20 group-hover:text-primary/50 group-hover:translate-x-1 transition-all shrink-0 mt-1">chevron_right</span>
       </div>
-    </button>
+    </Link>
   );
 }

@@ -202,8 +202,13 @@ function mapApiProject(p: any): Project {
     winnerDetails: tenderResult ? {
       outcome: tenderResult.result === 'won' ? 'menang' : tenderResult.result === 'lost' ? 'kalah' : null,
       contractValue: tenderResult.contractValue ? Number(tenderResult.contractValue) : undefined,
-      startDate: p.winnerDetails?.startDate || undefined,
-      duration: p.winnerDetails?.duration || undefined,
+      startDate: tenderResult.startDate
+        ? (() => {
+            const d = new Date(tenderResult.startDate);
+            return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+          })()
+        : undefined,
+      duration: tenderResult.durationDays != null ? Number(tenderResult.durationDays) : undefined,
       loseReason: p.winnerDetails?.loseReason || undefined,
       loseNote: tenderResult.lossReasonNote || p.winnerDetails?.loseNote || undefined,
       spkDocument: tenderResult.spkDocument ? (typeof tenderResult.spkDocument === 'string' ? JSON.parse(tenderResult.spkDocument) : tenderResult.spkDocument) : p.winnerDetails?.spkDocument || undefined,
@@ -391,14 +396,15 @@ export const useProjectStore = create<ProjectState>()(
 
       deleteProject: async (id) => {
         const project = get().entities[id];
+        // Remove linked procurements first (backend hard-deletes them too, but keep local state in sync)
+        const deleteProc = useProcurementStore.getState().deleteProcurement;
+        const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
+        linked.forEach((p) => deleteProc(p.id));
         await projectService.delete(id);
         const approvalStore = useApprovalStore.getState();
         approvalStore.approvals
           .filter((a) => a.entityType === 'project' && a.entityId === id)
           .forEach((a) => approvalStore.removeApproval(a.id));
-        const deleteProc = useProcurementStore.getState().deleteProcurement;
-        const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
-        linked.forEach((p) => deleteProc(p.id));
         if (project) {
           eventBus.emit({
             type: 'PROJECT_DELETED',
@@ -578,12 +584,16 @@ export const useProjectStore = create<ProjectState>()(
         const proj = get().entities[id];
         if (!proj || !wd.outcome) return;
         const decidedBy = proj.createdByUserId || proj.ownerUserId || 'system';
+        const startDate = wd.startDate ? new Date(wd.startDate) : null;
+        const durationDays = wd.duration != null && !Number.isNaN(Number(wd.duration)) ? Number(wd.duration) : null;
         projectService.update(id, {
           tenderResult: {
             upsert: {
               create: {
                 result: wd.outcome === 'menang' ? 'won' : 'lost' as const,
                 contractValue: wd.contractValue ?? null,
+                startDate,
+                durationDays,
                 lossReasonNote: wd.loseNote || wd.loseReason || null,
                 spkDocument: wd.spkDocument ? JSON.stringify(wd.spkDocument) : null,
                 decidedBy,
@@ -591,6 +601,8 @@ export const useProjectStore = create<ProjectState>()(
               update: {
                 result: wd.outcome === 'menang' ? 'won' : 'lost' as const,
                 contractValue: wd.contractValue ?? null,
+                startDate,
+                durationDays,
                 lossReasonNote: wd.loseNote || wd.loseReason || null,
                 spkDocument: wd.spkDocument ? JSON.stringify(wd.spkDocument) : null,
               },

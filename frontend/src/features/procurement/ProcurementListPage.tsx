@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
 import { BulkActions } from '@/components/shared';
@@ -275,16 +275,18 @@ export default function ProcurementListPage() {
                         </td>
                       )}
                       <td className="px-4 py-3 text-on-surface-variant truncate max-w-60">
-                        {(() => {
-                          const projectName = getProjectName(p);
-                          return projectName ? (
-                            <span className="text-on-surface font-medium leading-tight">{projectName}</span>
-                          ) : p.sourceProjectCode ? (
-                            <span className="text-outline italic">{p.sourceProjectCode}</span>
-                          ) : (
-                            <span className="text-outline italic">Manual</span>
-                          );
-                        })()}
+                        <Link to={`/procurement/${p.id}`} className="block truncate">
+                          {(() => {
+                            const projectName = getProjectName(p);
+                            return projectName ? (
+                              <span className="text-on-surface font-medium leading-tight">{projectName}</span>
+                            ) : p.sourceProjectCode ? (
+                              <span className="text-outline italic">{p.sourceProjectCode}</span>
+                            ) : (
+                              <span className="text-outline italic">Manual</span>
+                            );
+                          })()}
+                        </Link>
                       </td>
                       <td className="px-4 py-3 text-on-surface-variant">
                         {p.client}

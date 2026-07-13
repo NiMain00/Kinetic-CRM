@@ -18,10 +18,13 @@ test.describe('Projects', () => {
 
   test('project list has filter tabs', async ({ page }) => {
     await loginAsAdmin(page);
+    // Kunjungi /prospects dulu agar input config groups ter-load (ProspectsPage trigger fetchGroups)
+    await page.goto('/prospects');
+    await page.waitForLoadState('networkidle');
     await page.goto('/projects');
     await page.waitForLoadState('networkidle');
 
-    const tabs = page.locator('button:has-text("All"), button:has-text("Aktif"), button:has-text("Selesai")');
+    const tabs = page.locator('button:has-text("Semua"), button:has-text("Prospecting"), button:has-text("Tender"), button:has-text("Negosiasi"), button:has-text("Menang"), button:has-text("Kalah")');
     const count = await tabs.count();
     expect(count).toBeGreaterThanOrEqual(1);
   });

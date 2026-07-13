@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { configNavItems, filterNavItems } from '@/routes/nav-items';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { authz } from '@/services/authz';
 
 export default function ConfigLayout({ children }: { children?: React.ReactNode }) {
-  const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const user = useAuthStore((s) => s.user);
@@ -33,9 +32,9 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
           {visibleItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <button
+              <Link
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                to={item.path}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs transition-all text-left cursor-pointer ${
                   isActive
                     ? 'bg-primary/10 text-primary font-bold'
@@ -46,7 +45,7 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
               >
                 <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
                 <span className="truncate">{item.label}</span>
-              </button>
+              </Link>
             );
           })}
         </nav>

@@ -1,12 +1,11 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { navItems, filterNavItems, type NavItem } from '@/routes/nav-items';
 import { useAuthStore } from '@/stores/authStore';
 import { useRbacStore } from '@/stores/rbacStore';
 import { authz } from '@/services/authz';
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
   pendingApprovalsCount: number;
@@ -42,8 +41,6 @@ function useSwipe(onClose?: () => void) {
 }
 
 export default function Sidebar({
-  activeTab,
-  setActiveTab,
   collapsed,
   setCollapsed,
   pendingApprovalsCount,
@@ -54,6 +51,7 @@ export default function Sidebar({
   mobile = false,
   onClose,
 }: SidebarProps) {
+  const location = useLocation();
   const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole, userPermissions), [userRole, userPermissions]);
   const swipeHandlers = useSwipe(onClose);
   const [showDeptSwitch, setShowDeptSwitch] = React.useState(false);
@@ -73,14 +71,9 @@ export default function Sidebar({
     };
   }, [mobile]);
 
-  const handleNavigate = (path: string) => {
-    setActiveTab(path);
-    if (mobile && onClose) onClose();
-  };
-
   const isPathActive = (itemPath: string): boolean => {
-    if (activeTab === itemPath) return true;
-    if (itemPath !== '/' && activeTab.startsWith(itemPath + '/')) {
+    if (location.pathname === itemPath) return true;
+    if (itemPath !== '/' && location.pathname.startsWith(itemPath + '/')) {
       const hasChildItem = navItems.some(
         (other) => other.path !== itemPath && other.path.startsWith(itemPath + '/'),
       );
@@ -93,16 +86,16 @@ export default function Sidebar({
   const navListRef = useRef<HTMLDivElement>(null);
 
   const onNavKeyDown = (e: React.KeyboardEvent) => {
-    const buttons = navListRef.current?.querySelectorAll<HTMLButtonElement>('button');
-    if (!buttons || buttons.length === 0) return;
-    const idx = Array.from(buttons).indexOf(document.activeElement as HTMLButtonElement);
+    const links = navListRef.current?.querySelectorAll<HTMLAnchorElement>('a');
+    if (!links || links.length === 0) return;
+    const idx = Array.from(links).indexOf(document.activeElement as HTMLAnchorElement);
     if (idx === -1) return;
     let next: number;
-    if (e.key === 'ArrowDown') next = (idx + 1) % buttons.length;
-    else if (e.key === 'ArrowUp') next = (idx - 1 + buttons.length) % buttons.length;
+    if (e.key === 'ArrowDown') next = (idx + 1) % links.length;
+    else if (e.key === 'ArrowUp') next = (idx - 1 + links.length) % links.length;
     else return;
     e.preventDefault();
-    buttons[next].focus();
+    links[next].focus();
   };
 
   const renderNavItem = (item: NavItem) => {
@@ -110,15 +103,17 @@ export default function Sidebar({
     const badge = item.label === 'Persetujuan' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
 
     return (
-      <button
+      <Link
         key={item.path}
-        onClick={() => handleNavigate(item.path)}
+        to={item.path}
+        onClick={() => { if (mobile && onClose) onClose(); }}
         className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
           isActive
             ? 'bg-primary-container/40 text-primary font-semibold border-primary'
             : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
         }`}
         aria-label={item.label}
+        aria-current={isActive ? 'page' : undefined}
       >
         <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
           {item.icon}
@@ -129,7 +124,7 @@ export default function Sidebar({
             {badge}
           </span>
         )}
-      </button>
+      </Link>
     );
   };
 

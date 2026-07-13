@@ -16,6 +16,8 @@ md-Kinetic-CRM/
 playwright-report/
 test-results/
 /playwright.config.ts
+/e2e/
+/bundle-report.html
 
 # IDE
 .vscode/

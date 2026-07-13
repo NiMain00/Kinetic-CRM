@@ -7,16 +7,18 @@ interface MasterDataGridProps {
   entries: MasterDataEntry[];
   getCount: (entry: MasterDataEntry) => number;
   getActiveCount?: (entry: MasterDataEntry) => number;
-  onCardClick: (entry: MasterDataEntry) => void;
   onResetSearch: () => void;
   searchQuery?: string;
 }
 
-function SectionCard({ entry, getCount, getActiveCount, onCardClick }: {
+function getEntryPath(entry: MasterDataEntry): string {
+  return entry.path || `/master-data/${entry.id}`;
+}
+
+function SectionCard({ entry, getCount, getActiveCount }: {
   entry: MasterDataEntry;
   getCount: (e: MasterDataEntry) => number;
   getActiveCount?: (e: MasterDataEntry) => number;
-  onCardClick: (e: MasterDataEntry) => void;
 }) {
   return (
     <MasterDataCard
@@ -24,17 +26,16 @@ function SectionCard({ entry, getCount, getActiveCount, onCardClick }: {
       config={entry}
       count={getCount(entry)}
       activeCount={getActiveCount ? getActiveCount(entry) : undefined}
-      onClick={() => onCardClick(entry)}
+      to={getEntryPath(entry)}
     />
   );
 }
 
-function SectionGroup({ label, entries, getCount, getActiveCount, onCardClick }: {
+function SectionGroup({ label, entries, getCount, getActiveCount }: {
   label: string;
   entries: MasterDataEntry[];
   getCount: (e: MasterDataEntry) => number;
   getActiveCount?: (e: MasterDataEntry) => number;
-  onCardClick: (e: MasterDataEntry) => void;
 }) {
   if (entries.length === 0) return null;
   const total = entries.reduce((sum, e) => sum + getCount(e), 0);
@@ -51,14 +52,14 @@ function SectionGroup({ label, entries, getCount, getActiveCount, onCardClick }:
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {entries.map((entry) => (
-          <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} onCardClick={onCardClick} />
+          <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} />
         ))}
       </div>
     </div>
   );
 }
 
-export default function MasterDataGrid({ entries, getCount, getActiveCount, onCardClick, onResetSearch, searchQuery }: MasterDataGridProps) {
+export default function MasterDataGrid({ entries, getCount, getActiveCount, onResetSearch, searchQuery }: MasterDataGridProps) {
   const isSearching = !!searchQuery;
 
   if (entries.length === 0) {
@@ -82,7 +83,7 @@ export default function MasterDataGrid({ entries, getCount, getActiveCount, onCa
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {entries.map((entry) => (
-          <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} onCardClick={onCardClick} />
+          <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} />
         ))}
       </div>
     );
@@ -106,7 +107,7 @@ export default function MasterDataGrid({ entries, getCount, getActiveCount, onCa
           </div>
           <div className={`grid grid-cols-1 sm:grid-cols-2 gap-3 ${frequent.length === 4 ? 'sm:grid-cols-4' : 'sm:grid-cols-3'}`}>
             {frequent.map((entry) => (
-              <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} onCardClick={onCardClick} />
+              <SectionCard key={entry.id} entry={entry} getCount={getCount} getActiveCount={getActiveCount} />
             ))}
           </div>
         </div>
@@ -116,14 +117,13 @@ export default function MasterDataGrid({ entries, getCount, getActiveCount, onCa
         const catEntries = cat.entries.filter((e) => !e.isFrequent || getCount(e) === 0);
         if (catEntries.length === 0) return null;
         return (
-          <SectionGroup
-            key={cat.key}
-            label={cat.label}
-            entries={catEntries}
-            getCount={getCount}
-            getActiveCount={getActiveCount}
-            onCardClick={onCardClick}
-          />
+            <SectionGroup
+              key={cat.key}
+              label={cat.label}
+              entries={catEntries}
+              getCount={getCount}
+              getActiveCount={getActiveCount}
+            />
         );
       })}
     </div>

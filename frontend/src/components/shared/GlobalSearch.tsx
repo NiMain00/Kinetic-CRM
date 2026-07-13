@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
@@ -31,7 +31,6 @@ export default function GlobalSearch({ className = '' }: { className?: string })
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebouncedValue(query, 300);
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
   const ref = useRef<HTMLDivElement>(null);
 
   const results = useMemo(() => {
@@ -78,8 +77,7 @@ export default function GlobalSearch({ className = '' }: { className?: string })
     setQuery(value);
   };
 
-  const handleSelect = (result: SearchResult) => {
-    navigate(result.path);
+  const handleClose = () => {
     setQuery('');
     setIsOpen(false);
   };
@@ -97,9 +95,10 @@ export default function GlobalSearch({ className = '' }: { className?: string })
         <div className="absolute top-full mt-2 left-0 right-0 bg-surface border border-border/60 rounded-2xl shadow-elevated z-50 overflow-hidden" role="listbox" aria-label="Hasil pencarian">
           {results.length > 0 ? (
             results.map((r, i) => (
-              <button
+              <Link
                 key={i}
-                onClick={() => handleSelect(r)}
+                to={r.path}
+                onClick={handleClose}
                 className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-surface-container transition-colors"
                 role="option"
                 aria-selected={false}
@@ -110,7 +109,7 @@ export default function GlobalSearch({ className = '' }: { className?: string })
                   <p className="text-[10px] text-outline">{r.category}</p>
                 </div>
                 <span className="text-[10px] text-outline hidden sm:inline">{r.path}</span>
-              </button>
+              </Link>
             ))
           ) : (
             <div className="px-4 py-6 text-center">

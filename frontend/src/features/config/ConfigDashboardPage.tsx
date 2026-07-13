@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { configNavItems, filterNavItems } from '@/routes/nav-items';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
@@ -34,7 +34,6 @@ const ICON_MAP: Record<string, string> = {
 };
 
 export default function ConfigDashboardPage() {
-  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const userRole = (user as { roleName?: string })?.roleName || '';
   const roles = useMasterDataStore((s) => s.roles);
@@ -57,9 +56,9 @@ export default function ConfigDashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visibleItems.map((item) => (
-          <button
+          <Link
             key={item.path}
-            onClick={() => navigate(item.path)}
+            to={item.path}
             className="bg-surface-container-lowest border border-border rounded-xl p-6 text-left hover:border-primary hover:shadow-md hover:-translate-y-0.5 transition-all group cursor-pointer"
           >
             <div className="flex items-start gap-4 flex-wrap">
@@ -75,7 +74,7 @@ export default function ConfigDashboardPage() {
                 </span>
               </div>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
     </div>

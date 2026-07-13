@@ -9,6 +9,8 @@ const RESERVED_ENTITIES = ['customers'];
 export class MasterController {
   constructor(private readonly service: MasterService) {}
 
+  // ── Generic CRUD (menangani juga inputConfigOptions via ENTITY_MAP) ─────
+
   @Get(':entity')
   list(@Param('entity') entity: string, @Query() params: any) {
     if (RESERVED_ENTITIES.includes(entity)) throw new BadRequestException(`Use dedicated endpoint for ${entity}`);

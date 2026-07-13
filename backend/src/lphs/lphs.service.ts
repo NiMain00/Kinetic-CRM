@@ -35,11 +35,12 @@ export class LphsService {
   }
 
   async reviewDepartment(projectId: string, approval: { departmentId: string; status: string; notes?: string; reviewerId: string }) {
-    await this.getByProject(projectId);
+    const lphs = await this.prisma.lphsSios.findUnique({ where: { projectId } });
+    if (!lphs) throw new NotFoundException('LPHS not found for this project');
     return this.prisma.lphsDepartmentReview.upsert({
-      where: { lphsSiosId_departmentId: { lphsSiosId: projectId, departmentId: approval.departmentId } },
+      where: { lphsSiosId_departmentId: { lphsSiosId: lphs.id, departmentId: approval.departmentId } },
       update: { approvalStatus: approval.status as any, comment: approval.notes, reviewedBy: approval.reviewerId, reviewedAt: new Date() },
-      create: { lphsSiosId: projectId, departmentId: approval.departmentId, approvalStatus: approval.status as any, comment: approval.notes, reviewedBy: approval.reviewerId, reviewedAt: new Date() },
+      create: { lphsSiosId: lphs.id, departmentId: approval.departmentId, approvalStatus: approval.status as any, comment: approval.notes, reviewedBy: approval.reviewerId, reviewedAt: new Date() },
     });
   }
 

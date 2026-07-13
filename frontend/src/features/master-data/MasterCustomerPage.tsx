@@ -1,75 +1,79 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Modal, Card } from '@/components/ui';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
-import { useMasterDataStore, type MasterCustomer } from '@/stores/masterDataStore';
+import { useCustomerStore } from '@/stores/customerStore';
+import type { Customer } from '@/stores/customerStore';
 
 const typeLabels: Record<string, string> = { swasta: 'Swasta', bumn: 'BUMN', pemerintah: 'Pemerintah', asing: 'Asing' };
 const typeVariants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple'> = { swasta: 'default', bumn: 'info', pemerintah: 'warning', asing: 'purple' };
 
 export default function MasterCustomerPage() {
   const navigate = useNavigate();
-  const customers = useMasterDataStore((s) => s.customers);
-  const addData = useMasterDataStore((s) => s.addData);
-  const updateData = useMasterDataStore((s) => s.updateData);
-  const deleteData = useMasterDataStore((s) => s.deleteData);
+  const { customers, fetchCustomers, loading, addCustomer, updateCustomer, deleteCustomer } = useCustomerStore();
+  useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<MasterCustomer | null>(null);
-  const [form, setForm] = useState<Partial<MasterCustomer>>({});
+  const [editing, setEditing] = useState<Customer | null>(null);
+  const [form, setForm] = useState<Partial<Customer>>({});
 
   const filtered = useMemo(() => customers.filter(c => {
     const q = debouncedSearch.toLowerCase();
-    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.pic_name.toLowerCase().includes(q);
+    const matchSearch = !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.pic_name || '').toLowerCase().includes(q);
     const matchType = typeFilter === 'all' || c.type === typeFilter;
     return matchSearch && matchType;
   }), [customers, debouncedSearch, typeFilter]);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ type: 'swasta', is_active: true });
+    setForm({ type: 'swasta', is_active: true } as any);
     setModalOpen(true);
   };
 
-  const openEdit = (c: MasterCustomer) => {
+  const openEdit = (c: Customer) => {
     setEditing(c);
     setForm({ ...c });
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.code || !form.pic_name) {
       toast.error('Nama, Kode, dan PIC wajib diisi');
       return;
     }
-    if (editing) {
-      updateData<MasterCustomer>('customers', editing.id, form);
-      toast.success('Customer berhasil diperbarui');
-    } else {
-      const id = `C-${String(customers.length + 1).padStart(3, '0')}`;
-      addData<MasterCustomer>('customers', { industry_id: null, address: '', province: '', npwp: '', notes: '', ...form, id } as MasterCustomer);
-      toast.success('Customer berhasil ditambahkan');
-    }
-    setModalOpen(false);
+    try {
+      if (editing) {
+        await updateCustomer(editing.id, form as any);
+        toast.success('Customer berhasil diperbarui');
+      } else {
+        await addCustomer(form as any);
+        toast.success('Customer berhasil ditambahkan');
+      }
+      setModalOpen(false);
+    } catch { toast.error('Gagal menyimpan customer'); }
   };
 
-  const toggleStatus = (id: string) => {
+  const toggleStatus = async (id: string) => {
     const current = customers.find(c => c.id === id);
     if (current) {
-      updateData<MasterCustomer>('customers', id, { is_active: !current.is_active });
+      await updateCustomer(id, { is_active: !current.is_active } as any);
       toast.success('Status customer diubah');
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const target = customers.find(c => c.id === id);
-    deleteData('customers', id);
+    await deleteCustomer(id);
     toast.success(`Customer ${target?.name} dihapus`);
   };
+
+  if (loading && customers.length === 0) {
+    return <div className="flex-1 flex items-center justify-center text-outline">Memuat data customer...</div>;
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">

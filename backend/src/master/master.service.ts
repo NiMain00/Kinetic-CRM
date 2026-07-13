@@ -21,7 +21,6 @@ const ENTITY_MAP: Record<string, string> = {
   notifTemplates: 'notificationTemplate',
   approvals: 'approval',
   approvalChains: 'approvalChain',
-  chatMessages: 'chatMessage',
   dealLineItems: 'dealLineItem',
   procurements: 'procurement',
   procurementItems: 'procurementItem',
@@ -30,6 +29,7 @@ const ENTITY_MAP: Record<string, string> = {
   rfqs: 'rfq',
   tasks: 'task',
   inputConfigGroups: 'inputConfigGroup',
+  inputConfigOptions: 'inputConfigOption',
 };
 
 @Injectable()
@@ -96,6 +96,12 @@ export class MasterService {
   async delete(entity: string, id: string) {
     const model = this.getModel(entity);
     await this.get(entity, id);
-    return model.update({ where: { id }, data: { deletedAt: new Date() } });
+    try {
+      // Soft delete untuk model yang punya kolom deletedAt
+      return await model.update({ where: { id }, data: { deletedAt: new Date() } });
+    } catch {
+      // Model tanpa deletedAt (mis. inputConfigOptions) → hard delete
+      return model.delete({ where: { id } });
+    }
   }
 }

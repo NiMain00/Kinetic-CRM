@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Modal, Button, Card } from '@/components/ui';
 import { PageContainer, PageHeader, StatusBadge, BulkActions, DuplicateDetectionPanel } from '@/components/shared';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -338,13 +338,13 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         />
                       )}
                       <div className="min-w-0">
-                        <div
-                          onClick={() => navigate(`/prospects/${row.id}`)}
+                        <Link
+                          to={`/prospects/${row.id}`}
                           title={row.name}
-                          className="font-label-sm text-on-surface font-medium text-sm cursor-pointer hover:text-primary transition-colors line-clamp-2"
+                          className="font-label-sm text-on-surface font-medium text-sm hover:text-primary transition-colors line-clamp-2"
                         >
                           {row.name}
-                        </div>
+                        </Link>
                         {row.description && (
                           <p className="text-xs text-secondary truncate" title={row.description}>{row.description}</p>
                         )}
@@ -505,13 +505,13 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       )}
                       <td className="px-6 py-4 font-mono-data text-mono-data text-outline">{globalIndex}</td>
                       <td className="px-6 py-4 overflow-hidden">
-                        <div
-                          onClick={() => navigate(`/prospects/${row.id}`)}
+                        <Link
+                          to={`/prospects/${row.id}`}
                           title={row.name}
-                          className="font-label-sm text-on-surface group-hover:text-primary transition-colors cursor-pointer font-medium line-clamp-2"
+                          className="font-label-sm text-on-surface group-hover:text-primary transition-colors font-medium line-clamp-2"
                         >
                           {row.name}
-                        </div>
+                        </Link>
                         {row.description && (
                           <p className="text-xs text-secondary truncate" title={row.description}>{row.description}</p>
                         )}

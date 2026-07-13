@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/stores/userStore';
 import type { UserRole } from '@/types/domain/users';
 import { usePermission } from '@/hooks/usePermission';
@@ -101,7 +101,7 @@ export default function UserListPage() {
                   paginated.map((u) => (
                     <tr key={u.id} onClick={() => navigate(`/users/${u.id}`)} className="hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors cursor-pointer">
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                        <Link to={`/users/${u.id}`} className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
                             {u.fullName.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
@@ -109,7 +109,7 @@ export default function UserListPage() {
                             <p className="font-semibold text-on-surface">{u.fullName}</p>
                             <p className="text-[10px] text-outline">@{u.username}</p>
                           </div>
-                        </div>
+                        </Link>
                       </td>
                       <td className="px-6 py-4 text-secondary">{u.email}</td>
                       <td className="px-6 py-4">
