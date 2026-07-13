@@ -1,8 +1,7 @@
 <div align="center">
   <h1>Kinetic CRM</h1>
 </div>
----
-## Daftar Isi
+Daftar Isi
 
 - [Fitur Utama](#fitur-utama)
 - [Tech Stack](#tech-stack)
