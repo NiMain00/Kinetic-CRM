@@ -30,7 +30,22 @@ const ENTITY_MAP: Record<string, string> = {
   tasks: 'task',
   inputConfigGroups: 'inputConfigGroup',
   inputConfigOptions: 'inputConfigOption',
+  entityRelations: 'entityRelation',
+  projectMembers: 'projectMember',
+  projectDepartments: 'projectDepartment',
+  rfqQuotes: 'rfqQuote',
+  supplierEvaluations: 'supplierEvaluation',
 };
+
+// Entities that support soft-delete (have a deletedAt column) — filtered out of list/get
+const SOFT_DELETE_ENTITIES = new Set([
+  'departments',
+  'users',
+  'competitors',
+  'questions',
+  'items',
+  'procurements',
+]);
 
 @Injectable()
 export class MasterService {
@@ -51,6 +66,7 @@ export class MasterService {
   async list(entity: string, params?: any) {
     const model = this.getModel(entity);
     const where: any = {};
+    if (SOFT_DELETE_ENTITIES.has(entity)) where.deletedAt = null;
     if (params?.search) {
       where.OR = [
         { name: { contains: params.search } },
@@ -77,7 +93,9 @@ export class MasterService {
 
   async get(entity: string, id: string) {
     const model = this.getModel(entity);
-    const record = await model.findUnique({ where: { id }, include: this.getInclude(entity) });
+    const where: any = { id };
+    if (SOFT_DELETE_ENTITIES.has(entity)) where.deletedAt = null;
+    const record = await model.findUnique({ where, include: this.getInclude(entity) });
     if (!record) throw new NotFoundException(`${entity} not found`);
     return record;
   }
@@ -97,11 +115,13 @@ export class MasterService {
     const model = this.getModel(entity);
     await this.get(entity, id);
     try {
-      // Soft delete untuk model yang punya kolom deletedAt
       return await model.update({ where: { id }, data: { deletedAt: new Date() } });
     } catch {
-      // Model tanpa deletedAt (mis. inputConfigOptions) → hard delete
-      return model.delete({ where: { id } });
+      try {
+        return await model.delete({ where: { id } });
+      } catch {
+        throw new NotFoundException(`${entity} not found`);
+      }
     }
   }
 }

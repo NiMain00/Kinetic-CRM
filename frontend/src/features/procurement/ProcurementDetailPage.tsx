@@ -9,16 +9,11 @@ import { PROCUREMENT_PHASES } from '@/types/domain/procurement';
 
 // Tab imports
 import OverviewTab from './tabs/OverviewTab';
-import PurchaseRequestTab from './tabs/PurchaseRequestTab';
 import VendorSelectionTab from './tabs/VendorSelectionTab';
-import PoTab from './tabs/PoTab';
 import DeliveryTab from './tabs/DeliveryTab';
 import ClosingTab from './tabs/ClosingTab';
 import TimelineTab from './tabs/TimelineTab';
 import DokumenTab from './tabs/DokumenTab';
-import SuppliersTab from './tabs/SuppliersTab';
-import RfqTab from './tabs/RfqTab';
-import ApprovalTab from './tabs/ApprovalTab';
 
 export default function ProcurementDetailView() {
   const { procurementId, tab: urlTab } = useParams<{
@@ -46,14 +41,9 @@ export default function ProcurementDetailView() {
   const tabs = useMemo(() => {
     const items = [
       { label: 'Overview', path: 'overview' },
-      { label: 'Purchase Request', path: 'purchase-request' },
       { label: 'Vendor Selection', path: 'vendor-selection' },
-      { label: 'PO', path: 'po' },
-      { label: 'RFQ', path: 'rfq' },
       { label: 'Delivery', path: 'delivery' },
       { label: 'Closing', path: 'closing' },
-      { label: 'Approval', path: 'approval' },
-      { label: 'Suppliers', path: 'suppliers' },
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
     ];
@@ -69,22 +59,7 @@ export default function ProcurementDetailView() {
   const isTerminal =
     procurement?.status === 'Closed' || procurement?.status === 'Cancelled';
 
-  const isTabLocked = (tabIndex: number) => {
-    const tab = tabs[tabIndex];
-    if (!tab) return true;
-    if (isTerminal) return false;
-    if (
-      tab.label === 'Timeline' ||
-      tab.label === 'Dokumen' ||
-      tab.label === 'Suppliers' ||
-      tab.label === 'RFQ' ||
-      tab.label === 'Delivery' ||
-      tab.label === 'Approval'
-    )
-      return false;
-    if (tab.label === 'Closing') return false;
-    return tabIndex > currentStepIndex + 1;
-  };
+  const isTabLocked = (_tabIndex?: number) => false;
 
   if (!procurement) {
     return (
@@ -212,7 +187,7 @@ export default function ProcurementDetailView() {
       <div className="flex-1 overflow-y-auto">
         {isOverview && (
           <PhaseStepper
-            steps={tabs.slice(0, 7)}
+            steps={tabs.slice(0, 4)}
             currentStepIndex={currentStepIndex}
             accessibleUpToIndex={
               isTerminal ? tabs.length - 1 : currentStepIndex + 1
@@ -275,25 +250,14 @@ export default function ProcurementDetailView() {
 
             {(!isTabLocked(activeTabIndex) || isOverview) && (
               <>
-                {activeTab === 'Purchase Request' && (
-                  <PurchaseRequestTab procurement={procurement} />
-                )}
                 {activeTab === 'Vendor Selection' && (
                   <VendorSelectionTab procurement={procurement} />
-                )}
-                {activeTab === 'PO' && <PoTab procurement={procurement} />}
-                {activeTab === 'RFQ' && (
-                  <RfqTab procurement={procurement} onShowNotification={(msg, type) => toast(msg, { icon: type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️' })} />
                 )}
                 {activeTab === 'Delivery' && (
                   <DeliveryTab procurement={procurement} />
                 )}
                 {activeTab === 'Closing' && (
                   <ClosingTab procurement={procurement} />
-                )}
-                {activeTab === 'Suppliers' && <SuppliersTab />}
-                {activeTab === 'Approval' && (
-                  <ApprovalTab procurement={procurement} onShowNotification={(msg, type) => toast(msg, { icon: type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️' })} />
                 )}
                 {activeTab === 'Timeline' && (
                   <TimelineTab procurement={procurement} />

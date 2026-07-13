@@ -101,9 +101,7 @@ export interface Rfq {
 
 export type ProcurementStatus =
   | 'Draft'
-  | 'Purchase Request'
   | 'Vendor Selection'
-  | 'PO Process'
   | 'Delivery'
   | 'Progress'
   | 'Closed'
@@ -132,21 +130,19 @@ export interface Procurement {
   createdByUserId?: string;
   updatedAt?: string;
 
-  // Purchase Request
+  // Legacy fields (PR / PO data)
   prNumber?: string;
   prDate?: string;
   prNotes?: string;
+  poNumber?: string;
+  poDate?: string;
+  poValue?: number;
+  poNotes?: string;
 
   // Vendor Selection
   selectedVendor?: string;
   vendorPic?: string;
   vendorContact?: string;
-
-  // Purchase Order
-  poNumber?: string;
-  poDate?: string;
-  poValue?: number;
-  poNotes?: string;
 
   // Delivery / Tracking
   targetStartDate?: string;
@@ -173,12 +169,10 @@ export interface Procurement {
 
 export const PROCUREMENT_PHASES = [
   { id: 'PC-01', status: 'Draft',            phase: 'Overview',          order: 1, isActive: true },
-  { id: 'PC-02', status: 'Purchase Request', phase: 'Purchase Request',  order: 2, isActive: true },
-  { id: 'PC-03', status: 'Vendor Selection', phase: 'Vendor Selection',  order: 3, isActive: true },
-  { id: 'PC-04', status: 'PO Process',       phase: 'PO',                order: 4, isActive: true },
-  { id: 'PC-05', status: 'Delivery',         phase: 'Delivery',          order: 5, isActive: true },
-  { id: 'PC-06', status: 'Closed',           phase: 'Closing',           order: 6, isActive: true },
-  { id: 'PC-07', status: 'Cancelled',        phase: 'Selesai',           order: 7, isActive: true },
+  { id: 'PC-02', status: 'Vendor Selection', phase: 'Vendor Selection',  order: 2, isActive: true },
+  { id: 'PC-03', status: 'Delivery',         phase: 'Delivery',          order: 3, isActive: true },
+  { id: 'PC-04', status: 'Closed',           phase: 'Closing',           order: 4, isActive: true },
+  { id: 'PC-05', status: 'Cancelled',        phase: 'Selesai',           order: 5, isActive: true },
 ];
 
 export function generateProcurementCode(index: number): string {

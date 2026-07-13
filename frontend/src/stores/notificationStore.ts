@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { notificationService } from '@/services/notifications';
+import { useAuthStore } from './authStore';
 
 export interface Notification {
   id: string;
@@ -62,7 +63,7 @@ export const useNotificationStore = create<NotificationState>()(
         }
       },
 
-      addNotification: (n) => {
+      addNotification: async (n) => {
         const config = TYPE_CONFIG[n.type] || TYPE_CONFIG.system;
         const notification: Notification = {
           ...n,
@@ -72,14 +73,25 @@ export const useNotificationStore = create<NotificationState>()(
           icon: n.icon || config.icon,
           color: n.color || config.color,
         };
+        try {
+          const { id, read, createdAt, ...rest } = notification;
+          const userId = useAuthStore.getState().user?.id;
+          await notificationService.create({ ...rest, recipientUserId: userId } as any);
+        } catch (err) {
+          console.error('[notificationStore] addNotification API failed:', err);
+        }
         set((s) => ({
           notifications: [notification, ...s.notifications],
           unreadCount: s.unreadCount + 1,
         }));
       },
 
-      markAsRead: (id) => {
-        notificationService.markAsRead(id).catch(() => {});
+      markAsRead: async (id) => {
+        try {
+          await notificationService.markAsRead(id);
+        } catch (err) {
+          console.error('[notificationStore] markAsRead API failed:', err);
+        }
         set((s) => {
           const updated = s.notifications.map((n) =>
             n.id === id ? { ...n, read: true } : n
@@ -91,24 +103,44 @@ export const useNotificationStore = create<NotificationState>()(
         });
       },
 
-      markAllAsRead: () => {
-        notificationService.markAllAsRead().catch(() => {});
+      markAllAsRead: async () => {
+        try {
+          await notificationService.markAllAsRead();
+        } catch (err) {
+          console.error('[notificationStore] markAllAsRead API failed:', err);
+        }
         set((s) => ({
           notifications: s.notifications.map((n) => ({ ...n, read: true })),
           unreadCount: 0,
         }));
       },
 
-      removeNotification: (id) =>
+      removeNotification: async (id) => {
+        try {
+          await notificationService.archive(id);
+        } catch (err) {
+          console.error('[notificationStore] removeNotification API failed:', err);
+        }
         set((s) => {
           const updated = s.notifications.filter((n) => n.id !== id);
           return {
             notifications: updated,
             unreadCount: updated.filter((n) => !n.read).length,
           };
-        }),
+        });
+      },
 
-      clearAll: () => set({ notifications: [], unreadCount: 0 }),
+      clearAll: async () => {
+        try {
+          const ids = get().notifications.map((n) => n.id);
+          for (const id of ids) {
+            await notificationService.archive(id).catch(() => {});
+          }
+        } catch (err) {
+          console.error('[notificationStore] clearAll API failed:', err);
+        }
+        set({ notifications: [], unreadCount: 0 });
+      },
     }),
     {
       name: 'kinetic-notifications',

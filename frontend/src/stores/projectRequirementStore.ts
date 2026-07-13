@@ -22,8 +22,12 @@ export const useProjectRequirementStore = create<ProjectRequirementState>()(
       requirements: [],
       loading: false,
 
-      setRequirements: (projectId, items) => {
-        masterDataService.create('projectRequirements', { items, projectId } as any).catch(() => {});
+      setRequirements: async (projectId, items) => {
+        try {
+          await masterDataService.create('projectRequirements', { items, projectId } as any);
+        } catch (err) {
+          console.error('[projectRequirementStore] setRequirements API failed:', err);
+        }
         set((s) => ({
           requirements: [
             ...s.requirements.filter((r) => r.projectId !== projectId),
@@ -32,13 +36,23 @@ export const useProjectRequirementStore = create<ProjectRequirementState>()(
         }));
       },
 
-      addRequirement: (item) => {
-        masterDataService.create('projectRequirements', item as any).catch(() => {});
+      addRequirement: async (item) => {
+        try {
+          const res = await masterDataService.create('projectRequirements', item as any);
+          const created = (res.data?.data || res.data) as any;
+          if (created?.id) item = { ...item, id: created.id };
+        } catch (err) {
+          console.error('[projectRequirementStore] addRequirement API failed:', err);
+        }
         set((s) => ({ requirements: [...s.requirements, item] }));
       },
 
-      updateRequirement: (id, data) => {
-        masterDataService.update('projectRequirements', id, data as any).catch(() => {});
+      updateRequirement: async (id, data) => {
+        try {
+          await masterDataService.update('projectRequirements', id, data as any);
+        } catch (err) {
+          console.error('[projectRequirementStore] updateRequirement API failed:', err);
+        }
         set((s) => ({
           requirements: s.requirements.map((r) =>
             r.id === id ? { ...r, ...data } : r,
@@ -46,8 +60,12 @@ export const useProjectRequirementStore = create<ProjectRequirementState>()(
         }));
       },
 
-      removeRequirement: (id) => {
-        masterDataService.delete('projectRequirements', id).catch(() => {});
+      removeRequirement: async (id) => {
+        try {
+          await masterDataService.delete('projectRequirements', id);
+        } catch (err) {
+          console.error('[projectRequirementStore] removeRequirement API failed:', err);
+        }
         set((s) => ({
           requirements: s.requirements.filter((r) => r.id !== id),
         }));
@@ -68,7 +86,20 @@ export const useProjectRequirementStore = create<ProjectRequirementState>()(
       getByProjectId: (projectId) =>
         get().requirements.filter((r) => r.projectId === projectId),
 
-      incrementProcured: (id, qty) =>
+      incrementProcured: async (id, qty) => {
+        try {
+          const req = get().requirements.find((r) => r.id === id);
+          if (req) {
+            const newProcured = req.quantityProcured + qty;
+            const newStatus = newProcured >= req.quantityRequired ? 'fully_submitted' : newProcured > 0 ? 'partial' : 'none';
+            await masterDataService.update('projectRequirements', id, {
+              quantityProcured: newProcured,
+              procurementStatus: newStatus,
+            } as any);
+          }
+        } catch (err) {
+          console.error('[projectRequirementStore] incrementProcured API failed:', err);
+        }
         set((s) => ({
           requirements: s.requirements.map((r) => {
             if (r.id !== id) return r;
@@ -81,14 +112,26 @@ export const useProjectRequirementStore = create<ProjectRequirementState>()(
                   : 'none';
             return { ...r, quantityProcured: newProcured, procurementStatus: newStatus };
           }),
-        })),
+        }));
+      },
 
-      incrementUsed: (id, qty) =>
+      incrementUsed: async (id, qty) => {
+        try {
+          const req = get().requirements.find((r) => r.id === id);
+          if (req) {
+            await masterDataService.update('projectRequirements', id, {
+              quantityUsed: req.quantityUsed + qty,
+            } as any);
+          }
+        } catch (err) {
+          console.error('[projectRequirementStore] incrementUsed API failed:', err);
+        }
         set((s) => ({
           requirements: s.requirements.map((r) =>
             r.id === id ? { ...r, quantityUsed: r.quantityUsed + qty } : r,
           ),
-        })),
+        }));
+      },
     }),
     {
       name: 'kinetic-project-requirements',

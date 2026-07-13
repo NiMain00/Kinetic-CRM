@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Rfq, RfqQuote } from '@/types/domain/procurement';
 import { masterDataService } from '@/services/master-data';
+import apiClient from '@/services/api-client';
 
 interface RfqState {
   entities: Record<string, Rfq>;
@@ -43,8 +44,12 @@ export const useRfqStore = create<RfqState>()(
       rfqs: [],
       loading: false,
 
-      addRfq: (rfq) => {
-        masterDataService.create('rfqs', rfq as any).catch(() => {});
+      addRfq: async (rfq) => {
+        try {
+          await masterDataService.create('rfqs', rfq as any);
+        } catch (err) {
+          console.error('[rfqStore] addRfq API failed:', err);
+        }
         set((state) => {
           const entities = { ...state.entities, [rfq.id]: rfq };
           const ids = [...state.ids, rfq.id];
@@ -52,8 +57,12 @@ export const useRfqStore = create<RfqState>()(
         });
       },
 
-      updateRfq: (id, data) => {
-        masterDataService.update('rfqs', id, data as any).catch(() => {});
+      updateRfq: async (id, data) => {
+        try {
+          await masterDataService.update('rfqs', id, data as any);
+        } catch (err) {
+          console.error('[rfqStore] updateRfq API failed:', err);
+        }
         set((state) => {
           const existing = state.entities[id];
           if (!existing) return state;
@@ -62,8 +71,12 @@ export const useRfqStore = create<RfqState>()(
         });
       },
 
-      deleteRfq: (id) => {
-        masterDataService.delete('rfqs', id).catch(() => {});
+      deleteRfq: async (id) => {
+        try {
+          await masterDataService.delete('rfqs', id);
+        } catch (err) {
+          console.error('[rfqStore] deleteRfq API failed:', err);
+        }
         set((state) => {
           const entities = { ...state.entities };
           delete entities[id];
@@ -99,7 +112,16 @@ export const useRfqStore = create<RfqState>()(
         );
       },
 
-      addQuote: (rfqId, quote) =>
+      addQuote: async (rfqId, quote) => {
+        try {
+          const res = await apiClient.post('/master/rfqQuotes', { rfqId, ...quote } as any);
+          const created = res.data?.data || res.data;
+          if (created?.id) {
+            quote = { ...quote, id: created.id };
+          }
+        } catch (err) {
+          console.error('[rfqStore] addQuote API failed:', err);
+        }
         set((state) => {
           const existing = state.entities[rfqId];
           if (!existing) return state;
@@ -112,9 +134,18 @@ export const useRfqStore = create<RfqState>()(
             },
           };
           return { entities, rfqs: deriveRfqs(entities, state.ids) };
-        }),
+        });
+      },
 
-      submitRfq: (id) =>
+      submitRfq: async (id) => {
+        try {
+          await masterDataService.update('rfqs', id, {
+            status: 'sent',
+            sentAt: new Date().toISOString(),
+          } as any);
+        } catch (err) {
+          console.error('[rfqStore] submitRfq API failed:', err);
+        }
         set((state) => {
           const existing = state.entities[id];
           if (!existing) return state;
@@ -127,9 +158,19 @@ export const useRfqStore = create<RfqState>()(
             },
           };
           return { entities, rfqs: deriveRfqs(entities, state.ids) };
-        }),
+        });
+      },
 
-      selectQuote: (rfqId, quoteId) =>
+      selectQuote: async (rfqId, quoteId) => {
+        try {
+          await masterDataService.update('rfqs', rfqId, {
+            selectedQuoteId: quoteId,
+            status: 'completed',
+            completedAt: new Date().toISOString(),
+          } as any);
+        } catch (err) {
+          console.error('[rfqStore] selectQuote API failed:', err);
+        }
         set((state) => {
           const existing = state.entities[rfqId];
           if (!existing) return state;
@@ -147,7 +188,8 @@ export const useRfqStore = create<RfqState>()(
             },
           };
           return { entities, rfqs: deriveRfqs(entities, state.ids) };
-        }),
+        });
+      },
     }),
     {
       name: 'kinetic-rfqs',

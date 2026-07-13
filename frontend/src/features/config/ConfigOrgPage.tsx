@@ -39,6 +39,11 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
   const addConfigData = useConfigStore((s) => s.addConfigData);
   const updateConfigData = useConfigStore((s) => s.updateConfigData);
   const deleteConfigData = useConfigStore((s) => s.deleteConfigData);
+  const fetchOrgUnits = useConfigStore((s) => s.fetchOrgUnits);
+
+  useEffect(() => {
+    fetchOrgUnits();
+  }, [fetchOrgUnits]);
 
   const [selectedId, setSelectedId] = useState<string>('');
   const [formName, setFormName] = useState('');
@@ -102,19 +107,23 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
     setFormActive(unit.isActive);
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (!selectedUnit) return;
-    updateConfigData('orgUnits', selectedUnit.id, {
-      name: formName,
-      code: formCode,
-      city: formCity || undefined,
-      province: formProvince || undefined,
-      isActive: formActive,
-    });
-    onShowNotification(`Konfigurasi unit ${formName} berhasil disimpan!`, 'success');
+    try {
+      await updateConfigData('orgUnits', selectedUnit.id, {
+        name: formName,
+        code: formCode,
+        city: formCity || undefined,
+        province: formProvince || undefined,
+        isActive: formActive,
+      });
+      onShowNotification(`Konfigurasi unit ${formName} berhasil disimpan!`, 'success');
+    } catch {
+      onShowNotification('Gagal menyimpan unit. Silakan coba lagi.', 'error');
+    }
   };
 
-  const handleAddUnit = () => {
+  const handleAddUnit = async () => {
     if (!addName || !addCode) {
       onShowNotification('Nama dan kode unit wajib diisi.', 'error');
       return;
@@ -133,13 +142,16 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
       city: addCity || undefined,
       province: addProvince || undefined,
     };
-    addConfigData('orgUnits', newUnit);
-    setAddModalOpen(false);
-    setSelectedId(newUnit.id);
-    onShowNotification(`Unit ${addName} berhasil ditambahkan!`, 'success');
+    try {
+      await addConfigData('orgUnits', newUnit);
+      setAddModalOpen(false);
+      onShowNotification(`Unit ${addName} berhasil ditambahkan!`, 'success');
+    } catch {
+      onShowNotification('Gagal menambahkan unit. Silakan coba lagi.', 'error');
+    }
   };
 
-  const handleDeleteUnit = () => {
+  const handleDeleteUnit = async () => {
     if (!deleteConfirmId) return;
     // Cek apakah unit memiliki anak
     const hasChildren = orgUnits.some((u) => u.parentId === deleteConfirmId);
@@ -148,10 +160,14 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
       setDeleteConfirmId(null);
       return;
     }
-    deleteConfigData('orgUnits', deleteConfirmId);
-    setDeleteConfirmId(null);
-    setSelectedId('');
-    onShowNotification('Unit berhasil dihapus.', 'success');
+    try {
+      await deleteConfigData('orgUnits', deleteConfirmId);
+      setDeleteConfirmId(null);
+      setSelectedId('');
+      onShowNotification('Unit berhasil dihapus.', 'success');
+    } catch {
+      onShowNotification('Gagal menghapus unit. Silakan coba lagi.', 'error');
+    }
   };
 
   const renderTreeNode = (

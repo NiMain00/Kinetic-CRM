@@ -66,13 +66,18 @@ export default function ProjectListPage() {
   const { isStaffOnly, userId } = useOwnerFilter();
   const projectPhases = useConfigStore((s) => s.projectPhases);
   const fetchProjects = useProjectStore((s) => s.fetchProjects);
+  const fetchProjectPhases = useConfigStore((s) => s.fetchProjectPhases);
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
   useEffect(() => { fetchProjects(getTabFetchParams(activeTab)); }, [activeTab, fetchProjects]);
+  useEffect(() => { fetchProjectPhases(); }, [fetchProjectPhases]);
 
   // Derive progress from project status for display (mirrors ProjectDetailPage logic)
   const deriveProgress = useCallback((status: string) => {
-    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    if (status === 'Selesai' || status === 'Kalah') return 100;
+    const active = projectPhases
+      .filter((p) => p.isActive && p.status !== 'Kalah')
+      .sort((a, b) => a.order - b.order);
     const idx = active.findIndex((p) => p.status === status);
     if (idx >= 0 && active.length > 1) {
       return Math.round((idx / (active.length - 1)) * 100);
@@ -143,9 +148,19 @@ export default function ProjectListPage() {
     setCurrentPage(1);
   };
 
-  const handleBatchDelete = useCallback(() => {
-    selectedRows.forEach(id => deleteProject(id));
-    toast.success(`${selectedRows.size} proyek berhasil dihapus.`);
+  const handleBatchDelete = useCallback(async () => {
+    let successCount = 0;
+    let failCount = 0;
+    for (const id of selectedRows) {
+      try {
+        await deleteProject(id);
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    if (successCount > 0) toast.success(`${successCount} proyek berhasil dihapus.`);
+    if (failCount > 0) toast.error(`${failCount} proyek gagal dihapus.`);
     setSelectedRows(new Set());
     setSelectionMode(false);
   }, [selectedRows, deleteProject]);
@@ -528,11 +543,15 @@ export default function ProjectListPage() {
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
-            <Button variant="danger" size="md" onClick={() => {
+            <Button variant="danger" size="md" onClick={async () => {
               if (deleteTarget) {
-                deleteProject(deleteTarget.id);
-                toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
-                setDeleteTarget(null);
+                try {
+                  await deleteProject(deleteTarget.id);
+                  toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
+                  setDeleteTarget(null);
+                } catch (err: any) {
+                  toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus proyek');
+                }
               }
             }}>Hapus</Button>
           </>

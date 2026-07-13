@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Modal } from '@/components/ui';
 import { PageContainer, PageHeader } from '@/components/shared';
@@ -40,8 +40,13 @@ export default function ApprovalInboxView({
 }: ApprovalInboxViewProps) {
   const navigate = useNavigate();
   const { approvals, approvalHistory, approveItem, rejectItem } = useApprovalStore();
-  const { prospects, updateProspect } = useProspectStore();
-  const { projects, updateProject } = useProjectStore();
+  const { prospects, updateProspect, fetchProspects } = useProspectStore();
+  const { projects, updateProject, fetchProjects } = useProjectStore();
+
+  useEffect(() => {
+    fetchProjects();
+    fetchProspects();
+  }, [fetchProjects, fetchProspects]);
   const slaConfigs = useSlaConfigs();
   const addNotification = useNotificationStore((s) => s.addNotification);
   const NEXT_PHASE_MAP = useNextPhaseMap();
@@ -61,7 +66,85 @@ export default function ApprovalInboxView({
   );
   const currentUserId = user?.id || '';
 
-  const userApprovals = user?.id ? approvals.filter((a) => a.assigneeUserId === user.id) : [];
+  // Derive pending approvals from live entity states. The `Approval` table is
+  // never populated by submit flows, so relying on it leaves the inbox empty.
+  // We build the pending list from prospects/projects that are actually waiting
+  // for review, then merge with any locally-created approval items.
+  const derivedApprovals = useMemo<ApprovalItem[]>(() => {
+    const items: ApprovalItem[] = [];
+    prospects.forEach((p) => {
+      if (p.status === 'Waiting Supervisor') {
+        items.push({
+          id: `derived-prospect-${p.id}`,
+          ref: `PR-${p.id.slice(0, 6).toUpperCase()}`,
+          name: p.name,
+          branch: p.branch ?? '',
+          waitingSince: p.date ?? new Date().toISOString(),
+          slaStatus: 'Normal',
+          type: 'Prospek',
+          resourceType: 'prospect',
+          resourceId: p.id,
+          client: p.client,
+          entityId: p.id,
+          entityType: 'prospect',
+        });
+      }
+    });
+    projects.forEach((pr) => {
+      if (pr.status === 'Review RKS') {
+        items.push({
+          id: `derived-rks-${pr.id}`,
+          ref: pr.code || `RKS-${pr.id.slice(0, 6).toUpperCase()}`,
+          name: pr.name,
+          branch: pr.branch ?? '',
+          waitingSince: pr.date ?? new Date().toISOString(),
+          slaStatus: 'Normal',
+          type: 'RKS',
+          resourceType: 'rks',
+          resourceId: pr.id,
+          client: pr.client,
+          entityId: pr.id,
+          entityType: 'project',
+        });
+      } else if (
+        pr.status === 'LPHS/SIOS' &&
+        pr.lphs &&
+        (pr.lphs.overallStatus === 'dept_review' || pr.lphs.overallStatus === 'mgmt_review')
+      ) {
+        items.push({
+          id: `derived-lphs-${pr.id}`,
+          ref: pr.code || `LPHS-${pr.id.slice(0, 6).toUpperCase()}`,
+          name: pr.name,
+          branch: pr.branch ?? '',
+          waitingSince: pr.lphs.submittedAt ?? pr.date ?? new Date().toISOString(),
+          slaStatus: 'Normal',
+          type: 'LPHS',
+          resourceType: 'lphs_sios',
+          resourceId: pr.id,
+          client: pr.client,
+          entityId: pr.id,
+          entityType: 'project',
+        });
+      }
+    });
+    return items;
+  }, [prospects, projects]);
+
+  const combinedApprovals = useMemo<ApprovalItem[]>(() => {
+    const map = new Map<string, ApprovalItem>();
+    derivedApprovals.forEach((a) => map.set(a.entityId ?? a.id, a));
+    approvals.forEach((a) => {
+      const key = a.entityId ?? a.id;
+      if (!map.has(key)) map.set(key, a);
+    });
+    return Array.from(map.values());
+  }, [derivedApprovals, approvals]);
+
+  // Show derived (role/department) approvals to everyone; keep per-user
+  // filtering only for explicitly assigned store items.
+  const userApprovals = user?.id
+    ? combinedApprovals.filter((a) => !a.assigneeUserId || a.assigneeUserId === user.id)
+    : combinedApprovals;
   const userHistory = user?.id ? approvalHistory.filter((a) => a.assigneeUserId === user.id) : [];
 
   const computeSlaStatus = (waitingSince: string, type: string): 'Overdue' | 'Near Deadline' | 'Normal' => {
@@ -85,23 +168,32 @@ export default function ApprovalInboxView({
     return {};
   };
 
+  const VALID_TYPES = new Set(['Prospek', 'RKS', 'LPHS']);
+
+  const validApprovals = useMemo(
+    () =>
+      userApprovals.filter((a) => {
+        if (!VALID_TYPES.has(a.type)) return false;
+        if (a.entityType === 'prospect' && a.entityId) {
+          return prospects.some((p) => p.id === a.entityId);
+        }
+        if (a.entityType === 'project' && a.entityId) {
+          return projects.some((p) => p.id === a.entityId);
+        }
+        return true;
+      }),
+    [userApprovals, prospects, projects],
+  );
+
   const filteredApprovals = useMemo(() => {
-    const validApprovals = userApprovals.filter((a) => {
-      if (a.entityType === 'prospect' && a.entityId) {
-        return prospects.some((p) => p.id === a.entityId);
-      }
-      if (a.entityType === 'project' && a.entityId) {
-        return projects.some((p) => p.id === a.entityId);
-      }
-      return true;
-    });
-    const typeFiltered = filterType === 'Semua' ? validApprovals : validApprovals.filter((a) => a.type === filterType);
+    const validApprovalsLocal = validApprovals;
+    const typeFiltered = filterType === 'Semua' ? validApprovalsLocal : validApprovalsLocal.filter((a) => a.type === filterType);
     if (!debouncedSearch.trim()) return typeFiltered;
     const q = debouncedSearch.toLowerCase();
     return typeFiltered.filter(
       (a) => a.name.toLowerCase().includes(q) || a.ref.toLowerCase().includes(q) || a.client?.toLowerCase().includes(q),
     );
-  }, [userApprovals, filterType, debouncedSearch, prospects, projects]);
+  }, [validApprovals, filterType, debouncedSearch]);
 
   const handleReview = (item: ApprovalItem) => {
     if (item.entityType === 'prospect' && item.entityId) {
@@ -164,7 +256,7 @@ export default function ApprovalInboxView({
     } else if (item.entityType === 'project' && item.entityId) {
       const project = projects.find(p => p.id === item.entityId);
       if (project) {
-        updateProject(item.entityId, { status: 'Revision' });
+        updateProject(item.entityId, { status: 'Revisi' });
         onShowNotification(`Proyek "${project.name}" dikembalikan untuk revisi.`, 'error');
       }
     }
@@ -358,7 +450,7 @@ export default function ApprovalInboxView({
           <div className="flex items-center gap-4">
             <span>Approval Inbox</span>
             <span className="bg-primary text-on-primary px-3 py-0.5 rounded-full font-label-sm text-xs font-semibold">
-              {userApprovals.length} Pending
+              {validApprovals.length} Pending
             </span>
           </div>
         }
@@ -369,7 +461,7 @@ export default function ApprovalInboxView({
         <Card padding="sm">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Total Incoming</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{validApprovals.length}</span>
             <span className="text-success font-label-sm text-sm font-semibold">Active</span>
           </div>
         </Card>
@@ -377,7 +469,7 @@ export default function ApprovalInboxView({
         <Card padding="sm" className="border-l-4 border-l-danger">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-danger">{userApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-danger">{validApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Requires action</span>
           </div>
         </Card>
@@ -385,7 +477,7 @@ export default function ApprovalInboxView({
         <Card padding="sm" className="border-l-4 border-l-gold">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-warning">{userApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
+            <span className="text-2xl sm:text-3xl font-bold text-warning">{validApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
             <span className="text-outline font-caption-xs text-xs text-secondary">Next 24 hours</span>
           </div>
         </Card>
@@ -393,7 +485,7 @@ export default function ApprovalInboxView({
         <Card padding="sm">
           <p className="text-on-surface-variant font-caption-xs text-xs uppercase tracking-wider">Rata-rata Waktu Tunggu</p>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{userApprovals.length > 0 ? (userApprovals.reduce((s, a) => s + (Date.now() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / userApprovals.length).toFixed(1) : userHistory.length > 0 ? (userHistory.reduce((s, a) => s + (new Date(a.resolvedAt).getTime() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / userHistory.length).toFixed(1) : '0.0'}h</span>
+            <span className="text-2xl sm:text-3xl font-bold text-on-surface">{validApprovals.length > 0 ? (validApprovals.reduce((s, a) => s + (Date.now() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / validApprovals.length).toFixed(1) : userHistory.length > 0 ? (userHistory.reduce((s, a) => s + (new Date(a.resolvedAt).getTime() - new Date(a.waitingSince).getTime()) / 3_600_000, 0) / userHistory.length).toFixed(1) : '0.0'}h</span>
             <span className="text-on-surface-variant font-label-sm text-sm font-semibold">Rata-rata</span>
           </div>
         </Card>

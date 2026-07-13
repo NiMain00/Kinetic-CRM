@@ -21,8 +21,12 @@ export const useDealLineItemStore = create<DealLineItemState>()(
       lines: [],
       loading: false,
 
-      setLines: (dealId, items) => {
-        masterDataService.create('dealLineItems', { items, dealId } as any).catch(() => {});
+      setLines: async (dealId, items) => {
+        try {
+          await masterDataService.create('dealLineItems', { items, dealId } as any);
+        } catch (err) {
+          console.error('[dealLineItemStore] setLines API failed:', err);
+        }
         set((s) => ({
           lines: [
             ...s.lines.filter((l) => l.dealId !== dealId),
@@ -31,20 +35,32 @@ export const useDealLineItemStore = create<DealLineItemState>()(
         }));
       },
 
-      addLine: (line) => {
-        masterDataService.create('dealLineItems', line as any).catch(() => {});
+      addLine: async (line) => {
+        try {
+          await masterDataService.create('dealLineItems', line as any);
+        } catch (err) {
+          console.error('[dealLineItemStore] addLine API failed:', err);
+        }
         set((s) => ({ lines: [...s.lines, line] }));
       },
 
-      updateLine: (id, data) => {
-        masterDataService.update('dealLineItems', id, data as any).catch(() => {});
+      updateLine: async (id, data) => {
+        try {
+          await masterDataService.update('dealLineItems', id, data as any);
+        } catch (err) {
+          console.error('[dealLineItemStore] updateLine API failed:', err);
+        }
         set((s) => ({
           lines: s.lines.map((l) => (l.id === id ? { ...l, ...data } : l)),
         }));
       },
 
-      removeLine: (id) => {
-        masterDataService.delete('dealLineItems', id).catch(() => {});
+      removeLine: async (id) => {
+        try {
+          await masterDataService.delete('dealLineItems', id);
+        } catch (err) {
+          console.error('[dealLineItemStore] removeLine API failed:', err);
+        }
         set((s) => ({ lines: s.lines.filter((l) => l.id !== id) }));
       },
 

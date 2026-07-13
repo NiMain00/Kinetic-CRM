@@ -28,7 +28,7 @@ export default function VendorSelectionTab({ procurement }: Props) {
   const handleSave = () => {
     if (!procurement.id) return;
     updateProcurement(procurement.id, { selectedVendor, vendorPic, vendorContact });
-    if (procurement.status === 'Purchase Request') {
+    if (procurement.status === 'Draft') {
       updateProcurement(procurement.id, {
         status: 'Vendor Selection',
         phase: 'Vendor Selection',

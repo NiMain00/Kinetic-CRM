@@ -195,7 +195,7 @@ export const useProcurementStore = create<ProcurementState>()(
     }),
     {
       name: 'kinetic-procurement',
-      version: 3,
+      version: 4,
       merge: (persisted: unknown, current: ProcurementState) => {
         if (!persisted || typeof persisted !== 'object') return current;
         const p = persisted as Partial<ProcurementState>;
@@ -230,6 +230,25 @@ export const useProcurementStore = create<ProcurementState>()(
               (evt: any) => !projectKeywords.some((kw) => (evt.title || '').toLowerCase().includes(kw.toLowerCase()))
             );
             entities[key] = { ...old, timeline: filtered.length > 0 ? filtered : [] };
+          }
+          return { ...current, entities, procurements: entities ? deriveProcurements(entities, current.ids || []) : [] };
+        }
+
+        // v3→v4: konversi status lama yang sudah dihapus
+        if (version < 4 && current.entities) {
+          const entities = { ...current.entities };
+          for (const key of Object.keys(entities)) {
+            const old = entities[key];
+            let newStatus = old.status;
+            let newPhase = old.phase;
+            if (old.status === 'Purchase Request') {
+              newStatus = 'Vendor Selection';
+              newPhase = 'Vendor Selection';
+            } else if (old.status === 'PO Process') {
+              newStatus = 'Delivery';
+              newPhase = 'Delivery';
+            }
+            entities[key] = { ...old, status: newStatus, phase: newPhase };
           }
           return { ...current, entities, procurements: entities ? deriveProcurements(entities, current.ids || []) : [] };
         }

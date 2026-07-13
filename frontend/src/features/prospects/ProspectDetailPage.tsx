@@ -544,7 +544,7 @@ export default function ProspectDetailPage() {
 
             {/* Right: Value + Actions */}
             <div className="flex flex-col items-end gap-3 shrink-0 w-full lg:w-auto">
-              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 w-full lg:min-w-[210px] text-right">
+              <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 w-full lg:min-w-[210px] text-center">
                 <p className="text-xs text-secondary mb-1">Nilai Prospek</p>
                 <p className="text-2xl font-extrabold text-primary">{formatCurrencyShort(prospect.estimatedValue || 0)}</p>
                 {prospect.estimatedValue !== undefined && (

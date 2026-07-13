@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Button, Modal } from '@/components/ui';
 import { useRbacStore } from '@/stores/rbacStore';
@@ -20,35 +20,28 @@ const ACCESS_LABELS: Record<string, string> = {
   write: 'Write',
 };
 
-const MODULE_GROUPS: { name: string; perms: { code: string; label: string }[] }[] = [
-  { name: 'Dashboard', perms: [{ code: 'dashboard:view', label: 'View' }] },
-  { name: 'Notification', perms: [{ code: 'notification:read', label: 'Read' }] },
-  { name: 'Profile', perms: [{ code: 'profile:manage', label: 'Manage' }] },
-  { name: 'Prospek', perms: [
-    { code: 'prospect:read', label: 'Read' },
-    { code: 'prospect:write:prospecting', label: 'Write (Prospecting)' },
-    { code: 'prospect:approve:transition', label: 'Approve Transition' },
-  ]},
-  { name: 'Proyek', perms: [
-    { code: 'project:read', label: 'Read' },
-    { code: 'project:create', label: 'Create' },
-    { code: 'project:write', label: 'Write' },
-    { code: 'project:manage:members', label: 'Manage Members' },
-    { code: 'project:manage:scope', label: 'Manage Scope' },
-  ]},
-  { name: 'Pengadaan', perms: [
-    { code: 'pengadaan:read', label: 'Read' },
-    { code: 'pengadaan:create', label: 'Create' },
-    { code: 'pengadaan:write', label: 'Write' },
-  ]},
-  { name: 'Report', perms: [
-    { code: 'report:view:department', label: 'View Dept' },
-    { code: 'report:view:crossdept', label: 'View Cross Dept' },
-  ]},
-  { name: 'Config', perms: [{ code: 'config:access', label: 'Access' }] },
+const MODULE_ORDER = [
+  'dashboard', 'notification', 'profile', 'user', 'prospect', 'project',
+  'customer', 'pengadaan', 'report', 'config', 'master', 'rbac', 'rks', 'lphs', 'settings',
 ];
 
-const ALL_PERM_CODES = MODULE_GROUPS.flatMap(m => m.perms.map(p => p.code));
+const MODULE_LABELS: Record<string, string> = {
+  dashboard: 'Dashboard',
+  notification: 'Notification',
+  profile: 'Profile',
+  user: 'User',
+  prospect: 'Prospek',
+  project: 'Proyek',
+  customer: 'Customer',
+  pengadaan: 'Pengadaan',
+  report: 'Report',
+  config: 'Config',
+  master: 'Master Data',
+  rbac: 'RBAC',
+  rks: 'RKS',
+  lphs: 'LPHS',
+  settings: 'Settings',
+};
 
 type TabId = 'departments' | 'roles' | 'assignments' | 'permissions' | 'stages';
 
@@ -87,6 +80,18 @@ const ROLE_BADGES: Record<string, string> = {
 
 export default function ConfigAccessControlPage() {
   const [activeTab, setActiveTab] = useState<TabId>('departments');
+
+  const fetchRoles = useRbacStore((s) => s.fetchRoles);
+  const fetchPermissions = useRbacStore((s) => s.fetchPermissions);
+  const fetchDepartments = useRbacStore((s) => s.fetchDepartments);
+  const fetchStages = useRbacStore((s) => s.fetchStages);
+
+  useEffect(() => {
+    fetchRoles();
+    fetchPermissions();
+    fetchDepartments();
+    fetchStages();
+  }, [fetchRoles, fetchPermissions, fetchDepartments, fetchStages]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
@@ -161,21 +166,29 @@ function DepartmentsTab() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formName || !formCode) { toast.error('Nama dan kode wajib diisi'); return; }
-    if (editingId) {
-      updateDepartment(editingId, { name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
-      toast.success('Departemen diupdate');
-    } else {
-      addDepartment({ name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
-      toast.success('Departemen ditambahkan');
+    try {
+      if (editingId) {
+        await updateDepartment(editingId, { name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
+        toast.success('Departemen diupdate');
+      } else {
+        await addDepartment({ name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
+        toast.success('Departemen ditambahkan');
+      }
+      setShowModal(false);
+    } catch {
+      toast.error('Gagal menyimpan departemen');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    deleteDepartment(id);
-    toast.success('Departemen dihapus');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDepartment(id);
+      toast.success('Departemen dihapus');
+    } catch {
+      toast.error('Gagal menghapus departemen');
+    }
   };
 
   return (
@@ -298,26 +311,34 @@ function RolesTab() {
     setEditingId(r.id); setFormName(r.name); setFormDesc(r.description || ''); setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formName) { toast.error('Nama role wajib diisi'); return; }
     const slug = formName.toLowerCase().replace(/\s+/g, '_');
-    if (editingId) {
-      updateRole(editingId, { name: slug, description: formDesc });
-      toast.success('Role diupdate');
-    } else {
-      addRole({ name: slug, description: formDesc, is_system: false });
-      toast.success('Role ditambahkan');
+    try {
+      if (editingId) {
+        await updateRole(editingId, { name: slug, description: formDesc });
+        toast.success('Role diupdate');
+      } else {
+        await addRole({ name: slug, description: formDesc, is_system: false });
+        toast.success('Role ditambahkan');
+      }
+      setShowModal(false);
+    } catch {
+      toast.error('Gagal menyimpan role');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (roleUsage.assigned.has(id)) {
       toast.error('Tidak bisa hapus — masih ada user yang menggunakan role ini');
       return;
     }
-    deleteRole(id);
-    toast.success('Role dihapus');
+    try {
+      await deleteRole(id);
+      toast.success('Role dihapus');
+    } catch {
+      toast.error('Gagal menghapus role');
+    }
   };
 
   return (
@@ -571,8 +592,50 @@ function RolePermissionsTab() {
   const roles = useRbacStore((s) => s.roles);
   const rolePermissions = useRbacStore((s) => s.rolePermissions);
   const departments = useRbacStore((s) => s.departments);
-  const addRolePermission = useRbacStore((s) => s.addRolePermission);
-  const removeRolePermission = useRbacStore((s) => s.removeRolePermission);
+  const applyRolePermissions = useRbacStore((s) => s.applyRolePermissions);
+  const fetchPermissions = useRbacStore((s) => s.fetchPermissions);
+
+  // Derive the matrix columns directly from the permissions loaded from the DB,
+  // so every permission becomes a column regardless of any hardcoded codes.
+  const moduleGroups = useMemo(() => {
+    const byModule: Record<string, RbacPermission[]> = {};
+    for (const p of permissions) {
+      (byModule[p.module] = byModule[p.module] || []).push(p);
+    }
+    const ordered: { name: string; module: string; perms: { code: string; label: string }[] }[] = [];
+    for (const m of MODULE_ORDER) {
+      if (byModule[m]) {
+        ordered.push({
+          name: MODULE_LABELS[m] || m,
+          module: m,
+          perms: byModule[m].map(p => ({ code: p.code, label: p.name })),
+        });
+      }
+    }
+    for (const m of Object.keys(byModule)) {
+      if (!MODULE_ORDER.includes(m)) {
+        ordered.push({
+          name: MODULE_LABELS[m] || m,
+          module: m,
+          perms: byModule[m].map(p => ({ code: p.code, label: p.name })),
+        });
+      }
+    }
+    return ordered;
+  }, [permissions]);
+
+  const ALL_PERM_CODES = useMemo(
+    () => moduleGroups.flatMap(g => g.perms.map(p => p.code)),
+    [moduleGroups],
+  );
+
+  const permDescription = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const p of permissions) {
+      map[p.code] = p.description || p.name;
+    }
+    return map;
+  }, [permissions]);
 
   // Only show non-project roles for this grid
   const deptRoles = roles.filter(r => !['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id));
@@ -605,9 +668,9 @@ function RolePermissionsTab() {
 
   // Filtered groups & flattened perm list
   const filteredGroups = useMemo(() => {
-    if (!debouncedSearch.trim()) return MODULE_GROUPS;
+    if (!debouncedSearch.trim()) return moduleGroups;
     const q = debouncedSearch.toLowerCase();
-    return MODULE_GROUPS.map(mg => ({
+    return moduleGroups.map(mg => ({
       ...mg,
       perms: mg.perms.filter(p =>
         p.code.toLowerCase().includes(q) || p.label.toLowerCase().includes(q) || mg.name.toLowerCase().includes(q)
@@ -696,7 +759,7 @@ function RolePermissionsTab() {
   };
 
   /** Toggle all permissions in a module for a single role */
-  const handleToggleModule = (roleId: string, mg: typeof MODULE_GROUPS[0], checked: boolean) => {
+  const handleToggleModule = (roleId: string, mg: typeof moduleGroups[0], checked: boolean) => {
     setDraftChanges(prev => {
       const next = { ...prev };
       for (const pDef of mg.perms) {
@@ -712,48 +775,19 @@ function RolePermissionsTab() {
     });
   };
 
-  const handleApply = () => {
-    let count = 0;
-    for (const [key, action] of Object.entries(draftChanges)) {
-      if (!action) continue;
-      const [roleId, ...rest] = key.split(':');
-      const permissionId = rest.join(':');
-      if (action === 'add') {
-        addRolePermission(roleId, permissionId, defaultScope, undefined);
-        count++;
-      } else {
-        const rp = permMap[roleId]?.[permissionId];
-        if (rp) { removeRolePermission(rp.id); count++; }
-      }
+  const handleApply = async () => {
+    try {
+      await applyRolePermissions(draftChanges, defaultScope);
+      setDraftChanges({});
+      toast.success('Permission berhasil disimpan');
+    } catch {
+      toast.error('Gagal menyimpan permission');
     }
-    setDraftChanges({});
-    toast.success(`${count} perubahan diterapkan (scope: ${defaultScope})`);
   };
 
   const handleCancel = () => {
     setDraftChanges({});
     toast('Perubahan dibatalkan', { icon: 'ℹ️' });
-  };
-
-  /** Description map for tooltips */
-  const permDescription: Record<string, string> = {
-    'dashboard:view': 'Melihat halaman dashboard utama',
-    'notification:read': 'Membaca notifikasi sistem',
-    'profile:manage': 'Mengelola profil diri sendiri',
-    'prospect:read': 'Melihat daftar dan detail prospek',
-    'prospect:write:prospecting': 'Mengedit prospek yang masih di tahap Prospecting',
-    'prospect:approve:transition': 'Menyetujui transisi stage prospek',
-    'project:read': 'Melihat daftar dan detail proyek',
-    'project:create': 'Membuat proyek baru',
-    'project:write': 'Mengedit data proyek',
-    'project:manage:members': 'Mengelola anggota tim proyek',
-    'project:manage:scope': 'Mengelola scope departemen proyek',
-    'pengadaan:read': 'Melihat daftar dan detail pengadaan',
-    'pengadaan:create': 'Membuat pengadaan baru',
-    'pengadaan:write': 'Mengedit data pengadaan',
-    'report:view:department': 'Melihat laporan department sendiri',
-    'report:view:crossdept': 'Melihat laporan lintas department',
-    'config:access': 'Mengakses halaman konfigurasi sistem',
   };
 
   return (
@@ -806,6 +840,21 @@ function RolePermissionsTab() {
             </span>
           )}
           <span className="text-outline ml-auto text-[9px]">Scope: {defaultScope}</span>
+        </div>
+      )}
+
+      {/* ── Empty state ── */}
+      {permissions.length === 0 && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-warning/30 bg-warning/5 text-xs text-on-surface-variant">
+          <span>
+            Data permission belum dimuat. Pastikan seeding sudah dijalankan (<code>npx prisma db seed</code>) dan login ulang.
+          </span>
+          <button
+            onClick={() => fetchPermissions()}
+            className="shrink-0 px-3 py-1.5 rounded-lg bg-primary text-on-primary font-semibold"
+          >
+            Muat ulang
+          </button>
         </div>
       )}
 
@@ -1034,7 +1083,7 @@ function RolePermissionsTab() {
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
-          {MODULE_GROUPS.map(mg => (
+          {moduleGroups.map(mg => (
             <div key={mg.name} className="space-y-0.5">
               <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-wider px-1 pt-1">{mg.name}</p>
               {mg.perms.map(pDef => (
@@ -1105,27 +1154,35 @@ function StageRulesTab() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formCode || !formName || !formOwner) { toast.error('Kode, nama, dan owner wajib diisi'); return; }
-    if (editingId) {
-      updateStage(editingId, {
-        code: formCode, name: formName, module: formModule, sequence: formSeq,
-        ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
-      });
-      toast.success('Stage diupdate');
-    } else {
-      addStage({
-        code: formCode, name: formName, module: formModule, sequence: formSeq,
-        ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
-      });
-      toast.success('Stage ditambahkan');
+    try {
+      if (editingId) {
+        await updateStage(editingId, {
+          code: formCode, name: formName, module: formModule, sequence: formSeq,
+          ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
+        });
+        toast.success('Stage diupdate');
+      } else {
+        await addStage({
+          code: formCode, name: formName, module: formModule, sequence: formSeq,
+          ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
+        });
+        toast.success('Stage ditambahkan');
+      }
+      setShowModal(false);
+    } catch {
+      toast.error('Gagal menyimpan stage');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    deleteStage(id);
-    toast.success('Stage dihapus');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteStage(id);
+      toast.success('Stage dihapus');
+    } catch {
+      toast.error('Gagal menghapus stage');
+    }
   };
 
   const getOwnerDeptName = (code: string) => {

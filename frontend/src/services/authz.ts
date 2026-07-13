@@ -175,13 +175,17 @@ class AuthorizationEngine {
       .map((r) => r.name)
       .filter((name) => ![ROLES.PROJECT_VIEWER, ROLES.PROJECT_CONTRIBUTOR, ROLES.PROJECT_MANAGER].includes(name as any));
 
+    const normalizeRoleName = (name: string): string =>
+      name.toLowerCase().replace(/[\s-]+/g, '_');
+
     let highest: string = ROLES.STAFF;
     let highestLevel = 0;
     for (const name of roleNames) {
-      const level = ROLE_HIERARCHY[name as RoleLevel] || 0;
+      const key = normalizeRoleName(name) as RoleLevel;
+      const level = ROLE_HIERARCHY[key] || 0;
       if (level > highestLevel) {
         highestLevel = level;
-        highest = name;
+        highest = key;
       }
     }
     return highest;
@@ -192,6 +196,14 @@ class AuthorizationEngine {
    * Elevated roles see ALL data in their department(s).
    */
   hasElevatedRole(userId: string): boolean {
+    const store = useRbacStore.getState();
+    // User dengan role ber-scope global memiliki akses penuh (sama seperti
+    // bypass di hasPermission), terlepas dari apakah daftar role sudah dimuat.
+    const hasGlobalScope = store.userRoles.some(
+      (ur) => ur.userId === userId && ur.scopeType === 'global',
+    );
+    if (hasGlobalScope) return true;
+
     const role = this.getUserHighestRole(userId);
     return ELEVATED_ROLES.includes(role);
   }

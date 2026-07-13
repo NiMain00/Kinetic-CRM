@@ -9,7 +9,10 @@ import { useAuthStore } from '@/stores/authStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { useProspectStore } from '@/stores/prospectStore';
+import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import type { ApprovalItem } from '@/types/domain';
 import { authz } from '@/services/authz';
 
 export default function AppLayout() {
@@ -18,8 +21,54 @@ export default function AppLayout() {
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { unreadCount } = useNotificationStore();
-  const { getPendingCountByUser, fetchApprovals } = useApprovalStore();
-  const pendingApprovalsCount = user?.id ? getPendingCountByUser(user.id) : 0;
+  const { approvals, fetchApprovals } = useApprovalStore();
+  const { prospects, fetchProspects } = useProspectStore();
+  const { projects, fetchProjects } = useProjectStore();
+
+  // Compute pending approvals count matching the logic in ApprovalInboxPage
+  const pendingApprovalsCount = user?.id
+    ? (() => {
+        const VALID_TYPES = new Set(['Prospek', 'RKS', 'LPHS']);
+        const derived: ApprovalItem[] = [];
+        prospects.forEach((p: any) => {
+          if (p.status === 'Waiting Supervisor') {
+            derived.push({ entityId: p.id, entityType: 'prospect', type: 'Prospek', id: `derived-prospect-${p.id}` } as ApprovalItem);
+          }
+        });
+        projects.forEach((pr: any) => {
+          if (pr.status === 'Review RKS') {
+            derived.push({ entityId: pr.id, entityType: 'project', type: 'RKS', id: `derived-rks-${pr.id}` } as ApprovalItem);
+          } else if (
+            pr.status === 'LPHS/SIOS' &&
+            pr.lphs &&
+            (pr.lphs.overallStatus === 'dept_review' || pr.lphs.overallStatus === 'mgmt_review')
+          ) {
+            derived.push({ entityId: pr.id, entityType: 'project', type: 'LPHS', id: `derived-lphs-${pr.id}` } as ApprovalItem);
+          }
+        });
+        const map = new Map<string, ApprovalItem>();
+        derived.forEach((a) => map.set(a.entityId ?? a.id, a));
+        approvals.forEach((a) => {
+          if (!VALID_TYPES.has(a.type)) return;
+          const key = a.entityId ?? a.id;
+          if (!map.has(key)) map.set(key, a);
+        });
+        const combined = Array.from(map.values());
+        const userItems = combined.filter((a) => {
+          if (!VALID_TYPES.has(a.type)) return false;
+          if (a.assigneeUserId && a.assigneeUserId !== user.id) return false;
+          if (a.entityType === 'prospect' && a.entityId) {
+            return prospects.some((p: any) => p.id === a.entityId);
+          }
+          if (a.entityType === 'project' && a.entityId) {
+            return projects.some((p: any) => p.id === a.entityId);
+          }
+          return true;
+        });
+        return userItems.length;
+      })()
+    : 0;
+
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
 
@@ -31,7 +80,9 @@ export default function AppLayout() {
 
   useEffect(() => {
     fetchApprovals();
-  }, [fetchApprovals]);
+    fetchProspects();
+    fetchProjects();
+  }, [fetchApprovals, fetchProspects, fetchProjects]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);

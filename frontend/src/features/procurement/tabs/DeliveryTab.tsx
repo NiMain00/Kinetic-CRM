@@ -30,9 +30,6 @@ export default function DeliveryTab({ procurement }: Props) {
   const [unitReceivedDate, setUnitReceivedDate] = useState(
     procurement.unitReceivedDate || '',
   );
-  const [actualEndDate, setActualEndDate] = useState(
-    procurement.actualEndDate || '',
-  );
   const [deliveryNote, setDeliveryNote] = useState(
     procurement.deliveryNote || '',
   );
@@ -49,7 +46,6 @@ export default function DeliveryTab({ procurement }: Props) {
     setUnitReadyDate(procurement.unitReadyDate || '');
     setUnitShippedDate(procurement.unitShippedDate || '');
     setUnitReceivedDate(procurement.unitReceivedDate || '');
-    setActualEndDate(procurement.actualEndDate || '');
     setDeliveryNote(procurement.deliveryNote || '');
     setProgressNotes(procurement.progressNotes || '');
     setProgressVal(procurement.progress || 0);
@@ -66,7 +62,7 @@ export default function DeliveryTab({ procurement }: Props) {
       unitReceivedDate,
       deliveryNote,
     });
-    if (procurement.status === 'PO Process') {
+    if (procurement.status === 'Vendor Selection') {
       updateProcurement(procurement.id, {
         status: 'Delivery',
         phase: 'Delivery',
@@ -126,11 +122,11 @@ export default function DeliveryTab({ procurement }: Props) {
     if (Object.keys(errs).length > 0) return;
 
     const nextStatus =
-      procurement.status === 'PO Process' || procurement.status === 'Delivery'
+      procurement.status === 'Vendor Selection' || procurement.status === 'Delivery'
         ? 'Delivery'
         : procurement.status;
     const nextPhase =
-      procurement.status === 'PO Process' || procurement.status === 'Delivery'
+      procurement.status === 'Vendor Selection' || procurement.status === 'Delivery'
         ? 'Delivery'
         : procurement.phase;
 
@@ -141,7 +137,6 @@ export default function DeliveryTab({ procurement }: Props) {
       unitReadyDate,
       unitShippedDate,
       unitReceivedDate,
-      actualEndDate,
       deliveryNote,
       isDelivered: true,
       deliveredAt: new Date().toISOString(),
@@ -150,7 +145,7 @@ export default function DeliveryTab({ procurement }: Props) {
     });
 
     if (
-      procurement.status === 'PO Process' ||
+      procurement.status === 'Vendor Selection' ||
       procurement.status === 'Delivery'
     ) {
       addTimelineEvent(procurement.id, {
@@ -308,20 +303,6 @@ export default function DeliveryTab({ procurement }: Props) {
               disabled={isClosed}
             />
           </div>
-          {isDelivered && (
-            <div>
-              <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
-                Tanggal Selesai Aktual
-              </label>
-              <input
-                type="date"
-                value={actualEndDate}
-                onChange={(e) => setActualEndDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
-                disabled={isClosed}
-              />
-            </div>
-          )}
         </div>
 
         <div>

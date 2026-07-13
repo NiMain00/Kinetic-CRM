@@ -264,16 +264,18 @@ export default function ProspectFormPage() {
     };
 
     try {
+      let savedId = prospectId;
       if (isEdit && existingProspect) {
         await updateProspect(existingProspect.id, payload);
       } else {
-        await createProspect(payload);
+        const created = await createProspect(payload);
+        savedId = created?.id || prospectId;
       }
 
       // Auto-create approval item when submitting to PM
       if (status === 'Waiting Supervisor') {
         addApproval({
-          id: `app-prospect-${prospectId}-${Date.now()}`,
+          id: `app-prospect-${savedId}-${Date.now()}`,
           ref: `PR-${new Date().getFullYear()}-${String(prospects.length + 1).padStart(3, '0')}`,
           name: formName,
           branch: userBranch,
@@ -281,9 +283,9 @@ export default function ProspectFormPage() {
           slaStatus: 'Normal',
           type: 'Prospek',
           resourceType: 'prospect',
-          resourceId: prospectId,
+          resourceId: savedId,
           client: clientName,
-          entityId: prospectId,
+          entityId: savedId,
           entityType: 'prospect',
           assigneeUserId: authUser?.id,
         });

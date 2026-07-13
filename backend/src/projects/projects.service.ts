@@ -69,17 +69,27 @@ export class ProjectsService {
 
   async update(id: string, data: any) {
     await this.get(id);
-    return this.prisma.project.update({ where: { id }, data });
+    const oneToOneRelations = ['lphsSios', 'priceSubmission', 'tenderResult', 'deliveryTarget', 'rks'];
+    const prismaOps = new Set(['upsert', 'create', 'update', 'delete', 'disconnect', 'connect']);
+    const nested: any = {};
+    for (const key of oneToOneRelations) {
+      if (data[key] !== undefined) {
+        const isPrismaOp = data[key] && typeof data[key] === 'object' && Object.keys(data[key]).some(k => prismaOps.has(k));
+        nested[key] = isPrismaOp ? data[key] : { upsert: { create: data[key], update: data[key] } };
+        delete data[key];
+      }
+    }
+    return this.prisma.project.update({ where: { id }, data: { ...data, ...nested } });
   }
 
   async delete(id: string) {
     await this.get(id);
     return this.prisma.$transaction(async (tx) => {
-      // Procurement references the project without ON DELETE CASCADE, so remove them first
-      const procurements = await tx.procurement.findMany({ where: { sourceProjectId: id } });
-      for (const pc of procurements) {
-        await tx.procurement.delete({ where: { id: pc.id } });
-      }
+      // Procurement references the project without ON DELETE CASCADE, so nullify or soft-delete them first
+      await tx.procurement.updateMany({
+        where: { sourceProjectId: id, deletedAt: null },
+        data: { deletedAt: new Date() },
+      });
       return tx.project.delete({ where: { id } });
     });
   }

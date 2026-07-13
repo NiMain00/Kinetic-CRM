@@ -78,9 +78,13 @@ export const useTaskStore = create<TaskState>()(
 
       addTask: async (task) => {
         try {
-          await masterDataService.create('tasks', task as unknown as Record<string, unknown>);
-        } catch {
-          // non-blocking
+          const res = await masterDataService.create('tasks', task as unknown as Record<string, unknown>);
+          const created = (res.data?.data || res.data) as any;
+          if (created?.id) {
+            task = { ...task, id: created.id };
+          }
+        } catch (err) {
+          console.error('[taskStore] addTask API failed:', err);
         }
         set((s) => {
           const entities = { ...s.entities, [task.id]: task };
@@ -100,8 +104,8 @@ export const useTaskStore = create<TaskState>()(
       updateTask: async (id, data) => {
         try {
           await masterDataService.update('tasks', id, data as unknown as Record<string, unknown>);
-        } catch {
-          // non-blocking
+        } catch (err) {
+          console.error('[taskStore] updateTask API failed:', err);
         }
         set((s) => {
           const existing = s.entities[id];
@@ -114,8 +118,8 @@ export const useTaskStore = create<TaskState>()(
       deleteTask: async (id) => {
         try {
           await masterDataService.delete('tasks', id);
-        } catch {
-          // non-blocking
+        } catch (err) {
+          console.error('[taskStore] deleteTask API failed:', err);
         }
         const task = get().entities[id];
         if (!task) return;
@@ -161,7 +165,14 @@ export const useTaskStore = create<TaskState>()(
           .sort((a, b) => a.order - b.order);
       },
 
-      reorderTasks: (projectId, orderedIds) =>
+      reorderTasks: async (projectId, orderedIds) => {
+        try {
+          for (let idx = 0; idx < orderedIds.length; idx++) {
+            await masterDataService.update('tasks', orderedIds[idx], { order: idx } as any);
+          }
+        } catch (err) {
+          console.error('[taskStore] reorderTasks API failed:', err);
+        }
         set((s) => {
           const entities = { ...s.entities };
           orderedIds.forEach((id, idx) => {
@@ -170,7 +181,8 @@ export const useTaskStore = create<TaskState>()(
             }
           });
           return { entities, tasks: deriveTasks(entities, s.ids) };
-        }),
+        });
+      },
     }),
     {
       name: 'kinetic-tasks',

@@ -41,7 +41,7 @@ async function persistCompetitorsToBackend(projectId: string, competitors: Compe
             code: comp.name.substring(0, 50),
             isActive: true,
           } as any);
-          const newComp = res.data?.data || res.data;
+          const newComp = (res.data?.data || res.data) as any;
           creates.push({
             competitorId: newComp.id,
             competitorPrice: comp.estPrice || null,
@@ -297,7 +297,7 @@ export const useProjectStore = create<ProjectState>()(
         }),
 
       createProject: async (data) => {
-        const { pricing, competitors, winnerDetails, delivery, rks, lphs, timeline, ...clean } = data as any;
+        const { id, pricing, competitors, winnerDetails, delivery, rks, lphs, timeline, ...clean } = data as any;
         if (clean.scopeDepartments && Array.isArray(clean.scopeDepartments)) {
           clean.scopeDepartments = JSON.stringify(clean.scopeDepartments);
         }
@@ -355,7 +355,21 @@ export const useProjectStore = create<ProjectState>()(
             }),
           };
         }
-        await projectService.update(id, clean);
+        try {
+          await projectService.update(id, clean);
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            console.warn(`[projectStore] Project ${id} not found on backend, removing from local store`);
+            set((s) => {
+              const entities = { ...s.entities };
+              delete entities[id];
+              const ids = s.ids.filter((i) => i !== id);
+              return { entities, ids, projects: deriveProjects(entities, ids) };
+            });
+            return;
+          }
+          throw err;
+        }
         const current = get().entities[id];
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
@@ -396,11 +410,17 @@ export const useProjectStore = create<ProjectState>()(
 
       deleteProject: async (id) => {
         const project = get().entities[id];
-        // Remove linked procurements first (backend hard-deletes them too, but keep local state in sync)
-        const deleteProc = useProcurementStore.getState().deleteProcurement;
-        const linked = useProcurementStore.getState().procurements.filter((p) => p.sourceProjectId === id);
-        linked.forEach((p) => deleteProc(p.id));
-        await projectService.delete(id);
+        try {
+          await projectService.delete(id);
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            console.warn(`[projectStore] Project ${id} not found on backend, removing from local store anyway`);
+          } else {
+            console.error('[projectStore] deleteProject API gagal:', err?.response?.data || err);
+            throw err;
+          }
+        }
+        // Hapus dari store lokal setelah sukses API
         const approvalStore = useApprovalStore.getState();
         approvalStore.approvals
           .filter((a) => a.entityType === 'project' && a.entityId === id)
@@ -424,11 +444,36 @@ export const useProjectStore = create<ProjectState>()(
 
       getProjectById: (id) => get().entities[id],
 
-      updateProjectRks: (id, rks) =>
+      updateProjectRks: async (id, rks) => {
+        try {
+          const { uploadedFiles, ...clean } = rks as any;
+          if (clean.deadlineTender === '' || clean.deadlineTender === undefined) {
+            delete clean.deadlineTender;
+          } else if (typeof clean.deadlineTender === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(clean.deadlineTender)) {
+            clean.deadlineTender = clean.deadlineTender + 'T00:00:00.000Z';
+          }
+          if (clean.answers && typeof clean.answers === 'object' && !Array.isArray(clean.answers)) {
+            clean.answers = JSON.stringify(clean.answers);
+          }
+          await projectService.update(id, { rks: { upsert: { create: clean, update: clean } } } as any);
+        } catch (err: any) {
+          if (err?.response?.status === 404) {
+            console.warn(`[projectStore] Project ${id} not found on backend for RKS update, removing from local store`);
+            set((s) => {
+              const entities = { ...s.entities };
+              delete entities[id];
+              const ids = s.ids.filter((i) => i !== id);
+              return { entities, ids, projects: deriveProjects(entities, ids) };
+            });
+            return;
+          }
+          console.error('[projectStore] updateProjectRks API failed:', err);
+        }
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, rks }));
           return { ...r, ids: s.ids };
-        }),
+        });
+      },
       updateProjectLphs: (id, lphs) => {
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, lphs }));
@@ -610,14 +655,22 @@ export const useProjectStore = create<ProjectState>()(
           },
         } as any).catch((err) => console.error('[winner-persist] Gagal:', err));
       },
-      updateProjectDelivery: (id, delivery) =>
+      updateProjectDelivery: async (id, delivery) => {
+        try {
+          await projectService.update(id, {
+            deliveryTarget: { upsert: { create: delivery as any, update: delivery as any } },
+          } as any);
+        } catch (err) {
+          console.error('[projectStore] updateProjectDelivery API failed:', err);
+        }
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({
             ...e,
             delivery: { ...e.delivery, ...delivery } as Project['delivery'],
           }));
           return { ...r, ids: s.ids };
-        }),
+        });
+      },
       addTimelineEvent: (id, event) => {
         const idSet = new Set(get().entities[id]?.timeline?.map((e) => e.id));
         set((s) => {
@@ -649,21 +702,43 @@ export const useProjectStore = create<ProjectState>()(
           },
         } as any).catch((err) => console.error('[timeline-persist] Gagal menyimpan event:', err));
       },
-      updateProjectDocuments: (id, documents) =>
+      updateProjectDocuments: async (id, documents) => {
+        try {
+          await projectService.update(id, { documents: JSON.stringify(documents) } as any);
+        } catch (err) {
+          console.error('[projectStore] updateProjectDocuments API failed:', err);
+        }
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, documents }));
           return { ...r, ids: s.ids };
-        }),
-      updateProjectScope: (id, scopeDepartments) =>
+        });
+      },
+      updateProjectScope: async (id, scopeDepartments) => {
+        try {
+          const deptCreate = scopeDepartments.map((deptId: string) => ({ departmentId: deptId }));
+          await projectService.update(id, {
+            scopeDepartments: JSON.stringify(scopeDepartments),
+            departments: { deleteMany: {}, create: deptCreate },
+          } as any);
+        } catch (err) {
+          console.error('[projectStore] updateProjectScope API failed:', err);
+        }
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, scopeDepartments }));
           return { ...r, ids: s.ids };
-        }),
-      updateProjectStage: (id, stageId) =>
+        });
+      },
+      updateProjectStage: async (id, stageId) => {
+        try {
+          await projectService.update(id, { currentStageId: stageId } as any);
+        } catch (err) {
+          console.error('[projectStore] updateProjectStage API failed:', err);
+        }
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, currentStageId: stageId }));
           return { ...r, ids: s.ids };
-        }),
+        });
+      },
     }),
     {
       name: 'kinetic-projects',

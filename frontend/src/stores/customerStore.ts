@@ -31,11 +31,18 @@ export const useCustomerStore = create<CustomerState>()(
         }
       },
 
-      addCustomer: (c) => set((s) => ({ customers: [...s.customers, c] })),
+      addCustomer: async (c) => {
+        try {
+          await masterDataService.create('customers', c as any);
+        } catch (err) {
+          console.error('[customerStore] addCustomer API failed:', err);
+        }
+        set((s) => ({ customers: [...s.customers, c] }));
+      },
 
       createCustomer: async (data) => {
         const res = await masterDataService.customers.create(data);
-        const customer = res.data.data || res.data;
+        const customer = (res.data.data || res.data) as Customer;
         set((s) => ({ customers: [...s.customers, customer] }));
         return customer;
       },
@@ -47,14 +54,24 @@ export const useCustomerStore = create<CustomerState>()(
         }));
       },
 
-      verifyCustomer: (id, verifiedBy) =>
+      verifyCustomer: async (id, verifiedBy) => {
+        try {
+          await masterDataService.customers.update(id, {
+            needsVerification: false,
+            verifiedAt: new Date().toISOString(),
+            verifiedBy,
+          });
+        } catch (err) {
+          console.error('[customerStore] verifyCustomer API failed:', err);
+        }
         set((s) => ({
           customers: s.customers.map((c) =>
             c.id === id
               ? { ...c, needsVerification: false, verifiedAt: new Date().toISOString(), verifiedBy }
               : c,
           ),
-        })),
+        }));
+      },
 
       deleteCustomer: async (id) => {
         await masterDataService.customers.delete(id);

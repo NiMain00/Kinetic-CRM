@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -10,7 +11,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(username: string, password: string) {
+  async login(username: string, password: string, ipAddress?: string) {
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [{ username }, { email: username }],
@@ -40,19 +41,20 @@ export class AuthService {
       data: { failedLoginCount: 0, lastLoginAt: new Date() },
     });
 
-    const payload = { sub: user.id, username: user.username };
-    const token = this.jwtService.sign(payload);
+    const jti = randomUUID();
+    const token = this.jwtService.sign({ sub: user.id, username: user.username, jti });
 
     await this.prisma.activeSession.create({
       data: {
         userId: user.id,
-        tokenJti: token,
-        ipAddress: '',
+        tokenJti: jti,
+        ipAddress: ipAddress || '',
         expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000),
       },
     });
 
-    return { token, user };
+    const { passwordHash, ...safeUser } = user;
+    return { token, user: safeUser };
   }
 
   async logout(userId: string, tokenJti: string) {
@@ -63,7 +65,7 @@ export class AuthService {
   }
 
   async me(userId: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
         orgUnit: true,
@@ -72,5 +74,8 @@ export class AuthService {
         },
       },
     });
+    if (!user) return null;
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
   }
 }

@@ -61,9 +61,17 @@ export default function ProjectDetailView({
 
   // Derive progress from current status
   const projectPhases = useConfigStore((s) => s.projectPhases);
+  const fetchProjectPhases = useConfigStore((s) => s.fetchProjectPhases);
+
+  useEffect(() => {
+    fetchProjectPhases();
+  }, [fetchProjectPhases]);
   const displayProgress = React.useMemo(() => {
     if (!project) return 0;
-    const active = projectPhases.filter((p) => p.isActive).sort((a, b) => a.order - b.order);
+    if (project.status === 'Selesai' || project.status === 'Kalah') return 100;
+    const active = projectPhases
+      .filter((p) => p.isActive && p.status !== 'Kalah')
+      .sort((a, b) => a.order - b.order);
     const idx = active.findIndex((p) => p.status === project.status);
     if (idx < 0) return project.progress ?? 0;
     return Math.round((idx / (active.length - 1)) * 100);
@@ -108,13 +116,28 @@ export default function ProjectDetailView({
       { label: 'Timeline', path: 'timeline' },
       { label: 'Dokumen', path: 'dokumen' },
     ];
-    if (project.type === 'tender') {
+    if (project?.type === 'tender') {
       items.splice(3, 0, { label: 'Review RKS', path: 'review-rks' });
     } else {
       items.splice(3, 1);
     }
     return items;
-  }, [project.type, isFromNonPotensial, project.status, project.winnerDetails?.outcome]);
+  }, [project?.type, isFromNonPotensial, project?.status, project?.winnerDetails?.outcome]);
+
+  // Stepper steps: derived from project lifecycle phases, NOT from tabs
+  const stepperSteps = React.useMemo(() => {
+    const activePhases = projectPhases
+      .filter(p => p.isActive && p.status !== 'Kalah')
+      .sort((a, b) => a.order - b.order);
+    const tabPathByLabel: Record<string, string> = {};
+    tabs.forEach(t => { tabPathByLabel[t.label] = t.path; });
+    tabPathByLabel['Draft'] = 'overview';
+    tabPathByLabel['Selesai'] = 'overview';
+    return activePhases.map(p => ({
+      label: p.phase,
+      path: tabPathByLabel[p.phase] || 'overview',
+    }));
+  }, [projectPhases, tabs]);
 
   // Auto-sync prospect data ke project jika ada sourceProspect — also before early return
   useEffect(() => {
@@ -149,9 +172,10 @@ export default function ProjectDetailView({
   // Tab restriction rules
 
   const phaseLabel = STATUS_STEP_MAP[project.status] || project.status || 'RKS';
-  const currentStepIndex = tabs.findIndex(t => t.label === phaseLabel);
+  const tabIndex = tabs.findIndex(t => t.label === phaseLabel);
+  const stepperIndex = stepperSteps.findIndex(t => t.label === phaseLabel);
   const isTerminal = project.status === 'Selesai' || project.status === 'Kalah';
-  const accessibleUpToIndex = isTerminal ? tabs.length - 1 : (currentStepIndex >= 0 ? currentStepIndex : 0);
+  const accessibleUpToIndex = isTerminal ? tabs.length - 1 : (tabIndex >= 0 ? tabIndex : 0);
   const isTabLocked = (tabIndex: number) => {
     const tab = tabs[tabIndex];
     if (!tab) return true;
@@ -181,31 +205,35 @@ export default function ProjectDetailView({
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteProject = () => {
+  const confirmDeleteProject = async () => {
     if (!projectId) return;
-    // Reset prospect langsung di store & backend
-    if (project.sourceProspectId) {
-      // 1. Store update — immediate UI feedback
-      useProspectStore.setState((s) => {
-        const entity = s.entities[project.sourceProspectId!];
-        if (!entity) return s;
-        return {
-          entities: {
-            ...s.entities,
-            [project.sourceProspectId!]: { ...entity, isConverted: false, projectId: undefined },
-          },
-        };
-      });
-      // 2. Background API call — persist ke backend (fire-and-forget)
-      prospectService.update(project.sourceProspectId!, {
-        isConverted: false,
-        projectId: null,
-      }).catch(() => {});
+    try {
+      // Reset prospect langsung di store & backend
+      if (project.sourceProspectId) {
+        // 1. Store update — immediate UI feedback
+        useProspectStore.setState((s) => {
+          const entity = s.entities[project.sourceProspectId!];
+          if (!entity) return s;
+          return {
+            entities: {
+              ...s.entities,
+              [project.sourceProspectId!]: { ...entity, isConverted: false, projectId: undefined },
+            },
+          };
+        });
+        // 2. Background API call — persist ke backend (fire-and-forget)
+        prospectService.update(project.sourceProspectId!, {
+          isConverted: false,
+          projectId: null,
+        }).catch(() => {});
+      }
+      await deleteProject(projectId);
+      toast.success('Proyek berhasil dihapus.');
+      setShowDeleteModal(false);
+      onNavigatePage('projects');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus proyek');
     }
-    deleteProject(projectId);
-    toast.success('Proyek berhasil dihapus.');
-    setShowDeleteModal(false);
-    onNavigatePage('projects');
   };
 
   const handleTabChange = (path: string) => {
@@ -326,18 +354,16 @@ export default function ProjectDetailView({
           {/* Dynamic Stepper */}
           {isOverview && !(project.type === 'prospecting' && isFromNonPotensial) && (
             <PhaseStepper
-              steps={tabs}
-              currentStepIndex={currentStepIndex}
-              accessibleUpToIndex={accessibleUpToIndex}
+              steps={stepperSteps}
+              currentStepIndex={stepperIndex >= 0 ? stepperIndex : 0}
+              accessibleUpToIndex={isTerminal ? stepperSteps.length : (stepperIndex >= 0 ? stepperIndex : 0)}
               onStepClick={(path) => navigate(`/projects/${projectId}/${path}`)}
               isStepUnlocked={(index) => {
-                const step = tabs[index];
-                const status = project.status;
-                const isBeforeLphs = status === 'RKS' || status === 'Review RKS' || status === 'Draft' || status === 'Revision';
-                return (
-                  (step.label === 'Timeline' || step.label === 'Dokumen' || step.label === 'Scope & Tim' || step.label === 'Tasks') ||
-                  (['Harga', 'Kompetitor', 'Pemenang'].includes(step.label) && !isBeforeLphs)
-                );
+                const step = stepperSteps[index];
+                if (!step) return false;
+                const st = project.status;
+                const isBeforeLphs = st === 'RKS' || st === 'Review RKS' || st === 'Draft' || st === 'Revision';
+                return step.label === 'Harga' && !isBeforeLphs;
               }}
             />
           )}

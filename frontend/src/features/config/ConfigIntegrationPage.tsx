@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge, Button } from '@/components/ui';
 import toast from 'react-hot-toast';
 import type { Connector } from '@/types/domain/config';
@@ -22,19 +22,24 @@ const TYPE_ICONS: Record<string, string> = {
 export default function ConfigIntegrationPage() {
   const connectors = useConfigStore((s) => s.connectors);
   const updateConfigData = useConfigStore((s) => s.updateConfigData);
+  const fetchConnectors = useConfigStore((s) => s.fetchConnectors);
 
-  const handleToggle = (id: string) => {
+  useEffect(() => {
+    fetchConnectors();
+  }, [fetchConnectors]);
+
+  const handleToggle = async (id: string) => {
     const target = connectors.find(c => c.id === id);
     if (target) {
-      updateConfigData('connectors', id, { active: !target.active });
+      await updateConfigData('connectors', id, { active: !target.active });
       toast.success(`Konektor ${target.name} sekarang ${target.active ? 'NON-AKTIF' : 'AKTIF'}`);
     }
   };
 
-  const handleTestConnection = (id: string) => {
+  const handleTestConnection = async (id: string) => {
     const target = connectors.find(c => c.id === id);
     if (!target) return;
-    updateConfigData('connectors', id, { status: 'connected', lastTested: new Date().toLocaleString('id-ID') });
+    await updateConfigData('connectors', id, { status: 'connected', lastTested: new Date().toLocaleString('id-ID') });
     toast.success(`Test koneksi ${target.name} berhasil!`);
   };
 

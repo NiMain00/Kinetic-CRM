@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Badge, Button, Tabs, Card } from '@/components/ui';
 import toast from 'react-hot-toast';
 import { useConfigStore } from '@/stores/configStore';
@@ -20,7 +20,12 @@ const STATUS_CONFIG: Record<string, { color: string; icon: string; label: string
 export default function ConfigWorkflowPage() {
   const [activeEntity, setActiveEntity] = useState('prospek');
   const workflows = useConfigStore((s) => s.workflows);
+  const fetchWorkflows = useConfigStore((s) => s.fetchWorkflows);
   const workflowEntityOptions = useActiveOptions('workflow_entity_tabs');
+
+  useEffect(() => {
+    fetchWorkflows();
+  }, [fetchWorkflows]);
   const workflowEntityTabs = useMemo(() =>
     workflowEntityOptions.map(o => ({
       id: o.value,

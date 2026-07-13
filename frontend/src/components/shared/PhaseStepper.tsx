@@ -27,7 +27,7 @@ export default function PhaseStepper({
           <div className="h-full bg-border rounded-full relative overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${steps.length > 1 ? (current / (steps.length - 1)) * 100 : 0}%` }}
+              style={{ width: `${steps.length > 1 ? Math.min(current / (steps.length - 1), 1) * 100 : 0}%` }}
             />
           </div>
         </div>

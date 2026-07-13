@@ -13,16 +13,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: { sub: string; username: string }) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-      select: { id: true, username: true, email: true, status: true },
+  async validate(payload: { sub: string; username: string; jti: string }) {
+    const session = await this.prisma.activeSession.findFirst({
+      where: { userId: payload.sub, tokenJti: payload.jti, revokedAt: null },
     });
-
-    if (!user || user.status === 'inactive') {
-      throw new UnauthorizedException();
+    if (!session) {
+      throw new UnauthorizedException('Sesi tidak valid atau sudah logout');
     }
 
-    return { id: user.id, username: user.username, email: user.email };
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!user || user.deletedAt || user.isLocked || user.status === 'inactive') {
+      throw new UnauthorizedException('Akun tidak aktif');
+    }
+
+    const { passwordHash, ...safeUser } = user;
+    return { ...safeUser, jti: payload.jti };
   }
 }

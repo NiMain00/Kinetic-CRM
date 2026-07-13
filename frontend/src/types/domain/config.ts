@@ -70,6 +70,7 @@ export interface ProjectPhase {
 }
 
 export interface UploadConfig {
+  id?: string;
   maxFileSizeMb: number;
   allowedExtensions: string[];
   storagePath: string;
