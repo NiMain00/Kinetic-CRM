@@ -145,9 +145,19 @@ export default function ProjectListPage() {
     setCurrentPage(1);
   };
 
-  const handleBatchDelete = useCallback(() => {
-    selectedRows.forEach(id => deleteProject(id));
-    toast.success(`${selectedRows.size} proyek berhasil dihapus.`);
+  const handleBatchDelete = useCallback(async () => {
+    let successCount = 0;
+    let failCount = 0;
+    for (const id of selectedRows) {
+      try {
+        await deleteProject(id);
+        successCount++;
+      } catch {
+        failCount++;
+      }
+    }
+    if (successCount > 0) toast.success(`${successCount} proyek berhasil dihapus.`);
+    if (failCount > 0) toast.error(`${failCount} proyek gagal dihapus.`);
     setSelectedRows(new Set());
     setSelectionMode(false);
   }, [selectedRows, deleteProject]);
@@ -530,11 +540,15 @@ export default function ProjectListPage() {
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
-            <Button variant="danger" size="md" onClick={() => {
+            <Button variant="danger" size="md" onClick={async () => {
               if (deleteTarget) {
-                deleteProject(deleteTarget.id);
-                toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
-                setDeleteTarget(null);
+                try {
+                  await deleteProject(deleteTarget.id);
+                  toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
+                  setDeleteTarget(null);
+                } catch (err: any) {
+                  toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus proyek');
+                }
               }
             }}>Hapus</Button>
           </>

@@ -12,6 +12,7 @@ import { RksModule } from './rks/rks.module';
 import { LphsModule } from './lphs/lphs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ConfigModule } from './config/config.module';
+import { ApprovalsModule } from './approvals/approvals.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ConfigModule } from './config/config.module';
     LphsModule,
     DashboardModule,
     ConfigModule,
+    ApprovalsModule,
   ],
 })
 export class AppModule {}

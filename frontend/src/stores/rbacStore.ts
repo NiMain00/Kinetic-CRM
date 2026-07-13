@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { rbacService } from '@/services/rbac';
+import { masterDataService } from '@/services/master-data';
 
 export interface RbacDepartment {
   id: string;
@@ -357,17 +358,29 @@ export const useRbacStore = create<RbacState>()(
         return store.departments.filter((d) => allDeptIds.includes(d.id) && d.is_active);
       },
 
-      addRolePermission: (roleId, permissionId, scopeType, scopeId, stageId) =>
+      addRolePermission: async (roleId, permissionId, scopeType, scopeId, stageId) => {
+        try {
+          await masterDataService.create('rolePermissions', { roleId, permissionId, scopeType, scopeId, stageId, accessLevel: 'write' } as any);
+        } catch (err) {
+          console.error('[rbacStore] addRolePermission API failed:', err);
+        }
         set((s) => ({
           rolePermissions: [
             ...s.rolePermissions,
             { id: nextId(), roleId, permissionId, scopeType, scopeId, stageId: stageId || undefined, accessLevel: 'write' },
           ],
-        })),
-      removeRolePermission: (rpId) =>
+        }));
+      },
+      removeRolePermission: async (rpId) => {
+        try {
+          await masterDataService.delete('rolePermissions', rpId);
+        } catch (err) {
+          console.error('[rbacStore] removeRolePermission API failed:', err);
+        }
         set((s) => ({
           rolePermissions: s.rolePermissions.filter((rp) => rp.id !== rpId),
-        })),
+        }));
+      },
       getRolePermissions: (roleId, scopeType, scopeId) =>
         get().rolePermissions.filter((rp) => {
           if (rp.roleId !== roleId) return false;
@@ -461,20 +474,35 @@ export const useRbacStore = create<RbacState>()(
       getStagesByModule: (module) =>
         get().workflowStages.filter((st) => st.module === module).sort((a, b) => a.sequence - b.sequence),
 
-      addProjectDepartment: (projectId, departmentId) =>
+      addProjectDepartment: async (projectId, departmentId) => {
+        try {
+          await masterDataService.create('projectDepartments', { projectId, departmentId } as any);
+        } catch (err) {
+          console.error('[rbacStore] addProjectDepartment API failed:', err);
+        }
         set((s) => {
           const exists = s.projectDepartments.find((pd) => pd.projectId === projectId && pd.departmentId === departmentId);
           if (exists) return s;
           return {
             projectDepartments: [...s.projectDepartments, { id: nextId(), projectId, departmentId }],
           };
-        }),
-      removeProjectDepartment: (projectId, departmentId) =>
+        });
+      },
+      removeProjectDepartment: async (projectId, departmentId) => {
+        try {
+          const existing = get().projectDepartments.find((pd) => pd.projectId === projectId && pd.departmentId === departmentId);
+          if (existing) {
+            await masterDataService.delete('projectDepartments', existing.id);
+          }
+        } catch (err) {
+          console.error('[rbacStore] removeProjectDepartment API failed:', err);
+        }
         set((s) => ({
           projectDepartments: s.projectDepartments.filter(
             (pd) => !(pd.projectId === projectId && pd.departmentId === departmentId)
           ),
-        })),
+        }));
+      },
       getProjectDepartments: (projectId) => {
         const store = get();
         const deptIds = store.projectDepartments
@@ -487,19 +515,34 @@ export const useRbacStore = create<RbacState>()(
           .filter((pd) => pd.projectId === projectId)
           .map((pd) => pd.departmentId);
       },
-      addProjectMember: (projectId, userId, roleId, departmentId, assignedBy) =>
+      addProjectMember: async (projectId, userId, roleId, departmentId, assignedBy) => {
+        try {
+          await masterDataService.create('projectMembers', { projectId, userId, roleId, departmentId, assignedBy } as any);
+        } catch (err) {
+          console.error('[rbacStore] addProjectMember API failed:', err);
+        }
         set((s) => ({
           projectMembers: [
             ...s.projectMembers,
             { id: nextId(), projectId, userId, roleId, departmentId, assignedBy },
           ],
-        })),
-      removeProjectMember: (projectId, userId) =>
+        }));
+      },
+      removeProjectMember: async (projectId, userId) => {
+        try {
+          const existing = get().projectMembers.find((pm) => pm.projectId === projectId && pm.userId === userId);
+          if (existing) {
+            await masterDataService.delete('projectMembers', existing.id);
+          }
+        } catch (err) {
+          console.error('[rbacStore] removeProjectMember API failed:', err);
+        }
         set((s) => ({
           projectMembers: s.projectMembers.filter(
             (pm) => !(pm.projectId === projectId && pm.userId === userId)
           ),
-        })),
+        }));
+      },
       getProjectMembers: (projectId) =>
         get().projectMembers.filter((pm) => pm.projectId === projectId),
     }),

@@ -283,15 +283,17 @@ export const useConfigStore = create<ConfigState>()(
         try {
           const res = await configService.listProjectPhases();
           const data = (res.data?.data ?? res.data) as any[];
-          set({
-            projectPhases: (data || []).map((p: any) => ({
-              id: p.id,
-              status: p.status,
-              phase: p.phase,
-              order: p.order ?? 0,
-              isActive: p.isActive ?? true,
-            })),
-          });
+          if (data && data.length > 0) {
+            set({
+              projectPhases: data.map((p: any) => ({
+                id: p.id,
+                status: p.status,
+                phase: p.phase,
+                order: p.order ?? 0,
+                isActive: p.isActive ?? true,
+              })),
+            });
+          }
         } catch (err) {
           console.error('[configStore] fetchProjectPhases failed:', err);
         }

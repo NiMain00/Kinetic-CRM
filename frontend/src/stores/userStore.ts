@@ -41,17 +41,31 @@ export const useUserStore = create<UserState>()(
         } catch { set({ loading: false }); }
       },
       addUser: async (u) => {
-        try { await masterDataService.create('users', u as any); } catch { }
+        try {
+          const res = await masterDataService.create('users', u as any);
+          const created = (res.data?.data || res.data) as any;
+          if (created?.id) u = { ...u, id: created.id };
+        } catch (err) {
+          console.error('[userStore] addUser API failed:', err);
+        }
         set((s) => ({ users: [...s.users, u] }));
       },
       updateUser: async (id, data) => {
-        try { await masterDataService.update('users', id, data as any); } catch { }
+        try {
+          await masterDataService.update('users', id, data as any);
+        } catch (err) {
+          console.error('[userStore] updateUser API failed:', err);
+        }
         set((s) => ({
           users: s.users.map((u) => (u.id === id ? { ...u, ...data } : u)),
         }));
       },
       deleteUser: async (id) => {
-        try { await masterDataService.delete('users', id); } catch { }
+        try {
+          await masterDataService.delete('users', id);
+        } catch (err) {
+          console.error('[userStore] deleteUser API failed:', err);
+        }
         set((s) => ({ users: s.users.filter((u) => u.id !== id) }));
       },
       getUserById: (id) => get().users.find((u) => u.id === id),

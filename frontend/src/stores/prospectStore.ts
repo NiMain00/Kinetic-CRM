@@ -223,16 +223,40 @@ export const useProspectStore = create<ProspectState>()(
 
       getProspectById: (id) => get().entities[id],
 
-      updateProspectStage: (id, stageId) =>
+      updateProspectStage: async (id, stageId) => {
+        try {
+          await prospectService.update(id, { currentStageId: stageId } as any);
+        } catch (err) {
+          console.error('[prospectStore] updateProspectStage API failed:', err);
+        }
         set((s) => {
           const existing = s.entities[id];
           if (!existing) return s;
           const updated = { ...existing, currentStageId: stageId };
           const entities = { ...s.entities, [id]: updated };
           return { entities, prospects: deriveProspects(entities, s.ids) };
-        }),
+        });
+      },
 
-      addTimelineEvent: (id, event) =>
+      addTimelineEvent: async (id, event) => {
+        try {
+          await prospectService.update(id, {
+            timelineEvents: {
+              create: {
+                title: event.title,
+                actor: event.actor,
+                role: event.role || null,
+                time: event.time ? new Date(event.time).toISOString() : new Date().toISOString(),
+                type: event.type,
+                description: event.description || null,
+                prevVal: event.prevVal || null,
+                newVal: event.newVal || null,
+              },
+            },
+          } as any);
+        } catch (err) {
+          console.error('[prospectStore] addTimelineEvent API failed:', err);
+        }
         set((s) => {
           const existing = s.entities[id];
           if (!existing) return s;
@@ -242,16 +266,23 @@ export const useProspectStore = create<ProspectState>()(
           };
           const entities = { ...s.entities, [id]: updated };
           return { entities, prospects: deriveProspects(entities, s.ids) };
-        }),
+        });
+      },
 
-      updateDocuments: (id, documents) =>
+      updateDocuments: async (id, documents) => {
+        try {
+          await prospectService.update(id, { documents: JSON.stringify(documents) } as any);
+        } catch (err) {
+          console.error('[prospectStore] updateDocuments API failed:', err);
+        }
         set((s) => {
           const existing = s.entities[id];
           if (!existing) return s;
           const updated = { ...existing, documents };
           const entities = { ...s.entities, [id]: updated };
           return { entities, prospects: deriveProspects(entities, s.ids) };
-        }),
+        });
+      },
     }),
     {
       name: 'kinetic-prospects',

@@ -154,8 +154,8 @@ export default function MasterQuestionPage() {
         updateData<MasterQuestion>('questions', editing.id, form);
         toast.success('Pertanyaan berhasil diperbarui');
       } else {
-        const res = await masterDataService.create('questions', toApiQuestion(form));
-        const created = res.data?.data || res.data;
+        const res = await masterDataService.create('questions', toApiQuestion(form) as any);
+        const created = (res.data?.data || res.data) as any;
         addData<MasterQuestion>('questions', created?.id ? fromApiQuestion(created) : { ...form, id: `Q-${String(questions.length + 1).padStart(3, '0')}` } as MasterQuestion);
         toast.success('Pertanyaan berhasil ditambahkan');
       }
@@ -319,7 +319,7 @@ export default function MasterQuestionPage() {
 
               {(() => {
                 const selectedType = questionTypes.find(t => t.id === form.question_type_id);
-                const qt = selectedType as Record<string, unknown> | undefined;
+                const qt = selectedType as any;
                 const show = qt?.hasOptions ?? qt?.has_options ?? false;
                 return show ? (
                   <OptionsInput

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { ApprovalItem } from '@/types/domain';
 import { masterDataService } from '@/services/master-data';
+import { approvalService } from '@/services/approvals';
 
 export interface ApprovalHistoryItem extends ApprovalItem {
   resolvedAt: string;
@@ -56,7 +57,16 @@ export const useApprovalStore = create<ApprovalState>()(
 
       getPendingByUser: (userId) => get().approvals.filter((a) => a.assigneeUserId === userId),
 
-      approveItem: (id) =>
+      approveItem: async (id) => {
+        try {
+          await approvalService.approve(id);
+          await masterDataService.update('approvals', id, {
+            status: 'approved',
+            decidedAt: new Date().toISOString(),
+          } as any);
+        } catch (err) {
+          console.error('[approvalStore] approveItem API failed:', err);
+        }
         set((s) => {
           const item = s.approvals.find((a) => a.id === id);
           if (!item) return s;
@@ -67,9 +77,19 @@ export const useApprovalStore = create<ApprovalState>()(
               ...s.approvalHistory,
             ],
           };
-        }),
+        });
+      },
 
-      rejectItem: (id) =>
+      rejectItem: async (id) => {
+        try {
+          await approvalService.reject(id);
+          await masterDataService.update('approvals', id, {
+            status: 'rejected',
+            decidedAt: new Date().toISOString(),
+          } as any);
+        } catch (err) {
+          console.error('[approvalStore] rejectItem API failed:', err);
+        }
         set((s) => {
           const item = s.approvals.find((a) => a.id === id);
           if (!item) return s;
@@ -80,7 +100,8 @@ export const useApprovalStore = create<ApprovalState>()(
               ...s.approvalHistory,
             ],
           };
-        }),
+        });
+      },
 
       addApproval: async (item) => {
         try {
@@ -89,11 +110,20 @@ export const useApprovalStore = create<ApprovalState>()(
             ...prismaFields,
             assignedToUserId: assigneeUserId,
           });
-        } catch {}
+        } catch (err) {
+          console.error('[approvalStore] addApproval API failed:', err);
+        }
         set((s) => ({ approvals: [item, ...s.approvals] }));
       },
 
-      removeApproval: (id) => set(removeById(id)),
+      removeApproval: async (id) => {
+        try {
+          await masterDataService.delete('approvals', id);
+        } catch (err) {
+          console.error('[approvalStore] removeApproval API failed:', err);
+        }
+        set(removeById(id));
+      },
     }),
     {
       name: 'kinetic-approvals',

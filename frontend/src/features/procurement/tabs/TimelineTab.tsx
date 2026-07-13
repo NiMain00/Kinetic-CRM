@@ -88,8 +88,6 @@ export default function TimelineTab({ procurement }: Props) {
     const docGroups: DocGroup[] = procurement?.documents?.length
       ? procurement.documents
       : [
-          { key: 'PR', label: 'Purchase Request', icon: 'PR', color: 'bg-primary/10 text-primary', documents: [] },
-          { key: 'PO', label: 'Purchase Order', icon: 'PO', color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400', documents: [] },
           { key: 'MISC', label: 'Dokumen Lainnya', icon: 'MISC', color: 'bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400', documents: [] },
         ];
     const updated = docGroups.map(g =>

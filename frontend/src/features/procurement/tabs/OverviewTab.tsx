@@ -82,31 +82,18 @@ export default function OverviewTab({ procurement }: Props) {
         </div>
       </div>
 
-      {/* PR / PO Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {procurement.prNumber && (
-          <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-5">
-            <p className="text-xs text-secondary font-medium mb-1">Purchase Request</p>
-            <p className="font-subheading-entity font-bold text-on-surface">
-              {procurement.prNumber}
-            </p>
-            {procurement.prNotes && (
-              <p className="text-xs text-secondary mt-1">{procurement.prNotes}</p>
-            )}
-          </div>
-        )}
-        {procurement.poNumber && (
-          <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-5">
-            <p className="text-xs text-secondary font-medium mb-1">Purchase Order</p>
-            <p className="font-subheading-entity font-bold text-on-surface">
-              {procurement.poNumber}
-            </p>
-            {procurement.poDate && (
-              <p className="text-xs text-secondary mt-1">Tgl PO: {procurement.poDate}</p>
-            )}
-          </div>
-        )}
-      </div>
+      {/* Vendor Info */}
+      {procurement.selectedVendor && (
+        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-5">
+          <p className="text-xs text-secondary font-medium mb-1">Vendor Terpilih</p>
+          <p className="font-subheading-entity font-bold text-on-surface">
+            {procurement.selectedVendor}
+          </p>
+          {procurement.vendorPic && (
+            <p className="text-xs text-secondary mt-1">PIC: {procurement.vendorPic}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

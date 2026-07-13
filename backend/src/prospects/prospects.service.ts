@@ -62,9 +62,9 @@ export class ProspectsService {
           where: { sourceProjectId: proj.id, deletedAt: null },
           data: { deletedAt: new Date() },
         });
-        await tx.project.update({ where: { id: proj.id }, data: { deletedAt: new Date() } });
+        await tx.project.delete({ where: { id: proj.id } });
       }
-      return tx.prospect.update({ where: { id }, data: { deletedAt: new Date() } });
+      return tx.prospect.delete({ where: { id } });
     });
   }
 }

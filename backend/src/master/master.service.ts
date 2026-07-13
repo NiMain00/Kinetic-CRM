@@ -30,6 +30,11 @@ const ENTITY_MAP: Record<string, string> = {
   tasks: 'task',
   inputConfigGroups: 'inputConfigGroup',
   inputConfigOptions: 'inputConfigOption',
+  entityRelations: 'entityRelation',
+  projectMembers: 'projectMember',
+  projectDepartments: 'projectDepartment',
+  rfqQuotes: 'rfqQuote',
+  supplierEvaluations: 'supplierEvaluation',
 };
 
 // Entities that support soft-delete (have a deletedAt column) — filtered out of list/get
@@ -110,11 +115,13 @@ export class MasterService {
     const model = this.getModel(entity);
     await this.get(entity, id);
     try {
-      // Soft delete untuk model yang punya kolom deletedAt
       return await model.update({ where: { id }, data: { deletedAt: new Date() } });
     } catch {
-      // Model tanpa deletedAt (mis. inputConfigOptions) → hard delete
-      return model.delete({ where: { id } });
+      try {
+        return await model.delete({ where: { id } });
+      } catch {
+        throw new NotFoundException(`${entity} not found`);
+      }
     }
   }
 }

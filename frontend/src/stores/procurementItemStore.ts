@@ -21,8 +21,12 @@ export const useProcurementItemStore = create<ProcurementItemState>()(
       items: [],
       loading: false,
 
-      setItems: (procurementId, items) => {
-        masterDataService.create('procurementItems', { items, procurementId } as any).catch(() => {});
+      setItems: async (procurementId, items) => {
+        try {
+          await masterDataService.create('procurementItems', { items, procurementId } as any);
+        } catch (err) {
+          console.error('[procurementItemStore] setItems API failed:', err);
+        }
         set((s) => ({
           items: [
             ...s.items.filter((i) => i.procurementId !== procurementId),
@@ -31,20 +35,32 @@ export const useProcurementItemStore = create<ProcurementItemState>()(
         }));
       },
 
-      addItem: (item) => {
-        masterDataService.create('procurementItems', item as any).catch(() => {});
+      addItem: async (item) => {
+        try {
+          await masterDataService.create('procurementItems', item as any);
+        } catch (err) {
+          console.error('[procurementItemStore] addItem API failed:', err);
+        }
         set((s) => ({ items: [...s.items, item] }));
       },
 
-      updateItem: (id, data) => {
-        masterDataService.update('procurementItems', id, data as any).catch(() => {});
+      updateItem: async (id, data) => {
+        try {
+          await masterDataService.update('procurementItems', id, data as any);
+        } catch (err) {
+          console.error('[procurementItemStore] updateItem API failed:', err);
+        }
         set((s) => ({
           items: s.items.map((i) => (i.id === id ? { ...i, ...data } : i)),
         }));
       },
 
-      removeItem: (id) => {
-        masterDataService.delete('procurementItems', id).catch(() => {});
+      removeItem: async (id) => {
+        try {
+          await masterDataService.delete('procurementItems', id);
+        } catch (err) {
+          console.error('[procurementItemStore] removeItem API failed:', err);
+        }
         set((s) => ({ items: s.items.filter((i) => i.id !== id) }));
       },
 

@@ -77,19 +77,19 @@ export const useApprovalChainStore = create<ApprovalChainState>()(
       },
 
       addChain: async (chain) => {
-        try { await masterDataService.create('approvalChains', chain as any); } catch {}
+        try { await masterDataService.create('approvalChains', chain as any); } catch (err) { console.error('[approvalChainStore] addChain API failed:', err); }
         set((s) => ({ chains: [...s.chains, chain] }));
       },
 
       updateChain: async (id, data) => {
-        try { await masterDataService.update('approvalChains', id, data as any); } catch {}
+        try { await masterDataService.update('approvalChains', id, data as any); } catch (err) { console.error('[approvalChainStore] updateChain API failed:', err); }
         set((s) => ({
           chains: s.chains.map((c) => (c.id === id ? { ...c, ...data } : c)),
         }));
       },
 
       deleteChain: async (id) => {
-        try { await masterDataService.delete('approvalChains', id); } catch {}
+        try { await masterDataService.delete('approvalChains', id); } catch (err) { console.error('[approvalChainStore] deleteChain API failed:', err); }
         set((s) => ({ chains: s.chains.filter((c) => c.id !== id) }));
       },
 
@@ -99,10 +99,28 @@ export const useApprovalChainStore = create<ApprovalChainState>()(
         );
       },
 
-      createRequest: (req) =>
-        set((s) => ({ requests: [req, ...s.requests] })),
+      createRequest: async (req) => {
+        try {
+          const res = await masterDataService.create('approvalChains', { type: 'request', ...req } as any);
+          const created = (res.data?.data || res.data) as any;
+          if (created?.id) {
+            req = { ...req, id: created.id };
+          }
+        } catch (err) {
+          console.error('[approvalChainStore] createRequest API failed:', err);
+        }
+        set((s) => ({ requests: [req, ...s.requests] }));
+      },
 
-      approveLevel: (requestId, levelIndex, approver, note) =>
+      approveLevel: async (requestId, levelIndex, approver, note) => {
+        try {
+          await masterDataService.update('approvalChains', requestId, {
+            status: levelIndex === 0 ? 'in_progress' : undefined,
+            resolvedAt: new Date().toISOString(),
+          } as any);
+        } catch (err) {
+          console.error('[approvalChainStore] approveLevel API failed:', err);
+        }
         set((s) => ({
           requests: s.requests.map((req) => {
             if (req.id !== requestId) return req;
@@ -127,9 +145,18 @@ export const useApprovalChainStore = create<ApprovalChainState>()(
               resolvedAt: allApproved || anyRejected ? new Date().toISOString() : undefined,
             };
           }),
-        })),
+        }));
+      },
 
-      rejectRequest: (requestId, approver, note) =>
+      rejectRequest: async (requestId, approver, note) => {
+        try {
+          await masterDataService.update('approvalChains', requestId, {
+            status: 'rejected',
+            resolvedAt: new Date().toISOString(),
+          } as any);
+        } catch (err) {
+          console.error('[approvalChainStore] rejectRequest API failed:', err);
+        }
         set((s) => ({
           requests: s.requests.map((req) => {
             if (req.id !== requestId) return req;
@@ -152,7 +179,8 @@ export const useApprovalChainStore = create<ApprovalChainState>()(
               note,
             };
           }),
-        })),
+        }));
+      },
 
       getRequestsByEntity: (entityId) =>
         get().requests.filter((r) => r.entityId === entityId),

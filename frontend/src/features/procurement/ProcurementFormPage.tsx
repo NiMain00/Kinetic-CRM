@@ -47,8 +47,8 @@ export default function ProcurementFormPage() {
       prNumber: prNumber || undefined,
       prNotes: prNotes || undefined,
       createdBy: 'Admin',
-      status: prNumber ? 'Purchase Request' : 'Draft',
-      phase: prNumber ? 'Purchase Request' : 'Draft',
+      status: 'Draft',
+      phase: 'Draft',
     });
 
     // Simpan relasi di relationStore biar PROJECT_WON dll tahu sudah ada procurement

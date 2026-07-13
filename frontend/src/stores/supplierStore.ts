@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { masterDataService } from '@/services/master-data';
+import apiClient from '@/services/api-client';
 import type { Supplier, SupplierEvaluation } from '@/types/domain/procurement';
 
 interface SupplierState {
@@ -57,9 +58,11 @@ export const useSupplierStore = create<SupplierState>()(
 
       addSupplier: async (s) => {
         try {
-          await masterDataService.create('suppliers', s as unknown as Record<string, unknown>);
-        } catch {
-          // non-blocking
+          const res = await masterDataService.create('suppliers', s as unknown as Record<string, unknown>);
+          const created = (res.data?.data || res.data) as any;
+          if (created?.id) s = { ...s, id: created.id };
+        } catch (err) {
+          console.error('[supplierStore] addSupplier API failed:', err);
         }
         set((state) => {
           const entities = { ...state.entities, [s.id]: s };
@@ -71,8 +74,8 @@ export const useSupplierStore = create<SupplierState>()(
       updateSupplier: async (id, data) => {
         try {
           await masterDataService.update('suppliers', id, data as unknown as Record<string, unknown>);
-        } catch {
-          // non-blocking
+        } catch (err) {
+          console.error('[supplierStore] updateSupplier API failed:', err);
         }
         set((state) => {
           const existing = state.entities[id];
@@ -85,8 +88,8 @@ export const useSupplierStore = create<SupplierState>()(
       deleteSupplier: async (id) => {
         try {
           await masterDataService.delete('suppliers', id);
-        } catch {
-          // non-blocking
+        } catch (err) {
+          console.error('[supplierStore] deleteSupplier API failed:', err);
         }
         set((state) => {
           const entities = { ...state.entities };
@@ -98,7 +101,12 @@ export const useSupplierStore = create<SupplierState>()(
 
       getSupplierById: (id) => get().entities[id],
 
-      addEvaluation: (supplierId, evaluation) =>
+      addEvaluation: async (supplierId, evaluation) => {
+        try {
+          await apiClient.post('/master/supplierEvaluations', { supplierId, ...evaluation } as any);
+        } catch (err) {
+          console.error('[supplierStore] addEvaluation API failed:', err);
+        }
         set((state) => {
           const existing = state.entities[supplierId];
           if (!existing) return state;
@@ -114,7 +122,8 @@ export const useSupplierStore = create<SupplierState>()(
             },
           };
           return { entities, suppliers: deriveSuppliers(entities, state.ids) };
-        }),
+        });
+      },
     }),
     {
       name: 'kinetic-suppliers',
