@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Button, Modal } from '@/components/ui';
 import { useRbacStore } from '@/stores/rbacStore';
@@ -88,6 +88,18 @@ const ROLE_BADGES: Record<string, string> = {
 export default function ConfigAccessControlPage() {
   const [activeTab, setActiveTab] = useState<TabId>('departments');
 
+  const fetchRoles = useRbacStore((s) => s.fetchRoles);
+  const fetchPermissions = useRbacStore((s) => s.fetchPermissions);
+  const fetchDepartments = useRbacStore((s) => s.fetchDepartments);
+  const fetchStages = useRbacStore((s) => s.fetchStages);
+
+  useEffect(() => {
+    fetchRoles();
+    fetchPermissions();
+    fetchDepartments();
+    fetchStages();
+  }, [fetchRoles, fetchPermissions, fetchDepartments, fetchStages]);
+
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
       {/* Header */}
@@ -161,21 +173,29 @@ function DepartmentsTab() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formName || !formCode) { toast.error('Nama dan kode wajib diisi'); return; }
-    if (editingId) {
-      updateDepartment(editingId, { name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
-      toast.success('Departemen diupdate');
-    } else {
-      addDepartment({ name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
-      toast.success('Departemen ditambahkan');
+    try {
+      if (editingId) {
+        await updateDepartment(editingId, { name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
+        toast.success('Departemen diupdate');
+      } else {
+        await addDepartment({ name: formName, code: formCode.toUpperCase(), description: formDesc, is_active: formActive });
+        toast.success('Departemen ditambahkan');
+      }
+      setShowModal(false);
+    } catch {
+      toast.error('Gagal menyimpan departemen');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    deleteDepartment(id);
-    toast.success('Departemen dihapus');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteDepartment(id);
+      toast.success('Departemen dihapus');
+    } catch {
+      toast.error('Gagal menghapus departemen');
+    }
   };
 
   return (
@@ -298,26 +318,34 @@ function RolesTab() {
     setEditingId(r.id); setFormName(r.name); setFormDesc(r.description || ''); setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formName) { toast.error('Nama role wajib diisi'); return; }
     const slug = formName.toLowerCase().replace(/\s+/g, '_');
-    if (editingId) {
-      updateRole(editingId, { name: slug, description: formDesc });
-      toast.success('Role diupdate');
-    } else {
-      addRole({ name: slug, description: formDesc, is_system: false });
-      toast.success('Role ditambahkan');
+    try {
+      if (editingId) {
+        await updateRole(editingId, { name: slug, description: formDesc });
+        toast.success('Role diupdate');
+      } else {
+        await addRole({ name: slug, description: formDesc, is_system: false });
+        toast.success('Role ditambahkan');
+      }
+      setShowModal(false);
+    } catch {
+      toast.error('Gagal menyimpan role');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (roleUsage.assigned.has(id)) {
       toast.error('Tidak bisa hapus — masih ada user yang menggunakan role ini');
       return;
     }
-    deleteRole(id);
-    toast.success('Role dihapus');
+    try {
+      await deleteRole(id);
+      toast.success('Role dihapus');
+    } catch {
+      toast.error('Gagal menghapus role');
+    }
   };
 
   return (
@@ -571,8 +599,7 @@ function RolePermissionsTab() {
   const roles = useRbacStore((s) => s.roles);
   const rolePermissions = useRbacStore((s) => s.rolePermissions);
   const departments = useRbacStore((s) => s.departments);
-  const addRolePermission = useRbacStore((s) => s.addRolePermission);
-  const removeRolePermission = useRbacStore((s) => s.removeRolePermission);
+  const applyRolePermissions = useRbacStore((s) => s.applyRolePermissions);
 
   // Only show non-project roles for this grid
   const deptRoles = roles.filter(r => !['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id));
@@ -712,22 +739,14 @@ function RolePermissionsTab() {
     });
   };
 
-  const handleApply = () => {
-    let count = 0;
-    for (const [key, action] of Object.entries(draftChanges)) {
-      if (!action) continue;
-      const [roleId, ...rest] = key.split(':');
-      const permissionId = rest.join(':');
-      if (action === 'add') {
-        addRolePermission(roleId, permissionId, defaultScope, undefined);
-        count++;
-      } else {
-        const rp = permMap[roleId]?.[permissionId];
-        if (rp) { removeRolePermission(rp.id); count++; }
-      }
+  const handleApply = async () => {
+    try {
+      await applyRolePermissions(draftChanges, defaultScope);
+      setDraftChanges({});
+      toast.success('Permission berhasil disimpan');
+    } catch {
+      toast.error('Gagal menyimpan permission');
     }
-    setDraftChanges({});
-    toast.success(`${count} perubahan diterapkan (scope: ${defaultScope})`);
   };
 
   const handleCancel = () => {
@@ -1105,27 +1124,35 @@ function StageRulesTab() {
     setShowModal(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formCode || !formName || !formOwner) { toast.error('Kode, nama, dan owner wajib diisi'); return; }
-    if (editingId) {
-      updateStage(editingId, {
-        code: formCode, name: formName, module: formModule, sequence: formSeq,
-        ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
-      });
-      toast.success('Stage diupdate');
-    } else {
-      addStage({
-        code: formCode, name: formName, module: formModule, sequence: formSeq,
-        ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
-      });
-      toast.success('Stage ditambahkan');
+    try {
+      if (editingId) {
+        await updateStage(editingId, {
+          code: formCode, name: formName, module: formModule, sequence: formSeq,
+          ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
+        });
+        toast.success('Stage diupdate');
+      } else {
+        await addStage({
+          code: formCode, name: formName, module: formModule, sequence: formSeq,
+          ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
+        });
+        toast.success('Stage ditambahkan');
+      }
+      setShowModal(false);
+    } catch {
+      toast.error('Gagal menyimpan stage');
     }
-    setShowModal(false);
   };
 
-  const handleDelete = (id: string) => {
-    deleteStage(id);
-    toast.success('Stage dihapus');
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteStage(id);
+      toast.success('Stage dihapus');
+    } catch {
+      toast.error('Gagal menghapus stage');
+    }
   };
 
   const getOwnerDeptName = (code: string) => {

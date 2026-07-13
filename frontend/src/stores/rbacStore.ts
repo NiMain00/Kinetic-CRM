@@ -80,17 +80,20 @@ interface RbacState {
   projectDepartments: ProjectDeptRecord[];
   projectMembers: ProjectMemberRecord[];
 
-  addDepartment: (data: Omit<RbacDepartment, 'id'>) => void;
-  updateDepartment: (id: string, data: Partial<RbacDepartment>) => void;
-  deleteDepartment: (id: string) => void;
+  addDepartment: (data: Omit<RbacDepartment, 'id'>) => Promise<void>;
+  updateDepartment: (id: string, data: Partial<RbacDepartment>) => Promise<void>;
+  deleteDepartment: (id: string) => Promise<void>;
+  fetchDepartments: () => Promise<void>;
 
-  addRole: (data: Omit<RbacRole, 'id'>) => void;
-  updateRole: (id: string, data: Partial<RbacRole>) => void;
-  deleteRole: (id: string) => void;
+  addRole: (data: Omit<RbacRole, 'id'>) => Promise<void>;
+  updateRole: (id: string, data: Partial<RbacRole>) => Promise<void>;
+  deleteRole: (id: string) => Promise<void>;
+  fetchRoles: () => Promise<void>;
 
-  addPermission: (data: Omit<RbacPermission, 'id'>) => void;
-  updatePermission: (id: string, data: Partial<RbacPermission>) => void;
-  deletePermission: (id: string) => void;
+  addPermission: (data: Omit<RbacPermission, 'id'>) => Promise<void>;
+  updatePermission: (id: string, data: Partial<RbacPermission>) => Promise<void>;
+  deletePermission: (id: string) => Promise<void>;
+  fetchPermissions: () => Promise<void>;
 
   fetchUserRoles: (userId: string) => Promise<void>;
   fetchAllUserRoles: () => Promise<void>;
@@ -102,10 +105,15 @@ interface RbacState {
   addRolePermission: (roleId: string, permissionId: string, scopeType?: RbacRolePermission['scopeType'], scopeId?: string, stageId?: string) => void;
   removeRolePermission: (rpId: string) => void;
   getRolePermissions: (roleId: string, scopeType?: string, scopeId?: string) => RbacRolePermission[];
+  applyRolePermissions: (
+    draftChanges: Record<string, 'add' | 'remove' | null>,
+    defaultScope: 'global' | 'department',
+  ) => Promise<void>;
 
-  addStage: (data: Omit<WorkflowStage, 'id'>) => void;
-  updateStage: (id: string, data: Partial<WorkflowStage>) => void;
-  deleteStage: (id: string) => void;
+  addStage: (data: Omit<WorkflowStage, 'id'>) => Promise<void>;
+  updateStage: (id: string, data: Partial<WorkflowStage>) => Promise<void>;
+  deleteStage: (id: string) => Promise<void>;
+  fetchStages: () => Promise<void>;
   getStagesByModule: (module: string) => WorkflowStage[];
 
   addProjectDepartment: (projectId: string, departmentId: string) => void;
@@ -132,38 +140,149 @@ export const useRbacStore = create<RbacState>()(
       projectDepartments: [],
       projectMembers: [],
 
-      addDepartment: (data) =>
-        set((s) => ({ departments: [...s.departments, { ...data, id: nextId() }] })),
-      updateDepartment: (id, data) =>
-        set((s) => ({
-          departments: s.departments.map((d) => (d.id === id ? { ...d, ...data } : d)),
-        })),
-      deleteDepartment: (id) =>
-        set((s) => ({
-          departments: s.departments.filter((d) => d.id !== id),
-        })),
+      fetchDepartments: async () => {
+        try {
+          const res = await rbacService.getDepartments();
+          const data = (res.data?.data ?? res.data) as any[];
+          set({
+            departments: (data || []).map((d: any) => ({
+              id: d.id,
+              code: d.code,
+              name: d.name,
+              description: d.address ?? d.description,
+              is_active: d.isActive ?? d.is_active ?? true,
+            })),
+          });
+        } catch (err) {
+          console.error('[rbacStore] fetchDepartments failed:', err);
+        }
+      },
+      addDepartment: async (data) => {
+        try {
+          await rbacService.createDepartment(data);
+          await get().fetchDepartments();
+        } catch (err) {
+          console.error('[rbacStore] addDepartment failed:', err);
+          throw err;
+        }
+      },
+      updateDepartment: async (id, data) => {
+        try {
+          await rbacService.updateDepartment(id, data);
+          await get().fetchDepartments();
+        } catch (err) {
+          console.error('[rbacStore] updateDepartment failed:', err);
+          throw err;
+        }
+      },
+      deleteDepartment: async (id) => {
+        try {
+          await rbacService.deleteDepartment(id);
+          await get().fetchDepartments();
+        } catch (err) {
+          console.error('[rbacStore] deleteDepartment failed:', err);
+          throw err;
+        }
+      },
 
-      addRole: (data) =>
-        set((s) => ({ roles: [...s.roles, { ...data, id: nextId() }] })),
-      updateRole: (id, data) =>
-        set((s) => ({
-          roles: s.roles.map((r) => (r.id === id ? { ...r, ...data } : r)),
-        })),
-      deleteRole: (id) =>
-        set((s) => ({
-          roles: s.roles.filter((r) => r.id !== id),
-        })),
+      fetchRoles: async () => {
+        try {
+          const res = await rbacService.getRoles();
+          const data = (res.data?.data ?? res.data) as any[];
+          const roles = (data || []).map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            description: r.description,
+            is_system: r.isSystem ?? r.is_system ?? false,
+          }));
+          const rolePermissions = (data || []).flatMap((r: any) =>
+            (r.rolePermissions || []).map((rp: any) => ({
+              id: rp.id,
+              roleId: rp.roleId,
+              permissionId: rp.permissionId,
+              scopeType: rp.scopeType,
+              scopeId: rp.scopeId,
+              stageId: rp.stageId,
+              accessLevel: rp.accessLevel || 'write',
+            })),
+          );
+          set({ roles, rolePermissions });
+        } catch (err) {
+          console.error('[rbacStore] fetchRoles failed:', err);
+        }
+      },
+      addRole: async (data) => {
+        try {
+          await rbacService.createRole(data);
+          await get().fetchRoles();
+        } catch (err) {
+          console.error('[rbacStore] addRole failed:', err);
+          throw err;
+        }
+      },
+      updateRole: async (id, data) => {
+        try {
+          await rbacService.updateRole(id, data);
+          await get().fetchRoles();
+        } catch (err) {
+          console.error('[rbacStore] updateRole failed:', err);
+          throw err;
+        }
+      },
+      deleteRole: async (id) => {
+        try {
+          await rbacService.deleteRole(id);
+          await get().fetchRoles();
+        } catch (err) {
+          console.error('[rbacStore] deleteRole failed:', err);
+          throw err;
+        }
+      },
 
-      addPermission: (data) =>
-        set((s) => ({ permissions: [...s.permissions, { ...data, id: nextId() }] })),
-      updatePermission: (id, data) =>
-        set((s) => ({
-          permissions: s.permissions.map((p) => (p.id === id ? { ...p, ...data } : p)),
-        })),
-      deletePermission: (id) =>
-        set((s) => ({
-          permissions: s.permissions.filter((p) => p.id !== id),
-        })),
+      fetchPermissions: async () => {
+        try {
+          const res = await rbacService.getPermissions();
+          const data = (res.data?.data ?? res.data) as any[];
+          set({
+            permissions: (data || []).map((p: any) => ({
+              id: p.id,
+              code: p.code,
+              name: p.name,
+              module: p.module,
+              description: p.description,
+            })),
+          });
+        } catch (err) {
+          console.error('[rbacStore] fetchPermissions failed:', err);
+        }
+      },
+      addPermission: async (data) => {
+        try {
+          await rbacService.createPermission(data);
+          await get().fetchPermissions();
+        } catch (err) {
+          console.error('[rbacStore] addPermission failed:', err);
+          throw err;
+        }
+      },
+      updatePermission: async (id, data) => {
+        try {
+          await rbacService.updatePermission(id, data);
+          await get().fetchPermissions();
+        } catch (err) {
+          console.error('[rbacStore] updatePermission failed:', err);
+          throw err;
+        }
+      },
+      deletePermission: async (id) => {
+        try {
+          await rbacService.deletePermission(id);
+          await get().fetchPermissions();
+        } catch (err) {
+          console.error('[rbacStore] deletePermission failed:', err);
+          throw err;
+        }
+      },
 
       fetchUserRoles: async (userId) => {
         try {
@@ -256,17 +375,89 @@ export const useRbacStore = create<RbacState>()(
           if (scopeId !== undefined && rp.scopeId !== scopeId) return false;
           return true;
         }),
+      applyRolePermissions: async (draftChanges, defaultScope) => {
+        try {
+          const current = get().rolePermissions;
+          const roleIds = new Set<string>();
+          for (const key of Object.keys(draftChanges)) {
+            const [roleId] = key.split(':');
+            roleIds.add(roleId);
+          }
+          for (const roleId of roleIds) {
+            const map = new Map<string, { permissionId: string; scopeType?: string; scopeId?: string; accessLevel: string }>();
+            for (const rp of current.filter((r) => r.roleId === roleId)) {
+              map.set(rp.permissionId, {
+                permissionId: rp.permissionId,
+                scopeType: rp.scopeType,
+                scopeId: rp.scopeId,
+                accessLevel: rp.accessLevel || 'write',
+              });
+            }
+            for (const [key, action] of Object.entries(draftChanges)) {
+              const [rid, ...rest] = key.split(':');
+              if (rid !== roleId || !action) continue;
+              const permissionId = rest.join(':');
+              if (action === 'add') {
+                map.set(permissionId, { permissionId, scopeType: defaultScope, scopeId: undefined, accessLevel: 'write' });
+              } else {
+                map.delete(permissionId);
+              }
+            }
+            await rbacService.setRolePermissions(roleId, [...map.values()]);
+          }
+          await get().fetchRoles();
+        } catch (err) {
+          console.error('[rbacStore] applyRolePermissions failed:', err);
+          throw err;
+        }
+      },
 
-      addStage: (data) =>
-        set((s) => ({ workflowStages: [...s.workflowStages, { ...data, id: nextId() }] })),
-      updateStage: (id, data) =>
-        set((s) => ({
-          workflowStages: s.workflowStages.map((st) => (st.id === id ? { ...st, ...data } : st)),
-        })),
-      deleteStage: (id) =>
-        set((s) => ({
-          workflowStages: s.workflowStages.filter((st) => st.id !== id),
-        })),
+      fetchStages: async () => {
+        try {
+          const res = await rbacService.getWorkflowStages();
+          const data = (res.data?.data ?? res.data) as any[];
+          set({
+            workflowStages: (data || []).map((s: any) => ({
+              id: s.id,
+              code: s.code,
+              name: s.name,
+              module: s.module,
+              sequence: s.sequence,
+              ownerDepartmentCode: s.ownerDepartmentCode,
+              prevDepartmentCode: s.prevDepartmentCode ?? null,
+            })),
+          });
+        } catch (err) {
+          console.error('[rbacStore] fetchStages failed:', err);
+        }
+      },
+      addStage: async (data) => {
+        try {
+          await rbacService.createStage(data);
+          await get().fetchStages();
+        } catch (err) {
+          console.error('[rbacStore] addStage failed:', err);
+          throw err;
+        }
+      },
+      updateStage: async (id, data) => {
+        try {
+          await rbacService.updateStage(id, data);
+          await get().fetchStages();
+        } catch (err) {
+          console.error('[rbacStore] updateStage failed:', err);
+          throw err;
+        }
+      },
+      deleteStage: async (id) => {
+        try {
+          await rbacService.deleteStage(id);
+          await get().fetchStages();
+        } catch (err) {
+          console.error('[rbacStore] deleteStage failed:', err);
+          throw err;
+        }
+      },
       getStagesByModule: (module) =>
         get().workflowStages.filter((st) => st.module === module).sort((a, b) => a.sequence - b.sequence),
 
