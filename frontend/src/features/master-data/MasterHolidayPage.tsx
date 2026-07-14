@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
@@ -11,6 +11,9 @@ export default function MasterHolidayPage() {
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => { fetchEntity('holidays'); }, [fetchEntity]);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [yearFilter, setYearFilter] = useState<number | 'all'>('all');

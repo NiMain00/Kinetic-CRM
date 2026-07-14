@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Badge, Modal } from '@/components/ui';
 import toast from 'react-hot-toast';
 import { useMasterDataStore, type MasterPeriod } from '@/stores/masterDataStore';
@@ -7,6 +7,11 @@ export default function ConfigPeriodPage() {
   const periods = useMasterDataStore((s) => s.periods);
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => {
+    fetchEntity('periods');
+  }, [fetchEntity]);
   const [modalOpen, setModalOpen] = useState(false);
   const [formName, setFormName] = useState('');
   const [formStartDate, setFormStartDate] = useState('');

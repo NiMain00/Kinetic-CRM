@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Button, Modal } from '@/components/ui';
 import { useMasterDataStore, type MasterRole } from '@/stores/masterDataStore';
@@ -101,6 +101,9 @@ export default function ConfigRolesPage() {
   const roles = useMasterDataStore((s) => s.roles);
   const addData = useMasterDataStore((s) => s.addData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => { fetchEntity('roles'); }, [fetchEntity]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [formName, setFormName] = useState('');

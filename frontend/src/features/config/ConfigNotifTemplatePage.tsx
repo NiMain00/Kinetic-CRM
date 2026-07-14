@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useMasterDataStore, type MasterNotifTemplate } from '@/stores/masterDataStore';
 
 interface ConfigNotificationsViewProps {
@@ -32,6 +32,11 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => {
+    fetchEntity('notifTemplates');
+  }, [fetchEntity]);
 
   const [activeCategoryTab, setActiveCategoryTab] = useState<'all' | 'project' | 'financial' | 'general'>('all');
   const [selectedTemplate, setSelectedTemplate] = useState<MasterNotifTemplate | null>(null);

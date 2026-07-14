@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Badge, Modal } from '@/components/ui';
 import toast from 'react-hot-toast';
 import { useMasterDataStore, type MasterQuestionType } from '@/stores/masterDataStore';
@@ -7,6 +7,11 @@ export default function ConfigQuestionTypesPage() {
   const types = useMasterDataStore((s) => s.questionTypes);
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => {
+    fetchEntity('questionTypes');
+  }, [fetchEntity]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingType, setEditingType] = useState<MasterQuestionType | null>(null);
   const [formName, setFormName] = useState('');

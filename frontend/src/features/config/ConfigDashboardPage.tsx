@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { configNavItems, filterNavItems } from '@/routes/nav-items';
 import { useAuthStore } from '@/stores/authStore';
@@ -37,6 +37,9 @@ export default function ConfigDashboardPage() {
   const user = useAuthStore((s) => s.user);
   const userRole = (user as { roleName?: string })?.roleName || '';
   const roles = useMasterDataStore((s) => s.roles);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => { fetchEntity('roles'); }, [fetchEntity]);
   const roleConfig = roles.find((r) => r.name === userRole);
   const oldPermissions = roleConfig?.permissions || [];
   const userId = (user as { id?: string })?.id;

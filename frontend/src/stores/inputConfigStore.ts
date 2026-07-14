@@ -20,6 +20,7 @@ function camelToSnakeKeys(obj: Record<string, unknown>): Record<string, unknown>
 interface InputConfigState {
   groups: InputConfigGroup[];
   loading: boolean;
+  initialized: boolean;
 
   getGroup: (key: InputConfigGroupKey) => InputConfigGroup | undefined;
   getActiveOptions: (key: InputConfigGroupKey) => InputOption[];
@@ -37,16 +38,23 @@ export const useInputConfigStore = create<InputConfigState>()(
     (set, get) => ({
       groups: [],
       loading: false,
+      initialized: false,
 
       fetchGroups: async () => {
         set({ loading: true });
         try {
-          const res = await masterDataService.get('inputConfigGroups', { perPage: 20 });
-          const data = res.data?.data || res.data || [];
-          const list = Array.isArray(data) ? data : [];
-          set({ groups: list.map((item: any) => camelToSnakeKeys(item)) as unknown as InputConfigGroup[], loading: false });
-        } catch {
-          set({ loading: false });
+          const res = await masterDataService.get('inputConfigGroups', { perPage: 50 });
+          const body: any = res.data || {};
+          let list: any[] = [];
+          if (Array.isArray(body)) {
+            list = body;
+          } else if (body.data && Array.isArray(body.data)) {
+            list = body.data;
+          }
+          set({ groups: list.map((item: any) => camelToSnakeKeys(item)) as unknown as InputConfigGroup[], loading: false, initialized: true });
+        } catch (err) {
+          console.error('[inputConfigStore] fetchGroups failed:', err);
+          set({ loading: false, initialized: true });
         }
       },
 
@@ -163,14 +171,14 @@ export const useInputConfigStore = create<InputConfigState>()(
     }),
     {
       name: 'kinetic-input-config',
-      version: 4,
+      version: 5,
       partialize: (state) => {
-        const { loading, ...rest } = state as any;
+        const { loading, initialized, ...rest } = state as any;
         return rest;
       },
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
-        if (version < 4) return { groups: [] };
+        if (version < 5) return { groups: [] };
         return { groups: current.groups || [] };
       },
     },

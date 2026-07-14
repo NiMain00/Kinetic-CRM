@@ -85,13 +85,15 @@ export default function ConfigAccessControlPage() {
   const fetchPermissions = useRbacStore((s) => s.fetchPermissions);
   const fetchDepartments = useRbacStore((s) => s.fetchDepartments);
   const fetchStages = useRbacStore((s) => s.fetchStages);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
 
   useEffect(() => {
     fetchRoles();
     fetchPermissions();
     fetchDepartments();
     fetchStages();
-  }, [fetchRoles, fetchPermissions, fetchDepartments, fetchStages]);
+    fetchEntity('users');
+  }, [fetchRoles, fetchPermissions, fetchDepartments, fetchStages, fetchEntity]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">

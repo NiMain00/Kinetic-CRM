@@ -1,14 +1,26 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import type { InputConfigGroupKey, InputOption, InputConfigGroup } from '@/types/input-config';
 
 /**
  * Returns active (is_active=true) options for a given input config group,
  * sorted by sort_order. Used by form dropdowns, filter selects, and radio groups.
+ * Auto-fetches groups from API if not yet loaded.
  */
 export function useActiveOptions(key: InputConfigGroupKey): InputOption[] {
+  const groups = useInputConfigStore((s) => s.groups);
+  const loading = useInputConfigStore((s) => s.loading);
+  const initialized = useInputConfigStore((s) => s.initialized);
+  const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
   const getActiveOptions = useInputConfigStore((s) => s.getActiveOptions);
-  return useMemo(() => getActiveOptions(key), [getActiveOptions, key]);
+
+  useEffect(() => {
+    if (!initialized && !loading) {
+      fetchGroups();
+    }
+  }, [initialized, loading, fetchGroups]);
+
+  return useMemo(() => getActiveOptions(key), [getActiveOptions, key, groups]);
 }
 
 /**

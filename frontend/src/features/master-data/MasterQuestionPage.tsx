@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button, Input, Select, Badge, Card } from '@/components/ui';
@@ -119,6 +119,9 @@ export default function MasterQuestionPage() {
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
+  const fetchQuestions = useMasterDataStore((s) => s.fetchQuestions);
+
+  useEffect(() => { fetchQuestions(); }, [fetchQuestions]);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [drawerOpen, setDrawerOpen] = useState(false);
