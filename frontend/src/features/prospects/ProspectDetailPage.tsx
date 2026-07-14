@@ -146,7 +146,6 @@ export default function ProspectDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [localActivities, setLocalActivities] = useState<TimelineEvent[]>([]);
 
   const customer = prospect?.customerId
     ? getCustomerById(prospect.customerId) || prospect.customerData
@@ -166,6 +165,9 @@ export default function ProspectDetailPage() {
   }, [prospect?.timeline]);
 
   const allActivities = useMemo(() => {
+    const comments = (prospect?.timeline || [])
+      .filter(e => e.type === 'comment')
+      .map(e => ({ ...e, type: 'comment' as const }));
     const notifs = notifications
       .filter(n => n.entityId === prospect?.id)
       .map(n => ({
@@ -177,10 +179,10 @@ export default function ProspectDetailPage() {
         type: 'comment' as const,
         description: n.message,
       }));
-    return [...localActivities, ...notifs].sort(
+    return [...comments, ...notifs].sort(
       (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
     );
-  }, [notifications, prospect, localActivities]);
+  }, [notifications, prospect]);
 
   const relatedProjectId = useRelationStore((s) => s.getProjectByProspect(prospect?.id || ''));
   const relatedProject = useMemo(() => {
@@ -347,7 +349,7 @@ export default function ProspectDetailPage() {
 
   const handleSendComment = () => {
     if (!commentText.trim()) return;
-    const newEvent: TimelineEvent = {
+    addProspectTimelineEvent(prospect.id, {
       id: `comment-${Date.now()}`,
       title: 'Komentar',
       actor: authUser?.fullName || authUser?.name || 'User',
@@ -355,8 +357,7 @@ export default function ProspectDetailPage() {
       time: new Date().toISOString(),
       type: 'comment',
       description: commentText.trim(),
-    };
-    setLocalActivities(prev => [newEvent, ...prev]);
+    });
     setCommentText('');
     toast.success('Komentar ditambahkan.');
   };

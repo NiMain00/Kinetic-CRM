@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { Procurement, ProcurementStatus } from '@/types/domain/procurement';
 import type { TimelineEvent, DocGroup } from '@/types/domain';
 import { generateProcurementCode } from '@/types/domain/procurement';
+import { masterDataService } from '@/services/master-data';
 import { useRelationStore } from '@/stores/relationStore';
 import { eventBus } from '@/services/eventBridge';
 
@@ -24,7 +25,6 @@ interface ProcurementState {
   deleteProcurement: (id: string) => void;
   getProcurementById: (id: string) => Procurement | undefined;
   addTimelineEvent: (id: string, event: TimelineEvent) => void;
-  forcePersist: () => void;
   updateDocuments: (id: string, docs: DocGroup[]) => void;
 }
 
@@ -73,6 +73,17 @@ function updateOne(
   };
 }
 
+// ─── Helpers: transient fields (ada di frontend saja, tidak di DB) ──────
+const TRANSIENT_FIELDS = new Set(['sourceProjectCode', 'sourceProjectName', 'timeline', 'documents']);
+
+function stripTransientFields<I extends Record<string, unknown>>(obj: I): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key of Object.keys(obj)) {
+    if (!TRANSIENT_FIELDS.has(key)) result[key] = obj[key];
+  }
+  return result;
+}
+
 // ─── Store ──────────────────────────────────────────────────────────────
 
 export const useProcurementStore = create<ProcurementState>()(
@@ -101,10 +112,15 @@ export const useProcurementStore = create<ProcurementState>()(
           const ids = [...s.ids, newProc.id];
           return { entities, ids, procurements: deriveProcurements(entities, ids) };
         });
+        // Sync ke database (optimistic — update lokal dulu, API di background)
+        setTimeout(() => {
+          masterDataService.create('procurements', stripTransientFields(newProc as any))
+            .catch((e) => console.error('[procurementStore] addProcurement API failed:', e));
+        }, 0);
         return newProc;
       },
 
-      updateProcurement: (id, data) =>
+      updateProcurement: (id, data) => {
         set((s) => {
           const r = updateOne(s.entities, s.ids, id, (e) => ({
             ...e,
@@ -112,7 +128,13 @@ export const useProcurementStore = create<ProcurementState>()(
             updatedAt: new Date().toISOString(),
           }));
           return { ...r, ids: s.ids };
-        }),
+        });
+        // Sync ke database
+        setTimeout(() => {
+          masterDataService.update('procurements', id, stripTransientFields(data as any))
+            .catch((e) => console.error('[procurementStore] updateProcurement API failed:', e));
+        }, 0);
+      },
 
       deleteProcurement: (id) => {
         const proc = get().entities[id];
@@ -122,21 +144,20 @@ export const useProcurementStore = create<ProcurementState>()(
           const ids = s.ids.filter((i) => i !== id);
           return { entities, ids, procurements: deriveProcurements(entities, ids) };
         });
+        // Sync ke database (soft-delete via master API)
+        masterDataService.delete('procurements', id)
+          .catch((e) => console.error('[procurementStore] deleteProcurement API failed:', e));
         // Bersihkan relasi di relationStore biar re-create bisa jalan
         if (proc?.sourceProjectId) {
           useRelationStore.getState().unlinkProjectToProcurement(proc.sourceProjectId, id);
         }
         // Emit event supaya handler lain (misal di eventHandlers.ts) jalan
-        setTimeout(() => {
-          eventBus.emit({
-            type: 'PROCUREMENT_DELETED',
-            procurementId: id,
-            projectId: proc?.sourceProjectId,
-            timestamp: new Date().toISOString(),
-          });
-        }, 0);
-        // Force persist immediately biar ga balik lagi pas refresh
-        get().forcePersist();
+        eventBus.emit({
+          type: 'PROCUREMENT_DELETED',
+          procurementId: id,
+          projectId: proc?.sourceProjectId,
+          timestamp: new Date().toISOString(),
+        });
       },
 
       getProcurementById: (id) => get().entities[id],
@@ -149,44 +170,7 @@ export const useProcurementStore = create<ProcurementState>()(
           }));
           return { ...r, ids: s.ids };
         });
-        // force persist segera agar data tidak hilang jika user navigasi
-        setTimeout(() => {
-          try {
-            const s = get();
-            const partial = { entities: s.entities, ids: s.ids };
-            const key = 'kinetic-procurement';
-            const raw = localStorage.getItem(key);
-            if (raw) {
-              const parsed = JSON.parse(raw);
-              parsed.state = partial;
-              localStorage.setItem(key, JSON.stringify(parsed));
-            }
-          } catch (e) {
-            console.error('[procurement-persist] forcePersist error:', e);
-          }
-        }, 0);
       },
-      forcePersist: () => {
-        if (typeof window !== 'undefined') {
-          setTimeout(() => {
-            const s = get();
-            const partial = { entities: s.entities, ids: s.ids };
-            try {
-              const key = 'kinetic-procurement';
-              const raw = localStorage.getItem(key);
-              if (raw) {
-                const parsed = JSON.parse(raw);
-                parsed.state = partial;
-                parsed.version = 3;
-                localStorage.setItem(key, JSON.stringify(parsed));
-              }
-            } catch (e) {
-              console.error('[procurement-persist] forcePersist error:', e);
-            }
-          }, 0);
-        }
-      },
-
       updateDocuments: (id, docs) =>
         set((s) => {
           const r = updateOne(s.entities, s.ids, id, (e) => ({ ...e, documents: docs }));
