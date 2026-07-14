@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Query, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ProspectsService } from './prospects.service';
 
@@ -8,27 +8,27 @@ export class ProspectsController {
   constructor(private readonly service: ProspectsService) {}
 
   @Get()
-  list(@Query() params: any) {
-    return this.service.list(params);
+  list(@Query() params: any, @Req() req: any) {
+    return this.service.list(params, req.user);
   }
 
   @Get(':id')
-  get(@Param('id') id: string) {
-    return this.service.get(id);
+  get(@Param('id') id: string, @Req() req: any) {
+    return this.service.get(id, req.user);
   }
 
   @Post()
-  create(@Body() data: any) {
-    return this.service.create(data);
+  create(@Body() data: any, @Req() req: any) {
+    return this.service.create(data, req.user);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() data: any) {
-    return this.service.update(id, data);
+  update(@Param('id') id: string, @Body() data: any, @Req() req: any) {
+    return this.service.update(id, data, req.user);
   }
 
   @Delete(':id')
-  delete(@Param('id') id: string) {
-    return this.service.delete(id);
+  delete(@Param('id') id: string, @Req() req: any) {
+    return this.service.delete(id, req.user);
   }
 }

@@ -139,7 +139,11 @@ export const useRelationStore = create<RelationState>()(
           } else {
             map[projectId] = next;
           }
-          return { projectToProcurement: map };
+          // Also clean up _relations cache to prevent stale data in persisted state
+          const relations = s._relations.filter(
+            (r) => !(r.sourceType === 'project' && r.sourceId === projectId && r.targetType === 'procurement' && r.targetId === procurementId && r.relationType === 'has_procurement')
+          );
+          return { projectToProcurement: map, _relations: relations };
         });
       },
 

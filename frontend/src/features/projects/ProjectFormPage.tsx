@@ -8,7 +8,7 @@ import type { Project } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useCustomerStore } from '@/stores/customerStore';
-import { useRbacStore, type RbacDepartment, type RbacRole } from '@/stores/rbacStore';
+import { useRbacStore, type RbacDepartment } from '@/stores/rbacStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { eventBus } from '@/services/eventBridge';
 import { useActiveOptions } from '@/hooks/useInputConfig';
@@ -18,7 +18,6 @@ import { projectSchema, type ProjectFormData } from '@/utils/validators';
 interface MemberEntry {
   deptId: string;
   userId: string;
-  roleId: string;
 }
 
 export default function ProjectFormPage() {
@@ -33,14 +32,9 @@ export default function ProjectFormPage() {
   // RBAC
   const departments = useMasterDataStore((s) => s.departments as unknown as RbacDepartment[]);
   const userRoles = useRbacStore((s) => s.userRoles);
-  const roles = useMasterDataStore((s) => s.roles as unknown as RbacRole[]);
   const addProjectDept = useRbacStore((s) => s.addProjectDepartment);
   const addProjMember = useRbacStore((s) => s.addProjectMember);
   const masterUsers = useMasterDataStore((s) => s.users);
-
-  const projectRoles = roles.filter((r) =>
-    ['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id),
-  );
 
   // Pre-fill dari prospect jika ada
   const fromProspect = (location.state as { fromProspect?: Prospect })?.fromProspect;
@@ -68,7 +62,6 @@ export default function ProjectFormPage() {
   const [members, setMembers] = useState<MemberEntry[]>([]);
   const [newMemberDept, setNewMemberDept] = useState('');
   const [newMemberUser, setNewMemberUser] = useState('');
-  const [newMemberRole, setNewMemberRole] = useState(projectRoles[0]?.id || '');
 
   const activeDepts = departments.filter((d) => d.is_active);
 
@@ -90,13 +83,12 @@ export default function ProjectFormPage() {
   };
 
   const addMember = () => {
-    if (!newMemberDept || !newMemberUser || !newMemberRole) return;
-    // Cegah duplikat user dalam 1 department
+    if (!newMemberDept || !newMemberUser) return;
     if (members.find((m) => m.deptId === newMemberDept && m.userId === newMemberUser)) {
       toast.error('User sudah ditambahkan di department ini.');
       return;
     }
-    setMembers((prev) => [...prev, { deptId: newMemberDept, userId: newMemberUser, roleId: newMemberRole }]);
+    setMembers((prev) => [...prev, { deptId: newMemberDept, userId: newMemberUser }]);
     setNewMemberUser('');
   };
 
@@ -107,8 +99,6 @@ export default function ProjectFormPage() {
   const getUserName = (uid: string) => {
     return masterUsers.find((u) => u.id === uid)?.name || uid;
   };
-
-  const getRoleName = (roleId: string) => roles.find((r) => r.id === roleId)?.name.replace(/_/g, ' ') || roleId;
 
   const onSubmit = async (data: ProjectFormData) => {
     if (selectedDeptIds.length === 0) {
@@ -159,9 +149,9 @@ export default function ProjectFormPage() {
         addProjectDept(savedId, deptId);
       });
 
-      // Simpan project members
+      // Simpan project members (role hardcode — tidak digunakan untuk access control)
       members.forEach((m) => {
-        addProjMember(savedId, m.userId, m.roleId, m.deptId, user?.id || '');
+        addProjMember(savedId, m.userId, 'role-pm-contrib', m.deptId, user?.id || '');
       });
 
       // Jika dari prospek, emit event
@@ -348,12 +338,7 @@ export default function ProjectFormPage() {
                               {getUserName(m.userId).charAt(0).toUpperCase()}
                             </span>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-on-surface">{getUserName(m.userId)}</p>
-                            <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded font-semibold uppercase">
-                              {getRoleName(m.roleId)}
-                            </span>
-                          </div>
+                          <p className="text-sm font-medium text-on-surface">{getUserName(m.userId)}</p>
                         </div>
                         <button
                           type="button"
@@ -386,23 +371,6 @@ export default function ProjectFormPage() {
                               .map((uid) => (
                                 <option key={uid} value={uid}>{getUserName(uid)}</option>
                               ))}
-                          </select>
-                        </div>
-                        <div className="w-32">
-                          <label className="text-[10px] text-secondary font-semibold uppercase tracking-wider block mb-0.5">
-                            Role
-                          </label>
-                          <select
-                            value={newMemberDept === deptId ? newMemberRole : projectRoles[0]?.id || ''}
-                            onChange={(e) => {
-                              setNewMemberDept(deptId);
-                              setNewMemberRole(e.target.value);
-                            }}
-                            className="w-full px-2.5 py-1.5 bg-surface-container-low border border-border/60 rounded-lg text-xs"
-                          >
-                            {projectRoles.map((r) => (
-                              <option key={r.id} value={r.id}>{r.name.replace(/_/g, ' ')}</option>
-                            ))}
                           </select>
                         </div>
                         <button

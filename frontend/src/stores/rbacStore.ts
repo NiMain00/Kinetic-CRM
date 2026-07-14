@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { rbacService } from '@/services/rbac';
 import { masterDataService } from '@/services/master-data';
 
@@ -54,6 +53,14 @@ export interface WorkflowStage {
   sequence: number;
   ownerDepartmentCode: string;
   prevDepartmentCode?: string | null;
+  stageDepartments?: StageDepartment[];
+}
+
+export interface StageDepartment {
+  id: string;
+  stageId: string;
+  departmentCode: string;
+  accessLevel: 'read' | 'write';
 }
 
 export interface ProjectDeptRecord {
@@ -78,6 +85,7 @@ interface RbacState {
   userRoles: RbacUserRole[];
   rolePermissions: RbacRolePermission[];
   workflowStages: WorkflowStage[];
+  stageDepartments: StageDepartment[];
   projectDepartments: ProjectDeptRecord[];
   projectMembers: ProjectMemberRecord[];
 
@@ -111,11 +119,13 @@ interface RbacState {
     defaultScope: 'global' | 'department',
   ) => Promise<void>;
 
-  addStage: (data: Omit<WorkflowStage, 'id'>) => Promise<void>;
+  addStage: (data: Omit<WorkflowStage, 'id'>) => Promise<string | undefined>;
   updateStage: (id: string, data: Partial<WorkflowStage>) => Promise<void>;
   deleteStage: (id: string) => Promise<void>;
   fetchStages: () => Promise<void>;
   getStagesByModule: (module: string) => WorkflowStage[];
+  fetchStageDepartments: (stageId: string) => Promise<void>;
+  setStageDepartments: (stageId: string, assignments: { departmentCode: string; accessLevel: string }[]) => Promise<void>;
 
   addProjectDepartment: (projectId: string, departmentId: string) => void;
   removeProjectDepartment: (projectId: string, departmentId: string) => void;
@@ -130,7 +140,6 @@ let _nextId = 1000;
 const nextId = () => `rbac-${++_nextId}`;
 
 export const useRbacStore = create<RbacState>()(
-  persist(
     (set, get) => ({
       departments: [],
       roles: [],
@@ -138,6 +147,7 @@ export const useRbacStore = create<RbacState>()(
       userRoles: [],
       rolePermissions: [],
       workflowStages: [],
+      stageDepartments: [],
       projectDepartments: [],
       projectMembers: [],
 
@@ -429,16 +439,28 @@ export const useRbacStore = create<RbacState>()(
         try {
           const res = await rbacService.getWorkflowStages();
           const data = (res.data?.data ?? res.data) as any[];
+          const allStageDepts: StageDepartment[] = [];
           set({
-            workflowStages: (data || []).map((s: any) => ({
-              id: s.id,
-              code: s.code,
-              name: s.name,
-              module: s.module,
-              sequence: s.sequence,
-              ownerDepartmentCode: s.ownerDepartmentCode,
-              prevDepartmentCode: s.prevDepartmentCode ?? null,
-            })),
+            workflowStages: (data || []).map((s: any) => {
+              const depts: StageDepartment[] = (s.stageDepartments || []).map((sd: any) => ({
+                id: sd.id,
+                stageId: sd.stageId,
+                departmentCode: sd.departmentCode,
+                accessLevel: sd.accessLevel || 'read',
+              }));
+              allStageDepts.push(...depts);
+              return {
+                id: s.id,
+                code: s.code,
+                name: s.name,
+                module: s.module,
+                sequence: s.sequence,
+                ownerDepartmentCode: s.ownerDepartmentCode,
+                prevDepartmentCode: s.prevDepartmentCode ?? null,
+                stageDepartments: depts,
+              };
+            }),
+            stageDepartments: allStageDepts,
           });
         } catch (err) {
           console.error('[rbacStore] fetchStages failed:', err);
@@ -446,8 +468,10 @@ export const useRbacStore = create<RbacState>()(
       },
       addStage: async (data) => {
         try {
-          await rbacService.createStage(data);
+          const res = await rbacService.createStage(data);
           await get().fetchStages();
+          const created = res.data?.data ?? res.data;
+          return created?.id;
         } catch (err) {
           console.error('[rbacStore] addStage failed:', err);
           throw err;
@@ -473,6 +497,25 @@ export const useRbacStore = create<RbacState>()(
       },
       getStagesByModule: (module) =>
         get().workflowStages.filter((st) => st.module === module).sort((a, b) => a.sequence - b.sequence),
+
+      fetchStageDepartments: async (stageId) => {
+        try {
+          const res = await rbacService.getStageDepartments(stageId);
+          const depts = (res.data?.data ?? res.data) as any[] || [];
+          set({ stageDepartments: depts.map((d: any) => ({ id: d.id, stageId: d.stageId, departmentCode: d.departmentCode, accessLevel: d.accessLevel || 'read' })) });
+        } catch (err) {
+          console.error('[rbacStore] fetchStageDepartments failed:', err);
+        }
+      },
+      setStageDepartments: async (stageId, assignments) => {
+        try {
+          await rbacService.setStageDepartments(stageId, assignments);
+          await get().fetchStages();
+        } catch (err) {
+          console.error('[rbacStore] setStageDepartments failed:', err);
+          throw err;
+        }
+      },
 
       addProjectDepartment: async (projectId, departmentId) => {
         try {
@@ -546,22 +589,4 @@ export const useRbacStore = create<RbacState>()(
       getProjectMembers: (projectId) =>
         get().projectMembers.filter((pm) => pm.projectId === projectId),
     }),
-    {
-      name: 'kinetic-rbac',
-      version: 10,
-      migrate: (persisted: unknown, version: number) => {
-        const current = (persisted || {}) as any;
-        return {
-          departments: current.departments || [],
-          roles: current.roles || [],
-          permissions: current.permissions || [],
-          userRoles: current.userRoles || [],
-          rolePermissions: current.rolePermissions || [],
-          workflowStages: current.workflowStages || [],
-          projectDepartments: current.projectDepartments || [],
-          projectMembers: current.projectMembers || [],
-        };
-      },
-    },
-  ),
 );

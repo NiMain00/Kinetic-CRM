@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
@@ -22,7 +22,13 @@ const STATUS_COLORS: Record<ProcurementStatus, string> = {
 export default function ProcurementListPage() {
   const navigate = useNavigate();
   const procurements = useProcurementStore((s) => s.procurements);
+  const loading = useProcurementStore((s) => s.loading);
+  const fetchProcurements = useProcurementStore((s) => s.fetchProcurements);
   const { can } = useAuthz();
+
+  useEffect(() => {
+    fetchProcurements();
+  }, [fetchProcurements]);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
   const [statusFilter, setStatusFilter] = useState<ProcurementStatus | 'all'>('all');

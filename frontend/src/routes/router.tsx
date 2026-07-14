@@ -1,8 +1,9 @@
 import React, { Suspense, lazy, type ComponentType } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, GuestRoute, RoleRoute, PermissionRoute } from './guards';
-import { AppLayout } from '@/components/layout';
 import { PageLoader } from '@/components/layout';
+
+const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 import { withPageProps } from './page-adapter';
 
 const LazyLoad = (Component: ComponentType<any>) => {
@@ -124,12 +125,12 @@ export default function AppRouter() {
       <Route path="/reset-password/:token" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
       {/* Profile */}
-      <Route path="/profile" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route path="/profile" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
         <Route index element={<ProfilePage />} />
       </Route>
 
       {/* Main app routes */}
-      <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route path="/" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
 

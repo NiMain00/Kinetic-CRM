@@ -101,6 +101,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   };
 
   const handleApply = () => {
+    console.log('[PemenangTab] handleApply called, outcome:', outcome, 'projectId:', project?.id);
     if (!project?.id) return;
     if (!outcome) {
       onShowNotification?.('Pilih hasil tender terlebih dahulu', 'error');

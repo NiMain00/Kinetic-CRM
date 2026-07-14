@@ -425,6 +425,13 @@ export default function ProspectDetailPage() {
             <span className="material-symbols-outlined text-[18px]">delete</span>
           </button>
         )}
+
+        {access === 'read' && (
+          <div className="px-3 py-1.5 bg-surface-container-low border border-border rounded-lg text-[10px] text-outline flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px]">visibility</span>
+            Mode read-only — department kamu hanya bisa melihat prospek ini
+          </div>
+        )}
       </div>
     );
   };

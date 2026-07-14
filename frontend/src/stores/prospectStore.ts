@@ -77,10 +77,12 @@ function mapApiProspect(p: any): Prospect {
   } else if (p.answers && typeof p.answers === 'object') {
     Object.assign(answers, p.answers);
   }
+  const projectId = p.convertedToProjectId || p.projectId;
   return {
     ...p,
+    isConverted: projectId != null,
     timeline: p.timeline || p.timelineEvents || [],
-    projectId: p.convertedToProjectId || p.projectId,
+    projectId,
     estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : undefined,
     answers: Object.keys(answers).length > 0 ? answers : undefined,
     status: STATUS_MAP_REV[p.status] || p.status,

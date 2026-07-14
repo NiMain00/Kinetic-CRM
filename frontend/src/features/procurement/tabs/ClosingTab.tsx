@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
+import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui';
 
 interface Props {
@@ -16,13 +17,14 @@ export default function ClosingTab({ procurement }: Props) {
 
   const handleClose = () => {
     if (!procurement.id) return;
+    const currentUserId = useAuthStore.getState().user?.id;
     updateProcurement(procurement.id, {
       status: 'Closed',
       phase: 'Closing',
       progress: 100,
       isClosed: true,
       closedAt: new Date().toISOString(),
-      closedBy: procurement.createdBy,
+      ...(currentUserId ? { closedBy: currentUserId } : {}),
     });
     addTimelineEvent(procurement.id, {
       id: `evt-${Date.now()}`,
@@ -43,12 +45,13 @@ export default function ClosingTab({ procurement }: Props) {
 
   const handleCancel = () => {
     if (!procurement.id) return;
+    const currentUserId = useAuthStore.getState().user?.id;
     updateProcurement(procurement.id, {
       status: 'Cancelled',
       phase: 'Selesai',
       isClosed: true,
       closedAt: new Date().toISOString(),
-      closedBy: procurement.createdBy,
+      ...(currentUserId ? { closedBy: currentUserId } : {}),
     });
     addTimelineEvent(procurement.id, {
       id: `evt-${Date.now()}`,

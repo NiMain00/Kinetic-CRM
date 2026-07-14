@@ -6,7 +6,6 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useAuthz } from '@/hooks/useAuthz';
-import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { formatDate } from '@/utils/formatters';
@@ -36,7 +35,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
   useEffect(() => { fetchProspects(); }, [fetchProspects]);
   useEffect(() => { fetchGroups(); }, [fetchGroups]);
-  const { isStaffOnly, userId } = useOwnerFilter();
+
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
@@ -67,13 +66,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     });
   };
 
-  const visibleProspects = prospects.filter(p => {
-    // Staff: hanya lihat milik sendiri
-    if (isStaffOnly && userId && p.ownerUserId && p.ownerUserId !== userId) {
-      return false;
-    }
-    return true;
-  });
+  // Backend sudah filter berdasarkan department + stage access
+  const visibleProspects = prospects;
 
   const tabFilterMap: Record<string, (p: Prospect) => boolean> = useMemo(() => ({
     all: () => true,
@@ -322,6 +316,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <div className="px-6 py-12 text-center text-secondary">
                 <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
                 <p>Tidak ada prospek ditemukan</p>
+                <p className="text-xs text-outline mt-1">Kamu hanya bisa melihat prospek yang berada di stage yang diizinkan untuk department-mu. Hubungi admin jika seharusnya kamu punya akses.</p>
               </div>
             ) : (
               paginatedProspects.map((row, index) => (
@@ -485,6 +480,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     <td colSpan={selectionMode ? 8 : 7} className="px-6 py-12 text-center text-secondary">
                       <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
                       <p>Tidak ada prospek ditemukan</p>
+                      <p className="text-xs text-outline mt-1">Kamu hanya bisa melihat prospek yang berada di stage yang diizinkan untuk department-mu. Hubungi admin jika seharusnya kamu punya akses.</p>
                     </td>
                   </tr>
                 ) : (
@@ -533,7 +529,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden" title={row.date || ''}>{row.date ? formatDate(row.date) : '-'}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {row.status === 'Approved' && !row.isConverted && (
+                          {row.status === 'Approved' && !row.isConverted && can('project:create') && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleBuatProyek(row); }}
                               className="touch-min flex items-center justify-center text-success hover:text-success hover:bg-success/10 rounded-lg transition-all"

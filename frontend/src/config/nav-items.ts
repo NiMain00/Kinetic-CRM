@@ -6,13 +6,14 @@ export interface NavItem {
   icon: string;
   roles?: string[];
   permissions?: string[];
+  module?: string; // for stage-based access check (e.g., 'project')
   children?: NavItem[];
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', permissions: [PERMISSIONS.DASHBOARD_VIEW] },
   { label: 'Prospek', path: '/prospects', icon: 'person', permissions: [PERMISSIONS.PROSPECT_READ] },
-  { label: 'Proyek', path: '/projects', icon: 'work', permissions: [PERMISSIONS.PROJECT_READ] },
+  { label: 'Proyek', path: '/projects', icon: 'work', module: 'project' },
   { label: 'Pengadaan', path: '/procurement', icon: 'inventory_2', permissions: [PERMISSIONS.PENGADAAN_READ] },
   { label: 'Persetujuan', path: '/approvals', icon: 'how_to_reg', permissions: [PERMISSIONS.PROSPECT_APPROVE_TRANSITION] },
   { label: 'Laporan', path: '/reports', icon: 'pie_chart', permissions: [PERMISSIONS.REPORT_VIEW_DEPARTMENT] },

@@ -26,7 +26,7 @@ export default function ProcurementFormPage() {
   const [prNumber, setPrNumber] = useState('');
   const [prNotes, setPrNotes] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!client.trim()) {
       toast.error('Nama klien wajib diisi');
@@ -37,7 +37,7 @@ export default function ProcurementFormPage() {
       ? projects.find((p) => p.id === sourceProjectId)
       : undefined;
 
-    const procurement = addProcurement({
+    const procurement = await addProcurement({
       sourceProjectId: sourceProjectId || undefined,
       sourceProjectCode: selectedProject?.code,
       sourceProjectName: selectedProject?.name,

@@ -85,6 +85,7 @@ export default function ConfigAccessControlPage() {
   const fetchPermissions = useRbacStore((s) => s.fetchPermissions);
   const fetchDepartments = useRbacStore((s) => s.fetchDepartments);
   const fetchStages = useRbacStore((s) => s.fetchStages);
+  const fetchAllUserRoles = useRbacStore((s) => s.fetchAllUserRoles);
   const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
 
   useEffect(() => {
@@ -92,8 +93,9 @@ export default function ConfigAccessControlPage() {
     fetchPermissions();
     fetchDepartments();
     fetchStages();
+    fetchAllUserRoles();
     fetchEntity('users');
-  }, [fetchRoles, fetchPermissions, fetchDepartments, fetchStages, fetchEntity]);
+  }, [fetchRoles, fetchPermissions, fetchDepartments, fetchStages, fetchAllUserRoles, fetchEntity]);
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden">
@@ -1123,6 +1125,7 @@ function StageRulesTab() {
   const addStage = useRbacStore((s) => s.addStage);
   const updateStage = useRbacStore((s) => s.updateStage);
   const deleteStage = useRbacStore((s) => s.deleteStage);
+  const setStageDepartments = useRbacStore((s) => s.setStageDepartments);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formCode, setFormCode] = useState('');
@@ -1131,6 +1134,7 @@ function StageRulesTab() {
   const [formSeq, setFormSeq] = useState(1);
   const [formOwner, setFormOwner] = useState('');
   const [formPrev, setFormPrev] = useState('');
+  const [formExtraDepts, setFormExtraDepts] = useState<{ departmentCode: string; accessLevel: 'read' | 'write' }[]>([]);
   const [showModal, setShowModal] = useState(false);
 
   const activeDepts = departments.filter(d => d.is_active);
@@ -1145,6 +1149,7 @@ function StageRulesTab() {
     setFormCode(''); setFormName(''); setFormModule('project');
     setFormSeq(stagesSorted.length + 1);
     setFormOwner(''); setFormPrev('');
+    setFormExtraDepts([]);
     setShowModal(true);
   };
 
@@ -1153,12 +1158,14 @@ function StageRulesTab() {
     setFormCode(s.code); setFormName(s.name); setFormModule(s.module);
     setFormSeq(s.sequence); setFormOwner(s.ownerDepartmentCode);
     setFormPrev(s.prevDepartmentCode || '');
+    setFormExtraDepts((s.stageDepartments || []).map(sd => ({ departmentCode: sd.departmentCode, accessLevel: sd.accessLevel })));
     setShowModal(true);
   };
 
   const handleSave = async () => {
     if (!formCode || !formName || !formOwner) { toast.error('Kode, nama, dan owner wajib diisi'); return; }
     try {
+      let stageId = editingId;
       if (editingId) {
         await updateStage(editingId, {
           code: formCode, name: formName, module: formModule, sequence: formSeq,
@@ -1166,11 +1173,14 @@ function StageRulesTab() {
         });
         toast.success('Stage diupdate');
       } else {
-        await addStage({
+        stageId = (await addStage({
           code: formCode, name: formName, module: formModule, sequence: formSeq,
           ownerDepartmentCode: formOwner, prevDepartmentCode: formPrev || null,
-        });
+        })) || null;
         toast.success('Stage ditambahkan');
+      }
+      if (stageId) {
+        await setStageDepartments(stageId, formExtraDepts);
       }
       setShowModal(false);
     } catch {
@@ -1187,6 +1197,20 @@ function StageRulesTab() {
     }
   };
 
+  const addExtraDept = () => {
+    const available = activeDepts.filter(d => d.code !== formOwner && d.code !== formPrev && !formExtraDepts.find(e => e.departmentCode === d.code));
+    if (available.length === 0) { toast('Tidak ada department tersedia', { icon: '⚠️' }); return; }
+    setFormExtraDepts(prev => [...prev, { departmentCode: available[0].code, accessLevel: 'read' }]);
+  };
+
+  const removeExtraDept = (idx: number) => {
+    setFormExtraDepts(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const updateExtraDept = (idx: number, field: 'departmentCode' | 'accessLevel', value: string) => {
+    setFormExtraDepts(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value as any } : item));
+  };
+
   const getOwnerDeptName = (code: string) => {
     const d = departments.find(dept => dept.code === code);
     return d ? `${d.code} — ${d.name}` : code;
@@ -1197,11 +1221,25 @@ function StageRulesTab() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-bold text-sm text-on-surface">Workflow Stage Rules</h3>
-          <p className="text-[11px] text-outline">Tentukan department owner dan prev-read untuk setiap stage</p>
+          <p className="text-[11px] text-outline">Atur akses department ke setiap stage — siapa yang bisa baca (Read) dan siapa yang bisa ubah (Write)</p>
         </div>
         <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">add</span>} onClick={openCreate}>
           Tambah Stage
         </Button>
+      </div>
+
+      {/* Info banner */}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 text-[11px] text-on-surface space-y-1">
+        <div className="flex items-center gap-2 font-semibold text-primary">
+          <span className="material-symbols-outlined text-[16px]">info</span>
+          Bagaimana cara kerja stage rules?
+        </div>
+        <ul className="list-disc list-inside text-outline space-y-0.5 ml-1">
+          <li><strong>Owner Department</strong> — Department yang memiliki stage ini, mendapat akses <strong>Write</strong> (bisa lihat, edit, hapus)</li>
+          <li><strong>Previous Department</strong> — Department sebelumnya di alur kerja, mendapat akses <strong>Read Only</strong> (hanya lihat)</li>
+          <li><strong>Additional Department Access</strong> — Tambah department lain dengan akses <strong>Read</strong> atau <strong>Write</strong> sesuai kebutuhan</li>
+          <li>User dengan role <strong>Manager/Admin/Director</strong> tetap punya akses penuh ke semua data, terlepas dari stage rules</li>
+        </ul>
       </div>
 
       {/* Visual flow diagram */}
@@ -1231,6 +1269,15 @@ function StageRulesTab() {
                     )}
                     {!prev && (
                       <p className="text-[8px] text-outline mt-1 border-t border-border/60 pt-1 italic">No prev access</p>
+                    )}
+                    {s.stageDepartments && s.stageDepartments.length > 0 && (
+                      <div className="mt-1 border-t border-border/60 pt-1 space-y-0.5">
+                        {s.stageDepartments.map((sd) => (
+                          <p key={sd.departmentCode} className="text-[7px] text-outline leading-tight">
+                            {sd.departmentCode} ({sd.accessLevel === 'write' ? 'W' : 'R'})
+                          </p>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <div className="flex items-center gap-1 mt-2">
@@ -1264,6 +1311,7 @@ function StageRulesTab() {
               <th className="text-left px-4 py-3 font-semibold text-secondary">Module</th>
               <th className="text-left px-4 py-3 font-semibold text-secondary">Owner (Write)</th>
               <th className="text-left px-4 py-3 font-semibold text-secondary">Prev (Read)</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary">Extra Access</th>
               <th className="text-right px-4 py-3 font-semibold text-secondary">Aksi</th>
             </tr>
           </thead>
@@ -1288,6 +1336,19 @@ function StageRulesTab() {
                     </span>
                   ) : (
                     <span className="text-outline italic">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {s.stageDepartments && s.stageDepartments.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {s.stageDepartments.map((sd) => (
+                        <span key={sd.departmentCode} className={`px-1.5 py-0.5 rounded text-[8px] font-bold border ${DEPT_COLORS[sd.departmentCode] || 'bg-surface-container text-on-surface-variant'}`}>
+                          {sd.departmentCode} ({sd.accessLevel === 'write' ? 'W' : 'R'})
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-outline italic text-[9px]">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -1350,6 +1411,42 @@ function StageRulesTab() {
               ))}
             </select>
             <p className="text-[9px] text-outline">Department sebelumnya akan mendapat akses read-only di stage ini</p>
+          </div>
+
+          {/* Extra department access */}
+          <div className="space-y-2 border-t border-border pt-3">
+            <div className="flex items-center justify-between">
+              <label className="font-semibold text-[11px]">Additional Department Access</label>
+              <button onClick={addExtraDept} className="flex items-center gap-1 text-[10px] text-primary hover:text-primary/80 font-semibold cursor-pointer">
+                <span className="material-symbols-outlined text-[12px]">add</span>
+                Tambah Department
+              </button>
+            </div>
+            {formExtraDepts.length === 0 ? (
+              <p className="text-[10px] text-outline italic">Belum ada department tambahan</p>
+            ) : (
+              <div className="space-y-2">
+                {formExtraDepts.map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2 bg-surface-container-lowest p-2 rounded-lg border border-border/60">
+                    <select value={item.departmentCode} onChange={e => updateExtraDept(idx, 'departmentCode', e.target.value)} className="flex-1 px-2 py-1.5 border border-border rounded-lg text-[10px] focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+                      {activeDepts
+                        .filter(d => d.code === item.departmentCode || (d.code !== formOwner && d.code !== formPrev && !formExtraDepts.some((e, i) => i !== idx && e.departmentCode === d.code)))
+                        .map(d => (
+                          <option key={d.id} value={d.code}>{d.code} — {d.name}</option>
+                        ))}
+                    </select>
+                    <select value={item.accessLevel} onChange={e => updateExtraDept(idx, 'accessLevel', e.target.value)} className="px-2 py-1.5 border border-border rounded-lg text-[10px] focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+                      <option value="read">Read</option>
+                      <option value="write">Write</option>
+                    </select>
+                    <button onClick={() => removeExtraDept(idx)} className="p-1 rounded hover:bg-red-50 text-secondary hover:text-danger cursor-pointer" title="Hapus">
+                      <span className="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-[9px] text-outline">Department yang ditambahkan di sini akan otomatis bisa mengakses data yang sedang berada di stage ini — tanpa perlu mengubah role permissions masing-masing user</p>
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">

@@ -45,6 +45,8 @@ const SOFT_DELETE_ENTITIES = new Set([
   'questions',
   'items',
   'procurements',
+  'prospects',
+  'projects',
 ]);
 
 @Injectable()
@@ -114,14 +116,6 @@ export class MasterService {
   async delete(entity: string, id: string) {
     const model = this.getModel(entity);
     await this.get(entity, id);
-    try {
-      return await model.update({ where: { id }, data: { deletedAt: new Date() } });
-    } catch {
-      try {
-        return await model.delete({ where: { id } });
-      } catch {
-        throw new NotFoundException(`${entity} not found`);
-      }
-    }
+    return model.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 }

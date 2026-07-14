@@ -500,7 +500,22 @@ model WorkflowStage {
   roleId    String?   @map("role_id")
   role      Role?     @relation("RoleWorkflowStages", fields: [roleId], references: [id])
 
+  stageDepartments WorkflowStageDepartment[]
+
   @@map("workflow_stages")
+}
+
+model WorkflowStageDepartment {
+  id             String      @id @default(uuid()) @map("id")
+  stageId        String      @map("stage_id")
+  departmentCode String      @map("department_code") @db.VarChar(50)
+  accessLevel    AccessLevel @default(read) @map("access_level")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  stage WorkflowStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  @@unique([stageId, departmentCode])
+  @@map("workflow_stage_departments")
 }
 
 model ProjectMember {
