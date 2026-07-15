@@ -1,11 +1,11 @@
 import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { TicketsService } from './tickets.service';
+import { FollowUpService } from './follow-up.service';
 
 @UseGuards(AuthGuard('jwt'))
-@Controller('tickets')
-export class TicketsController {
-  constructor(private readonly service: TicketsService) {}
+@Controller('follow-up')
+export class FollowUpController {
+  constructor(private readonly service: FollowUpService) {}
 
   @Get('by-prospect/:prospectId')
   listByProspect(@Param('prospectId') prospectId: string) {

@@ -15,7 +15,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { ConfigModule } from './config/config.module';
 import { ApprovalsModule } from './approvals/approvals.module';
 import { VisitsModule } from './visits/visits.module';
-import { TicketsModule } from './tickets/tickets.module';
+import { FollowUpModule } from './follow-up/follow-up.module';
 
 @Module({
   imports: [
@@ -35,7 +35,7 @@ import { TicketsModule } from './tickets/tickets.module';
     ConfigModule,
     ApprovalsModule,
     VisitsModule,
-    TicketsModule,
+    FollowUpModule,
   ],
 })
 export class AppModule {}

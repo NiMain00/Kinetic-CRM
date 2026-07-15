@@ -136,7 +136,6 @@ enum TaskPriority {
   low
   medium
   high
-  urgent
 }
 
 enum TaskStatus {
@@ -303,11 +302,10 @@ enum VisitStatus {
   cancelled @map("cancelled")
 }
 
-enum TicketStatus {
-  open        @map("open")
-  in_progress @map("in_progress")
-  resolved    @map("resolved")
-  closed      @map("closed")
+enum FollowUpStatus {
+  pending       @map("pending")
+  in_progress   @map("in_progress")
+  completed     @map("completed")
 }
 
 enum UserStatus {
@@ -417,8 +415,8 @@ model User {
   suppliers          Supplier[]
   supplierEvals      SupplierEvaluation[] @relation("UserSupplierEvals")
   visits             Visit[]             @relation("VisitPicUser")
-  ticketsFrom        Ticket[]            @relation("TicketFromUser")
-  ticketsTo          Ticket[]            @relation("TicketToUser")
+  followUpTasksFrom  FollowUpTask[]      @relation("FollowUpFromUser")
+  followUpTasksTo    FollowUpTask[]      @relation("FollowUpToUser")
 
   @@map("users")
 }
@@ -846,7 +844,7 @@ model Prospect {
   reviewNotes        ProspectReviewNote[]
   timelineEvents     ProspectTimelineEvent[]
   visits             Visit[]
-  tickets            Ticket[]
+  followUpTasks      FollowUpTask[]
 
   @@map("prospects")
 }
@@ -955,30 +953,31 @@ model Visit {
   @@map("visits")
 }
 
-// ── TICKET (Serah-terima & Pengawasan Prospek) ────────────────────────────
+// ── FOLLOW-UP TASK (Tindak Lanjut Prospek) ────────────────────────────────
 
-model Ticket {
-  id          String       @id @default(uuid()) @map("id")
-  title       String       @db.VarChar(255)
-  prospectId  String       @map("prospect_id")
-  fromUserId  String       @map("from_user_id")
-  toUserId    String       @map("to_user_id")
-  status      TicketStatus @default(open)
-  priority    TaskPriority @default(medium)
-  progress    Int          @default(0)
-  notes       String?      @db.Text
-  resolvedAt  DateTime?    @map("resolved_at")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+model FollowUpTask {
+  id          String         @id @default(uuid()) @map("id")
+  title       String         @db.VarChar(255)
+  prospectId  String         @map("prospect_id")
+  fromUserId  String         @map("from_user_id")
+  toUserId    String         @map("to_user_id")
+  status      FollowUpStatus @default(pending)
+  priority    TaskPriority   @default(medium)
+  progress    Int            @default(0)
+  notes       String?        @db.Text
+  deadline    DateTime?      @map("deadline") @db.Date
+  completedAt DateTime?      @map("completed_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
 
   prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
-  fromUser User    @relation("TicketFromUser", fields: [fromUserId], references: [id])
-  toUser   User    @relation("TicketToUser", fields: [toUserId], references: [id])
+  fromUser User    @relation("FollowUpFromUser", fields: [fromUserId], references: [id])
+  toUser   User    @relation("FollowUpToUser", fields: [toUserId], references: [id])
 
   @@index([prospectId])
   @@index([toUserId])
   @@index([status])
-  @@map("tickets")
+  @@map("follow_up_tasks")
 }
 
 // ── PROJECT CORE ─────────────────────────────────────────────────────────────

@@ -228,20 +228,21 @@ export interface Visit {
   updatedAt: string;
 }
 
-export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type FollowUpStatus = 'pending' | 'in_progress' | 'completed';
+export type FollowUpPriority = 'low' | 'medium' | 'high';
 
-export interface Ticket {
+export interface FollowUpTask {
   id: string;
   title: string;
   prospectId: string;
   fromUserId: string;
   toUserId: string;
-  status: TicketStatus;
-  priority: TicketPriority;
+  status: FollowUpStatus;
+  priority: FollowUpPriority;
   progress: number;
   notes?: string;
-  resolvedAt?: string;
+  deadline?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

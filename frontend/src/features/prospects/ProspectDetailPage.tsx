@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
 import type { StepperStep, Tab } from '@/components/ui';
 import StatusBadge from '@/components/shared/StatusBadge';
-import type { TimelineEvent, Visit, Ticket } from '@/types/domain';
+import type { TimelineEvent, Visit, FollowUpTask } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -17,7 +17,7 @@ import { useRbacStore } from '@/stores/rbacStore';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { useRelationStore } from '@/stores/relationStore';
 import { useVisitStore } from '@/stores/visitStore';
-import { useTicketStore } from '@/stores/ticketStore';
+import { useFollowUpStore } from '@/stores/followUpStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 
 const legacyLabels: Record<string, string> = {
@@ -50,10 +50,11 @@ const workflowSteps: StepperStep[] = [
 
 const detailTabs: Tab[] = [
   { id: 'overview', label: 'Overview', icon: 'overview' },
+  { id: 'visits', label: 'Kunjungan', icon: 'event_note' },
+  { id: 'follow-up', label: 'Tindak Lanjut', icon: 'assignment' },
   { id: 'documents', label: 'Dokumen', icon: 'description' },
   { id: 'contacts', label: 'Kontak', icon: 'contacts' },
   { id: 'approval', label: 'Approval', icon: 'approval' },
-  { id: 'timeline', label: 'Timeline', icon: 'timeline' },
   { id: 'related-project', label: 'Proyek Terkait', icon: 'business' },
 ];
 
@@ -159,22 +160,39 @@ export default function ProspectDetailPage() {
   const updateVisit = useVisitStore((s) => s.updateVisit);
   const deleteVisit = useVisitStore((s) => s.deleteVisit);
 
-  // Ticket state
-  const [showTicketModal, setShowTicketModal] = useState(false);
-  const [ticketForm, setTicketForm] = useState({ title: '', toUserId: '', priority: 'medium' as const, notes: '' });
-  const tickets = useTicketStore((s) => id ? s.tickets[id] || [] : []);
-  const fetchTickets = useTicketStore((s) => s.fetchTickets);
-  const createTicket = useTicketStore((s) => s.createTicket);
-  const updateTicket = useTicketStore((s) => s.updateTicket);
+  // Visit filter
+  const [visitFilter, setVisitFilter] = useState<string>('all');
 
-  // User list for ticket assignment
+  const filteredVisits = useMemo(() => {
+    if (visitFilter === 'all') return visits;
+    return visits.filter(v => v.status === visitFilter);
+  }, [visits, visitFilter]);
+
+  // Follow-up Task state
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskForm, setTaskForm] = useState({ title: '', toUserId: '', priority: 'medium' as const, notes: '', deadline: '' });
+  const [taskFilter, setTaskFilter] = useState<string>('all');
+  const tasks = useFollowUpStore((s) => id ? s.tasks[id] || [] : []);
+  const fetchTasks = useFollowUpStore((s) => s.fetchTasks);
+  const createTask = useFollowUpStore((s) => s.createTask);
+  const updateTask = useFollowUpStore((s) => s.updateTask);
+
+  const filteredTasks = useMemo(() => {
+    if (taskFilter === 'all') return tasks;
+    if (taskFilter === 'pending') return tasks.filter(t => t.status === 'pending');
+    if (taskFilter === 'in_progress') return tasks.filter(t => t.status === 'in_progress');
+    if (taskFilter === 'completed') return tasks.filter(t => t.status === 'completed');
+    return tasks;
+  }, [tasks, taskFilter]);
+
+  // User list for task assignment
   const [users, setUsers] = useState<{ id: string; fullName: string }[]>([]);
 
   useEffect(() => {
     if (id) {
       fetchVisits(id);
-      fetchTickets(id);
-      // Fetch users for ticket assignment
+      fetchTasks(id);
+      // Fetch users for task assignment
       import('@/services/api-client').then(({ default: api, unwrap }) =>
         api.get('/master/users').then((res: any) => {
           const data = unwrap<any[]>(res) || res.data?.data || [];
@@ -182,7 +200,7 @@ export default function ProspectDetailPage() {
         }).catch(() => {})
       );
     }
-  }, [id, fetchVisits, fetchTickets]);
+  }, [id, fetchVisits, fetchTasks]);
 
   const customer = prospect?.customerId
     ? getCustomerById(prospect.customerId) || prospect.customerData
@@ -847,151 +865,31 @@ export default function ProspectDetailPage() {
                     )
                   )}
 
-                  {/* Right: Activity Feed */}
+                  {/* Right: Activity Feed + Timeline */}
                   <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card">
                     <h4 className="font-bold text-xs text-status-orange uppercase tracking-wider flex items-center gap-1.5 mb-4">
                       <span className="material-symbols-outlined text-[16px]">forum</span>
                       Aktivitas
                     </h4>
                     {renderActivityFeed()}
-                  </div>
 
-                </div>
-
-                {/* ─── ROW 4: Visit & Ticket (Kunjungan & Serah Terima) ─── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-
-                  {/* Visit Card */}
-                  <div className="bg-surface border border-border/60 border-l-4 border-l-info rounded-xl p-5 shadow-card">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-xs text-info uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[16px]">event_note</span>
-                        Kunjungan (Visit)
-                      </h4>
-                      <button
-                        onClick={() => setShowVisitModal(true)}
-                        className="text-xs font-semibold text-info hover:text-info/70 flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">add</span>
-                        Tambah
-                      </button>
-                    </div>
-                    {visits.length === 0 ? (
-                      <div className="text-center py-6 text-outline">
-                        <span className="material-symbols-outlined text-2xl text-outline/40 mb-1">event_busy</span>
-                        <p className="text-xs">Belum ada kunjungan</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 max-h-52 overflow-y-auto">
-                        {visits.slice().reverse().map((v) => (
-                          <div key={v.id} className="flex items-start gap-3 p-2.5 bg-surface-container-low rounded-lg">
-                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                              v.status === 'completed' ? 'bg-success/20 text-success' :
-                              v.status === 'cancelled' ? 'bg-danger/20 text-danger' :
-                              'bg-warning/20 text-warning'
-                            }`}>
-                              <span className="material-symbols-outlined text-[14px]">
-                                {v.status === 'completed' ? 'check' : v.status === 'cancelled' ? 'close' : 'schedule'}
-                              </span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-on-surface">Kunjungan #{v.visitNumber}</span>
-                                <span className="text-[10px] text-outline">{formatDate(v.date)}</span>
-                              </div>
-                              {v.picName && <p className="text-[11px] text-secondary">{v.picName}</p>}
-                              {v.notes && <p className="text-[10px] text-outline line-clamp-1">{v.notes}</p>}
-                              <div className="flex gap-1 mt-1">
-                                <button
-                                  onClick={async () => {
-                                    if (v.status !== 'pending') return;
-                                    try {
-                                      await updateVisit(v.id, { status: 'completed' });
-                                    } catch {
-                                      toast.error('Gagal menyelesaikan kunjungan.');
-                                    }
-                                  }}
-                                  className="text-[10px] text-success font-semibold hover:underline"
-                                  disabled={v.status !== 'pending'}
-                                >
-                                  {v.status === 'pending' ? 'Selesaikan' : v.status === 'completed' ? 'Selesai' : 'Dibatalkan'}
-                                </button>
-                                {(v.status === 'pending' || v.status === 'completed') && (
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        await updateVisit(v.id, { status: 'cancelled' });
-                                      } catch {
-                                        toast.error('Gagal membatalkan kunjungan.');
-                                      }
-                                    }}
-                                    className="text-[10px] text-danger font-semibold hover:underline ml-2"
-                                  >
-                                    Batal
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Ticket / Serah Terima Card */}
-                  <div className="bg-surface border border-border/60 border-l-4 border-l-status-purple rounded-xl p-5 shadow-card">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-bold text-xs text-status-purple uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="material-symbols-outlined text-[16px]">assignment_turned_in</span>
-                        Serah Terima (Ticket)
-                      </h4>
-                      <button
-                        onClick={() => setShowTicketModal(true)}
-                        className="text-xs font-semibold text-status-purple hover:text-status-purple/70 flex items-center gap-1"
-                      >
-                        <span className="material-symbols-outlined text-[14px]">add</span>
-                        Buat
-                      </button>
-                    </div>
-                    {tickets.length === 0 ? (
-                      <div className="text-center py-6 text-outline">
-                        <span className="material-symbols-outlined text-2xl text-outline/40 mb-1">assignment</span>
-                        <p className="text-xs">Belum ada serah terima</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2 max-h-52 overflow-y-auto">
-                        {tickets.map((t) => {
-                          const progressColor = t.progress >= 100 ? 'bg-success' : t.progress >= 50 ? 'bg-warning' : 'bg-info';
-                          return (
-                            <div key={t.id} className="p-2.5 bg-surface-container-low rounded-lg space-y-1.5">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-on-surface truncate">{t.title}</span>
-                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                                  t.status === 'open' ? 'bg-info/20 text-info' :
-                                  t.status === 'in_progress' ? 'bg-warning/20 text-warning' :
-                                  t.status === 'resolved' ? 'bg-success/20 text-success' :
-                                  'bg-surface-container-high text-outline'
-                                }`}>
-                                  {t.status.replace('_', ' ')}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-[10px] text-secondary">
-                                <span>Prioritas: {t.priority}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
-                                  <div className={`h-full rounded-full ${progressColor}`} style={{ width: `${t.progress}%` }} />
-                                </div>
-                                <span className="text-[10px] text-outline font-mono-data">{t.progress}%</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                    {events.length > 0 && (
+                      <>
+                        <div className="border-t border-border my-4" />
+                        <h5 className="text-xs font-bold text-outline mb-3 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[14px]">timeline</span>
+                          Riwayat Timeline
+                        </h5>
+                        <div className="max-h-60 overflow-y-auto">
+                          {renderTimeline()}
+                        </div>
+                      </>
                     )}
                   </div>
 
                 </div>
+
+                {/* ─── ROW 4: Dihapus — Visit pindah ke tab sendiri, Follow-up pindah ke tab sendiri ─── */}
 
               </div>
             )}
@@ -1123,25 +1021,252 @@ export default function ProspectDetailPage() {
               </div>
             )}
 
-            {/* ─── TIMELINE TAB ─── */}
-            {activeTab === 'timeline' && (
-              <div>
-                <div className="bg-surface border border-border/60 border-l-4 border-l-status-purple rounded-xl p-5 shadow-card">
-                  <h3 className="font-bold text-sm text-status-purple mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px]">timeline</span>
-                    Timeline Audit Trail
+            {/* ─── KUNJUNGAN TAB ─── */}
+            {activeTab === 'visits' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-info flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[20px]">event_note</span>
+                    Daftar Kunjungan
                   </h3>
-                  {renderTimeline()}
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                    onClick={() => setShowVisitModal(true)}
+                  >
+                    Tambah Kunjungan
+                  </Button>
                 </div>
 
-                {/* Activity Feed */}
-                <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card mt-4">
-                  <h3 className="font-bold text-sm text-status-orange mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px]">forum</span>
-                    Aktivitas
-                  </h3>
-                  {renderActivityFeed()}
+                {/* Filter tabs */}
+                <div className="flex gap-1 p-1 bg-surface-container rounded-xl border border-border/60 w-fit">
+                  {[
+                    { value: 'all', label: 'Semua' },
+                    { value: 'pending', label: 'Pending' },
+                    { value: 'completed', label: 'Selesai' },
+                    { value: 'cancelled', label: 'Dibatalkan' },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setVisitFilter(f.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                        visitFilter === f.value
+                          ? 'bg-surface text-primary shadow-sm border border-border/60'
+                          : 'text-secondary hover:bg-surface-container-high'
+                      }`}
+                    >
+                      {f.label}
+                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
+                        {visits.filter(v => f.value === 'all' || v.status === f.value).length}
+                      </span>
+                    </button>
+                  ))}
                 </div>
+
+                {/* Visit cards */}
+                {filteredVisits.length === 0 ? (
+                  <div className="text-center py-12 text-outline">
+                    <span className="material-symbols-outlined text-4xl text-outline/50 mb-2">event_busy</span>
+                    <p className="text-sm font-medium">Belum ada kunjungan</p>
+                    <p className="text-xs mt-1">Kunjungan pertama diperlukan sebelum Lead bisa naik ke Prospek.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {filteredVisits.slice().reverse().map((v) => (
+                      <div key={v.id} className="flex items-start gap-4 p-4 bg-surface border border-border/60 rounded-xl shadow-card">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          v.status === 'completed' ? 'bg-success/20 text-success' :
+                          v.status === 'cancelled' ? 'bg-danger/20 text-danger' :
+                          'bg-warning/20 text-warning'
+                        }`}>
+                          <span className="material-symbols-outlined text-[20px]">
+                            {v.status === 'completed' ? 'check' : v.status === 'cancelled' ? 'close' : 'schedule'}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-bold text-on-surface">Kunjungan #{v.visitNumber}</span>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              v.status === 'completed' ? 'bg-success/10 text-success' :
+                              v.status === 'cancelled' ? 'bg-danger/10 text-danger' :
+                              'bg-warning/10 text-warning'
+                            }`}>
+                              {v.status === 'completed' ? 'Selesai' : v.status === 'cancelled' ? 'Dibatalkan' : 'Pending'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-secondary">
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                              {formatDate(v.date)}
+                            </span>
+                            {v.picName && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">person</span>
+                                {v.picName}
+                              </span>
+                            )}
+                          </div>
+                          {v.notes && (
+                            <p className="text-xs text-secondary mt-2 bg-surface-container-low p-2 rounded-lg">{v.notes}</p>
+                          )}
+                          {v.status === 'pending' && (
+                            <div className="flex gap-2 mt-3">
+                              <Button variant="success" size="sm" onClick={async () => {
+                                try { await updateVisit(v.id, { status: 'completed' }); toast.success('Kunjungan selesai.'); }
+                                catch { toast.error('Gagal menyelesaikan kunjungan.'); }
+                              }}>
+                                Selesaikan
+                              </Button>
+                              <button
+                                onClick={async () => {
+                                  try { await updateVisit(v.id, { status: 'cancelled' }); toast.success('Kunjungan dibatalkan.'); }
+                                  catch { toast.error('Gagal membatalkan kunjungan.'); }
+                                }}
+                                className="px-3 py-1.5 border border-danger/30 text-danger rounded-lg text-xs font-semibold hover:bg-danger/5 transition-all"
+                              >
+                                Batalkan
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─── TINDAK LANJUT TAB ─── */}
+            {activeTab === 'follow-up' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-status-purple flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[20px]">assignment</span>
+                    Daftar Tugas Tindak Lanjut
+                  </h3>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                    onClick={() => setShowTaskModal(true)}
+                  >
+                    Buat Tugas Baru
+                  </Button>
+                </div>
+
+                {/* Filter tabs */}
+                <div className="flex gap-1 p-1 bg-surface-container rounded-xl border border-border/60 w-fit">
+                  {[
+                    { value: 'all', label: 'Semua' },
+                    { value: 'pending', label: 'Belum' },
+                    { value: 'in_progress', label: 'Sedang Dikerjakan' },
+                    { value: 'completed', label: 'Selesai' },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setTaskFilter(f.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                        taskFilter === f.value
+                          ? 'bg-surface text-primary shadow-sm border border-border/60'
+                          : 'text-secondary hover:bg-surface-container-high'
+                      }`}
+                    >
+                      {f.label}
+                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
+                        {tasks.filter(t => f.value === 'all' || t.status === f.value).length}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Task cards */}
+                {filteredTasks.length === 0 ? (
+                  <div className="text-center py-12 text-outline">
+                    <span className="material-symbols-outlined text-4xl text-outline/50 mb-2">assignment</span>
+                    <p className="text-sm font-medium">Belum ada tugas tindak lanjut</p>
+                    <p className="text-xs mt-1">Buat tugas untuk menugaskan follow-up ke tim.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {filteredTasks.map((t) => {
+                      const pColor = t.priority === 'high' ? 'text-danger bg-danger/10 border-danger/20' :
+                        t.priority === 'medium' ? 'text-warning bg-warning/10 border-warning/20' :
+                        'text-secondary bg-surface-container-high border-border/40';
+                      const progressColor = t.progress >= 100 ? 'bg-success' : t.progress >= 50 ? 'bg-warning' : 'bg-info';
+                      return (
+                        <div key={t.id} className="p-4 bg-surface border border-border/60 rounded-xl shadow-card space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${pColor}`}>
+                                  {t.priority === 'high' ? 'Tinggi' : t.priority === 'medium' ? 'Sedang' : 'Rendah'}
+                                </span>
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                  t.status === 'completed' ? 'bg-success/10 text-success' :
+                                  t.status === 'in_progress' ? 'bg-warning/10 text-warning' :
+                                  'bg-info/10 text-info'
+                                }`}>
+                                  {t.status === 'pending' ? 'Belum' : t.status === 'in_progress' ? 'Sedang Dikerjakan' : 'Selesai'}
+                                </span>
+                              </div>
+                              <p className="text-sm font-bold text-on-surface mt-1">{t.title}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-secondary">
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">person_outline</span>
+                              Dari: {users.find(u => u.id === t.fromUserId)?.fullName || '-'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">person</span>
+                              Untuk: {users.find(u => u.id === t.toUserId)?.fullName || '-'}
+                            </span>
+                            {t.deadline && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                                Deadline: {formatDate(t.deadline)}
+                              </span>
+                            )}
+                          </div>
+
+                          {t.notes && (
+                            <p className="text-xs text-secondary bg-surface-container-low p-2 rounded-lg">{t.notes}</p>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${progressColor} transition-all`} style={{ width: `${t.progress}%` }} />
+                            </div>
+                            <span className="text-[10px] text-outline font-mono-data min-w-[32px] text-right">{t.progress}%</span>
+                          </div>
+
+                          {t.status !== 'completed' && (
+                            <div className="flex gap-2 pt-1">
+                              {t.status === 'pending' && (
+                                <Button variant="primary" size="sm" onClick={async () => {
+                                  try { await updateTask(t.id, { status: 'in_progress', progress: 25 }); toast.success('Tugas dimulai.'); }
+                                  catch { toast.error('Gagal mengupdate tugas.'); }
+                                }}>
+                                  Mulai
+                                </Button>
+                              )}
+                              {t.status === 'in_progress' && (
+                                <Button variant="success" size="sm" onClick={async () => {
+                                  try { await updateTask(t.id, { status: 'completed', progress: 100 }); toast.success('Tugas selesai!'); }
+                                  catch { toast.error('Gagal mengupdate tugas.'); }
+                                }}>
+                                  Selesaikan
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1258,32 +1383,33 @@ export default function ProspectDetailPage() {
         </div>
       </Modal>
 
-      {/* ─── TICKET MODAL ─── */}
+      {/* ─── TASK MODAL ─── */}
       <Modal
-        isOpen={showTicketModal}
-        onClose={() => setShowTicketModal(false)}
-        title="Buat Serah Terima (Ticket)"
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        title="Buat Tugas Tindak Lanjut"
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setShowTicketModal(false)}>Batal</Button>
+            <Button variant="secondary" size="md" onClick={() => setShowTaskModal(false)}>Batal</Button>
             <Button variant="primary" size="md" onClick={async () => {
               if (!id) return;
-              if (!ticketForm.title) { toast.error('Judul ticket wajib diisi.'); return; }
-              if (!ticketForm.toUserId) { toast.error('Pilih PIC tujuan.'); return; }
+              if (!taskForm.title) { toast.error('Judul tugas wajib diisi.'); return; }
+              if (!taskForm.toUserId) { toast.error('Pilih PIC tujuan.'); return; }
               try {
-                await createTicket({
-                  title: ticketForm.title,
+                await createTask({
+                  title: taskForm.title,
                   prospectId: id,
                   fromUserId: authUser?.id || '',
-                  toUserId: ticketForm.toUserId,
-                  priority: ticketForm.priority,
-                  notes: ticketForm.notes || undefined,
+                  toUserId: taskForm.toUserId,
+                  priority: taskForm.priority,
+                  notes: taskForm.notes || undefined,
+                  deadline: taskForm.deadline || undefined,
                 });
-                setTicketForm({ title: '', toUserId: '', priority: 'medium', notes: '' });
-                setShowTicketModal(false);
-                toast.success('Ticket berhasil dibuat.');
+                setTaskForm({ title: '', toUserId: '', priority: 'medium', notes: '', deadline: '' });
+                setShowTaskModal(false);
+                toast.success('Tugas berhasil dibuat.');
               } catch (err: any) {
-                toast.error(err?.response?.data?.message || 'Gagal membuat ticket.');
+                toast.error(err?.response?.data?.message || 'Gagal membuat tugas.');
               }
             }}>
               Simpan
@@ -1295,17 +1421,17 @@ export default function ProspectDetailPage() {
           <div className="space-y-1.5">
             <label className="font-semibold text-sm">Judul *</label>
             <input
-              value={ticketForm.title}
-              onChange={(e) => setTicketForm({ ...ticketForm, title: e.target.value })}
+              value={taskForm.title}
+              onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Contoh: Serah terima prospek ke Marketing"
+              placeholder="Contoh: Follow-up proposal ke customer"
             />
           </div>
           <div className="space-y-1.5">
             <label className="font-semibold text-sm">PIC Tujuan *</label>
             <select
-              value={ticketForm.toUserId}
-              onChange={(e) => setTicketForm({ ...ticketForm, toUserId: e.target.value })}
+              value={taskForm.toUserId}
+              onChange={(e) => setTaskForm({ ...taskForm, toUserId: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="">Pilih PIC</option>
@@ -1317,23 +1443,31 @@ export default function ProspectDetailPage() {
           <div className="space-y-1.5">
             <label className="font-semibold text-sm">Prioritas</label>
             <select
-              value={ticketForm.priority}
-              onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value as any })}
+              value={taskForm.priority}
+              onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value as any })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="low">Rendah</option>
               <option value="medium">Sedang</option>
               <option value="high">Tinggi</option>
-              <option value="urgent">Urgent</option>
             </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Deadline</label>
+            <input
+              type="date"
+              value={taskForm.deadline}
+              onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
           <div className="space-y-1.5">
             <label className="font-semibold text-sm">Catatan</label>
             <textarea
-              value={ticketForm.notes}
-              onChange={(e) => setTicketForm({ ...ticketForm, notes: e.target.value })}
+              value={taskForm.notes}
+              onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
-              placeholder="Catatan serah terima..."
+              placeholder="Deskripsi tugas..."
             />
           </div>
         </div>
