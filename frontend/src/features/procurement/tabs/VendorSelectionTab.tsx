@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
 import { Button } from '@/components/ui';
@@ -19,10 +19,72 @@ export default function VendorSelectionTab({ procurement }: Props) {
     procurement.vendorContact || '',
   );
 
+  // --- Refs for auto-save ---
+  const selectedVendorRef = useRef(selectedVendor);
+  useEffect(() => { selectedVendorRef.current = selectedVendor; }, [selectedVendor]);
+  const vendorPicRef = useRef(vendorPic);
+  useEffect(() => { vendorPicRef.current = vendorPic; }, [vendorPic]);
+  const vendorContactRef = useRef(vendorContact);
+  useEffect(() => { vendorContactRef.current = vendorContact; }, [vendorContact]);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
   useEffect(() => {
     setSelectedVendor(procurement.selectedVendor || '');
     setVendorPic(procurement.vendorPic || '');
     setVendorContact(procurement.vendorContact || '');
+  }, [procurement.id]);
+
+  // Sync to Zustand store on every change (immediate)
+  useEffect(() => {
+    if (!procurement.id) return;
+    const store = useProcurementStore.getState();
+    const current = store.entities[procurement.id];
+    if (!current) return;
+    useProcurementStore.setState((s) => ({
+      entities: {
+        ...s.entities,
+        [procurement.id]: {
+          ...current,
+          selectedVendor: selectedVendorRef.current,
+          vendorPic: vendorPicRef.current,
+          vendorContact: vendorContactRef.current,
+        },
+      },
+    }));
+  }, [selectedVendor, vendorPic, vendorContact, procurement.id]);
+
+  // Auto-save to backend (debounced)
+  useEffect(() => {
+    if (!procurement.id) return;
+    const hasData = selectedVendor || vendorPic || vendorContact;
+    setAutoSaveStatus(hasData ? 'unsaved' : 'saved');
+    if (!hasData) return;
+    const timer = setTimeout(() => {
+      setAutoSaveStatus('saving');
+      updateProcurement(procurement.id, {
+        selectedVendor: selectedVendorRef.current,
+        vendorPic: vendorPicRef.current,
+        vendorContact: vendorContactRef.current,
+      }).then(() => setAutoSaveStatus('saved'))
+        .catch(() => { setAutoSaveStatus('unsaved'); });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [selectedVendor, vendorPic, vendorContact, procurement.id]);
+
+  // Save on unmount
+  useEffect(() => {
+    return () => {
+      if (!procurement.id) return;
+      const sv = selectedVendorRef.current;
+      const vp = vendorPicRef.current;
+      const vc = vendorContactRef.current;
+      if (!sv && !vp && !vc) return;
+      updateProcurement(procurement.id, {
+        selectedVendor: sv,
+        vendorPic: vp,
+        vendorContact: vc,
+      }).catch(() => {});
+    };
   }, [procurement.id]);
 
   const handleSave = () => {
@@ -98,7 +160,27 @@ export default function VendorSelectionTab({ procurement }: Props) {
             />
           </div>
         </div>
-        <div className="flex justify-end border-t pt-6 border-border">
+        <div className="flex justify-end items-center gap-3 border-t pt-6 border-border">
+          <div className="flex items-center gap-2 text-xs">
+            {autoSaveStatus === 'saving' && (
+              <span className="text-warning flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
+                Menyimpan...
+              </span>
+            )}
+            {autoSaveStatus === 'saved' && (selectedVendor || vendorPic || vendorContact) && (
+              <span className="text-success flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                Tersimpan
+              </span>
+            )}
+            {autoSaveStatus === 'unsaved' && (selectedVendor || vendorPic || vendorContact) && (
+              <span className="text-outline flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">edit</span>
+                Belum tersimpan
+              </span>
+            )}
+          </div>
           <Button
             onClick={handleSave}
             rightIcon={

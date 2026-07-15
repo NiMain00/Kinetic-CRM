@@ -81,6 +81,11 @@ export default function ProspectFormPage() {
   const [newCustCity, setNewCustCity] = useState(existingProspect?.customerData?.city || '');
   const [newCustNpwp, setNewCustNpwp] = useState(existingProspect?.customerData?.npwp || '');
   const [newCustIndustryId, setNewCustIndustryId] = useState(existingProspect?.customerData?.industryId || '');
+  const [newCustParentId, setNewCustParentId] = useState(existingProspect?.customerData?.parentId || '');
+  const [newCustLevel, setNewCustLevel] = useState(existingProspect?.customerData?.level || '');
+  const [newCustRequirements, setNewCustRequirements] = useState(existingProspect?.customerData?.requirements || '');
+  const [newCustUnitLevel, setNewCustUnitLevel] = useState(existingProspect?.customerData?.unitLevel || '');
+  const [newCustCanonicalName, setNewCustCanonicalName] = useState(existingProspect?.customerData?.canonicalName || '');
 
   // PIC Customer fields
   const [picName, setPicName] = useState(existingProspect?.customerData?.picName || '');
@@ -98,6 +103,11 @@ export default function ProspectFormPage() {
   const [formValue, setFormValue] = useState<number | undefined>(existingProspect?.estimatedValue);
   const [formDate, setFormDate] = useState(existingProspect?.date ? existingProspect.date.slice(0, 10) : '');
   const [formDesc, setFormDesc] = useState(existingProspect?.description || '');
+
+  // Source (untuk Lead dari HO)
+  const [formSource, setFormSource] = useState<'ho' | 'branch'>(
+    (existingProspect?.source as 'ho' | 'branch') || 'branch'
+  );
 
   // Tipe Proyek — dari input config
   const projectTypeOptions = useActiveOptions('project_types');
@@ -117,7 +127,13 @@ export default function ProspectFormPage() {
 
   // --- Existing customer auto-fill logic ---
   const customers = useCustomerStore((s) => s.customers);
+  const fetchCustomers = useCustomerStore((s) => s.fetchCustomers);
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
+
+  // Fetch customers for dropdowns
+  React.useEffect(() => {
+    if (customers.length === 0) fetchCustomers();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Saat selectedCustomerId berubah, auto-fill PIC, industry, provider
   React.useEffect(() => {
@@ -148,12 +164,13 @@ export default function ProspectFormPage() {
     return '';
   };
 
-  const saveProspect = async (status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor') => {
+  const saveProspect = async (status: 'Lead' | 'Potensial' | 'Waiting Supervisor') => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     const clientName = getClientName();
 
     const authorName = authUser?.name || authUser?.fullName || 'Unknown';
+    const potensi = Number(potensiUnit) || 0;
     const result = prospectSchema.safeParse({
       name: formName,
       client: clientName,
@@ -163,7 +180,7 @@ export default function ProspectFormPage() {
       estimatedValue: formValue ?? undefined,
       description: formDesc,
       branch: existingProspect?.branch || userBranch,
-      potensiUnit: Number(potensiUnit) || 0,
+      potensiUnit: potensi,
       projectType,
     });
 
@@ -173,11 +190,6 @@ export default function ProspectFormPage() {
       setIsSubmitting(false);
       return false;
     }
-
-    // Determine potensi status
-    const potensi = Number(potensiUnit) || 0;
-    const autoStatus = status === 'Waiting Supervisor' ? 'Waiting Supervisor' : (potensi > 0 ? 'Potensial' : 'Non Potensial');
-    const prospectType = potensi > 0 ? 'potensial' : 'non_potensial';
 
     // Build customerData untuk new customer
     let customerData: Customer | undefined;
@@ -196,6 +208,11 @@ export default function ProspectFormPage() {
         picPhone: picPhone,
         industryId: newCustIndustryId || undefined,
         providerExisting: providerExisting || undefined,
+        parentId: newCustParentId || undefined,
+        level: (newCustLevel as 'hot' | 'medium' | 'low') || undefined,
+        requirements: newCustRequirements || undefined,
+        unitLevel: newCustUnitLevel || undefined,
+        canonicalName: newCustCanonicalName || undefined,
         isNew: true,
         needsVerification: true,
       };
@@ -218,9 +235,10 @@ export default function ProspectFormPage() {
 
     const events: TimelineEvent[] = [];
     if (!isEdit) {
+      const title = status === 'Lead' ? 'Lead Dibuat' : 'Prospek Dibuat';
       events.push({
         id: `evt-${prospectId}-created-${Date.now()}`,
-        title: 'Prospek Dibuat',
+        title,
         actor: authorName,
         role: 'Staff',
         time: currentTime,
@@ -240,6 +258,8 @@ export default function ProspectFormPage() {
       });
     }
 
+    const prospectType = (status === 'Potensial' || status === 'Waiting Supervisor') && potensi > 0 ? 'potensial' : undefined;
+
     const payload: Prospect = {
       id: prospectId,
       name: formName,
@@ -247,7 +267,7 @@ export default function ProspectFormPage() {
       customerId,
       customerType: customerMode,
       customerData,
-      status: autoStatus,
+      status,
       prospectType,
       potensiUnit: potensi,
       author: existingProspect?.author || authorName,
@@ -259,6 +279,7 @@ export default function ProspectFormPage() {
       industryId: customerMode === 'existing' ? industryId : (newCustIndustryId || undefined),
       providerExisting: providerExisting || undefined,
       projectType: projectType,
+      source: formSource,
       createdByUserId: existingProspect?.createdByUserId || authUser?.id,
       timeline: [...(existingProspect?.timeline || []), ...events],
     };
@@ -301,7 +322,13 @@ export default function ProspectFormPage() {
     return true;
   };
 
-  const handleSaveDraft = () => saveProspect('Potensial');
+  const handleSaveDraft = () => {
+    // Saat edit, jangan regresi status — pertahankan status yang sudah ada
+    if (isEdit && existingProspect) {
+      return saveProspect(existingProspect.status as 'Lead' | 'Potensial' | 'Waiting Supervisor');
+    }
+    return saveProspect('Lead');
+  };
   const handleSubmitReview = () => saveProspect('Waiting Supervisor');
 
   // Reset auto-fill ketika ganti customer
@@ -440,6 +467,49 @@ export default function ProspectFormPage() {
                   <label className="font-semibold text-sm text-on-surface-variant">NPWP (opsional)</label>
                   <input value={newCustNpwp} onChange={(e) => setNewCustNpwp(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="Contoh: 01.234.567.8-091.000" type="text" />
                 </div>
+
+                {/* Hierarchy fields */}
+                <div className="border-t border-border pt-3 space-y-3">
+                  <h4 className="font-semibold text-xs text-status-teal uppercase tracking-wider">Hierarki & Level</h4>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Sub Company / Perusahaan Induk</label>
+                    <select value={newCustParentId} onChange={(e) => setNewCustParentId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm">
+                      <option value="">Tidak ada (Root)</option>
+                      {customers.filter(c => !c.parentId).map(c => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Nama Perusahaan Induk (Canonical)</label>
+                    <input value={newCustCanonicalName} onChange={(e) => setNewCustCanonicalName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="Nama perusahaan induk untuk standarisasi" type="text" />
+                    <p className="text-[10px] text-secondary">Gunakan nama yang sama untuk perusahaan induk agar project tergabung di 1 root.</p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Level Customer</label>
+                    <select value={newCustLevel} onChange={(e) => setNewCustLevel(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm">
+                      <option value="">Pilih Level</option>
+                      <option value="hot">Hot</option>
+                      <option value="medium">Medium</option>
+                      <option value="low">Low</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Kebutuhan (Requirements)</label>
+                    <textarea value={newCustRequirements} onChange={(e) => setNewCustRequirements(e.target.value)} rows={3} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary resize-none" placeholder="Catat kebutuhan utama customer..." />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Unit Level (Instansi Pemerintah)</label>
+                    <select value={newCustUnitLevel} onChange={(e) => setNewCustUnitLevel(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm">
+                      <option value="">Pilih Level</option>
+                      <option value="Kementerian/Lembaga">Kementerian / Lembaga</option>
+                      <option value="Direktorat">Direktorat</option>
+                      <option value="Bidang">Bidang</option>
+                      <option value="Sub Bidang">Sub Bidang</option>
+                    </select>
+                    <p className="text-[10px] text-secondary">Khusus untuk customer tipe Pemerintah.</p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -573,7 +643,7 @@ export default function ProspectFormPage() {
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Potensi Penambahan Unit</label>
                 <input value={potensiUnit} onChange={(e) => setPotensiUnit(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary" placeholder="0" type="number" min="0" aria-label="Potensi Penambahan Unit" />
-                <p className="text-[10px] text-secondary">Jika 0 = status "Non Potensial". Jika di atas 0 = status "Potensial".</p>
+                <p className="text-[10px] text-secondary">Jumlah unit yang diprediksi. Promosi Lead → Prospek membutuhkan nilai &gt; 0.</p>
               </div>
 
               {/* Branch — READONLY dari user login (Fase 1 item 1.1) */}
@@ -584,6 +654,21 @@ export default function ProspectFormPage() {
                   {userBranch}
                 </div>
                 <p className="text-[10px] text-secondary">Cabang diambil dari data user login. Tidak dapat diubah.</p>
+              </div>
+
+              {/* Sumber Lead (untuk Lead dari HO) */}
+              <div className="space-y-1.5">
+                <label className="font-semibold text-sm text-on-surface-variant">Sumber Lead</label>
+                <select
+                  value={formSource}
+                  onChange={(e) => setFormSource(e.target.value as 'ho' | 'branch')}
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none focus:ring-2 focus:ring-primary text-sm"
+                  aria-label="Sumber Lead"
+                >
+                  <option value="branch">Branch / Kantor Cabang</option>
+                  <option value="ho">Head Office (HO)</option>
+                </select>
+                <p className="text-[10px] text-secondary">Pilih asal lead. HO untuk prospek dari kantor pusat.</p>
               </div>
 
               <div className="space-y-1.5">
@@ -712,7 +797,7 @@ export default function ProspectFormPage() {
               className="px-6 py-2.5 bg-surface border border-border/60 text-primary font-bold rounded-xl hover:bg-surface-container transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Simpan Draft"
             >
-              {isSubmitting ? 'Menyimpan...' : 'Simpan Draft'}
+              {isSubmitting ? 'Menyimpan...' : (isEdit ? 'Simpan Draft' : 'Simpan sebagai Lead')}
             </button>
             <button
               onClick={handleSubmitReview}

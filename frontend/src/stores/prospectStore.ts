@@ -52,6 +52,7 @@ function normalizeProspects(prospects: Prospect[]): {
 
 /** Map UI status values to Prisma enum member names */
 const STATUS_MAP: Record<string, string> = {
+  'Lead': 'Lead',
   'Non Potensial': 'Non_Potensial',
   'Potensial': 'Potensial',
   'Waiting Supervisor': 'Waiting_Supervisor',
@@ -60,6 +61,7 @@ const STATUS_MAP: Record<string, string> = {
 };
 /** Reverse map Prisma enum → UI display value */
 const STATUS_MAP_REV: Record<string, string> = {
+  'Lead': 'Lead',
   'Non_Potensial': 'Non Potensial',
   'Potensial': 'Potensial',
   'Waiting_Supervisor': 'Waiting Supervisor',
@@ -139,7 +141,7 @@ export const useProspectStore = create<ProspectState>()(
         }),
 
       createProspect: async (data) => {
-        const { id, author, date, customerData, timeline, ...clean } = data as any;
+        const { id, author, date, customerData, timeline, answers, ...clean } = data as any;
         if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
         if (timeline?.length) {
           clean.timelineEvents = {
@@ -152,9 +154,9 @@ export const useProspectStore = create<ProspectState>()(
             }),
           };
         }
-        if (data.answers && Object.keys(data.answers).length > 0) {
+        if (answers && Object.keys(answers).length > 0) {
           clean.answers = {
-            create: Object.entries(data.answers).map(([questionId, answerText]) => ({
+            create: Object.entries(answers).map(([questionId, answerText]) => ({
               questionId,
               answerText: String(answerText),
             })),
@@ -171,7 +173,7 @@ export const useProspectStore = create<ProspectState>()(
       },
 
       updateProspect: async (id, data) => {
-        const { author, date, customerData, timeline, ...clean } = data as any;
+        const { author, date, customerData, timeline, answers, ...clean } = data as any;
         if (clean.status) clean.status = STATUS_MAP[clean.status] || clean.status;
         if (timeline?.length) {
           clean.timelineEvents = {
@@ -184,10 +186,10 @@ export const useProspectStore = create<ProspectState>()(
             }),
           };
         }
-        if (data.answers && Object.keys(data.answers).length > 0) {
+        if (answers && Object.keys(answers).length > 0) {
           clean.answers = {
             deleteMany: {},
-            create: Object.entries(data.answers).map(([questionId, answerText]) => ({
+            create: Object.entries(answers).map(([questionId, answerText]) => ({
               questionId,
               answerText: String(answerText),
             })),

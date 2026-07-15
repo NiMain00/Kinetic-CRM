@@ -151,6 +151,27 @@ export class ProspectsService {
     await this.checkWriteAccess(prospect, user);
 
     const mapped: any = { ...data };
+
+    // Validasi promosi Lead → Potensial
+    if (prospect.status === 'Lead' && mapped.status === 'Potensial') {
+      const customer = await this.prisma.customer.findFirst({
+        where: { id: prospect.customerId || '' },
+      });
+      if (customer?.needsVerification) {
+        throw new ForbiddenException('Customer harus diverifikasi dahulu sebelum Lead dapat dinaikkan ke Prospek.');
+      }
+      if ((mapped.potensiUnit ?? prospect.potensiUnit) <= 0) {
+        throw new ForbiddenException('Potensi unit harus lebih dari 0 untuk naik dari Lead ke Prospek.');
+      }
+      // Phase 2: minimal 1 kunjungan completed
+      const completedVisits = await this.prisma.visit.count({
+        where: { prospectId: id, status: 'completed' },
+      });
+      if (completedVisits < 1) {
+        throw new ForbiddenException('Lead harus memiliki minimal 1 kunjungan (Visit) untuk naik ke Prospek.');
+      }
+    }
+
     if ('projectId' in mapped) {
       mapped.convertedToProjectId = mapped.projectId ?? null;
       mapped.isConverted = mapped.projectId != null;

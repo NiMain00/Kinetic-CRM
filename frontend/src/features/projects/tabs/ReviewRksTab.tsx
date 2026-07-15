@@ -1,11 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Project, TimelineEvent } from '@/types/domain';
+import type { Project, TimelineEvent, RksData } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { rksService } from '@/services/rks';
 
 interface TabProps {
   project?: Project;
@@ -23,11 +24,97 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const userRole = authUser?.roleName || '';
   const canReview = userRole === 'PM' || userRole === 'Admin' || userRole === 'Super Admin';
   const addNotification = useNotificationStore((s) => s.addNotification);
+  const updateProjectRks = useProjectStore((s) => s.updateProjectRks);
   const addApproval = useApprovalStore((s) => s.addApproval);
   const removeApproval = useApprovalStore((s) => s.removeApproval);
   const approvals = useApprovalStore((s) => s.approvals);
 
-  const [reviewNotes, setReviewNotes] = useState('');
+  // --- State declarations (must be before useEffects) ---
+  const [reviewNotes, setReviewNotes] = useState(() => {
+    return (project?.rks?.answers as Record<string, string>)?.['_reviewNotes'] || '';
+  });
+  const reviewNotesRef = useRef(reviewNotes);
+  useEffect(() => { reviewNotesRef.current = reviewNotes; }, [reviewNotes]);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
+  // Auto-save reviewNotes ke RKS answers._reviewNotes (debounced)
+  useEffect(() => {
+    if (!project?.id) return;
+    if (!reviewNotes) return;
+    setAutoSaveStatus('unsaved');
+    const timer = setTimeout(() => {
+      setAutoSaveStatus('saving');
+      const existingRks = (useProjectStore.getState().entities[project.id]?.rks || {}) as any;
+      const existingAnswers = (existingRks.answers || {}) as Record<string, string>;
+      const mergedRks: RksData = {
+        nomorTender: existingRks.nomorTender || '',
+        namaTender: existingRks.namaTender || '',
+        deadlineTender: existingRks.deadlineTender || '',
+        aanwijzing: existingRks.aanwijzing || '',
+        workLocation: existingRks.workLocation || '',
+        mainScope: existingRks.mainScope || '',
+        additionalNotes: existingRks.additionalNotes || '',
+        uploadedFiles: existingRks.uploadedFiles || [],
+        answers: { ...existingAnswers, _reviewNotes: reviewNotesRef.current },
+      };
+      Promise.all([
+        updateProjectRks(project.id, mergedRks),
+        rksService.save(project.id, mergedRks),
+      ])
+        .then(() => setAutoSaveStatus('saved'))
+        .catch(() => { setAutoSaveStatus('unsaved'); });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [reviewNotes, project?.id]);
+
+  // Sync to Zustand store on every change (immediate)
+  useEffect(() => {
+    if (!project?.id) return;
+    const store = useProjectStore.getState();
+    const current = store.entities[project.id];
+    if (!current) return;
+    const existingRks = (current.rks || {}) as any;
+    const existingAnswers = (existingRks.answers || {}) as Record<string, string>;
+    useProjectStore.setState((s) => ({
+      entities: {
+        ...s.entities,
+        [project.id]: {
+          ...current,
+          rks: {
+            ...existingRks,
+            answers: { ...existingAnswers, _reviewNotes: reviewNotes },
+          } as RksData,
+        },
+      },
+    }));
+  }, [reviewNotes, project?.id]);
+
+  // Save on unmount
+  useEffect(() => {
+    return () => {
+      if (!project?.id) return;
+      if (!reviewNotesRef.current) return;
+      const store = useProjectStore.getState();
+      const current = store.entities[project.id];
+      if (!current?.rks) return;
+      const existingAnswers = ((current.rks as any).answers || {}) as Record<string, string>;
+      const mergedRks: RksData = {
+        nomorTender: (current.rks as any).nomorTender || '',
+        namaTender: (current.rks as any).namaTender || '',
+        deadlineTender: (current.rks as any).deadlineTender || '',
+        aanwijzing: (current.rks as any).aanwijzing || '',
+        workLocation: (current.rks as any).workLocation || '',
+        mainScope: (current.rks as any).mainScope || '',
+        additionalNotes: (current.rks as any).additionalNotes || '',
+        uploadedFiles: (current.rks as any).uploadedFiles || [],
+        answers: { ...existingAnswers, _reviewNotes: reviewNotesRef.current },
+      };
+      Promise.all([
+        updateProjectRks(project.id, mergedRks),
+        rksService.save(project.id, mergedRks),
+      ]).catch(() => {});
+    };
+  }, [project?.id]);
 
   // Filter RKS questions
   const rksQuestions = useMemo(() => {
@@ -304,6 +391,26 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
           placeholder="Masukkan catatan review..."
           rows={4}
         />
+        <div className="flex items-center gap-2 mt-2 text-xs">
+          {autoSaveStatus === 'saving' && (
+            <span className="text-warning flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
+              Menyimpan...
+            </span>
+          )}
+          {autoSaveStatus === 'saved' && reviewNotes && (
+            <span className="text-success flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">check_circle</span>
+              Tersimpan
+            </span>
+          )}
+          {autoSaveStatus === 'unsaved' && reviewNotes && (
+            <span className="text-outline flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">edit</span>
+              Belum tersimpan
+            </span>
+          )}
+        </div>
       </section>
 
       {/* Action Buttons */}

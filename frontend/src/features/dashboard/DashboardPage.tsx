@@ -15,7 +15,6 @@ export default function DashboardPage() {
   const [currentDateString, setCurrentDateString] = useState('');
   const { approvals } = useApprovalStore();
   const { projects } = useProjectStore();
-  const fetchProjects = useProjectStore((s) => s.fetchProjects);
   const user = useAuthStore((s) => s.user);
   const { stats: apiStats, chartData: apiChartData, statusDistribution: apiDist, loading: dashLoading, fetchAll } = useDashboardStore();
 
@@ -23,7 +22,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchAll();
-    fetchProjects();
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('id-ID', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -134,15 +132,9 @@ export default function DashboardPage() {
     });
   }, [statusDistribution]);
 
-  if (dashLoading && !apiStats) {
-    return (
-      <PageContainer>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </PageContainer>
-    );
-  }
+  // ── Skeleton inline saat loading ──
+  const isLoading = dashLoading && !apiStats;
+  const showSkeleton = (show: boolean) => (isLoading && show ? 'animate-pulse rounded bg-surface-container-high/50' : '');
 
   return (
     <PageContainer>
@@ -154,6 +146,12 @@ export default function DashboardPage() {
         <div className="w-12 h-0.5 bg-primary rounded-full mt-1 mb-2"></div>
         <div className="flex flex-wrap items-center gap-3 text-sm text-secondary mb-3">
           <span>{currentDateString}</span>
+          {isLoading && (
+            <span className="flex items-center gap-1.5 text-xs text-primary">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              Memuat data...
+            </span>
+          )}
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-warning"></span>
             {stats.pendingApprovals} approval menunggu

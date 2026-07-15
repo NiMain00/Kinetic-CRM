@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
 import type { StepperStep, Tab } from '@/components/ui';
 import StatusBadge from '@/components/shared/StatusBadge';
-import type { TimelineEvent } from '@/types/domain';
+import type { TimelineEvent, Visit, Ticket } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -16,7 +16,8 @@ import { useAuthz } from '@/hooks/useAuthz';
 import { useRbacStore } from '@/stores/rbacStore';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { useRelationStore } from '@/stores/relationStore';
-import { eventBus } from '@/services/eventBridge';
+import { useVisitStore } from '@/stores/visitStore';
+import { useTicketStore } from '@/stores/ticketStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 
 const legacyLabels: Record<string, string> = {
@@ -31,6 +32,7 @@ const legacyLabels: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  'Lead': 'Lead',
   'Waiting Supervisor': 'Menunggu Supervisor',
   'Non Potensial': 'Non Potensial',
   'Potensial': 'Potensial',
@@ -39,7 +41,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const workflowSteps: StepperStep[] = [
-  { label: 'Dibuat' },
+  { label: 'Lead' },
+  { label: 'Prospek' },
   { label: 'Review Supervisor' },
   { label: 'Approval' },
   { label: 'Proyek' },
@@ -147,14 +150,49 @@ export default function ProspectDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentText, setCommentText] = useState('');
 
+  // Visit state
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [visitForm, setVisitForm] = useState({ date: '', notes: '', picName: '' });
+  const visits = useVisitStore((s) => id ? s.visits[id] || [] : []);
+  const fetchVisits = useVisitStore((s) => s.fetchVisits);
+  const createVisit = useVisitStore((s) => s.createVisit);
+  const updateVisit = useVisitStore((s) => s.updateVisit);
+  const deleteVisit = useVisitStore((s) => s.deleteVisit);
+
+  // Ticket state
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketForm, setTicketForm] = useState({ title: '', toUserId: '', priority: 'medium' as const, notes: '' });
+  const tickets = useTicketStore((s) => id ? s.tickets[id] || [] : []);
+  const fetchTickets = useTicketStore((s) => s.fetchTickets);
+  const createTicket = useTicketStore((s) => s.createTicket);
+  const updateTicket = useTicketStore((s) => s.updateTicket);
+
+  // User list for ticket assignment
+  const [users, setUsers] = useState<{ id: string; fullName: string }[]>([]);
+
+  useEffect(() => {
+    if (id) {
+      fetchVisits(id);
+      fetchTickets(id);
+      // Fetch users for ticket assignment
+      import('@/services/api-client').then(({ default: api, unwrap }) =>
+        api.get('/master/users').then((res: any) => {
+          const data = unwrap<any[]>(res) || res.data?.data || [];
+          setUsers(Array.isArray(data) ? data.map((u: any) => ({ id: u.id, fullName: u.fullName || u.username || '' })) : []);
+        }).catch(() => {})
+      );
+    }
+  }, [id, fetchVisits, fetchTickets]);
+
   const customer = prospect?.customerId
     ? getCustomerById(prospect.customerId) || prospect.customerData
     : prospect?.customerData;
 
   const currentStep = useMemo(() => {
-    if (prospect?.isConverted) return 3;
-    if (prospect?.status === 'Approved') return 2;
-    if (prospect?.status === 'Waiting Supervisor' || prospect?.status === 'Revision') return 1;
+    if (prospect?.isConverted) return 4;
+    if (prospect?.status === 'Approved') return 3;
+    if (prospect?.status === 'Waiting Supervisor' || prospect?.status === 'Revision') return 2;
+    if (prospect?.status === 'Potensial' || prospect?.status === 'Non Potensial') return 1;
     return 0;
   }, [prospect]);
 
@@ -213,153 +251,216 @@ export default function ProspectDetailPage() {
   const isConverted = prospect.isConverted && prospect.projectId;
   const tipeProspek = isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : (STATUS_LABELS[prospect.status] || prospect.status);
 
-  const handleApprove = () => {
-    const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
-    if (pendingApproval) {
-      approveItem(pendingApproval.id);
+  const handleApprove = async () => {
+    try {
+      const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
+      if (pendingApproval) {
+        await approveItem(pendingApproval.id);
+      }
+      await updateProspect(prospect.id, { status: 'Approved' });
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-approved-${Date.now()}`,
+        title: 'Prospek Disetujui',
+        actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
+        role: userRole || 'Waiting Supervisor',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'approve',
+        description: `Prospek "${prospect.name}" telah disetujui.`,
+      });
+      toast.success('Prospek berhasil disetujui.');
+      addNotification({
+        title: 'Prospek Disetujui',
+        message: `Prospek "${prospect.name}" telah disetujui.`,
+        type: 'approval',
+        entityId: prospect.id,
+        entityType: 'prospect',
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menyetujui prospek.');
     }
-    updateProspect(prospect.id, { status: 'Approved' });
-    addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-approved-${Date.now()}`,
-      title: 'Prospek Disetujui',
-      actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
-      role: userRole || 'Waiting Supervisor',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'approve',
-      description: `Prospek "${prospect.name}" telah disetujui.`,
-    });
-    toast.success('Prospek berhasil disetujui.');
-    addNotification({
-      title: 'Prospek Disetujui',
-      message: `Prospek "${prospect.name}" telah disetujui.`,
-      type: 'approval',
-      entityId: prospect.id,
-      entityType: 'prospect',
-    });
   };
 
-  const handleRequestRevision = () => {
-    const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
-    if (pendingApproval) {
-      approveItem(pendingApproval.id);
+  const handleRequestRevision = async () => {
+    try {
+      const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
+      if (pendingApproval) {
+        await approveItem(pendingApproval.id);
+      }
+      await updateProspect(prospect.id, { status: 'Revision' });
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-revised-${Date.now()}`,
+        title: 'Revisi Diminta',
+        actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
+        role: userRole || 'Waiting Supervisor',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'revision',
+        description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
+      });
+      toast.success('Permintaan revisi telah dikirim.');
+      addNotification({
+        title: 'Revisi Prospek',
+        message: `Revisi diminta untuk prospek "${prospect.name}". Silakan periksa dan perbaiki.`,
+        type: 'revision',
+        entityId: prospect.id,
+        entityType: 'prospect',
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal mengirim permintaan revisi.');
     }
-    updateProspect(prospect.id, { status: 'Revision' });
+  };
+
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const handlePromoteToProspek = async () => {
+    if (actionLoading) return;
+    const potensi = prospect?.potensiUnit || 0;
+    if (customer?.needsVerification) {
+      toast.error('Customer harus diverifikasi dahulu sebelum Lead bisa naik ke Prospek.');
+      return;
+    }
+    if (potensi <= 0) {
+      toast.error('Lead harus memiliki potensi unit > 0 untuk naik ke Prospek.');
+      return;
+    }
+    // Phase 2: minimal 1 kunjungan (Visit) completed
+    const completedVisits = visits.filter((v) => v.status === 'completed').length;
+    if (completedVisits < 1) {
+      toast.error('Lead harus memiliki minimal 1 kunjungan (Visit) untuk naik ke Prospek.');
+      return;
+    }
+    setActionLoading('promote');
+    try {
+      await updateProspect(prospect.id, { status: 'Potensial', prospectType: 'potensial' });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menaikkan Lead ke Prospek.');
+      setActionLoading(null);
+      return;
+    }
     addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-revised-${Date.now()}`,
-      title: 'Revisi Diminta',
-      actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
-      role: userRole || 'Waiting Supervisor',
+      id: `evt-${prospect.id}-promoted-${Date.now()}`,
+      title: 'Lead Naik ke Prospek',
+      actor: authUser?.fullName || authUser?.name || 'System',
+      role: userRole || 'Staff',
       time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'revision',
-      description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
+      type: 'status_change',
+      description: `Lead "${prospect.name}" telah dinaikkan menjadi Prospek Potensial.`,
     });
-    toast.success('Permintaan revisi telah dikirim.');
+    toast.success('Lead berhasil dinaikkan ke Prospek.');
     addNotification({
-      title: 'Revisi Prospek',
-      message: `Revisi diminta untuk prospek "${prospect.name}". Silakan periksa dan perbaiki.`,
-      type: 'revision',
+      title: 'Lead Menjadi Prospek',
+      message: `Lead "${prospect.name}" telah dinaikkan menjadi Prospek Potensial.`,
+      type: 'status_change',
       entityId: prospect.id,
       entityType: 'prospect',
     });
+    setActionLoading(null);
   };
 
   const [resubmitting, setResubmitting] = useState(false);
 
-  const handleResubmit = () => {
+  const handleResubmit = async () => {
     if (resubmitting) return;
     setResubmitting(true);
-    updateProspect(prospect.id, { status: 'Waiting Supervisor', currentStageId: 'stage-supervisor-review' });
-    addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-resubmitted-${Date.now()}`,
-      title: 'Diajukan Ulang ke Supervisor',
-      actor: authUser?.fullName || authUser?.name || prospect.author,
-      role: userRole || 'Staff',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'submit',
-      description: `Prospek "${prospect.name}" diajukan ulang setelah revisi.`,
-    });
-    addApproval({
-      id: `app-prospect-${prospect.id}-${Date.now()}`,
-      ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
-      name: prospect.name,
-      branch: prospect.branch || 'Jakarta Pusat',
-      waitingSince: new Date().toISOString(),
-      slaStatus: 'Normal',
-      type: 'Prospek',
-      resourceType: 'prospect',
-      resourceId: prospect.id,
-      client: prospect.client,
-      entityId: prospect.id,
-      entityType: 'prospect',
-      assigneeUserId: authUser?.id,
-    });
-    toast.success('Prospek berhasil dikirim ke review.');
-    addNotification({
-      title: 'Prospek Disubmit',
-      message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh Supervisor.`,
-      type: 'approval',
-      entityId: prospect.id,
-      entityType: 'prospect',
-    });
-    setResubmitting(false);
+    try {
+      await updateProspect(prospect.id, { status: 'Waiting Supervisor', currentStageId: 'stage-supervisor-review' });
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-resubmitted-${Date.now()}`,
+        title: 'Diajukan Ulang ke Supervisor',
+        actor: authUser?.fullName || authUser?.name || prospect.author,
+        role: userRole || 'Staff',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'submit',
+        description: `Prospek "${prospect.name}" diajukan ulang setelah revisi.`,
+      });
+      addApproval({
+        id: `app-prospect-${prospect.id}-${Date.now()}`,
+        ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
+        name: prospect.name,
+        branch: prospect.branch || 'Jakarta Pusat',
+        waitingSince: new Date().toISOString(),
+        slaStatus: 'Normal',
+        type: 'Prospek',
+        resourceType: 'prospect',
+        resourceId: prospect.id,
+        client: prospect.client,
+        entityId: prospect.id,
+        entityType: 'prospect',
+        assigneeUserId: authUser?.id,
+      });
+      toast.success('Prospek berhasil dikirim ke review.');
+      addNotification({
+        title: 'Prospek Disubmit',
+        message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh Supervisor.`,
+        type: 'approval',
+        entityId: prospect.id,
+        entityType: 'prospect',
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal mengirim prospek ke review.');
+    } finally {
+      setResubmitting(false);
+    }
   };
 
   const handleDelete = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteProspect = () => {
-    // Emit event — handler will clean up approvals, relations, and optionally cascade project
-    eventBus.emit({
-      type: 'PROSPECT_DELETED',
-      prospectId: prospect.id,
-      cascadeProjectId: prospect.isConverted && prospect.projectId
-        ? prospect.projectId
-        : undefined,
-      timestamp: new Date().toISOString(),
-    });
-    // Store action just removes local data
-    deleteProspect(prospect.id);
-    toast.success('Prospek berhasil dihapus.');
-    setShowDeleteModal(false);
-    navigate('/prospects');
+  const confirmDeleteProspect = async () => {
+    try {
+      // deleteProspect() already emits PROSPECT_DELETED internally
+      await deleteProspect(prospect.id);
+      toast.success('Prospek berhasil dihapus.');
+      setShowDeleteModal(false);
+      navigate('/prospects');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menghapus prospek.');
+    }
   };
 
   const handleBuatProyek = () => {
     navigate('/projects/new', { state: { fromProspect: prospect } });
   };
 
-  const handleVerifikasi = () => {
+  const handleVerifikasi = async () => {
     if (!customer?.id) {
       toast.error('Data customer tidak ditemukan.');
       return;
     }
-    verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
-    addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-verified-${Date.now()}`,
-      title: 'Customer Diverifikasi',
-      actor: authUser?.fullName || authUser?.name || 'Super Admin',
-      role: userRole || 'Super Admin',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'approve',
-      description: `Customer "${customer.name}" telah diverifikasi.`,
-    });
-    toast.success('Customer berhasil diverifikasi!');
+    try {
+      await verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-verified-${Date.now()}`,
+        title: 'Customer Diverifikasi',
+        actor: authUser?.fullName || authUser?.name || 'Super Admin',
+        role: userRole || 'Super Admin',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'approve',
+        description: `Customer "${customer.name}" telah diverifikasi.`,
+      });
+      toast.success('Customer berhasil diverifikasi!');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal verifikasi customer.');
+    }
   };
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     if (!commentText.trim()) return;
-    addProspectTimelineEvent(prospect.id, {
-      id: `comment-${Date.now()}`,
-      title: 'Komentar',
-      actor: authUser?.fullName || authUser?.name || 'User',
-      role: userRole || 'Staff',
-      time: new Date().toISOString(),
-      type: 'comment',
-      description: commentText.trim(),
-    });
-    setCommentText('');
-    toast.success('Komentar ditambahkan.');
+    try {
+      await addProspectTimelineEvent(prospect.id, {
+        id: `comment-${Date.now()}`,
+        title: 'Komentar',
+        actor: authUser?.fullName || authUser?.name || 'User',
+        role: userRole || 'Staff',
+        time: new Date().toISOString(),
+        type: 'comment',
+        description: commentText.trim(),
+      });
+      setCommentText('');
+      toast.success('Komentar ditambahkan.');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menambahkan komentar.');
+    }
   };
 
   const renderActionButtons = () => {
@@ -371,6 +472,36 @@ export default function ProspectDetailPage() {
 
     return (
       <div className="flex gap-2 flex-wrap justify-end">
+        {/* ─── LEAD: Promosi ke Prospek ─── */}
+        {!isConverted && prospect.status === 'Lead' && (
+          <div className="w-full flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2 text-[10px] text-secondary bg-surface-container-low px-3 py-1.5 rounded-lg flex-wrap">
+              <span className={customer?.needsVerification ? 'text-danger' : 'text-success'}>
+                <span className="material-symbols-outlined text-[14px]">{customer?.needsVerification ? 'cancel' : 'check_circle'}</span>
+              </span>
+              Customer terverifikasi
+              <span className={prospect.potensiUnit > 0 ? 'text-success' : 'text-danger'}>
+                <span className="material-symbols-outlined text-[14px]">{prospect.potensiUnit > 0 ? 'check_circle' : 'cancel'}</span>
+              </span>
+              Potensi unit &gt; 0
+              <span className={visits.some(v => v.status === 'completed') ? 'text-success' : 'text-danger'}>
+                <span className="material-symbols-outlined text-[14px]">{visits.some(v => v.status === 'completed') ? 'check_circle' : 'cancel'}</span>
+              </span>
+              Kunjungan
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">trending_up</span>}
+              onClick={handlePromoteToProspek}
+              isLoading={actionLoading === 'promote'}
+              disabled={actionLoading !== null || !!customer?.needsVerification || (prospect.potensiUnit || 0) <= 0 || !visits.some(v => v.status === 'completed')}
+            >
+              {actionLoading === 'promote' ? 'Memproses...' : 'Naikkan ke Prospek'}
+            </Button>
+          </div>
+        )}
+
         {!isConverted && (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
           <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">send</span>} onClick={handleResubmit} isLoading={resubmitting} disabled={resubmitting}>
             {resubmitting ? 'Mengirim...' : 'Kirim ke Review'}
@@ -727,6 +858,141 @@ export default function ProspectDetailPage() {
 
                 </div>
 
+                {/* ─── ROW 4: Visit & Ticket (Kunjungan & Serah Terima) ─── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+
+                  {/* Visit Card */}
+                  <div className="bg-surface border border-border/60 border-l-4 border-l-info rounded-xl p-5 shadow-card">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-xs text-info uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px]">event_note</span>
+                        Kunjungan (Visit)
+                      </h4>
+                      <button
+                        onClick={() => setShowVisitModal(true)}
+                        className="text-xs font-semibold text-info hover:text-info/70 flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">add</span>
+                        Tambah
+                      </button>
+                    </div>
+                    {visits.length === 0 ? (
+                      <div className="text-center py-6 text-outline">
+                        <span className="material-symbols-outlined text-2xl text-outline/40 mb-1">event_busy</span>
+                        <p className="text-xs">Belum ada kunjungan</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-52 overflow-y-auto">
+                        {visits.slice().reverse().map((v) => (
+                          <div key={v.id} className="flex items-start gap-3 p-2.5 bg-surface-container-low rounded-lg">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                              v.status === 'completed' ? 'bg-success/20 text-success' :
+                              v.status === 'cancelled' ? 'bg-danger/20 text-danger' :
+                              'bg-warning/20 text-warning'
+                            }`}>
+                              <span className="material-symbols-outlined text-[14px]">
+                                {v.status === 'completed' ? 'check' : v.status === 'cancelled' ? 'close' : 'schedule'}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-on-surface">Kunjungan #{v.visitNumber}</span>
+                                <span className="text-[10px] text-outline">{formatDate(v.date)}</span>
+                              </div>
+                              {v.picName && <p className="text-[11px] text-secondary">{v.picName}</p>}
+                              {v.notes && <p className="text-[10px] text-outline line-clamp-1">{v.notes}</p>}
+                              <div className="flex gap-1 mt-1">
+                                <button
+                                  onClick={async () => {
+                                    if (v.status !== 'pending') return;
+                                    try {
+                                      await updateVisit(v.id, { status: 'completed' });
+                                    } catch {
+                                      toast.error('Gagal menyelesaikan kunjungan.');
+                                    }
+                                  }}
+                                  className="text-[10px] text-success font-semibold hover:underline"
+                                  disabled={v.status !== 'pending'}
+                                >
+                                  {v.status === 'pending' ? 'Selesaikan' : v.status === 'completed' ? 'Selesai' : 'Dibatalkan'}
+                                </button>
+                                {(v.status === 'pending' || v.status === 'completed') && (
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        await updateVisit(v.id, { status: 'cancelled' });
+                                      } catch {
+                                        toast.error('Gagal membatalkan kunjungan.');
+                                      }
+                                    }}
+                                    className="text-[10px] text-danger font-semibold hover:underline ml-2"
+                                  >
+                                    Batal
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Ticket / Serah Terima Card */}
+                  <div className="bg-surface border border-border/60 border-l-4 border-l-status-purple rounded-xl p-5 shadow-card">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-xs text-status-purple uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px]">assignment_turned_in</span>
+                        Serah Terima (Ticket)
+                      </h4>
+                      <button
+                        onClick={() => setShowTicketModal(true)}
+                        className="text-xs font-semibold text-status-purple hover:text-status-purple/70 flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">add</span>
+                        Buat
+                      </button>
+                    </div>
+                    {tickets.length === 0 ? (
+                      <div className="text-center py-6 text-outline">
+                        <span className="material-symbols-outlined text-2xl text-outline/40 mb-1">assignment</span>
+                        <p className="text-xs">Belum ada serah terima</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-52 overflow-y-auto">
+                        {tickets.map((t) => {
+                          const progressColor = t.progress >= 100 ? 'bg-success' : t.progress >= 50 ? 'bg-warning' : 'bg-info';
+                          return (
+                            <div key={t.id} className="p-2.5 bg-surface-container-low rounded-lg space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold text-on-surface truncate">{t.title}</span>
+                                <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                                  t.status === 'open' ? 'bg-info/20 text-info' :
+                                  t.status === 'in_progress' ? 'bg-warning/20 text-warning' :
+                                  t.status === 'resolved' ? 'bg-success/20 text-success' :
+                                  'bg-surface-container-high text-outline'
+                                }`}>
+                                  {t.status.replace('_', ' ')}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-secondary">
+                                <span>Prioritas: {t.priority}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+                                  <div className={`h-full rounded-full ${progressColor}`} style={{ width: `${t.progress}%` }} />
+                                </div>
+                                <span className="text-[10px] text-outline font-mono-data">{t.progress}%</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
               </div>
             )}
 
@@ -930,6 +1196,148 @@ export default function ProspectDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ─── VISIT MODAL ─── */}
+      <Modal
+        isOpen={showVisitModal}
+        onClose={() => setShowVisitModal(false)}
+        title="Tambah Kunjungan"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setShowVisitModal(false)}>Batal</Button>
+            <Button variant="primary" size="md" onClick={async () => {
+              if (!id) return;
+              if (!visitForm.date) { toast.error('Tanggal kunjungan wajib diisi.'); return; }
+              try {
+                await createVisit({
+                  prospectId: id,
+                  date: visitForm.date,
+                  notes: visitForm.notes || undefined,
+                  picName: visitForm.picName || undefined,
+                });
+                setVisitForm({ date: '', notes: '', picName: '' });
+                setShowVisitModal(false);
+                toast.success('Kunjungan berhasil ditambahkan.');
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || 'Gagal menambahkan kunjungan.');
+              }
+            }}>
+              Simpan
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Tanggal Kunjungan *</label>
+            <input
+              type="date"
+              value={visitForm.date}
+              onChange={(e) => setVisitForm({ ...visitForm, date: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Nama PIC</label>
+            <input
+              value={visitForm.picName}
+              onChange={(e) => setVisitForm({ ...visitForm, picName: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Nama petugas kunjungan"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Catatan</label>
+            <textarea
+              value={visitForm.notes}
+              onChange={(e) => setVisitForm({ ...visitForm, notes: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+              placeholder="Hasil kunjungan..."
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* ─── TICKET MODAL ─── */}
+      <Modal
+        isOpen={showTicketModal}
+        onClose={() => setShowTicketModal(false)}
+        title="Buat Serah Terima (Ticket)"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setShowTicketModal(false)}>Batal</Button>
+            <Button variant="primary" size="md" onClick={async () => {
+              if (!id) return;
+              if (!ticketForm.title) { toast.error('Judul ticket wajib diisi.'); return; }
+              if (!ticketForm.toUserId) { toast.error('Pilih PIC tujuan.'); return; }
+              try {
+                await createTicket({
+                  title: ticketForm.title,
+                  prospectId: id,
+                  fromUserId: authUser?.id || '',
+                  toUserId: ticketForm.toUserId,
+                  priority: ticketForm.priority,
+                  notes: ticketForm.notes || undefined,
+                });
+                setTicketForm({ title: '', toUserId: '', priority: 'medium', notes: '' });
+                setShowTicketModal(false);
+                toast.success('Ticket berhasil dibuat.');
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || 'Gagal membuat ticket.');
+              }
+            }}>
+              Simpan
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Judul *</label>
+            <input
+              value={ticketForm.title}
+              onChange={(e) => setTicketForm({ ...ticketForm, title: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Contoh: Serah terima prospek ke Marketing"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">PIC Tujuan *</label>
+            <select
+              value={ticketForm.toUserId}
+              onChange={(e) => setTicketForm({ ...ticketForm, toUserId: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Pilih PIC</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>{u.fullName}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Prioritas</label>
+            <select
+              value={ticketForm.priority}
+              onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value as any })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="low">Rendah</option>
+              <option value="medium">Sedang</option>
+              <option value="high">Tinggi</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Catatan</label>
+            <textarea
+              value={ticketForm.notes}
+              onChange={(e) => setTicketForm({ ...ticketForm, notes: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+              placeholder="Catatan serah terima..."
+            />
+          </div>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal

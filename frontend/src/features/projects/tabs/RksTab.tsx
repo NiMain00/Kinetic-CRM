@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Project, TimelineEvent } from '@/types/domain';
@@ -67,6 +67,96 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
 
   // Answers state for RKS questions
   const [answers, setAnswers] = useState<Record<string, string>>(project?.rks?.answers || {});
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
+  // ── Auto-save answers to backend & store ─────────────────────────────
+  // Ref untuk mengakses nilai terkini di dalam debounce tanpa re-trigger
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+  const fieldsRef = useRef({ nomorTender, namaTender, deadlineTender, aanwijzing, workLocation, mainScope, additionalNotes, uploadedFiles });
+  fieldsRef.current = { nomorTender, namaTender, deadlineTender, aanwijzing, workLocation, mainScope, additionalNotes, uploadedFiles };
+
+  // Tulis ke Zustand store secara synchronous setiap answers berubah
+  // sehingga data selamat meski komponen unmount (persist middleware)
+  useEffect(() => {
+    if (!project?.id) return;
+    const store = useProjectStore.getState();
+    const current = store.entities[project.id];
+    if (!current) return;
+    const f = fieldsRef.current;
+    const rksData = {
+      nomorTender: f.nomorTender,
+      namaTender: f.namaTender,
+      deadlineTender: f.deadlineTender,
+      aanwijzing: f.aanwijzing,
+      workLocation: f.workLocation,
+      mainScope: f.mainScope,
+      additionalNotes: f.additionalNotes,
+      uploadedFiles: f.uploadedFiles,
+      answers,
+    };
+    useProjectStore.setState((s) => ({
+      entities: {
+        ...s.entities,
+        [project.id]: { ...current, rks: rksData },
+      },
+    }));
+  }, [answers, project?.id]);
+
+  // Debounce backend save — 1.5 detik setelah perubahan terakhir
+  useEffect(() => {
+    if (!project?.id) return;
+    if (Object.keys(answers).length === 0) return;
+
+    setAutoSaveStatus('unsaved');
+    const timer = setTimeout(() => {
+      setAutoSaveStatus('saving');
+      const f = fieldsRef.current;
+      const rksData = {
+        nomorTender: f.nomorTender,
+        namaTender: f.namaTender,
+        deadlineTender: f.deadlineTender,
+        aanwijzing: f.aanwijzing,
+        workLocation: f.workLocation,
+        mainScope: f.mainScope,
+        additionalNotes: f.additionalNotes,
+        uploadedFiles: f.uploadedFiles,
+        answers: answersRef.current,
+      };
+      Promise.all([
+        updateProjectRks(project.id, rksData),
+        rksService.save(project.id, rksData),
+      ])
+        .then(() => setAutoSaveStatus('saved'))
+        .catch(() => {
+          setAutoSaveStatus('unsaved');
+          toast.error('Gagal menyimpan jawaban ke server');
+        });
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [answers, project?.id]);
+
+  // Simpan saat komponen akan unmount (pindah tab)
+  useEffect(() => {
+    return () => {
+      const f = fieldsRef.current;
+      const ans = answersRef.current;
+      if (!project?.id || Object.keys(ans).length === 0) return;
+      const rksData = {
+        nomorTender: f.nomorTender,
+        namaTender: f.namaTender,
+        deadlineTender: f.deadlineTender,
+        aanwijzing: f.aanwijzing,
+        workLocation: f.workLocation,
+        mainScope: f.mainScope,
+        additionalNotes: f.additionalNotes,
+        uploadedFiles: f.uploadedFiles,
+        answers: ans,
+      };
+      updateProjectRks(project.id, rksData);
+      rksService.save(project.id, rksData).catch(() => {});
+    };
+  }, [project?.id]);
 
   const handleAnswerChange = useCallback((questionId: string, value: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
@@ -74,6 +164,8 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
 
   // Sync when switching projects
   useEffect(() => {
+    const rawAnswers = project?.rks?.answers;
+    const parsed = !rawAnswers ? {} : typeof rawAnswers === 'string' ? (() => { try { return JSON.parse(rawAnswers); } catch { return {}; } })() : rawAnswers;
     setNomorTender(project?.rks?.nomorTender || '');
     setNamaTender(project?.rks?.namaTender || project?.name || '');
     setDeadlineTender(toDateInput(project?.rks?.deadlineTender || project?.deadlineTender));
@@ -82,7 +174,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
     setMainScope(project?.rks?.mainScope || '');
     setAdditionalNotes(project?.rks?.additionalNotes || '');
     setUploadedFiles(project?.rks?.uploadedFiles || []);
-    setAnswers(project?.rks?.answers || {});
+    setAnswers(parsed);
   }, [project?.id]);
 
   const handleUpload = () => {
@@ -114,6 +206,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       mainScope,
       additionalNotes,
       uploadedFiles,
+      answers,
     };
     updateProjectRks(project.id, rksData);
     rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
@@ -131,6 +224,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       mainScope,
       additionalNotes,
       uploadedFiles,
+      answers,
     };
     updateProjectRks(project.id, rksData);
     rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
@@ -149,9 +243,9 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
     setCurrentStep(1);
   };
 
-  const handlePertanyaanSubmit = () => {
+  const handlePertanyaanSubmit = async () => {
     if (!project?.id) return;
-    // Save all RKS data including answers
+    // Save all RKS data including answers — await to guarantee persistence
     const rksData = {
       nomorTender,
       namaTender,
@@ -161,14 +255,22 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       mainScope,
       additionalNotes,
       uploadedFiles,
-      answers,
+      answers: answersRef.current,
     };
-    updateProjectRks(project.id, rksData);
-    rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
+    try {
+      await Promise.all([
+        updateProjectRks(project.id, rksData),
+        rksService.save(project.id, rksData),
+      ]);
+      setAutoSaveStatus('saved');
+    } catch {
+      toast.error('Gagal menyimpan RKS ke server');
+      return;
+    }
 
     if (project.type === 'prospecting') {
       // Prospecting: skip Review RKS & LPHS/SIOS, langsung ke Harga
-      updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
+      await updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
       const event: TimelineEvent = {
         id: `evt-${Date.now()}`,
         title: 'RKS Disubmit (Prospecting)',
@@ -183,7 +285,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       navigate(`/projects/${project.id}/harga`);
     } else {
       // Tender: tetap ke Review RKS
-      updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
+      await updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
       // Buat approval item untuk PM review
       addApproval({
         id: `app-rks-${project.id}-${Date.now()}`,
@@ -232,6 +334,22 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             {currentStep === 0 ? 'Awaiting Submission' : 'Menunggu Jawaban'}
           </span>
         </div>
+        {currentStep === 1 && (
+          <div className={`flex items-center gap-1.5 self-start px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+            autoSaveStatus === 'saved'
+              ? 'bg-success/10 text-success border-success/20'
+              : autoSaveStatus === 'saving'
+                ? 'bg-info/10 text-info border-info/20'
+                : 'bg-warning/10 text-warning border-warning/20'
+          }`}>
+            <span className="material-symbols-outlined text-[16px]">
+              {autoSaveStatus === 'saved' ? 'check_circle' : autoSaveStatus === 'saving' ? 'sync' : 'cloud_off'}
+            </span>
+            <span>
+              {autoSaveStatus === 'saved' ? 'Tersimpan' : autoSaveStatus === 'saving' ? 'Menyimpan...' : 'Belum tersimpan'}
+            </span>
+          </div>
+        )}
       </div>
 
       <Stepper steps={RKS_STEPS} currentStep={currentStep} onStepClick={setCurrentStep} />

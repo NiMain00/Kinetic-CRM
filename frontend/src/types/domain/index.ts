@@ -18,6 +18,13 @@ export interface Customer {
   needsVerification?: boolean;
   verifiedAt?: string;
   verifiedBy?: string;
+  parentId?: string;
+  level?: 'hot' | 'medium' | 'low';
+  requirements?: string;
+  unitLevel?: string;
+  canonicalName?: string;
+  source?: string;
+  children?: Customer[];
 }
 
 export interface Prospect {
@@ -27,7 +34,7 @@ export interface Prospect {
   customerId?: string;
   customerType?: 'existing' | 'new';
   customerData?: Customer;
-  status: 'Non Potensial' | 'Potensial' | 'Waiting Supervisor' | 'Revision' | 'Approved';
+  status: 'Lead' | 'Non Potensial' | 'Potensial' | 'Waiting Supervisor' | 'Revision' | 'Approved';
   prospectType?: 'non_potensial' | 'potensial';
   potensiUnit: number;
   author: string;
@@ -45,6 +52,7 @@ export interface Prospect {
   departmentId?: string;
   currentStageId?: string;
   ownerUserId?: string;
+  source?: string;
   timeline?: TimelineEvent[];
   documents?: DocGroup[];
 }
@@ -202,6 +210,40 @@ export interface ApprovalItem {
   entityId?: string;
   entityType?: 'prospect' | 'project';
   assigneeUserId?: string;
+}
+
+export type VisitStatus = 'pending' | 'completed' | 'cancelled';
+
+export interface Visit {
+  id: string;
+  prospectId: string;
+  customerId?: string;
+  visitNumber: number;
+  status: VisitStatus;
+  date: string;
+  notes?: string;
+  picName?: string;
+  picUserId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TicketStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface Ticket {
+  id: string;
+  title: string;
+  prospectId: string;
+  fromUserId: string;
+  toUserId: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  progress: number;
+  notes?: string;
+  resolvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TimelineEvent {

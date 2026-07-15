@@ -9,8 +9,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 // ── ENUMS ────────────────────────────────────────────────────────────────────
@@ -29,7 +30,14 @@ enum CustomerType {
   asing
 }
 
+enum CustomerLevel {
+  hot    @map("hot")
+  medium @map("medium")
+  low    @map("low")
+}
+
 enum ProspectStatus {
+  Lead               @map("lead")
   Non_Potensial      @map("non_potensial")
   Potensial          @map("potensial")
   Waiting_Supervisor @map("waiting_supervisor")
@@ -289,6 +297,19 @@ enum ChatMessageType {
   image
 }
 
+enum VisitStatus {
+  pending   @map("pending")
+  completed @map("completed")
+  cancelled @map("cancelled")
+}
+
+enum TicketStatus {
+  open        @map("open")
+  in_progress @map("in_progress")
+  resolved    @map("resolved")
+  closed      @map("closed")
+}
+
 enum UserStatus {
   active
   inactive
@@ -395,6 +416,9 @@ model User {
   rfqs               Rfq[]
   suppliers          Supplier[]
   supplierEvals      SupplierEvaluation[] @relation("UserSupplierEvals")
+  visits             Visit[]             @relation("VisitPicUser")
+  ticketsFrom        Ticket[]            @relation("TicketFromUser")
+  ticketsTo          Ticket[]            @relation("TicketToUser")
 
   @@map("users")
 }
@@ -563,12 +587,22 @@ model Customer {
   verifiedAt    DateTime?    @map("verified_at")
   verifiedBy    String?      @map("verified_by")
   isActive      Boolean      @default(true) @map("is_active")
+  parentId      String?      @map("parent_id")
+  level         CustomerLevel?
+  requirements  String?      @db.Text
+  unitLevel     String?      @map("unit_level") @db.VarChar(100)
+  canonicalName String?      @map("canonical_name") @db.VarChar(255)
+  source        String?      @db.VarChar(50)
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
   deletedAt     DateTime?    @map("deleted_at")
 
+  parent     Customer?  @relation("CustomerHierarchy", fields: [parentId], references: [id])
+  children   Customer[] @relation("CustomerHierarchy")
+
   prospects Prospect[]
   projects  Project[]
+  visits    Visit[]
 
   @@map("customers")
 }
@@ -777,7 +811,7 @@ model Prospect {
   client            String          @db.VarChar(255)
   customerId        String?         @map("customer_id")
   customerType      ProspectCustomerType? @map("customer_type")
-  status            ProspectStatus  @default(Potensial)
+  status            ProspectStatus  @default(Lead)
   prospectType      String?         @map("prospect_type") @db.VarChar(50)
   potensiUnit       Int             @default(0) @map("potensi_unit")
   estimatedValue    Decimal?          @map("estimated_value") @db.Decimal(18, 2)
@@ -794,6 +828,7 @@ model Prospect {
   departmentId      String?         @map("department_id")
   currentStageId    String?         @map("current_stage_id")
   ownerUserId       String?         @map("owner_user_id")
+  source            String?         @db.VarChar(50)
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
   deletedAt         DateTime?       @map("deleted_at")
@@ -810,6 +845,8 @@ model Prospect {
   reviewQuestions    ProspectReviewQuestion[]
   reviewNotes        ProspectReviewNote[]
   timelineEvents     ProspectTimelineEvent[]
+  visits             Visit[]
+  tickets            Ticket[]
 
   @@map("prospects")
 }
@@ -891,6 +928,57 @@ model ProspectTimelineEvent {
   prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
 
   @@map("prospect_timeline_events")
+}
+
+// ── VISIT (Kunjungan Prospek) ─────────────────────────────────────────────
+
+model Visit {
+  id          String      @id @default(uuid()) @map("id")
+  prospectId  String      @map("prospect_id")
+  customerId  String?     @map("customer_id")
+  visitNumber Int         @map("visit_number")
+  status      VisitStatus @default(pending)
+  date        DateTime    @map("date") @db.Date
+  notes       String?     @db.Text
+  picName     String?     @map("pic_name") @db.VarChar(255)
+  picUserId   String?     @map("pic_user_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id])
+  picUser  User?    @relation("VisitPicUser", fields: [picUserId], references: [id])
+
+  @@unique([prospectId, visitNumber])
+  @@index([prospectId])
+  @@index([customerId])
+  @@map("visits")
+}
+
+// ── TICKET (Serah-terima & Pengawasan Prospek) ────────────────────────────
+
+model Ticket {
+  id          String       @id @default(uuid()) @map("id")
+  title       String       @db.VarChar(255)
+  prospectId  String       @map("prospect_id")
+  fromUserId  String       @map("from_user_id")
+  toUserId    String       @map("to_user_id")
+  status      TicketStatus @default(open)
+  priority    TaskPriority @default(medium)
+  progress    Int          @default(0)
+  notes       String?      @db.Text
+  resolvedAt  DateTime?    @map("resolved_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
+  fromUser User    @relation("TicketFromUser", fields: [fromUserId], references: [id])
+  toUser   User    @relation("TicketToUser", fields: [toUserId], references: [id])
+
+  @@index([prospectId])
+  @@index([toUserId])
+  @@index([status])
+  @@map("tickets")
 }
 
 // ── PROJECT CORE ─────────────────────────────────────────────────────────────

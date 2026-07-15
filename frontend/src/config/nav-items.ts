@@ -30,6 +30,7 @@ export const CONFIG_NAV_ITEMS: NavItem[] = [
   { label: 'SLA', path: '/config/sla', icon: 'alarm', permissions: [PERMISSIONS.CONFIG_ACCESS] },
   { label: 'Target', path: '/config/targets', icon: 'track_changes', permissions: [PERMISSIONS.CONFIG_ACCESS] },
   { label: 'Alur Kerja', path: '/config/workflow', icon: 'alt_route', permissions: [PERMISSIONS.CONFIG_ACCESS] },
+  { label: 'Stage Rules', path: '/config/stage-rules', icon: 'account_tree', permissions: [PERMISSIONS.CONFIG_ACCESS] },
   { label: 'Integrasi', path: '/config/integration', icon: 'api', permissions: [PERMISSIONS.CONFIG_ACCESS] },
   { label: 'Upload', path: '/config/upload', icon: 'cloud_upload', permissions: [PERMISSIONS.CONFIG_ACCESS] },
   { label: 'Periode', path: '/config/period', icon: 'calendar_month', permissions: [PERMISSIONS.CONFIG_ACCESS] },
