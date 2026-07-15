@@ -598,9 +598,10 @@ model Customer {
   parent     Customer?  @relation("CustomerHierarchy", fields: [parentId], references: [id])
   children   Customer[] @relation("CustomerHierarchy")
 
-  prospects Prospect[]
-  projects  Project[]
-  visits    Visit[]
+  prospects      Prospect[]
+  projects       Project[]
+  visits         Visit[]
+  followUpTasks  FollowUpTask[]
 
   @@map("customers")
 }
@@ -958,7 +959,8 @@ model Visit {
 model FollowUpTask {
   id          String         @id @default(uuid()) @map("id")
   title       String         @db.VarChar(255)
-  prospectId  String         @map("prospect_id")
+  prospectId  String?        @map("prospect_id")
+  customerId  String?        @map("customer_id")
   fromUserId  String         @map("from_user_id")
   toUserId    String         @map("to_user_id")
   status      FollowUpStatus @default(pending)
@@ -970,9 +972,10 @@ model FollowUpTask {
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
-  prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
-  fromUser User    @relation("FollowUpFromUser", fields: [fromUserId], references: [id])
-  toUser   User    @relation("FollowUpToUser", fields: [toUserId], references: [id])
+  prospect Prospect? @relation(fields: [prospectId], references: [id], onDelete: SetNull)
+  customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  fromUser User      @relation("FollowUpFromUser", fields: [fromUserId], references: [id])
+  toUser   User      @relation("FollowUpToUser", fields: [toUserId], references: [id])
 
   @@index([prospectId])
   @@index([toUserId])

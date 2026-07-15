@@ -217,6 +217,14 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               >
                 Export CSV
               </Button>
+              <Button
+                variant="ghost"
+                size="md"
+                leftIcon={<span className="material-symbols-outlined text-[16px]">assignment</span>}
+                onClick={() => navigate('/follow-up')}
+              >
+                Ticketing
+              </Button>
               {can('prospect:write:prospecting') && (
                 <Button
                   variant="primary"
