@@ -93,6 +93,9 @@ const AuditLogPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/audit/
 // Notifications
 const NotificationsPage = LazyLoad(lazy(() => import('@/features/notifications/NotificationsPage')));
 
+// Follow-Up
+const FollowUpPage = LazyLoadPermission(lazy(() => import('@/features/follow-up/FollowUpPage')), ['prospect:read']);
+
 // Profile
 const ProfilePage = LazyLoad(lazy(() => import('@/features/profile/ProfilePage')));
 
@@ -153,6 +156,9 @@ export default function AppRouter() {
         <Route path="procurement/new" element={<ProcurementFormPage />} />
         <Route path="procurement/:procurementId" element={<ProcurementDetailPage />} />
         <Route path="procurement/:procurementId/:tab" element={<ProcurementDetailPage />} />
+
+        {/* Follow-Up */}
+        <Route path="follow-up" element={<FollowUpPage />} />
 
         {/* Approvals */}
         <Route path="approvals" element={<ApprovalInboxPage />} />

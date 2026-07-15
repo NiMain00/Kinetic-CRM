@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FollowUpService } from './follow-up.service';
 
@@ -6,6 +6,11 @@ import { FollowUpService } from './follow-up.service';
 @Controller('follow-up')
 export class FollowUpController {
   constructor(private readonly service: FollowUpService) {}
+
+  @Get()
+  list(@Query() params: any) {
+    return this.service.list(params);
+  }
 
   @Get('by-prospect/:prospectId')
   listByProspect(@Param('prospectId') prospectId: string) {

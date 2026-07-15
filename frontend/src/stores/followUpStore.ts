@@ -5,10 +5,18 @@ import type { FollowUpTask } from '@/types/domain';
 interface FollowUpState {
   tasks: Record<string, FollowUpTask[]>;
   loading: boolean;
+
+  // Global task list (for standalone Follow-Up page)
+  globalTasks: FollowUpTask[];
+  globalTotal: number;
+  globalPage: number;
+  globalLoading: boolean;
+  fetchGlobalTasks: (params?: Record<string, any>) => Promise<void>;
   fetchTasks: (prospectId: string) => Promise<void>;
+
   createTask: (data: {
     title: string;
-    prospectId: string;
+    prospectId?: string;
     fromUserId: string;
     toUserId: string;
     priority?: string;
@@ -23,14 +31,36 @@ interface FollowUpState {
     title?: string;
     deadline?: string;
   }) => Promise<void>;
-  deleteTask: (id: string, prospectId: string) => Promise<void>;
+  deleteTask: (id: string, prospectId?: string) => Promise<void>;
 }
 
 export const useFollowUpStore = create<FollowUpState>()((set, get) => ({
   tasks: {},
   loading: false,
+  globalTasks: [],
+  globalTotal: 0,
+  globalPage: 1,
+  globalLoading: false,
 
-  fetchTasks: async (prospectId) => {
+  fetchGlobalTasks: async (params = {}) => {
+    set({ globalLoading: true });
+    try {
+      const res = await apiClient.get('/follow-up', { params });
+      const result = unwrap<{ data: FollowUpTask[]; total: number; page: number; perPage: number }>(res) || res.data || res;
+      const data = Array.isArray(result) ? result : (result.data || []);
+      set({
+        globalTasks: data,
+        globalTotal: result.total || 0,
+        globalPage: result.page || 1,
+        globalLoading: false,
+      });
+    } catch (err) {
+      console.error('[followUpStore] fetchGlobalTasks error:', err);
+      set({ globalLoading: false });
+    }
+  },
+
+  fetchTasks: async (prospectId: string) => {
     set({ loading: true });
     try {
       const res = await apiClient.get(`/follow-up/by-prospect/${prospectId}`);
@@ -43,7 +73,9 @@ export const useFollowUpStore = create<FollowUpState>()((set, get) => ({
 
   createTask: async (data) => {
     await apiClient.post('/follow-up', data);
-    get().fetchTasks(data.prospectId);
+    if (data.prospectId) {
+      get().fetchTasks(data.prospectId);
+    }
   },
 
   updateTask: async (id, data) => {
@@ -59,6 +91,8 @@ export const useFollowUpStore = create<FollowUpState>()((set, get) => ({
 
   deleteTask: async (id, prospectId) => {
     await apiClient.delete(`/follow-up/${id}`);
-    get().fetchTasks(prospectId);
+    if (prospectId) {
+      get().fetchTasks(prospectId);
+    }
   },
 }));

@@ -18,6 +18,13 @@ test-results/
 /playwright.config.ts
 /e2e/
 /bundle-report.html
+.playwright-mcp/
+
+# Generated docs
+docs/audit-report-*.md
+*.audit-report.md
+prospect-new-form.md
+loss-reasons-page.md
 
 # IDE
 .vscode/

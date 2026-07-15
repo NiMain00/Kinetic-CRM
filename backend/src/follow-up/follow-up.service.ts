@@ -5,6 +5,37 @@ import { PrismaService } from '../prisma/prisma.service';
 export class FollowUpService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async list(params: { page?: number; perPage?: number; status?: string; priority?: string; toUserId?: string; search?: string }) {
+    const where: any = {};
+    if (params.status) where.status = params.status;
+    if (params.priority) where.priority = params.priority;
+    if (params.toUserId) where.toUserId = params.toUserId;
+    if (params.search) {
+      where.OR = [
+        { title: { contains: params.search } },
+        { notes: { contains: params.search } },
+      ];
+    }
+    const page = params.page || 1;
+    const perPage = Number(params.perPage) || 20;
+    const [data, total] = await Promise.all([
+      this.prisma.followUpTask.findMany({
+        where,
+        skip: (page - 1) * perPage,
+        take: perPage,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          fromUser: { select: { id: true, fullName: true } },
+          toUser: { select: { id: true, fullName: true } },
+          prospect: { select: { id: true, name: true, client: true, status: true } },
+          customer: { select: { id: true, name: true, type: true } },
+        },
+      }),
+      this.prisma.followUpTask.count({ where }),
+    ]);
+    return { data, total, page, perPage };
+  }
+
   async listByProspect(prospectId: string) {
     return this.prisma.followUpTask.findMany({
       where: { prospectId },
@@ -24,7 +55,8 @@ export class FollowUpService {
 
   async create(data: {
     title: string;
-    prospectId: string;
+    prospectId?: string;
+    customerId?: string;
     fromUserId: string;
     toUserId: string;
     priority?: string;
@@ -35,6 +67,7 @@ export class FollowUpService {
       data: {
         title: data.title,
         prospectId: data.prospectId,
+        customerId: data.customerId,
         fromUserId: data.fromUserId,
         toUserId: data.toUserId,
         priority: (data.priority as any) || 'medium',
