@@ -80,17 +80,34 @@ export class MasterService {
     }
     const page = Number(params?.page) || 1;
     const perPage = Number(params?.perPage) || 100;
-    const [data, total] = await Promise.all([
-      model.findMany({
-        where,
-        skip: (page - 1) * perPage,
-        take: perPage,
-        orderBy: { createdAt: 'desc' },
-        include: this.getInclude(entity),
-      }),
-      model.count({ where }),
-    ]);
-    return { data, total, page, perPage };
+    try {
+      const [data, total] = await Promise.all([
+        model.findMany({
+          where,
+          skip: (page - 1) * perPage,
+          take: perPage,
+          orderBy: { createdAt: 'desc' },
+          include: this.getInclude(entity),
+        }),
+        model.count({ where }),
+      ]);
+      return { data, total, page, perPage };
+    } catch (err: any) {
+      // Fallback for entities whose model lacks a `createdAt` column.
+      if (String(err?.message ?? '').includes('createdAt')) {
+        const [data, total] = await Promise.all([
+          model.findMany({
+            where,
+            skip: (page - 1) * perPage,
+            take: perPage,
+            include: this.getInclude(entity),
+          }),
+          model.count({ where }),
+        ]);
+        return { data, total, page, perPage };
+      }
+      throw err;
+    }
   }
 
   async get(entity: string, id: string) {
@@ -116,6 +133,11 @@ export class MasterService {
   async delete(entity: string, id: string) {
     const model = this.getModel(entity);
     await this.get(entity, id);
-    return model.update({ where: { id }, data: { deletedAt: new Date() } });
+    // Only entities with a `deletedAt` column can be soft-deleted; the rest
+    // (e.g. entityRelations, join tables) must be hard-deleted.
+    if (SOFT_DELETE_ENTITIES.has(entity)) {
+      return model.update({ where: { id }, data: { deletedAt: new Date() } });
+    }
+    return model.delete({ where: { id } });
   }
 }

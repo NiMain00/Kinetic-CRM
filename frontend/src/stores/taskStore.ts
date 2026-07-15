@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { masterDataService } from '@/services/master-data';
+import { unwrap } from '@/services/api-client';
 
 export interface Task {
   id: string;
@@ -66,8 +67,8 @@ export const useTaskStore = create<TaskState>()(
         set({ loading: true });
         try {
           const res = await masterDataService.get('tasks');
-          if (res.data?.data) {
-            const tasks = res.data.data as unknown as Task[];
+          const tasks = unwrap<Task[]>(res);
+          if (tasks && Array.isArray(tasks)) {
             const { entities, ids } = normalizeTasks(tasks);
             set({ entities, ids, tasks: deriveTasks(entities, ids), loading: false });
           }

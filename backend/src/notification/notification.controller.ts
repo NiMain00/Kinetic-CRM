@@ -42,4 +42,9 @@ export class NotificationController {
   async create(@Body() dto: any) {
     return this.notificationService.create(dto);
   }
+
+  @Delete(':id')
+  async remove(@Req() req: any, @Param('id') id: string) {
+    return this.notificationService.delete(id, req.user.id);
+  }
 }

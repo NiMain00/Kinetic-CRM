@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { projectService } from '@/services/projects';
+import { unwrap } from '@/services/api-client';
 import type { Project } from '@/types/domain';
 
 export function useProjects(params?: Record<string, unknown>) {
@@ -7,7 +8,7 @@ export function useProjects(params?: Record<string, unknown>) {
     queryKey: ['projects', params],
     queryFn: async () => {
       const res = await projectService.list(params);
-      return res.data.data;
+      return unwrap<Project[]>(res);
     },
   });
 }
@@ -17,7 +18,7 @@ export function useProject(id: string | undefined) {
     queryKey: ['projects', id],
     queryFn: async () => {
       const res = await projectService.get(id!);
-      return res.data.data;
+      return unwrap<Project>(res);
     },
     enabled: !!id,
   });

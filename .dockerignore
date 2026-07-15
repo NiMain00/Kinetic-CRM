@@ -1,0 +1,24 @@
+# Repo-root build context is used by the backend image. Keep the build context
+# lean: only the backend sources, prisma schema/migrations, and the entrypoint
+# are needed. Exclude the frontend, docs, e2e, and all node_modules.
+frontend
+e2e
+docs
+md-Kinetic-CRM
+scripts
+server
+shared
+storage
+docker
+node_modules
+**/node_modules
+dist
+playwright-report
+playwright.config.ts
+*.xlsx
+.git
+.gitignore
+*.md
+.env
+.env.example
+.env.local.example

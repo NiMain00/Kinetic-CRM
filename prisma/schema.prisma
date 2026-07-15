@@ -42,11 +42,6 @@ enum ProspectCustomerType {
   new
 }
 
-enum ProjectType {
-  tender
-  prospecting
-}
-
 enum RksStatus {
   draft
   waiting_pm_approval @map("waiting_pm_approval")
@@ -905,14 +900,18 @@ model Project {
   code             String   @unique @db.VarChar(50)
   name             String   @db.VarChar(255)
   client           String   @db.VarChar(255)
-  type             ProjectType
+  type             String   @db.VarChar(50)
   location         String   @db.VarChar(255)
   status           String   @db.VarChar(50)
   phase            String?  @db.VarChar(50)
   progress         Int      @default(0)
   estimatedValue   Decimal?   @map("estimated_value") @db.Decimal(18, 2)
   deadlineTender   DateTime? @map("deadline_tender") @db.Date
-  sourceProspectId String?  @unique @map("source_prospect_id")
+  sourceProspectId String?  @map("source_prospect_id")
+  // DB-computed column: mirrors source_prospect_id while the project is active (NULL once
+  // soft-deleted). Backs a unique index so a prospect maps to one ACTIVE project. Never read
+  // or written by application code, hence @ignore.
+  sourceProspectIdActive String? @ignore @map("source_prospect_id_active")
   customerId      String?  @map("customer_id")
   providerExisting String?  @map("provider_existing") @db.VarChar(255)
   branch           String?  @db.VarChar(100)
@@ -956,6 +955,7 @@ model Project {
   @@index([status])
   @@index([type])
   @@index([createdByUserId])
+  @@index([sourceProspectId])
   @@map("projects")
 }
 
