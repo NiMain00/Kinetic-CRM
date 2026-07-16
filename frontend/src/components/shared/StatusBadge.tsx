@@ -33,8 +33,26 @@ const FALLBACK_VARIANT_MAP: Record<string, BadgeVariant> = {
   revision: 'warning',
   'perlu verifikasi': 'purple',
   'menunggu': 'warning',
+  'waiting supervisor': 'warning',
   'follow up': 'info',
   'tender': 'purple',
+
+  // Procurement statuses
+  'vendor selection': 'purple',
+  delivery: 'info',
+  progress: 'info',
+  closed: 'success',
+  cancelled: 'danger',
+};
+
+const DOT_COLORS: Record<BadgeVariant, string> = {
+  default: 'bg-secondary',
+  success: 'bg-success',
+  warning: 'bg-warning',
+  danger: 'bg-danger',
+  info: 'bg-info',
+  purple: 'bg-status-purple',
+  gold: 'bg-amber-500',
 };
 
 function hexToBadgeVariant(hex: string): BadgeVariant {
@@ -56,10 +74,12 @@ function hexToBadgeVariant(hex: string): BadgeVariant {
 
 interface StatusBadgeProps {
   status: string;
+  size?: 'sm' | 'md' | 'lg';
+  showDot?: boolean;
   className?: string;
 }
 
-export default function StatusBadge({ status, className = '' }: StatusBadgeProps) {
+export default function StatusBadge({ status, size = 'md', showDot = true, className = '' }: StatusBadgeProps) {
   const projectStatuses = useMasterDataStore((s) => s.projectStatuses);
 
   const variant = useMemo<BadgeVariant>(() => {
@@ -74,7 +94,8 @@ export default function StatusBadge({ status, className = '' }: StatusBadgeProps
   const label = status.replace(/_/g, ' ');
 
   return (
-    <Badge variant={variant} className={className}>
+    <Badge variant={variant} size={size} className={`inline-flex items-center gap-1.5 ${className}`}>
+      {showDot && <span className={`w-1.5 h-1.5 rounded-full ${DOT_COLORS[variant] || 'bg-current'}`} />}
       {label}
     </Badge>
   );

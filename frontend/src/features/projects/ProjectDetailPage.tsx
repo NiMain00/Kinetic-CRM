@@ -190,7 +190,7 @@ export default function ProjectDetailView({
     if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
       if (project.type === 'prospecting') return false;
       const status = project.status;
-      const isBeforeLphs = status === 'RKS' || status === 'Review RKS' || status === 'Draft' || status === 'Revision';
+      const isBeforeLphs = status === 'RKS' || status === 'Review RKS' || status === 'Draft' || status === 'Revision' || status === 'LPHS/SIOS';
       return isBeforeLphs;
     }
 
