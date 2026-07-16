@@ -82,6 +82,7 @@ function mapApiProspect(p: any): Prospect {
   const projectId = p.convertedToProjectId || p.projectId;
   return {
     ...p,
+    customerData: p.customer || p.customerData || undefined,
     isConverted: projectId != null,
     timeline: p.timeline || p.timelineEvents || [],
     projectId,
@@ -164,6 +165,11 @@ export const useProspectStore = create<ProspectState>()(
         }
         const res = await prospectService.create(clean);
         const prospect = mapApiProspect(res.data.data || res.data);
+        // Preserve customerData from original payload — backend create response
+        // doesn't include the full customer relation object.
+        if (customerData && !prospect.customerData) {
+          prospect.customerData = customerData;
+        }
         set((s) => {
           const entities = { ...s.entities, [prospect.id]: prospect };
           const ids = [...s.ids, prospect.id];

@@ -49,14 +49,13 @@ export default function ForgotPasswordPage() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               <Input
                 label="Alamat Email"
                 type="email"
                 placeholder="contoh@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
                 leftIcon={<span className="material-symbols-outlined text-sm">email</span>}
               />
               <Button variant="primary" size="lg" className="w-full" type="submit" isLoading={isLoading}>
