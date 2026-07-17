@@ -5,7 +5,10 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import {
+  PrismaClientKnownRequestError,
+  PrismaClientValidationError,
+} from '@prisma/client/runtime/library';
 import { Response } from 'express';
 
 /**
@@ -13,11 +16,11 @@ import { Response } from 'express';
  * letting them surface as opaque 500s. Covers the common constraint failures
  * (unique, foreign key, record-not-found) seen from the generic master CRUD.
  */
-@Catch(Prisma.PrismaClientKnownRequestError)
+@Catch(PrismaClientKnownRequestError)
 export class PrismaExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger('PrismaExceptionFilter');
 
-  catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
+  catch(exception: PrismaClientKnownRequestError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
@@ -67,11 +70,11 @@ export class PrismaExceptionFilter implements ExceptionFilter {
  * type) to HTTP 400 instead of an opaque 500. These indicate a bad request
  * payload rather than a server fault.
  */
-@Catch(Prisma.PrismaClientValidationError)
+@Catch(PrismaClientValidationError)
 export class PrismaValidationExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger('PrismaValidationExceptionFilter');
 
-  catch(exception: Prisma.PrismaClientValidationError, host: ArgumentsHost) {
+  catch(exception: PrismaClientValidationError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
