@@ -8,6 +8,7 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Stepper, type StepperStep } from '@/components/ui';
 import { UPLOAD } from '@/config/constants';
+import type { RbacDepartment } from '@/stores/rbacStore';
 
 interface TabProps {
   project?: Project;
@@ -17,15 +18,19 @@ interface TabProps {
 const RKS_STEPS: StepperStep[] = [
   { label: 'RKS' },
   { label: 'Pertanyaan' },
+  { label: 'Departemen Reviewer' },
 ];
 
 export default function RksTab({ project, onShowNotification }: TabProps) {
   const navigate = useNavigate();
   const updateProject = useProjectStore((s) => s.updateProject);
   const updateProjectRks = useProjectStore((s) => s.updateProjectRks);
+  const updateRksDepartmentApproval = useProjectStore((s) => s.updateRksDepartmentApproval);
+  const updateRksStatus = useProjectStore((s) => s.updateRksStatus);
   const addTimelineEvent = useProjectStore((s) => s.addTimelineEvent);
   const questions = useMasterDataStore((s) => s.questions);
   const questionTypes = useMasterDataStore((s) => s.questionTypes);
+  const departments = useMasterDataStore((s) => s.departments as unknown as RbacDepartment[]);
   const addApproval = useApprovalStore((s) => s.addApproval);
   const authUser = useAuthStore((s) => s.user);
 
@@ -67,6 +72,21 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   const [fileSizeWarning, setFileSizeWarning] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Department review state
+  const [selectedDepts, setSelectedDepts] = useState<string[]>(project?.rks?.selectedDepartments || []);
+  const activeDepartments = useMemo(() => {
+    if ((project?.type === 'Tender' || project?.type === 'tender') && project?.scopeDepartments && project.scopeDepartments!.length > 0) {
+      return departments.filter(d => d.is_active && project.scopeDepartments!.includes(d.id));
+    }
+    return departments.filter(d => d.is_active);
+  }, [departments, project?.scopeDepartments, project?.type]);
+
+  const toggleDept = (deptId: string) => {
+    setSelectedDepts(prev =>
+      prev.includes(deptId) ? prev.filter(d => d !== deptId) : [...prev, deptId]
+    );
+  };
 
   // Answers state for RKS questions
   const [answers, setAnswers] = useState<Record<string, string>>(project?.rks?.answers || {});
@@ -276,8 +296,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   };
 
   const handlePertanyaanSubmit = async () => {
-    if (!project?.id || submitting) return;
-    setSubmitting(true);
+    if (!project?.id) return;
     const rksData = {
       nomorTender,
       namaTender,
@@ -293,12 +312,49 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       await updateProjectRks(project.id, rksData);
       setAutoSaveStatus('saved');
     } catch {
-      setSubmitting(false);
       toast.error('Gagal menyimpan RKS ke server');
       return;
     }
+    setCurrentStep(2);
+  };
+
+  const handleDeptSubmit = async () => {
+    if (!project?.id || submitting) return;
+    if (selectedDepts.length === 0) {
+      toast.error('Minimal 1 departemen harus dipilih');
+      return;
+    }
+    setSubmitting(true);
+
+    const deptApprovals = selectedDepts.map(deptId => {
+      const dept = departments.find(d => d.id === deptId);
+      return {
+        departmentId: deptId,
+        departmentName: dept?.name || deptId,
+        status: 'reviewing',
+        revisionRound: 0,
+      };
+    });
+
+    const rksData = {
+      nomorTender,
+      namaTender,
+      deadlineTender,
+      aanwijzing,
+      workLocation,
+      mainScope,
+      additionalNotes,
+      uploadedFiles,
+      answers: answersRef.current,
+      selectedDepartments: selectedDepts,
+      departmentsLocked: true,
+      overallStatus: 'dept_review',
+      departmentApprovals: deptApprovals,
+    } as any;
 
     try {
+      await updateProjectRks(project.id, rksData);
+
       if (project.type === 'prospecting') {
         await updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
         const event: TimelineEvent = {
@@ -308,7 +364,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
           role: 'Project Manager',
           time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
           type: 'submit',
-          description: 'RKS dan pertanyaan telah disubmit. Proyek Prospecting melanjutkan ke tahap Harga.',
+          description: 'RKS, pertanyaan, dan departemen reviewer telah disubmit.',
         };
         addTimelineEvent(project.id, event);
         onShowNotification?.('RKS berhasil dikirim. Melanjutkan ke tahap Harga...', 'success');
@@ -332,20 +388,21 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
         });
         const event: TimelineEvent = {
           id: `evt-${Date.now()}`,
-          title: 'RKS Disubmit ke Review',
+          title: 'RKS Disubmit ke Review Multi-Departemen',
           actor: project.author,
           role: 'Project Manager',
           time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
           type: 'submit',
-          description: 'RKS dan pertanyaan telah disubmit untuk direview.',
+          description: `RKS dan pertanyaan telah disubmit ke ${selectedDepts.length} departemen untuk direview bersama.`,
         };
         addTimelineEvent(project.id, event);
-        onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
+        onShowNotification?.('RKS berhasil dikirim ke departemen reviewer.', 'success');
         navigate(`/projects/${project.id}/review-rks`);
       }
     } catch {
-      setSubmitting(false);
       toast.error('Gagal memperbarui status proyek');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -354,7 +411,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h3 className="font-display-title text-xl font-bold text-on-surface">
-            {currentStep === 0 ? 'Form Pengisian RKS' : 'Pertanyaan RKS'}
+            {currentStep === 0 ? 'Form Pengisian RKS' : currentStep === 1 ? 'Pertanyaan RKS' : 'Pilih Departemen Reviewer'}
           </h3>
           <p className="font-body-main text-sm text-secondary mt-1">
             Project: {project?.name} ({project?.code})
@@ -730,6 +787,72 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                     {project?.type === 'Prospecting' ? 'Kirim & Lanjut ke Harga' : 'Kirim Jawaban'}
                     <span className="material-symbols-outlined text-[18px]">send</span>
                   </>
+                )}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {currentStep === 2 && (
+        <div className="space-y-6">
+          <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="w-10 h-10 rounded-lg bg-status-indigo/10 text-status-indigo flex items-center justify-center">
+                <span className="material-symbols-outlined">groups</span>
+              </span>
+              <div>
+                <h3 className="font-heading-section text-base font-bold text-on-surface">Pilih Departemen Reviewer</h3>
+                <p className="text-secondary text-xs">Pilih departemen yang akan mereview RKS secara bersama.</p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {activeDepartments.length === 0 ? (
+                <p className="text-sm text-outline">Tidak ada departemen aktif.</p>
+              ) : (
+                activeDepartments.map(dept => {
+                  const isSelected = selectedDepts.includes(dept.id);
+                  return (
+                    <div
+                      key={dept.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer hover:bg-surface-container-low ${
+                        isSelected ? 'bg-primary/5 border-primary/30' : 'bg-surface-container-lowest border-border'
+                      }`}
+                      onClick={() => toggleDept(dept.id)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        readOnly
+                        className="accent-primary cursor-pointer w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold">{dept.name}</p>
+                        <p className="text-xs text-outline">{dept.code}{dept.description ? ` • ${dept.description}` : ''}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </section>
+
+          <section className="bg-surface-container-low border border-border rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-secondary text-xs text-center sm:text-left">
+              <span className="material-symbols-outlined text-[18px]">info</span>
+              <span>Departemen yang dipilih akan mereview RKS. PM melakukan approval setelah semua departemen approve.</span>
+            </div>
+            <div className="flex gap-3 w-full sm:w-auto">
+              <button onClick={() => setCurrentStep(1)} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-surface-container-lowest border border-border text-on-surface font-semibold text-sm rounded-lg hover:bg-surface-container transition-all flex items-center justify-center gap-2">
+                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                Kembali
+              </button>
+              <button onClick={handleDeptSubmit} disabled={submitting || selectedDepts.length === 0} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-container shadow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                {submitting ? (
+                  <><span className="material-symbols-outlined text-[18px] animate-spin">sync</span> Mengirim...</>
+                ) : (
+                  <>{project?.type === 'Prospecting' ? 'Kirim & Lanjut ke Harga' : 'Kirim ke Review Departemen'}<span className="material-symbols-outlined text-[18px]">send</span></>
                 )}
               </button>
             </div>

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type {
   Project,
   RksData,
+  RksDepartmentApproval,
   LphsData,
   LphsDepartmentApproval,
   CompetitorEntry,
@@ -81,6 +82,8 @@ interface ProjectState {
   deleteProject: (id: string) => Promise<void>;
   getProjectById: (id: string) => Project | undefined;
   updateProjectRks: (id: string, rks: RksData) => Promise<void>;
+  updateRksDepartmentApproval: (id: string, approval: RksDepartmentApproval) => void;
+  updateRksStatus: (id: string, status: Partial<Pick<RksData, 'pmStatus' | 'overallStatus'>>) => void;
   updateProjectLphs: (id: string, lphs: LphsData) => void;
   updateLphsDepartmentApproval: (id: string, approval: LphsDepartmentApproval) => void;
   updateLphsStatus: (id: string, status: Partial<Pick<LphsData, 'pmStatus' | 'mgmtStatus' | 'overallStatus'>>) => void;
@@ -498,6 +501,28 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
           return { ...r, ids: s.ids };
         });
       },
+      updateRksDepartmentApproval: (id, approval) =>
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => {
+            if (!e.rks) return e;
+            const existing = e.rks.departmentApprovals?.findIndex(
+              (a) => a.departmentId === approval.departmentId,
+            ) ?? -1;
+            const newApprovals = existing >= 0
+              ? (e.rks.departmentApprovals || []).map((a, i) => (i === existing ? approval : a))
+              : [...(e.rks.departmentApprovals || []), approval];
+            return { ...e, rks: { ...e.rks, departmentApprovals: newApprovals } };
+          });
+          return { ...r, ids: s.ids };
+        }),
+      updateRksStatus: (id, status) =>
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => {
+            if (!e.rks) return e;
+            return { ...e, rks: { ...e.rks, ...status } };
+          });
+          return { ...r, ids: s.ids };
+        }),
       updateProjectLphs: (id, lphs) => {
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, lphs }));

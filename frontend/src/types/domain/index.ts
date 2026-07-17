@@ -67,6 +67,21 @@ export interface RksData {
   additionalNotes: string;
   uploadedFiles: Array<{ name: string; size: string; time: string }>;
   answers?: Record<string, string>;
+  selectedDepartments?: string[];
+  departmentsLocked?: boolean;
+  overallStatus?: 'draft' | 'dept_review' | 'pm_review' | 'approved' | 'revision';
+  pmStatus?: 'pending' | 'reviewing' | 'approved' | 'revision';
+  departmentApprovals?: RksDepartmentApproval[];
+}
+
+export interface RksDepartmentApproval {
+  departmentId: string;
+  departmentName: string;
+  status: 'pending' | 'reviewing' | 'approved' | 'revision';
+  approverName?: string;
+  reviewNotes?: string;
+  approvedAt?: string;
+  revisionRound: number;
 }
 
 export interface LphsDepartmentApproval {
