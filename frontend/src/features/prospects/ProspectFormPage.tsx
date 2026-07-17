@@ -132,6 +132,7 @@ export default function ProspectFormPage() {
 
   // --- Existing customer auto-fill logic ---
   const customers = useCustomerStore((s) => s.customers);
+  const customersLoading = useCustomerStore((s) => s.loading);
   const fetchCustomers = useCustomerStore((s) => s.fetchCustomers);
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
@@ -378,6 +379,23 @@ export default function ProspectFormPage() {
           </h3>
 
           {/* Toggle Existing / New Customer */}
+          <div className="flex gap-2 p-1 bg-surface-container-low rounded-xl border border-border/60 w-fit">
+            <button
+              type="button"
+              onClick={() => setCustomerMode('existing')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${customerMode === 'existing' ? 'bg-surface text-primary shadow-sm border border-border/60' : 'text-secondary hover:text-on-surface'}`}
+            >
+              Customer Existing
+            </button>
+            <button
+              type="button"
+              onClick={() => setCustomerMode('new')}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${customerMode === 'new' ? 'bg-surface text-primary shadow-sm border border-border/60' : 'text-secondary hover:text-on-surface'}`}
+            >
+              + Customer Baru
+            </button>
+          </div>
+
           {customerMode === 'existing' ? (
             <div className="space-y-3">
               <div className="space-y-1.5">
@@ -392,7 +410,12 @@ export default function ProspectFormPage() {
               </div>
               {customerSearch && (
                 <div className="max-h-48 overflow-y-auto border border-border rounded-lg divide-y divide-border">
-                  {filteredCustomers.length === 0 ? (
+                  {customersLoading ? (
+                    <div className="p-4 flex items-center gap-2 text-sm text-secondary">
+                      <span className="animate-spin border-2 border-primary border-t-transparent rounded-full w-4 h-4" />
+                      Mencari customer...
+                    </div>
+                  ) : filteredCustomers.length === 0 ? (
                     <div className="p-3 text-sm text-secondary">Customer tidak ditemukan</div>
                   ) : (
                     filteredCustomers.map(c => (
@@ -416,10 +439,133 @@ export default function ProspectFormPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
+              {/* Badge peringatan untuk customer baru */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-warning/10 border border-warning/30 rounded-lg text-xs text-warning font-semibold">
+                <span className="material-symbols-outlined text-[16px]">warning</span>
+                Customer baru — badge kuning "Perlu Verifikasi" akan tampil
+              </div>
+
               <div className="space-y-1.5">
                 <label className="font-semibold text-sm text-on-surface-variant">Nama Customer <span className="text-danger">*</span></label>
-                <input value={newCustName} onChange={(e) => setNewCustName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="Nama customer / perusahaan" type="text" />
+                <input value={newCustName} onChange={(e) => setNewCustName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="Contoh: PT. Maju Bersama" type="text" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Kode Customer</label>
+                  <input value={newCustCode} onChange={(e) => setNewCustCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: MB" type="text" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Tipe Customer</label>
+                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    {customerTypeOptions.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Kota</label>
+                  <input value={newCustCity} onChange={(e) => setNewCustCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Kota" type="text" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">NPWP (opsional)</label>
+                  <input value={newCustNpwp} onChange={(e) => setNewCustNpwp(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: 01.234.567.8-091.000" type="text" />
+                </div>
+              </div>
+
+              {/* Hierarki & Level */}
+              <div className="border border-border/60 rounded-xl p-4 space-y-4 bg-surface-container-low/30">
+                <h4 className="font-semibold text-sm text-on-surface-variant flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[18px]">account_tree</span>
+                  Hierarki & Level
+                </h4>
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Sub Company / Perusahaan Induk</label>
+                  <select value={newCustParentId} onChange={(e) => setNewCustParentId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    <option value="">Tidak ada (Root)</option>
+                    {customers.filter(c => c.id !== selectedCustomerId).map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Nama Perusahaan Induk (Canonical)</label>
+                  <input value={newCustCanonicalName} onChange={(e) => setNewCustCanonicalName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Nama perusahaan induk untuk standarisasi" type="text" />
+                  <p className="text-[10px] text-secondary">Gunakan nama yang sama untuk perusahaan induk agar project tergabung di 1 root.</p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Level Customer</label>
+                  <select value={newCustLevel} onChange={(e) => handleLevelChange(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    <option value="">Pilih Level</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="hot">Hot</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-semibold text-sm text-on-surface-variant">Kebutuhan (Requirements)</label>
+                <textarea value={newCustRequirements} onChange={(e) => setNewCustRequirements(e.target.value)} rows={3} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none resize-none" placeholder="Catat kebutuhan utama customer..." />
+              </div>
+
+              {newCustType === 'pemerintah' && (
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Unit Level (Instansi Pemerintah)</label>
+                  <select value={newCustUnitLevel} onChange={(e) => setNewCustUnitLevel(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    <option value="">Pilih Level</option>
+                    <option value="kementerian">Kementerian</option>
+                    <option value="provinsi">Provinsi</option>
+                    <option value="kabupaten">Kabupaten/Kota</option>
+                    <option value="kecamatan">Kecamatan</option>
+                    <option value="desa">Desa</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Bidang Customer / Industri</label>
+                  <select value={newCustIndustryId} onChange={(e) => setNewCustIndustryId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    <option value="">Pilih Industri</option>
+                    {industries.map(ind => (
+                      <option key={ind.id} value={ind.id}>{ind.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Provider Existing</label>
+                  <select value={providerExisting} onChange={(e) => setProviderExisting(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    <option value="">Tidak Ada</option>
+                    {competitors.map(prov => (
+                      <option key={prov.id} value={prov.name}>{prov.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* PIC Customer */}
+              <div className="border border-border/60 rounded-xl p-4 space-y-4 bg-surface-container-low/30">
+                <h4 className="font-semibold text-sm text-on-surface-variant flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[18px]">contact_phone</span>
+                  PIC Customer
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Nama PIC</label>
+                    <input value={picName} onChange={(e) => setPicName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Nama lengkap PIC" type="text" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">Jabatan PIC</label>
+                    <input value={picPosition} onChange={(e) => setPicPosition(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: Procurement Manager" type="text" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-sm text-on-surface-variant">No HP PIC</label>
+                    <input value={picPhone} onChange={(e) => setPicPhone(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: 0812-3456-7890" type="text" />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -485,35 +631,6 @@ export default function ProspectFormPage() {
                   <span className="material-symbols-outlined">badge</span>
                   Detail Customer
                 </h3>
-
-                {customerMode === 'new' && (
-                  <>
-                    <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">Kode Customer</label>
-                      <input value={newCustCode} onChange={(e) => setNewCustCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: MB" type="text" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">Tipe Customer</label>
-                      <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
-                        {customerTypeOptions.map(t => (
-                          <option key={t.value} value={t.value}>{t.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">Kota</label>
-                      <input value={newCustCity} onChange={(e) => setNewCustCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Kota" type="text" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">NPWP (opsional)</label>
-                      <input value={newCustNpwp} onChange={(e) => setNewCustNpwp(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: 01.234.567.8-091.000" type="text" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">Kebutuhan (Requirements)</label>
-                      <textarea value={newCustRequirements} onChange={(e) => setNewCustRequirements(e.target.value)} rows={3} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none resize-none" placeholder="Catat kebutuhan utama customer..." />
-                    </div>
-                  </>
-                )}
 
                 <div className="space-y-1.5">
                   <label className="font-semibold text-sm text-on-surface-variant">Bidang Customer / Industri</label>
