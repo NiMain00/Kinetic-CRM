@@ -10,7 +10,6 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { formatDate } from '@/utils/formatters';
 import { useActiveOptions } from '@/hooks/useInputConfig';
-import { useInputConfigStore } from '@/stores/inputConfigStore';
 import type { Prospect } from '@/types/domain';
 
 interface ProspectsViewProps {
@@ -32,8 +31,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const authUser = useAuthStore((s) => s.user);
   const { can } = useAuthz();
 
-  const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
-
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
   const [searchQuery, setSearchQuery] = useState('');
@@ -49,7 +46,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
 
   const paginationParams = useMemo(() => ({ perPage: PAGE_SIZE, page: currentPage }), [currentPage]);
   useEffect(() => { fetchProspects(paginationParams); }, [fetchProspects, paginationParams]);
-  useEffect(() => { fetchGroups(); }, [fetchGroups]);
 
   const handleDelete = (id: string) => {
     setDeleteTarget(id);
