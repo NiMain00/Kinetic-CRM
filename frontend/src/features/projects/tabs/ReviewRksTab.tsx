@@ -6,7 +6,6 @@ import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useApprovalStore } from '@/stores/approvalStore';
-import { rksService } from '@/services/rks';
 
 interface TabProps {
   project?: Project;
@@ -57,10 +56,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
         uploadedFiles: existingRks.uploadedFiles || [],
         answers: { ...existingAnswers, _reviewNotes: reviewNotesRef.current },
       };
-      Promise.all([
-        updateProjectRks(project.id, mergedRks),
-        rksService.save(project.id, mergedRks),
-      ])
+      updateProjectRks(project.id, mergedRks)
         .then(() => setAutoSaveStatus('saved'))
         .catch(() => { setAutoSaveStatus('unsaved'); });
     }, 800);
@@ -109,10 +105,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
         uploadedFiles: (current.rks as any).uploadedFiles || [],
         answers: { ...existingAnswers, _reviewNotes: reviewNotesRef.current },
       };
-      Promise.all([
-        updateProjectRks(project.id, mergedRks),
-        rksService.save(project.id, mergedRks),
-      ]).catch(() => {});
+      updateProjectRks(project.id, mergedRks).catch(() => {});
     };
   }, [project?.id]);
 

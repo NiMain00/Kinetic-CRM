@@ -7,7 +7,6 @@ import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Stepper, type StepperStep } from '@/components/ui';
-import { rksService } from '@/services/rks';
 
 interface TabProps {
   project?: Project;
@@ -68,6 +67,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   // Answers state for RKS questions
   const [answers, setAnswers] = useState<Record<string, string>>(project?.rks?.answers || {});
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [submitting, setSubmitting] = useState(false);
 
   // ── Auto-save answers to backend & store ─────────────────────────────
   // Ref untuk mengakses nilai terkini di dalam debounce tanpa re-trigger
@@ -103,7 +103,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
     }));
   }, [answers, project?.id]);
 
-  // Debounce backend save — 1.5 detik setelah perubahan terakhir
+  // Debounce backend save — 2 detik setelah perubahan terakhir
   useEffect(() => {
     if (!project?.id) return;
     if (Object.keys(answers).length === 0) return;
@@ -123,16 +123,13 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
         uploadedFiles: f.uploadedFiles,
         answers: answersRef.current,
       };
-      Promise.all([
-        updateProjectRks(project.id, rksData),
-        rksService.save(project.id, rksData),
-      ])
+      updateProjectRks(project.id, rksData)
         .then(() => setAutoSaveStatus('saved'))
         .catch(() => {
           setAutoSaveStatus('unsaved');
           toast.error('Gagal menyimpan jawaban ke server');
         });
-    }, 1500);
+    }, 2000);
     return () => clearTimeout(timer);
   }, [answers, project?.id]);
 
@@ -154,7 +151,6 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
         answers: ans,
       };
       updateProjectRks(project.id, rksData);
-      rksService.save(project.id, rksData).catch(() => {});
     };
   }, [project?.id]);
 
@@ -209,7 +205,6 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       answers,
     };
     updateProjectRks(project.id, rksData);
-    rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
   };
 
   const handleSubmit = () => {
@@ -227,7 +222,6 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       answers,
     };
     updateProjectRks(project.id, rksData);
-    rksService.save(project.id, rksData).catch(() => toast.error('Gagal menyimpan RKS ke server'));
     // Add timeline event
     const event: TimelineEvent = {
       id: `evt-${Date.now()}`,
@@ -244,8 +238,8 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   };
 
   const handlePertanyaanSubmit = async () => {
-    if (!project?.id) return;
-    // Save all RKS data including answers — await to guarantee persistence
+    if (!project?.id || submitting) return;
+    setSubmitting(true);
     const rksData = {
       nomorTender,
       namaTender,
@@ -258,62 +252,62 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
       answers: answersRef.current,
     };
     try {
-      await Promise.all([
-        updateProjectRks(project.id, rksData),
-        rksService.save(project.id, rksData),
-      ]);
+      await updateProjectRks(project.id, rksData);
       setAutoSaveStatus('saved');
     } catch {
+      setSubmitting(false);
       toast.error('Gagal menyimpan RKS ke server');
       return;
     }
 
-    if (project.type === 'prospecting') {
-      // Prospecting: skip Review RKS & LPHS/SIOS, langsung ke Harga
-      await updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
-      const event: TimelineEvent = {
-        id: `evt-${Date.now()}`,
-        title: 'RKS Disubmit (Prospecting)',
-        actor: project.author,
-        role: 'Project Manager',
-        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-        type: 'submit',
-        description: 'RKS dan pertanyaan telah disubmit. Proyek Prospecting melanjutkan ke tahap Harga.',
-      };
-      addTimelineEvent(project.id, event);
-      onShowNotification?.('RKS berhasil dikirim. Melanjutkan ke tahap Harga...', 'success');
-      navigate(`/projects/${project.id}/harga`);
-    } else {
-      // Tender: tetap ke Review RKS
-      await updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
-      // Buat approval item untuk PM review
-      addApproval({
-        id: `app-rks-${project.id}-${Date.now()}`,
-        ref: `RKS-${project.code}`,
-        name: project.name,
-        branch: project.location,
-        waitingSince: new Date().toISOString(),
-        slaStatus: 'Normal',
-        type: 'RKS',
-        resourceType: 'rks',
-        resourceId: project.id,
-        client: project.client,
-        entityId: project.id,
-        entityType: 'project',
-        assigneeUserId: authUser?.id,
-      });
-      const event: TimelineEvent = {
-        id: `evt-${Date.now()}`,
-        title: 'RKS Disubmit ke Review',
-        actor: project.author,
-        role: 'Project Manager',
-        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-        type: 'submit',
-        description: 'RKS dan pertanyaan telah disubmit untuk direview.',
-      };
-      addTimelineEvent(project.id, event);
-      onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
-      navigate(`/projects/${project.id}/review-rks`);
+    try {
+      if (project.type === 'prospecting') {
+        await updateProject(project.id, { status: 'Input Harga', phase: 'Harga' });
+        const event: TimelineEvent = {
+          id: `evt-${Date.now()}`,
+          title: 'RKS Disubmit (Prospecting)',
+          actor: project.author,
+          role: 'Project Manager',
+          time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+          type: 'submit',
+          description: 'RKS dan pertanyaan telah disubmit. Proyek Prospecting melanjutkan ke tahap Harga.',
+        };
+        addTimelineEvent(project.id, event);
+        onShowNotification?.('RKS berhasil dikirim. Melanjutkan ke tahap Harga...', 'success');
+        navigate(`/projects/${project.id}/harga`);
+      } else {
+        await updateProject(project.id, { status: 'Review RKS', phase: 'Review RKS' });
+        addApproval({
+          id: `app-rks-${project.id}-${Date.now()}`,
+          ref: `RKS-${project.code}`,
+          name: project.name,
+          branch: project.location,
+          waitingSince: new Date().toISOString(),
+          slaStatus: 'Normal',
+          type: 'RKS',
+          resourceType: 'rks',
+          resourceId: project.id,
+          client: project.client,
+          entityId: project.id,
+          entityType: 'project',
+          assigneeUserId: authUser?.id,
+        });
+        const event: TimelineEvent = {
+          id: `evt-${Date.now()}`,
+          title: 'RKS Disubmit ke Review',
+          actor: project.author,
+          role: 'Project Manager',
+          time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+          type: 'submit',
+          description: 'RKS dan pertanyaan telah disubmit untuk direview.',
+        };
+        addTimelineEvent(project.id, event);
+        onShowNotification?.('Jawaban berhasil dikirim. Mengalihkan ke Review RKS...', 'success');
+        navigate(`/projects/${project.id}/review-rks`);
+      }
+    } catch {
+      setSubmitting(false);
+      toast.error('Gagal memperbarui status proyek');
     }
   };
 
@@ -661,9 +655,18 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span>
                 Kembali
               </button>
-              <button onClick={handlePertanyaanSubmit} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-container shadow transition-all flex items-center justify-center gap-2">
-                {project?.type === 'Prospecting' ? 'Kirim & Lanjut ke Harga' : 'Kirim Jawaban'}
-                <span className="material-symbols-outlined text-[18px]">send</span>
+              <button onClick={handlePertanyaanSubmit} disabled={submitting} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-primary text-white font-semibold text-sm rounded-lg hover:bg-primary-container shadow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                {submitting ? (
+                  <>
+                    <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                    Mengirim...
+                  </>
+                ) : (
+                  <>
+                    {project?.type === 'Prospecting' ? 'Kirim & Lanjut ke Harga' : 'Kirim Jawaban'}
+                    <span className="material-symbols-outlined text-[18px]">send</span>
+                  </>
+                )}
               </button>
             </div>
           </section>

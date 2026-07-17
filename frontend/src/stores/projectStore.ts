@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type {
   Project,
   RksData,
@@ -81,7 +80,7 @@ interface ProjectState {
   updateProject: (id: string, data: Partial<Project>) => Promise<void>;
   deleteProject: (id: string) => Promise<void>;
   getProjectById: (id: string) => Project | undefined;
-  updateProjectRks: (id: string, rks: RksData) => void;
+  updateProjectRks: (id: string, rks: RksData) => Promise<void>;
   updateProjectLphs: (id: string, lphs: LphsData) => void;
   updateLphsDepartmentApproval: (id: string, approval: LphsDepartmentApproval) => void;
   updateLphsStatus: (id: string, status: Partial<Pick<LphsData, 'pmStatus' | 'mgmtStatus' | 'overallStatus'>>) => void;
@@ -248,9 +247,7 @@ function mapApiProject(p: any): Project {
   };
 }
 
-export const useProjectStore = create<ProjectState>()(
-  persist(
-    (set, get) => ({
+export const useProjectStore = create<ProjectState>()((set, get) => ({
       entities: {},
       ids: [],
       projects: [],
@@ -759,36 +756,4 @@ export const useProjectStore = create<ProjectState>()(
           return { ...r, ids: s.ids };
         });
       },
-    }),
-    {
-      name: 'kinetic-projects',
-      version: 7,
-      merge: (persisted: unknown, current: ProjectState) => {
-        if (!persisted || typeof persisted !== 'object') return current;
-        const p = persisted as Partial<ProjectState>;
-        if (p.entities && p.ids) {
-          return {
-            ...current,
-            ...p,
-            projects: deriveProjects(p.entities, p.ids),
-          };
-        }
-        return { ...current, ...p };
-      },
-      migrate: (persisted: unknown, version: number) => {
-        const current = (persisted || {}) as any;
-        if (current.entities && current.ids) {
-          return {
-            ...current,
-            projects: deriveProjects(current.entities, current.ids),
-          };
-        }
-        return current;
-      },
-      partialize: (state) => ({
-        entities: state.entities,
-        ids: state.ids,
-      }),
-    },
-  ),
-);
+    }));

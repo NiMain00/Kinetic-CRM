@@ -36,6 +36,12 @@ function App() {
     initRef.current = true;
     registerEventHandlers();
 
+    // Clean up old persisted data from localStorage (persist middleware removed)
+    const oldKeys = ['kinetic-prospects', 'kinetic-master-data', 'kinetic-projects', 'kinetic-customers', 'kinetic-notifications', 'kinetic-input-config', 'kinetic-users', 'kinetic-categories', 'kinetic-competitors'];
+    for (const key of oldKeys) {
+      try { localStorage.removeItem(key); } catch {}
+    }
+
     // Migrate existing projects to procurement (deferred after paint)
     const migrate = async () => {
       const [{ useProjectStore }, { useProcurementStore }, { migrateExistingProjects }] = await Promise.all([
@@ -43,18 +49,9 @@ function App() {
         import('@/features/procurement/procurementStore'),
         import('@/features/procurement/procurementService'),
       ]);
-      const tryMigrate = () => {
-        if (useProjectStore.persist.hasHydrated() && useProcurementStore.persist.hasHydrated()) {
-          const projects = useProjectStore.getState().projects;
-          migrateExistingProjects(projects);
-          return true;
-        }
-        return false;
-      };
-      if (!tryMigrate()) {
-        const unsub1 = useProjectStore.persist.onFinishHydration(() => tryMigrate());
-        const unsub2 = useProcurementStore.persist.onFinishHydration(() => tryMigrate());
-        return () => { unsub1(); unsub2(); };
+      const projects = useProjectStore.getState().projects;
+      if (projects.length > 0) {
+        migrateExistingProjects(projects);
       }
     };
     const timer = setTimeout(migrate, 100);
