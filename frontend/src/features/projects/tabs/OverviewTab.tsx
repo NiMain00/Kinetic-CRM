@@ -77,6 +77,44 @@ export default function OverviewTab({ project }: TabProps) {
           </div>
           <span className="material-symbols-outlined text-[130px] opacity-20 absolute -right-6 -bottom-6 text-white select-none">trending_up</span>
         </Card>
+
+        {/* Standarisasi Checklist */}
+        <Card padding="lg">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-heading-section text-heading-section">Standarisasi Proyek</h3>
+              <p className="text-xs text-secondary mt-0.5">Ceklis standar untuk semua cabang.</p>
+            </div>
+            <span className="text-xs font-semibold text-outline">
+              {[project?.name, project?.client, project?.location, (project?.estimatedValue || 0) > 0].filter(Boolean).length}/{4} selesai
+            </span>
+          </div>
+          <div className="w-full bg-surface-container-highest h-1.5 rounded-full mb-4">
+            <div className="bg-primary h-1.5 rounded-full transition-all duration-500"
+              style={{ width: `${([project?.name, project?.client, project?.location, (project?.estimatedValue || 0) > 0].filter(Boolean).length / 4) * 100}%` }}
+            />
+          </div>
+          <div className="space-y-2 text-sm">
+            {[
+              { label: 'Nama Proyek', done: !!project?.name, phase: 'Dasar' },
+              { label: 'Client Terpilih', done: !!project?.client, phase: 'Dasar' },
+              { label: 'Lokasi Proyek', done: !!project?.location, phase: 'Dasar' },
+              { label: 'Estimasi Nilai', done: (project?.estimatedValue || 0) > 0, phase: 'Dasar' },
+              { label: 'RKS Terisi', done: !!(project?.rks?.nomorTender || project?.rks?.namaTender), phase: 'RKS' },
+              { label: 'Review Multi-Departemen', done: project?.rks?.overallStatus === 'approved' || project?.rks?.overallStatus === 'pm_review', phase: 'RKS' },
+              { label: 'LPHS/SIOS Terupload', done: !!(project?.lphs?.lphsFileName || project?.lphs?.lphsExternalUrl), phase: 'LPHS' },
+              { label: 'Harga Final', done: (project?.pricing?.value || 0) > 0, phase: 'Harga' },
+            ].map((item, idx) => (
+              <div key={idx} className={`flex items-center gap-3 p-2.5 rounded-lg ${item.done ? 'bg-success/5' : 'bg-surface-container-low'}`}>
+                <span className={`material-symbols-outlined text-[18px] ${item.done ? 'text-success' : 'text-outline'}`}>
+                  {item.done ? 'check_circle' : 'radio_button_unchecked'}
+                </span>
+                <span className={item.done ? 'text-on-surface line-through opacity-60' : 'text-on-surface'}>{item.label}</span>
+                <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-outline/10 text-outline">{item.phase}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
 
       <div className="space-y-6">
