@@ -265,6 +265,12 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
           const data = res.data.data || res.data;
           const list = Array.isArray(data) ? data : [];
           const mapped = list.map(mapApiProject);
+          const existing = get().entities;
+          for (const p of mapped) {
+            if (existing[p.id]?.timeline?.length) {
+              p.timeline = existing[p.id].timeline;
+            }
+          }
           const { entities, ids } = normalizeProjects(mapped);
           set({ entities, ids, projects: deriveProjects(entities, ids), loading: false, _lastFetchAt: Date.now() });
         } catch {
@@ -279,15 +285,16 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
           if (project?.id) {
             set((s) => {
               const existing = s.entities[id];
+              // Data API detail selalu diutamakan (lebih lengkap dari list)
               const merged = {
+                ...existing,
                 ...project,
-                // Data lokal selalu diutamakan — baru fallback ke API
-                competitors: existing?.competitors?.length ? existing.competitors : (project.competitors || []),
-                winnerDetails: existing?.winnerDetails || project.winnerDetails || undefined,
-                delivery: existing?.delivery || project.delivery || undefined,
-                pricing: existing?.pricing || project.pricing || undefined,
-                lphs: existing?.lphs || project.lphs || undefined,
-                rks: existing?.rks || project.rks || undefined,
+                competitors: project.competitors?.length ? project.competitors : (existing?.competitors || []),
+                winnerDetails: project.winnerDetails || existing?.winnerDetails || undefined,
+                delivery: project.delivery || existing?.delivery || undefined,
+                pricing: project.pricing || existing?.pricing || undefined,
+                lphs: project.lphs || existing?.lphs || undefined,
+                rks: project.rks || existing?.rks || undefined,
               };
               const entities = { ...s.entities, [project.id]: merged };
               const ids = s.ids.includes(project.id) ? s.ids : [...s.ids, project.id];

@@ -106,6 +106,12 @@ export const useProspectStore = create<ProspectState>()((set, get) => ({
       const data = res.data.data || res.data;
       const list = Array.isArray(data) ? data : [];
       const mapped = list.map(mapApiProspect);
+      const existing = get().entities;
+      for (const p of mapped) {
+        if (existing[p.id]?.timeline?.length) {
+          p.timeline = existing[p.id].timeline;
+        }
+      }
       const { entities, ids } = normalizeProspects(mapped);
       set({ entities, ids, prospects: deriveProspects(entities, ids), loading: false });
     } catch {
