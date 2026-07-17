@@ -132,7 +132,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
       setUploading(true);
       setProgress(0);
       const interval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev: number) => {
           const next = prev + Math.random() * 15;
           return next >= 95 ? 95 : next;
         });

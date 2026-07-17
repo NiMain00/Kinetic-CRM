@@ -621,7 +621,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
           )}
           {statusToShow !== 'approved' && statusToShow !== 'revision' && isPM && (
             <>
-              {allDeptsApproved && statusToShow !== 'pm_review' && statusToShow !== 'approved' ? null : null}
+              {allDeptsApproved ? null : null}
               {statusToShow === 'pm_review' || (allDeptsApproved && isPM) ? (
                 <button onClick={handlePmApprove} disabled={approving} type="button" className="flex-1 sm:flex-initial px-6 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:opacity-90 shadow transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
                   <span className={`material-symbols-outlined text-[18px] ${approving ? 'animate-spin' : ''}`}>
