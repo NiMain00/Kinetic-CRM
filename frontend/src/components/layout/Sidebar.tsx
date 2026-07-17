@@ -54,7 +54,7 @@ export default function Sidebar({
   const location = useLocation();
   const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole, userPermissions), [userRole, userPermissions]);
   const swipeHandlers = useSwipe(onClose);
-  const [expandedParents, setExpandedParents] = React.useState<Set<string>>(new Set(['/prospects']));
+  const [expandedParents, setExpandedParents] = React.useState<Set<string>>(new Set());
   const [showDeptSwitch, setShowDeptSwitch] = React.useState(false);
   const authUser = useAuthStore((s) => s.user);
   const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (authUser as any)?.departmentId;
