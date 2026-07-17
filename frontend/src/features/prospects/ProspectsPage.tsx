@@ -198,18 +198,18 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           title="Prospek"
           description="Daftar Prospek"
           actions={
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant="ghost"
-                size="md"
+                size="sm"
                 leftIcon={<span className="material-symbols-outlined text-[16px]">dashboard</span>}
                 onClick={() => navigate('/prospects/pipeline')}
               >
-                Pipeline View
+                Pipeline
               </Button>
               <Button
                 variant="ghost"
-                size="md"
+                size="sm"
                 leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
                 onClick={() => exportCSV(
                   prospects,
@@ -228,7 +228,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               </Button>
               <Button
                 variant="ghost"
-                size="md"
+                size="sm"
                 leftIcon={<span className="material-symbols-outlined text-[16px]">assignment</span>}
                 onClick={() => navigate('/follow-up')}
               >
@@ -237,7 +237,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               {can('prospect:write:prospecting') && (
                 <Button
                   variant="primary"
-                  size="md"
+                  size="sm"
                   onClick={() => navigate('/prospects/new')}
                   leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
                 >

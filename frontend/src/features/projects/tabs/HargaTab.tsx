@@ -273,7 +273,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
               </span>
             </div>
           )}
-          <div className="border-t border-border pt-4 flex justify-end gap-3">
+          <div className="border-t border-border pt-4 flex justify-end gap-3 flex-wrap">
             <Button variant="secondary" onClick={handleSavePricing} leftIcon={<span className="material-symbols-outlined text-sm">save</span>}>
               Simpan Draft
             </Button>

@@ -177,7 +177,7 @@ export default function ConfigQuestionTypesPage() {
             </div>
           </div>
         </form>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setModalOpen(false)}>Batal</Button>
           <Button variant="primary" size="sm" onClick={handleSave}>{editingType ? 'Simpan' : 'Buat'}</Button>
         </div>

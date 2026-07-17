@@ -347,7 +347,7 @@ function EditDataModal({
           })
         )}
       </div>
-      <div className="flex justify-end gap-3 mt-6">
+      <div className="flex justify-end gap-3 flex-wrap mt-6">
         <Button variant="secondary" size="md" onClick={onClose}>
           Batal
         </Button>
@@ -488,7 +488,7 @@ function AddDataModal({
           })
         )}
       </div>
-      <div className="flex justify-end gap-3 mt-6">
+      <div className="flex justify-end gap-3 flex-wrap mt-6">
         <Button variant="secondary" size="md" onClick={onClose}>
           Batal
         </Button>

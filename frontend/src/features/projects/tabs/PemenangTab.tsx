@@ -428,7 +428,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
       </div>
 
       {outcome && (
-        <div className="flex justify-end gap-3 border-t pt-6 border-border items-center">
+        <div className="flex justify-end gap-3 flex-wrap border-t pt-6 border-border items-center">
           <div className="flex items-center gap-2 text-xs">
             {autoSaveStatus === 'saving' && (
               <span className="text-warning flex items-center gap-1">

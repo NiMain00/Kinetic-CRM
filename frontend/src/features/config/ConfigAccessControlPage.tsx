@@ -207,15 +207,15 @@ function DepartmentsTab() {
         </Button>
       </div>
 
-      <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-x-auto scrollbar-none">
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-surface-container-low border-b border-border">
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Kode</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Nama</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Deskripsi</th>
-              <th className="text-center px-4 py-3 font-semibold text-secondary">Status</th>
-              <th className="text-right px-4 py-3 font-semibold text-secondary">Aksi</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Kode</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Nama</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Deskripsi</th>
+              <th className="text-center px-4 py-3 font-semibold text-secondary whitespace-nowrap">Status</th>
+              <th className="text-right px-4 py-3 font-semibold text-secondary whitespace-nowrap">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -271,7 +271,7 @@ function DepartmentsTab() {
             <label htmlFor="dept-active" className="font-semibold">Aktif</label>
           </div>
         </div>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setShowModal(false)}>Batal</Button>
           <Button variant="primary" size="sm" onClick={handleSave}>Simpan</Button>
         </div>
@@ -410,7 +410,7 @@ function RolesTab() {
             <textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs" rows={2} />
           </div>
         </div>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setShowModal(false)}>Batal</Button>
           <Button variant="primary" size="sm" onClick={handleSave}>Simpan</Button>
         </div>
@@ -578,9 +578,9 @@ function UserAssignmentsTab() {
             </div>
           )}
         </div>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setShowModal(false)}>Batal</Button>
-          <Button variant="primary" size="sm" onClick={handleAssign}>Assign</Button>
+          <Button variant="primary" size="sm" onClick={handleSave}>Simpan</Button>
         </div>
       </Modal>
     </div>
@@ -1301,18 +1301,18 @@ function StageRulesTab() {
       </div>
 
       {/* Table view */}
-      <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-x-auto scrollbar-none">
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-surface-container-low border-b border-border">
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Sequence</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Code</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Nama</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Module</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Owner (Write)</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Prev (Read)</th>
-              <th className="text-left px-4 py-3 font-semibold text-secondary">Extra Access</th>
-              <th className="text-right px-4 py-3 font-semibold text-secondary">Aksi</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Sequence</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Code</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Nama</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Module</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Owner (Write)</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Prev (Read)</th>
+              <th className="text-left px-4 py-3 font-semibold text-secondary whitespace-nowrap">Extra Access</th>
+              <th className="text-right px-4 py-3 font-semibold text-secondary whitespace-nowrap">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -1369,7 +1369,7 @@ function StageRulesTab() {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Stage' : 'Tambah Stage'} size="md">
         <div className="space-y-4 text-xs">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="font-semibold">Kode *</label>
               <input value={formCode} onChange={e => setFormCode(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="example_stage" />
@@ -1383,7 +1383,7 @@ function StageRulesTab() {
             <label className="font-semibold">Nama *</label>
             <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nama stage" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="font-semibold">Module</label>
               <select value={formModule} onChange={e => setFormModule(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
@@ -1449,7 +1449,7 @@ function StageRulesTab() {
             <p className="text-[9px] text-outline">Department yang ditambahkan di sini akan otomatis bisa mengakses data yang sedang berada di stage ini — tanpa perlu mengubah role permissions masing-masing user</p>
           </div>
         </div>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setShowModal(false)}>Batal</Button>
           <Button variant="primary" size="sm" onClick={handleSave}>Simpan</Button>
         </div>

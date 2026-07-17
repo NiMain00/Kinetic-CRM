@@ -195,7 +195,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                 </div>
 
                 {/* Form submits */}
-                <div className="flex justify-end gap-3 pt-6 border-t border-border">
+                <div className="flex justify-end gap-3 flex-wrap pt-6 border-t border-border">
                   <button
                     type="button"
                     onClick={() => {

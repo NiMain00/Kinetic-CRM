@@ -61,7 +61,7 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
   }
 
   return (
-    <nav ref={tabListRef} className="flex border-b border-border/60 overflow-x-auto scrollbar-none" role="tablist" onKeyDown={onKeyDown} aria-label="Tab navigasi">
+    <nav ref={tabListRef} className="flex border-b border-border/60 overflow-x-auto scrollbar-none tabs-scrollable" role="tablist" onKeyDown={onKeyDown} aria-label="Tab navigasi">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -70,16 +70,16 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
           aria-controls={`tabpanel-${tab.id}`}
           tabIndex={activeTab === tab.id ? 0 : -1}
           onClick={() => onChange(tab.id)}
-          className={`flex items-center gap-2 px-5 py-3 font-label-sm text-sm transition-all relative whitespace-nowrap ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-3 font-label-sm text-xs sm:text-sm transition-all relative whitespace-nowrap touch-min-h ${
             activeTab === tab.id
               ? 'text-primary font-bold border-b-2 border-primary'
               : 'text-on-surface-variant hover:text-primary'
           }`}
         >
-          {tab.icon && <span className="material-symbols-outlined text-[18px]" aria-hidden="true">{tab.icon}</span>}
-          {tab.label}
+          {tab.icon && <span className="material-symbols-outlined text-[18px] sm:text-[18px]" aria-hidden="true">{tab.icon}</span>}
+          <span className="truncate max-w-[80px] sm:max-w-none">{tab.label}</span>
           {tab.count !== undefined && (
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-secondary'}`} aria-label={`${tab.count} item`}>
+            <span className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold shrink-0 ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-surface-container-high text-secondary'}`} aria-label={`${tab.count} item`}>
               {tab.count}
             </span>
           )}

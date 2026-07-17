@@ -140,7 +140,7 @@ export default function ConfigUploadPage() {
             </div>
           </Card>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-3 flex-wrap">
             <Button variant="secondary" size="sm" onClick={handleReset}>Reset ke Default</Button>
             <Button variant="primary" size="sm" onClick={handleSave}>Simpan Pengaturan</Button>
           </div>

@@ -401,7 +401,7 @@ export default function ConfigRolesPage() {
             <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi role" />
           </div>
         </form>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setModalOpen(false)}>Batal</Button>
           <Button variant="primary" size="sm" onClick={handleCreate}>Buat Role</Button>
         </div>

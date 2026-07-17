@@ -165,7 +165,7 @@ export default function ConfigPeriodPage() {
             <input type="number" value={formYear} onChange={e => setFormYear(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={2020} max={2050} />
           </div>
         </form>
-        <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+        <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setModalOpen(false)}>Batal</Button>
           <Button variant="primary" size="sm" onClick={handleCreate}>Simpan</Button>
         </div>

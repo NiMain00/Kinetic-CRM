@@ -166,7 +166,7 @@ export default function ClosingTab({ procurement }: Props) {
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t pt-6 border-border">
+        <div className="flex justify-end gap-3 flex-wrap border-t pt-6 border-border">
           <Button
             variant="danger"
             onClick={handleCancel}

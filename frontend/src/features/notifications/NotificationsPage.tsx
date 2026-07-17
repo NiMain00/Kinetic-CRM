@@ -308,7 +308,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
             )}
 
             {/* Footer */}
-            <div className="pt-6 border-t border-border flex justify-between items-center text-[11px] text-outline">
+            <div className="pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-[11px] text-outline">
               <p>Menampilkan {filteredNotifications.length} dari {notifications.length} notifikasi</p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input, Select, Button } from '@/components/ui';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 interface SelectOption {
   value: string;
@@ -55,25 +56,41 @@ interface FilterPanelProps {
 }
 
 export default function FilterPanel({ fields, values, onChange, onReset, onApply, collapsible = false, isOpen = true }: FilterPanelProps) {
-  if (collapsible && !isOpen) return null;
+  const isMobile = useIsMobile();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Auto-collapse on mobile
+  const effectiveOpen = isMobile ? mobileOpen : isOpen;
+  if (collapsible && !effectiveOpen && !isMobile) return null;
 
   const activeCount = Object.values(values).filter(Boolean).length;
 
   return (
-    <div className="bg-surface rounded-xl border border-border/60 p-4 space-y-4 shadow-card animate-in slide-in-from-top-2 fade-in duration-200">
+    <div className="bg-surface rounded-xl border border-border/60 p-3 sm:p-4 space-y-3 sm:space-y-4 shadow-card animate-in slide-in-from-top-2 fade-in duration-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-outline text-sm" aria-hidden="true">filter_alt</span>
-          <span className="font-label-sm text-sm text-on-surface font-semibold">Filter</span>
+          <span className="font-label-sm text-xs sm:text-sm text-on-surface font-semibold">Filter</span>
           {activeCount > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-primary/10 text-xs font-bold text-primary">{activeCount} aktif</span>
           )}
         </div>
-        <Button variant="ghost" size="sm" onClick={onReset}>
-          Atur Ulang
-        </Button>
+        <div className="flex items-center gap-2">
+          {isMobile && (
+            <Button variant="ghost" size="xs" onClick={() => setMobileOpen(!mobileOpen)}>
+              {mobileOpen ? 'Tutup' : 'Buka'}
+            </Button>
+          )}
+          {(!isMobile || mobileOpen) && (
+            <Button variant="ghost" size="xs" onClick={onReset}>
+              Atur Ulang
+            </Button>
+          )}
+        </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {(isMobile ? mobileOpen : true) && (
+        <>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {fields.map((field) => {
           switch (field.type) {
             case 'select':
@@ -178,11 +195,13 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
         })}
       </div>
       {onApply && (
-        <div className="flex justify-end pt-2">
-          <Button variant="primary" size="md" onClick={onApply}>
+        <div className="flex justify-end pt-1 sm:pt-2">
+          <Button variant="primary" size={isMobile ? 'sm' : 'md'} fullWidth={isMobile} onClick={onApply}>
             Terapkan
           </Button>
         </div>
+      )}
+        </>
       )}
     </div>
   );

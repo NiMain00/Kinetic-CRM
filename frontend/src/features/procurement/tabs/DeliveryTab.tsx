@@ -532,7 +532,7 @@ export default function DeliveryTab({ procurement }: Props) {
             />
           </div>
 
-          <div className="flex justify-end gap-3 border-t pt-6 border-border">
+          <div className="flex justify-end gap-3 flex-wrap border-t pt-6 border-border">
             <Button
               variant="secondary"
               onClick={handleSaveProgress}

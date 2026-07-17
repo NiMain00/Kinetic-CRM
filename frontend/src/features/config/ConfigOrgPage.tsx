@@ -256,7 +256,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
         {/* Right Side: Form Editor */}
         <div className="lg:col-span-8 bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden flex flex-col h-auto lg:h-[550px]">
           {/* Editor Header */}
-          <div className="p-6 border-b border-border bg-surface-container-lowest flex justify-between items-center shrink-0">
+          <div className="p-4 sm:p-6 border-b border-border bg-surface-container-lowest flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-primary-fixed text-primary rounded-lg flex items-center justify-center">
                 <span className="material-symbols-outlined text-[28px]">

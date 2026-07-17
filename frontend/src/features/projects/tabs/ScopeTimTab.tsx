@@ -342,7 +342,7 @@ function AddMemberForm({
           ))}
         </select>
       </div>
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-3 flex-wrap">
         <Button variant="secondary" size="md" onClick={onAdded}>
           Batal
         </Button>

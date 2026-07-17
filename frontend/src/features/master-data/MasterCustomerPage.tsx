@@ -204,7 +204,7 @@ export default function MasterCustomerPage() {
               <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="custStatus" checked={form.isActive === false} onChange={() => setForm({ ...form, isActive: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
             </div>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex justify-end gap-3 flex-wrap pt-4 border-t border-border">
             <Button type="button" variant="secondary" size="sm" onClick={() => setModalOpen(false)}>Batal</Button>
             <Button type="submit" size="sm">{editing ? 'Simpan Perubahan' : 'Tambah Customer'}</Button>
           </div>

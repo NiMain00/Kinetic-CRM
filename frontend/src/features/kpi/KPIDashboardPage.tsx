@@ -74,7 +74,7 @@ export default function KPIDashboardPage() {
               options={periodOptions}
               value={periodFilter}
               onChange={e => setPeriodFilter(e.target.value)}
-              className="w-40"
+              className="w-full sm:w-40"
               aria-label="Pilih periode"
             />
           </div>

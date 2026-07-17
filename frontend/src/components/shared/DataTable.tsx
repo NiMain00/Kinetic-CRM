@@ -100,23 +100,23 @@ export default function DataTable<T>({
         onBatchUpdate={onBatchUpdate}
         onBatchExport={onBatchExport}
       />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-4">
         <div />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {exportable && data.length > 0 && (
-            <Button variant="secondary" size="sm" onClick={exportCSV} leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}>
+            <Button variant="secondary" size="xs" onClick={exportCSV} leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}>
               Export CSV
             </Button>
           )}
           {hideableColumns && (
             <div className="relative" ref={menuRef}>
-              <Button variant="secondary" size="sm" onClick={() => setShowColumnMenu(!showColumnMenu)} leftIcon={<span className="material-symbols-outlined text-[16px]">view_column</span>}>
+              <Button variant="secondary" size="xs" onClick={() => setShowColumnMenu(!showColumnMenu)} leftIcon={<span className="material-symbols-outlined text-[16px]">view_column</span>}>
                 Kolom
               </Button>
               {showColumnMenu && (
-                <div className="absolute right-0 top-full mt-1 bg-surface border border-border/60 rounded-2xl shadow-elevated p-2 min-w-45 z-20">
+                <div className="absolute right-0 top-full mt-1 bg-surface border border-border/60 rounded-2xl shadow-elevated p-2 min-w-32 sm:min-w-45 z-20">
                   {columns.map((col) => (
-                    <label key={col.key} className="flex items-center gap-2.5 px-3 py-2 hover:bg-surface-container rounded-lg cursor-pointer text-sm transition-colors">
+                    <label key={col.key} className="flex items-center gap-2.5 px-2 sm:px-3 py-2 hover:bg-surface-container rounded-lg cursor-pointer text-xs sm:text-sm transition-colors">
                       <input
                         type="checkbox"
                         checked={visibleKeys.has(col.key)}
@@ -131,7 +131,7 @@ export default function DataTable<T>({
             </div>
           )}
           {onAdd && (
-            <Button variant="primary" size="sm" onClick={onAdd} leftIcon={<span className="material-symbols-outlined text-sm">add</span>}>
+            <Button variant="primary" size="xs" onClick={onAdd} leftIcon={<span className="material-symbols-outlined text-sm">add</span>}>
               {addLabel}
             </Button>
           )}

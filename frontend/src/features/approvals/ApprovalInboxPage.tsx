@@ -508,7 +508,7 @@ export default function ApprovalInboxView({
               </button>
             )}
           </div>
-          <div className="flex gap-2 overflow-x-auto scrollbar-none w-full sm:w-auto">
+          <div className="flex gap-2 flex-wrap w-full sm:w-auto">
             <span className="text-secondary font-label-sm text-label-sm whitespace-nowrap self-center">Tipe:</span>
             {(['Semua', 'Prospek', 'RKS', 'LPHS'] as FilterType[]).map((t) => (
               <button

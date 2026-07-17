@@ -219,7 +219,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setShowAddStatus(false)}>Batal</Button>
               <Button onClick={handleAddStatusUpdate} disabled={!newStatusTitle}>Simpan</Button>
             </div>
@@ -260,7 +260,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setShowUpload(false)}>Batal</Button>
               <Button onClick={handleUploadDoc} disabled={!uploadFileName}>Upload</Button>
             </div>

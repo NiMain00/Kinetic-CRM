@@ -81,7 +81,7 @@ export default function ConfigLayout({ children }: { children?: React.ReactNode 
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <aside
-            className="relative z-10 w-64 bg-surface flex flex-col shadow-2xl slide-in-left"
+            className="relative z-10 w-64 max-w-[85vw] bg-surface flex flex-col shadow-2xl slide-in-left"
             {...swipeHandlers}
           >
             {sidebarContent}

@@ -201,7 +201,7 @@ export default function TimelineTab({ procurement }: Props) {
                 <textarea value={newStatusDesc} onChange={e => setNewStatusDesc(e.target.value)} rows={3} className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface resize-none" placeholder="Penjelasan tambahan (opsional)" />
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setShowAddStatus(false)}>Batal</Button>
               <Button onClick={handleAddStatusUpdate} disabled={!newStatusTitle}>Simpan</Button>
             </div>
@@ -236,7 +236,7 @@ export default function TimelineTab({ procurement }: Props) {
                 </div>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-border">
+            <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setShowUpload(false)}>Batal</Button>
               <Button onClick={handleUploadDoc} disabled={!uploadFileName}>Upload</Button>
             </div>
