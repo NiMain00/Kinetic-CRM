@@ -33,9 +33,6 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const { can } = useAuthz();
 
   const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
-  useEffect(() => { fetchProspects(); }, [fetchProspects]);
-  useEffect(() => { fetchGroups(); }, [fetchGroups]);
-
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
@@ -48,6 +45,10 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDuplicatePanel, setShowDuplicatePanel] = useState(false);
+
+  const paginationParams = useMemo(() => ({ perPage: PAGE_SIZE, page: currentPage }), [currentPage]);
+  useEffect(() => { fetchProspects(paginationParams); }, [fetchProspects, paginationParams]);
+  useEffect(() => { fetchGroups(); }, [fetchGroups]);
 
   const handleDelete = (id: string) => {
     setDeleteTarget(id);

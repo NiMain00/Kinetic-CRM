@@ -79,7 +79,7 @@ export class MasterService {
       where.isActive = params.is_active === 'true' || params.is_active === true;
     }
     const page = Number(params?.page) || 1;
-    const perPage = Number(params?.perPage) || 100;
+    const perPage = Math.min(Number(params?.perPage) || 50, 100);
     try {
       const [data, total] = await Promise.all([
         model.findMany({

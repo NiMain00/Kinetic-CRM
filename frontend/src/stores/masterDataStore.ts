@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { MasterItem } from '@/types/domain/master-item';
 import { masterDataService } from '@/services/master-data';
 
@@ -282,9 +281,7 @@ function toApiPayload(entity: EntityType, item: Record<string, unknown>): Record
   return snakeToCamelKeys(stripped);
 }
 
-export const useMasterDataStore = create<MasterDataState>()(
-  persist(
-    (set, get) => ({
+export const useMasterDataStore = create<MasterDataState>()((set, get) => ({
       categories: [],
       competitors: [],
       docTypes: [],
@@ -309,7 +306,7 @@ export const useMasterDataStore = create<MasterDataState>()(
       fetchEntity: async (entity) => {
         set((s) => ({ loading: { ...s.loading, [entity]: true } }));
         try {
-          const res = await masterDataService.get(entity, { perPage: 200 });
+          const res = await masterDataService.get(entity, { perPage: 50 });
           let data = res.data?.data || res.data || [];
           const list = Array.isArray(data) ? data : [];
           // transform camelCase API keys → snake_case untuk konsistensi dengan frontend
@@ -330,7 +327,7 @@ export const useMasterDataStore = create<MasterDataState>()(
       fetchQuestions: async () => {
         set((s) => ({ loading: { ...s.loading, questions: true } }));
         try {
-          const res = await masterDataService.get('questions', { perPage: 200 });
+          const res = await masterDataService.get('questions', { perPage: 50 });
           let data = res.data?.data || res.data || [];
           const raw = Array.isArray(data) ? data : [];
           const list = raw.map((item: any) => {
@@ -384,18 +381,4 @@ export const useMasterDataStore = create<MasterDataState>()(
           throw err;
         }
       },
-    }),
-    {
-      name: 'kinetic-master-data',
-      version: 10,
-      partialize: (state) => {
-        const { loading, ...rest } = state as any;
-        return rest;
-      },
-      migrate: (persisted: unknown, version: number) => {
-        const current = (persisted || {}) as any;
-        return current;
-      },
-    },
-  ),
-);
+}));

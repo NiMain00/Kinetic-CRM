@@ -64,18 +64,40 @@ export class ProspectsService {
     const where = conditions.length === 1 ? conditions[0] : { AND: conditions };
 
     const page = params?.page || 1;
-    const perPage = 20;
+    const perPage = Math.min(Number(params?.perPage) || 20, 100);
     const [data, total] = await Promise.all([
       this.prisma.prospect.findMany({
         where,
         skip: (page - 1) * perPage,
         take: perPage,
         orderBy: { createdAt: 'desc' },
-        include: {
-          customer: true,
-          category: true,
-          branchRel: true,
-          ownerUser: { select: { id: true, fullName: true } },
+        select: {
+          id: true,
+          name: true,
+          client: true,
+          status: true,
+          description: true,
+          createdAt: true,
+          ownerUserId: true,
+          isConverted: true,
+          estimatedValue: true,
+          customerId: true,
+          currentStageId: true,
+          branch: true,
+          prospectType: true,
+          potensiUnit: true,
+          source: true,
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              needsVerification: true,
+              level: true,
+            },
+          },
+          ownerUser: {
+            select: { id: true, fullName: true },
+          },
         },
       }),
       this.prisma.prospect.count({ where }),
