@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Project, TimelineEvent } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatCurrency, formatDate } from '@/utils/formatters';
@@ -25,6 +25,23 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   const [loseNote, setLoseNote] = useState(project?.winnerDetails?.loseNote || '');
   const [spkDocument, setSpkDocument] = useState<{ name: string; size: string; time: string } | null>(project?.winnerDetails?.spkDocument || null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
+  // Refs for debounce closure capture
+  const outcomeRef = useRef(outcome);
+  const finalContractValueRef = useRef(finalContractValue);
+  const durationDaysRef = useRef(durationDays);
+  const startDateRef = useRef(startDate);
+  const failureReasonRef = useRef(failureReason);
+  const loseNoteRef = useRef(loseNote);
+  const spkDocumentRef = useRef(spkDocument);
+  useEffect(() => { outcomeRef.current = outcome; }, [outcome]);
+  useEffect(() => { finalContractValueRef.current = finalContractValue; }, [finalContractValue]);
+  useEffect(() => { durationDaysRef.current = durationDays; }, [durationDays]);
+  useEffect(() => { startDateRef.current = startDate; }, [startDate]);
+  useEffect(() => { failureReasonRef.current = failureReason; }, [failureReason]);
+  useEffect(() => { loseNoteRef.current = loseNote; }, [loseNote]);
+  useEffect(() => { spkDocumentRef.current = spkDocument; }, [spkDocument]);
 
   // Sync when switching projects
   useEffect(() => {
@@ -35,6 +52,73 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
     setFailureReason(project?.winnerDetails?.loseReason || '');
     setLoseNote(project?.winnerDetails?.loseNote || '');
     setSpkDocument(project?.winnerDetails?.spkDocument || null);
+    setAutoSaveStatus('saved');
+  }, [project?.id]);
+
+  // Auto-save: sync to Zustand store on every change
+  useEffect(() => {
+    if (!project?.id) return;
+    const store = useProjectStore.getState();
+    const current = store.entities[project.id];
+    if (!current) return;
+    useProjectStore.setState((s) => ({
+      entities: {
+        ...s.entities,
+        [project.id]: {
+          ...current,
+          winnerDetails: {
+            ...current.winnerDetails,
+            outcome: outcomeRef.current,
+            contractValue: outcomeRef.current === 'menang' ? (finalContractValueRef.current ?? 0) : undefined,
+            startDate: outcomeRef.current === 'menang' ? startDateRef.current : undefined,
+            duration: outcomeRef.current === 'menang' ? Number(durationDaysRef.current) : undefined,
+            loseReason: outcomeRef.current === 'kalah' ? failureReasonRef.current : undefined,
+            loseNote: outcomeRef.current === 'kalah' ? loseNoteRef.current : undefined,
+            spkDocument: outcomeRef.current === 'menang' ? spkDocumentRef.current : null,
+          } as Project['winnerDetails'],
+        },
+      },
+    }));
+  }, [outcome, finalContractValue, durationDays, startDate, failureReason, loseNote, spkDocument, project?.id]);
+
+  // Auto-save: debounced backend persist
+  useEffect(() => {
+    if (!project?.id) return;
+    if (outcome === null) return;
+    setAutoSaveStatus('unsaved');
+    const timer = setTimeout(() => {
+      setAutoSaveStatus('saving');
+      const wd = {
+        outcome: outcomeRef.current,
+        contractValue: outcomeRef.current === 'menang' ? (finalContractValueRef.current ?? 0) : undefined,
+        startDate: outcomeRef.current === 'menang' ? startDateRef.current : undefined,
+        duration: outcomeRef.current === 'menang' ? Number(durationDaysRef.current) : undefined,
+        loseReason: outcomeRef.current === 'kalah' ? failureReasonRef.current : undefined,
+        loseNote: outcomeRef.current === 'kalah' ? loseNoteRef.current : undefined,
+        spkDocument: outcomeRef.current === 'menang' ? spkDocumentRef.current : null,
+      };
+      updateProjectWinner(project.id, wd);
+      setAutoSaveStatus('saved');
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [outcome, finalContractValue, durationDays, startDate, failureReason, loseNote, spkDocument, project?.id]);
+
+  // Auto-save: save on unmount
+  useEffect(() => {
+    return () => {
+      if (!project?.id) return;
+      if (outcomeRef.current === null) return;
+      const wd = {
+        outcome: outcomeRef.current,
+        contractValue: outcomeRef.current === 'menang' ? (finalContractValueRef.current ?? 0) : undefined,
+        startDate: outcomeRef.current === 'menang' ? startDateRef.current : undefined,
+        duration: outcomeRef.current === 'menang' ? Number(durationDaysRef.current) : undefined,
+        loseReason: outcomeRef.current === 'kalah' ? failureReasonRef.current : undefined,
+        loseNote: outcomeRef.current === 'kalah' ? loseNoteRef.current : undefined,
+        spkDocument: outcomeRef.current === 'menang' ? spkDocumentRef.current : null,
+      };
+      updateProjectWinner(project.id, wd);
+    };
   }, [project?.id]);
 
   const validateSpkFile = (file: File): string | null => {
@@ -101,6 +185,7 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
   };
 
   const handleApply = () => {
+    console.log('[PemenangTab] handleApply called, outcome:', outcome, 'projectId:', project?.id);
     if (!project?.id) return;
     if (!outcome) {
       onShowNotification?.('Pilih hasil tender terlebih dahulu', 'error');
@@ -343,7 +428,27 @@ export default function PemenangTab({ project, onShowNotification }: TabProps) {
       </div>
 
       {outcome && (
-        <div className="flex justify-end gap-3 border-t pt-6 border-border">
+        <div className="flex justify-end gap-3 border-t pt-6 border-border items-center">
+          <div className="flex items-center gap-2 text-xs">
+            {autoSaveStatus === 'saving' && (
+              <span className="text-warning flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
+                Menyimpan...
+              </span>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <span className="text-success flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                Tersimpan
+              </span>
+            )}
+            {autoSaveStatus === 'unsaved' && (
+              <span className="text-outline flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">edit</span>
+                Belum tersimpan
+              </span>
+            )}
+          </div>
           <Button variant="secondary" onClick={handleSaveDraft} leftIcon={<span className="material-symbols-outlined text-[18px]">drafts</span>}>
             Simpan Draft
           </Button>

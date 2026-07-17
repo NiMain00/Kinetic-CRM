@@ -72,6 +72,7 @@ interface ProjectState {
   ids: string[];
   projects: Project[];
   loading: boolean;
+  _lastFetchAt: number | null;
 
   fetchProjects: (params?: any) => Promise<void>;
   fetchProject: (id: string) => Promise<Project | undefined>;
@@ -180,8 +181,22 @@ function mapBackendLphsToFrontend(lphsSios: any): LphsData {
   };
 }
 
+function normalizeRksAnswers(rks: any): any {
+  if (!rks) return rks;
+  // Safety: answers dari DB mungkin string (legacy double-encode) — normalize ke object
+  if (rks.answers && typeof rks.answers === 'string') {
+    try { rks.answers = JSON.parse(rks.answers); } catch { rks.answers = {}; }
+  }
+  // uploadedFiles mungkin juga string JSON dari legacy data
+  if (rks.uploadedFiles && typeof rks.uploadedFiles === 'string') {
+    try { rks.uploadedFiles = JSON.parse(rks.uploadedFiles); } catch { rks.uploadedFiles = []; }
+  }
+  return rks;
+}
+
 function mapApiProject(p: any): Project {
   const { priceSubmission: ps, projectCompetitors, tenderResult, deliveryTarget, lphsSios, ...rest } = p;
+  if (rest.rks) rest.rks = normalizeRksAnswers(rest.rks);
   return {
     ...rest,
     pricing: ps ? {
@@ -240,8 +255,13 @@ export const useProjectStore = create<ProjectState>()(
       ids: [],
       projects: [],
       loading: false,
+      _lastFetchAt: null,
 
       fetchProjects: async (params) => {
+        const now = Date.now();
+        const last = get()._lastFetchAt;
+        // Skip jika sudah di-fetch dalam 30 detik terakhir (cegah duplicate call)
+        if (last && last > now - 30000) return;
         set({ loading: true });
         try {
           const res = await projectService.list(params);
@@ -249,7 +269,7 @@ export const useProjectStore = create<ProjectState>()(
           const list = Array.isArray(data) ? data : [];
           const mapped = list.map(mapApiProject);
           const { entities, ids } = normalizeProjects(mapped);
-          set({ entities, ids, projects: deriveProjects(entities, ids), loading: false });
+          set({ entities, ids, projects: deriveProjects(entities, ids), loading: false, _lastFetchAt: Date.now() });
         } catch {
           set({ loading: false });
         }
@@ -270,6 +290,7 @@ export const useProjectStore = create<ProjectState>()(
                 delivery: existing?.delivery || project.delivery || undefined,
                 pricing: existing?.pricing || project.pricing || undefined,
                 lphs: existing?.lphs || project.lphs || undefined,
+                rks: existing?.rks || project.rks || undefined,
               };
               const entities = { ...s.entities, [project.id]: merged };
               const ids = s.ids.includes(project.id) ? s.ids : [...s.ids, project.id];
@@ -452,9 +473,8 @@ export const useProjectStore = create<ProjectState>()(
           } else if (typeof clean.deadlineTender === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(clean.deadlineTender)) {
             clean.deadlineTender = clean.deadlineTender + 'T00:00:00.000Z';
           }
-          if (clean.answers && typeof clean.answers === 'object' && !Array.isArray(clean.answers)) {
-            clean.answers = JSON.stringify(clean.answers);
-          }
+          // Prisma Json field — kirim sebagai object, bukan string (agar tidak double-encode)
+          // (tidak perlu JSON.stringify karena Prisma handle serialisasi object ke JSON)
           await projectService.update(id, { rks: { upsert: { create: clean, update: clean } } } as any);
         } catch (err: any) {
           if (err?.response?.status === 404) {

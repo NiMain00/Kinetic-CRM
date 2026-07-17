@@ -20,7 +20,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { sidebarOpen, toggleSidebar } = useUiStore();
-  const { unreadCount } = useNotificationStore();
+  const { unreadCount, fetchNotifications } = useNotificationStore();
   const { approvals, fetchApprovals } = useApprovalStore();
   const { prospects, fetchProspects } = useProspectStore();
   const { projects, fetchProjects } = useProjectStore();
@@ -82,7 +82,8 @@ export default function AppLayout() {
     fetchApprovals();
     fetchProspects();
     fetchProjects();
-  }, [fetchApprovals, fetchProspects, fetchProjects]);
+    fetchNotifications();
+  }, [fetchApprovals, fetchProspects, fetchProjects, fetchNotifications]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);

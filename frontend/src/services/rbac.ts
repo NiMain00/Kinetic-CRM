@@ -37,4 +37,8 @@ export const rbacService = {
   updateStage: (id: string, data: Partial<{ code: string; name: string; module: string; sequence: number; ownerDepartmentCode: string; prevDepartmentCode: string | null }>) =>
     apiClient.put(`/rbac/workflow-stages/${id}`, data),
   deleteStage: (id: string) => apiClient.delete(`/rbac/workflow-stages/${id}`),
+
+  getStageDepartments: (stageId: string) => apiClient.get(`/rbac/workflow-stages/${stageId}/departments`),
+  setStageDepartments: (stageId: string, assignments: { departmentCode: string; accessLevel: string }[]) =>
+    apiClient.put(`/rbac/workflow-stages/${stageId}/departments`, { assignments }),
 };

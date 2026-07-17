@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
 import type { StepperStep, Tab } from '@/components/ui';
 import StatusBadge from '@/components/shared/StatusBadge';
-import type { TimelineEvent } from '@/types/domain';
+import type { TimelineEvent, Visit, FollowUpTask } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -16,7 +16,8 @@ import { useAuthz } from '@/hooks/useAuthz';
 import { useRbacStore } from '@/stores/rbacStore';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { useRelationStore } from '@/stores/relationStore';
-import { eventBus } from '@/services/eventBridge';
+import { useVisitStore } from '@/stores/visitStore';
+import { useFollowUpStore } from '@/stores/followUpStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 
 const legacyLabels: Record<string, string> = {
@@ -31,6 +32,7 @@ const legacyLabels: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  'Lead': 'Lead',
   'Waiting Supervisor': 'Menunggu Supervisor',
   'Non Potensial': 'Non Potensial',
   'Potensial': 'Potensial',
@@ -39,7 +41,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const workflowSteps: StepperStep[] = [
-  { label: 'Dibuat' },
+  { label: 'Lead' },
+  { label: 'Prospek' },
   { label: 'Review Supervisor' },
   { label: 'Approval' },
   { label: 'Proyek' },
@@ -47,10 +50,11 @@ const workflowSteps: StepperStep[] = [
 
 const detailTabs: Tab[] = [
   { id: 'overview', label: 'Overview', icon: 'overview' },
+  { id: 'visits', label: 'Kunjungan', icon: 'event_note' },
+  { id: 'follow-up', label: 'Tindak Lanjut', icon: 'assignment' },
   { id: 'documents', label: 'Dokumen', icon: 'description' },
   { id: 'contacts', label: 'Kontak', icon: 'contacts' },
   { id: 'approval', label: 'Approval', icon: 'approval' },
-  { id: 'timeline', label: 'Timeline', icon: 'timeline' },
   { id: 'related-project', label: 'Proyek Terkait', icon: 'business' },
 ];
 
@@ -146,16 +150,67 @@ export default function ProspectDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [localActivities, setLocalActivities] = useState<TimelineEvent[]>([]);
+
+  // Visit state
+  const [showVisitModal, setShowVisitModal] = useState(false);
+  const [visitForm, setVisitForm] = useState({ date: '', notes: '', picName: '' });
+  const visits = useVisitStore((s) => id ? s.visits[id] || [] : []);
+  const fetchVisits = useVisitStore((s) => s.fetchVisits);
+  const createVisit = useVisitStore((s) => s.createVisit);
+  const updateVisit = useVisitStore((s) => s.updateVisit);
+  const deleteVisit = useVisitStore((s) => s.deleteVisit);
+
+  // Visit filter
+  const [visitFilter, setVisitFilter] = useState<string>('all');
+
+  const filteredVisits = useMemo(() => {
+    if (visitFilter === 'all') return visits;
+    return visits.filter(v => v.status === visitFilter);
+  }, [visits, visitFilter]);
+
+  // Follow-up Task state
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [taskForm, setTaskForm] = useState({ title: '', toUserId: '', priority: 'medium' as const, notes: '', deadline: '' });
+  const [taskFilter, setTaskFilter] = useState<string>('all');
+  const tasks = useFollowUpStore((s) => id ? s.tasks[id] || [] : []);
+  const fetchTasks = useFollowUpStore((s) => s.fetchTasks);
+  const createTask = useFollowUpStore((s) => s.createTask);
+  const updateTask = useFollowUpStore((s) => s.updateTask);
+
+  const filteredTasks = useMemo(() => {
+    if (taskFilter === 'all') return tasks;
+    if (taskFilter === 'pending') return tasks.filter(t => t.status === 'pending');
+    if (taskFilter === 'in_progress') return tasks.filter(t => t.status === 'in_progress');
+    if (taskFilter === 'completed') return tasks.filter(t => t.status === 'completed');
+    return tasks;
+  }, [tasks, taskFilter]);
+
+  // User list for task assignment
+  const [users, setUsers] = useState<{ id: string; fullName: string }[]>([]);
+
+  useEffect(() => {
+    if (id) {
+      fetchVisits(id);
+      fetchTasks(id);
+      // Fetch users for task assignment
+      import('@/services/api-client').then(({ default: api, unwrap }) =>
+        api.get('/master/users').then((res: any) => {
+          const data = unwrap<any[]>(res) || res.data?.data || [];
+          setUsers(Array.isArray(data) ? data.map((u: any) => ({ id: u.id, fullName: u.fullName || u.username || '' })) : []);
+        }).catch(() => {})
+      );
+    }
+  }, [id, fetchVisits, fetchTasks]);
 
   const customer = prospect?.customerId
     ? getCustomerById(prospect.customerId) || prospect.customerData
     : prospect?.customerData;
 
   const currentStep = useMemo(() => {
-    if (prospect?.isConverted) return 3;
-    if (prospect?.status === 'Approved') return 2;
-    if (prospect?.status === 'Waiting Supervisor' || prospect?.status === 'Revision') return 1;
+    if (prospect?.isConverted) return 4;
+    if (prospect?.status === 'Approved') return 3;
+    if (prospect?.status === 'Waiting Supervisor' || prospect?.status === 'Revision') return 2;
+    if (prospect?.status === 'Potensial' || prospect?.status === 'Non Potensial') return 1;
     return 0;
   }, [prospect]);
 
@@ -166,6 +221,9 @@ export default function ProspectDetailPage() {
   }, [prospect?.timeline]);
 
   const allActivities = useMemo(() => {
+    const comments = (prospect?.timeline || [])
+      .filter(e => e.type === 'comment')
+      .map(e => ({ ...e, type: 'comment' as const }));
     const notifs = notifications
       .filter(n => n.entityId === prospect?.id)
       .map(n => ({
@@ -177,10 +235,10 @@ export default function ProspectDetailPage() {
         type: 'comment' as const,
         description: n.message,
       }));
-    return [...localActivities, ...notifs].sort(
+    return [...comments, ...notifs].sort(
       (a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()
     );
-  }, [notifications, prospect, localActivities]);
+  }, [notifications, prospect]);
 
   const relatedProjectId = useRelationStore((s) => s.getProjectByProspect(prospect?.id || ''));
   const relatedProject = useMemo(() => {
@@ -211,154 +269,216 @@ export default function ProspectDetailPage() {
   const isConverted = prospect.isConverted && prospect.projectId;
   const tipeProspek = isNonPotensial ? 'Non Potensial' : isPotensial ? 'Potensial' : (STATUS_LABELS[prospect.status] || prospect.status);
 
-  const handleApprove = () => {
-    const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
-    if (pendingApproval) {
-      approveItem(pendingApproval.id);
+  const handleApprove = async () => {
+    try {
+      const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
+      if (pendingApproval) {
+        await approveItem(pendingApproval.id);
+      }
+      await updateProspect(prospect.id, { status: 'Approved' });
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-approved-${Date.now()}`,
+        title: 'Prospek Disetujui',
+        actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
+        role: userRole || 'Waiting Supervisor',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'approve',
+        description: `Prospek "${prospect.name}" telah disetujui.`,
+      });
+      toast.success('Prospek berhasil disetujui.');
+      addNotification({
+        title: 'Prospek Disetujui',
+        message: `Prospek "${prospect.name}" telah disetujui.`,
+        type: 'approval',
+        entityId: prospect.id,
+        entityType: 'prospect',
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menyetujui prospek.');
     }
-    updateProspect(prospect.id, { status: 'Approved' });
-    addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-approved-${Date.now()}`,
-      title: 'Prospek Disetujui',
-      actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
-      role: userRole || 'Waiting Supervisor',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'approve',
-      description: `Prospek "${prospect.name}" telah disetujui.`,
-    });
-    toast.success('Prospek berhasil disetujui.');
-    addNotification({
-      title: 'Prospek Disetujui',
-      message: `Prospek "${prospect.name}" telah disetujui.`,
-      type: 'approval',
-      entityId: prospect.id,
-      entityType: 'prospect',
-    });
   };
 
-  const handleRequestRevision = () => {
-    const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
-    if (pendingApproval) {
-      approveItem(pendingApproval.id);
+  const handleRequestRevision = async () => {
+    try {
+      const pendingApproval = approvals.find(a => a.entityId === prospect.id && a.entityType === 'prospect');
+      if (pendingApproval) {
+        await approveItem(pendingApproval.id);
+      }
+      await updateProspect(prospect.id, { status: 'Revision' });
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-revised-${Date.now()}`,
+        title: 'Revisi Diminta',
+        actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
+        role: userRole || 'Waiting Supervisor',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'revision',
+        description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
+      });
+      toast.success('Permintaan revisi telah dikirim.');
+      addNotification({
+        title: 'Revisi Prospek',
+        message: `Revisi diminta untuk prospek "${prospect.name}". Silakan periksa dan perbaiki.`,
+        type: 'revision',
+        entityId: prospect.id,
+        entityType: 'prospect',
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal mengirim permintaan revisi.');
     }
-    updateProspect(prospect.id, { status: 'Revision' });
+  };
+
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const handlePromoteToProspek = async () => {
+    if (actionLoading) return;
+    const potensi = prospect?.potensiUnit || 0;
+    if (customer?.needsVerification) {
+      toast.error('Customer harus diverifikasi dahulu sebelum Lead bisa naik ke Prospek.');
+      return;
+    }
+    if (potensi <= 0) {
+      toast.error('Lead harus memiliki potensi unit > 0 untuk naik ke Prospek.');
+      return;
+    }
+    // Phase 2: minimal 1 kunjungan (Visit) completed
+    const completedVisits = visits.filter((v) => v.status === 'completed').length;
+    if (completedVisits < 1) {
+      toast.error('Lead harus memiliki minimal 1 kunjungan (Visit) untuk naik ke Prospek.');
+      return;
+    }
+    setActionLoading('promote');
+    try {
+      await updateProspect(prospect.id, { status: 'Potensial', prospectType: 'potensial' });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menaikkan Lead ke Prospek.');
+      setActionLoading(null);
+      return;
+    }
     addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-revised-${Date.now()}`,
-      title: 'Revisi Diminta',
-      actor: authUser?.fullName || authUser?.name || 'Supervisor Marketing',
-      role: userRole || 'Waiting Supervisor',
+      id: `evt-${prospect.id}-promoted-${Date.now()}`,
+      title: 'Lead Naik ke Prospek',
+      actor: authUser?.fullName || authUser?.name || 'System',
+      role: userRole || 'Staff',
       time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'revision',
-      description: `Supervisor Marketing meminta revisi untuk prospek "${prospect.name}".`,
+      type: 'status_change',
+      description: `Lead "${prospect.name}" telah dinaikkan menjadi Prospek Potensial.`,
     });
-    toast.success('Permintaan revisi telah dikirim.');
+    toast.success('Lead berhasil dinaikkan ke Prospek.');
     addNotification({
-      title: 'Revisi Prospek',
-      message: `Revisi diminta untuk prospek "${prospect.name}". Silakan periksa dan perbaiki.`,
-      type: 'revision',
+      title: 'Lead Menjadi Prospek',
+      message: `Lead "${prospect.name}" telah dinaikkan menjadi Prospek Potensial.`,
+      type: 'status_change',
       entityId: prospect.id,
       entityType: 'prospect',
     });
+    setActionLoading(null);
   };
 
   const [resubmitting, setResubmitting] = useState(false);
 
-  const handleResubmit = () => {
+  const handleResubmit = async () => {
     if (resubmitting) return;
     setResubmitting(true);
-    updateProspect(prospect.id, { status: 'Waiting Supervisor', currentStageId: 'stage-supervisor-review' });
-    addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-resubmitted-${Date.now()}`,
-      title: 'Diajukan Ulang ke Supervisor',
-      actor: authUser?.fullName || authUser?.name || prospect.author,
-      role: userRole || 'Staff',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'submit',
-      description: `Prospek "${prospect.name}" diajukan ulang setelah revisi.`,
-    });
-    addApproval({
-      id: `app-prospect-${prospect.id}-${Date.now()}`,
-      ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
-      name: prospect.name,
-      branch: prospect.branch || 'Jakarta Pusat',
-      waitingSince: new Date().toISOString(),
-      slaStatus: 'Normal',
-      type: 'Prospek',
-      resourceType: 'prospect',
-      resourceId: prospect.id,
-      client: prospect.client,
-      entityId: prospect.id,
-      entityType: 'prospect',
-      assigneeUserId: authUser?.id,
-    });
-    toast.success('Prospek berhasil dikirim ke review.');
-    addNotification({
-      title: 'Prospek Disubmit',
-      message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh Supervisor.`,
-      type: 'approval',
-      entityId: prospect.id,
-      entityType: 'prospect',
-    });
-    setResubmitting(false);
+    try {
+      await updateProspect(prospect.id, { status: 'Waiting Supervisor', currentStageId: 'stage-supervisor-review' });
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-resubmitted-${Date.now()}`,
+        title: 'Diajukan Ulang ke Supervisor',
+        actor: authUser?.fullName || authUser?.name || prospect.author,
+        role: userRole || 'Staff',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'submit',
+        description: `Prospek "${prospect.name}" diajukan ulang setelah revisi.`,
+      });
+      addApproval({
+        id: `app-prospect-${prospect.id}-${Date.now()}`,
+        ref: `PR-${new Date().getFullYear()}-${String(prospect.id).slice(-3).padStart(3, '0')}`,
+        name: prospect.name,
+        branch: prospect.branch || 'Jakarta Pusat',
+        waitingSince: new Date().toISOString(),
+        slaStatus: 'Normal',
+        type: 'Prospek',
+        resourceType: 'prospect',
+        resourceId: prospect.id,
+        client: prospect.client,
+        entityId: prospect.id,
+        entityType: 'prospect',
+        assigneeUserId: authUser?.id,
+      });
+      toast.success('Prospek berhasil dikirim ke review.');
+      addNotification({
+        title: 'Prospek Disubmit',
+        message: `Prospek "${prospect.name}" telah disubmit untuk direview oleh Supervisor.`,
+        type: 'approval',
+        entityId: prospect.id,
+        entityType: 'prospect',
+      });
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal mengirim prospek ke review.');
+    } finally {
+      setResubmitting(false);
+    }
   };
 
   const handleDelete = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeleteProspect = () => {
-    // Emit event — handler will clean up approvals, relations, and optionally cascade project
-    eventBus.emit({
-      type: 'PROSPECT_DELETED',
-      prospectId: prospect.id,
-      cascadeProjectId: prospect.isConverted && prospect.projectId
-        ? prospect.projectId
-        : undefined,
-      timestamp: new Date().toISOString(),
-    });
-    // Store action just removes local data
-    deleteProspect(prospect.id);
-    toast.success('Prospek berhasil dihapus.');
-    setShowDeleteModal(false);
-    navigate('/prospects');
+  const confirmDeleteProspect = async () => {
+    try {
+      // deleteProspect() already emits PROSPECT_DELETED internally
+      await deleteProspect(prospect.id);
+      toast.success('Prospek berhasil dihapus.');
+      setShowDeleteModal(false);
+      navigate('/prospects');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menghapus prospek.');
+    }
   };
 
   const handleBuatProyek = () => {
     navigate('/projects/new', { state: { fromProspect: prospect } });
   };
 
-  const handleVerifikasi = () => {
+  const handleVerifikasi = async () => {
     if (!customer?.id) {
       toast.error('Data customer tidak ditemukan.');
       return;
     }
-    verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
-    addProspectTimelineEvent(prospect.id, {
-      id: `evt-${prospect.id}-verified-${Date.now()}`,
-      title: 'Customer Diverifikasi',
-      actor: authUser?.fullName || authUser?.name || 'Super Admin',
-      role: userRole || 'Super Admin',
-      time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      type: 'approve',
-      description: `Customer "${customer.name}" telah diverifikasi.`,
-    });
-    toast.success('Customer berhasil diverifikasi!');
+    try {
+      await verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
+      await addProspectTimelineEvent(prospect.id, {
+        id: `evt-${prospect.id}-verified-${Date.now()}`,
+        title: 'Customer Diverifikasi',
+        actor: authUser?.fullName || authUser?.name || 'Super Admin',
+        role: userRole || 'Super Admin',
+        time: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        type: 'approve',
+        description: `Customer "${customer.name}" telah diverifikasi.`,
+      });
+      toast.success('Customer berhasil diverifikasi!');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal verifikasi customer.');
+    }
   };
 
-  const handleSendComment = () => {
+  const handleSendComment = async () => {
     if (!commentText.trim()) return;
-    const newEvent: TimelineEvent = {
-      id: `comment-${Date.now()}`,
-      title: 'Komentar',
-      actor: authUser?.fullName || authUser?.name || 'User',
-      role: userRole || 'Staff',
-      time: new Date().toISOString(),
-      type: 'comment',
-      description: commentText.trim(),
-    };
-    setLocalActivities(prev => [newEvent, ...prev]);
-    setCommentText('');
-    toast.success('Komentar ditambahkan.');
+    try {
+      await addProspectTimelineEvent(prospect.id, {
+        id: `comment-${Date.now()}`,
+        title: 'Komentar',
+        actor: authUser?.fullName || authUser?.name || 'User',
+        role: userRole || 'Staff',
+        time: new Date().toISOString(),
+        type: 'comment',
+        description: commentText.trim(),
+      });
+      setCommentText('');
+      toast.success('Komentar ditambahkan.');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Gagal menambahkan komentar.');
+    }
   };
 
   const renderActionButtons = () => {
@@ -370,6 +490,36 @@ export default function ProspectDetailPage() {
 
     return (
       <div className="flex gap-2 flex-wrap justify-end">
+        {/* ─── LEAD: Promosi ke Prospek ─── */}
+        {!isConverted && prospect.status === 'Lead' && (
+          <div className="w-full flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2 text-[10px] text-secondary bg-surface-container-low px-3 py-1.5 rounded-lg flex-wrap">
+              <span className={customer?.needsVerification ? 'text-danger' : 'text-success'}>
+                <span className="material-symbols-outlined text-[14px]">{customer?.needsVerification ? 'cancel' : 'check_circle'}</span>
+              </span>
+              Customer terverifikasi
+              <span className={prospect.potensiUnit > 0 ? 'text-success' : 'text-danger'}>
+                <span className="material-symbols-outlined text-[14px]">{prospect.potensiUnit > 0 ? 'check_circle' : 'cancel'}</span>
+              </span>
+              Potensi unit &gt; 0
+              <span className={visits.some(v => v.status === 'completed') ? 'text-success' : 'text-danger'}>
+                <span className="material-symbols-outlined text-[14px]">{visits.some(v => v.status === 'completed') ? 'check_circle' : 'cancel'}</span>
+              </span>
+              Kunjungan
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">trending_up</span>}
+              onClick={handlePromoteToProspek}
+              isLoading={actionLoading === 'promote'}
+              disabled={actionLoading !== null || !!customer?.needsVerification || (prospect.potensiUnit || 0) <= 0 || !visits.some(v => v.status === 'completed')}
+            >
+              {actionLoading === 'promote' ? 'Memproses...' : 'Naikkan ke Prospek'}
+            </Button>
+          </div>
+        )}
+
         {!isConverted && (prospect.status === 'Potensial' || prospect.status === 'Non Potensial') && (
           <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">send</span>} onClick={handleResubmit} isLoading={resubmitting} disabled={resubmitting}>
             {resubmitting ? 'Mengirim...' : 'Kirim ke Review'}
@@ -423,6 +573,13 @@ export default function ProspectDetailPage() {
           <button onClick={handleDelete} className="px-3 py-1.5 border border-danger/30 text-danger rounded-xl text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
             <span className="material-symbols-outlined text-[18px]">delete</span>
           </button>
+        )}
+
+        {access === 'read' && (
+          <div className="px-3 py-1.5 bg-surface-container-low border border-border rounded-lg text-[10px] text-outline flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px]">visibility</span>
+            Mode read-only — department kamu hanya bisa melihat prospek ini
+          </div>
         )}
       </div>
     );
@@ -708,16 +865,31 @@ export default function ProspectDetailPage() {
                     )
                   )}
 
-                  {/* Right: Activity Feed */}
+                  {/* Right: Activity Feed + Timeline */}
                   <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card">
                     <h4 className="font-bold text-xs text-status-orange uppercase tracking-wider flex items-center gap-1.5 mb-4">
                       <span className="material-symbols-outlined text-[16px]">forum</span>
                       Aktivitas
                     </h4>
                     {renderActivityFeed()}
+
+                    {events.length > 0 && (
+                      <>
+                        <div className="border-t border-border my-4" />
+                        <h5 className="text-xs font-bold text-outline mb-3 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[14px]">timeline</span>
+                          Riwayat Timeline
+                        </h5>
+                        <div className="max-h-60 overflow-y-auto">
+                          {renderTimeline()}
+                        </div>
+                      </>
+                    )}
                   </div>
 
                 </div>
+
+                {/* ─── ROW 4: Dihapus — Visit pindah ke tab sendiri, Follow-up pindah ke tab sendiri ─── */}
 
               </div>
             )}
@@ -849,25 +1021,252 @@ export default function ProspectDetailPage() {
               </div>
             )}
 
-            {/* ─── TIMELINE TAB ─── */}
-            {activeTab === 'timeline' && (
-              <div>
-                <div className="bg-surface border border-border/60 border-l-4 border-l-status-purple rounded-xl p-5 shadow-card">
-                  <h3 className="font-bold text-sm text-status-purple mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px]">timeline</span>
-                    Timeline Audit Trail
+            {/* ─── KUNJUNGAN TAB ─── */}
+            {activeTab === 'visits' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-info flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[20px]">event_note</span>
+                    Daftar Kunjungan
                   </h3>
-                  {renderTimeline()}
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                    onClick={() => setShowVisitModal(true)}
+                  >
+                    Tambah Kunjungan
+                  </Button>
                 </div>
 
-                {/* Activity Feed */}
-                <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card mt-4">
-                  <h3 className="font-bold text-sm text-status-orange mb-4 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[20px]">forum</span>
-                    Aktivitas
-                  </h3>
-                  {renderActivityFeed()}
+                {/* Filter tabs */}
+                <div className="flex gap-1 p-1 bg-surface-container rounded-xl border border-border/60 w-fit">
+                  {[
+                    { value: 'all', label: 'Semua' },
+                    { value: 'pending', label: 'Pending' },
+                    { value: 'completed', label: 'Selesai' },
+                    { value: 'cancelled', label: 'Dibatalkan' },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setVisitFilter(f.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                        visitFilter === f.value
+                          ? 'bg-surface text-primary shadow-sm border border-border/60'
+                          : 'text-secondary hover:bg-surface-container-high'
+                      }`}
+                    >
+                      {f.label}
+                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
+                        {visits.filter(v => f.value === 'all' || v.status === f.value).length}
+                      </span>
+                    </button>
+                  ))}
                 </div>
+
+                {/* Visit cards */}
+                {filteredVisits.length === 0 ? (
+                  <div className="text-center py-12 text-outline">
+                    <span className="material-symbols-outlined text-4xl text-outline/50 mb-2">event_busy</span>
+                    <p className="text-sm font-medium">Belum ada kunjungan</p>
+                    <p className="text-xs mt-1">Kunjungan pertama diperlukan sebelum Lead bisa naik ke Prospek.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {filteredVisits.slice().reverse().map((v) => (
+                      <div key={v.id} className="flex items-start gap-4 p-4 bg-surface border border-border/60 rounded-xl shadow-card">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                          v.status === 'completed' ? 'bg-success/20 text-success' :
+                          v.status === 'cancelled' ? 'bg-danger/20 text-danger' :
+                          'bg-warning/20 text-warning'
+                        }`}>
+                          <span className="material-symbols-outlined text-[20px]">
+                            {v.status === 'completed' ? 'check' : v.status === 'cancelled' ? 'close' : 'schedule'}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-sm font-bold text-on-surface">Kunjungan #{v.visitNumber}</span>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              v.status === 'completed' ? 'bg-success/10 text-success' :
+                              v.status === 'cancelled' ? 'bg-danger/10 text-danger' :
+                              'bg-warning/10 text-warning'
+                            }`}>
+                              {v.status === 'completed' ? 'Selesai' : v.status === 'cancelled' ? 'Dibatalkan' : 'Pending'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-secondary">
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                              {formatDate(v.date)}
+                            </span>
+                            {v.picName && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">person</span>
+                                {v.picName}
+                              </span>
+                            )}
+                          </div>
+                          {v.notes && (
+                            <p className="text-xs text-secondary mt-2 bg-surface-container-low p-2 rounded-lg">{v.notes}</p>
+                          )}
+                          {v.status === 'pending' && (
+                            <div className="flex gap-2 mt-3">
+                              <Button variant="success" size="sm" onClick={async () => {
+                                try { await updateVisit(v.id, { status: 'completed' }); toast.success('Kunjungan selesai.'); }
+                                catch { toast.error('Gagal menyelesaikan kunjungan.'); }
+                              }}>
+                                Selesaikan
+                              </Button>
+                              <button
+                                onClick={async () => {
+                                  try { await updateVisit(v.id, { status: 'cancelled' }); toast.success('Kunjungan dibatalkan.'); }
+                                  catch { toast.error('Gagal membatalkan kunjungan.'); }
+                                }}
+                                className="px-3 py-1.5 border border-danger/30 text-danger rounded-lg text-xs font-semibold hover:bg-danger/5 transition-all"
+                              >
+                                Batalkan
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ─── TINDAK LANJUT TAB ─── */}
+            {activeTab === 'follow-up' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm text-status-purple flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[20px]">assignment</span>
+                    Daftar Tugas Tindak Lanjut
+                  </h3>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                    onClick={() => setShowTaskModal(true)}
+                  >
+                    Buat Tugas Baru
+                  </Button>
+                </div>
+
+                {/* Filter tabs */}
+                <div className="flex gap-1 p-1 bg-surface-container rounded-xl border border-border/60 w-fit">
+                  {[
+                    { value: 'all', label: 'Semua' },
+                    { value: 'pending', label: 'Belum' },
+                    { value: 'in_progress', label: 'Sedang Dikerjakan' },
+                    { value: 'completed', label: 'Selesai' },
+                  ].map((f) => (
+                    <button
+                      key={f.value}
+                      onClick={() => setTaskFilter(f.value)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                        taskFilter === f.value
+                          ? 'bg-surface text-primary shadow-sm border border-border/60'
+                          : 'text-secondary hover:bg-surface-container-high'
+                      }`}
+                    >
+                      {f.label}
+                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
+                        {tasks.filter(t => f.value === 'all' || t.status === f.value).length}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Task cards */}
+                {filteredTasks.length === 0 ? (
+                  <div className="text-center py-12 text-outline">
+                    <span className="material-symbols-outlined text-4xl text-outline/50 mb-2">assignment</span>
+                    <p className="text-sm font-medium">Belum ada tugas tindak lanjut</p>
+                    <p className="text-xs mt-1">Buat tugas untuk menugaskan follow-up ke tim.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-3">
+                    {filteredTasks.map((t) => {
+                      const pColor = t.priority === 'high' ? 'text-danger bg-danger/10 border-danger/20' :
+                        t.priority === 'medium' ? 'text-warning bg-warning/10 border-warning/20' :
+                        'text-secondary bg-surface-container-high border-border/40';
+                      const progressColor = t.progress >= 100 ? 'bg-success' : t.progress >= 50 ? 'bg-warning' : 'bg-info';
+                      return (
+                        <div key={t.id} className="p-4 bg-surface border border-border/60 rounded-xl shadow-card space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${pColor}`}>
+                                  {t.priority === 'high' ? 'Tinggi' : t.priority === 'medium' ? 'Sedang' : 'Rendah'}
+                                </span>
+                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                  t.status === 'completed' ? 'bg-success/10 text-success' :
+                                  t.status === 'in_progress' ? 'bg-warning/10 text-warning' :
+                                  'bg-info/10 text-info'
+                                }`}>
+                                  {t.status === 'pending' ? 'Belum' : t.status === 'in_progress' ? 'Sedang Dikerjakan' : 'Selesai'}
+                                </span>
+                              </div>
+                              <p className="text-sm font-bold text-on-surface mt-1">{t.title}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-secondary">
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">person_outline</span>
+                              Dari: {users.find(u => u.id === t.fromUserId)?.fullName || '-'}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[12px]">person</span>
+                              Untuk: {users.find(u => u.id === t.toUserId)?.fullName || '-'}
+                            </span>
+                            {t.deadline && (
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                                Deadline: {formatDate(t.deadline)}
+                              </span>
+                            )}
+                          </div>
+
+                          {t.notes && (
+                            <p className="text-xs text-secondary bg-surface-container-low p-2 rounded-lg">{t.notes}</p>
+                          )}
+
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                              <div className={`h-full rounded-full ${progressColor} transition-all`} style={{ width: `${t.progress}%` }} />
+                            </div>
+                            <span className="text-[10px] text-outline font-mono-data min-w-[32px] text-right">{t.progress}%</span>
+                          </div>
+
+                          {t.status !== 'completed' && (
+                            <div className="flex gap-2 pt-1">
+                              {t.status === 'pending' && (
+                                <Button variant="primary" size="sm" onClick={async () => {
+                                  try { await updateTask(t.id, { status: 'in_progress', progress: 25 }); toast.success('Tugas dimulai.'); }
+                                  catch { toast.error('Gagal mengupdate tugas.'); }
+                                }}>
+                                  Mulai
+                                </Button>
+                              )}
+                              {t.status === 'in_progress' && (
+                                <Button variant="success" size="sm" onClick={async () => {
+                                  try { await updateTask(t.id, { status: 'completed', progress: 100 }); toast.success('Tugas selesai!'); }
+                                  catch { toast.error('Gagal mengupdate tugas.'); }
+                                }}>
+                                  Selesaikan
+                                </Button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
@@ -922,6 +1321,157 @@ export default function ProspectDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ─── VISIT MODAL ─── */}
+      <Modal
+        isOpen={showVisitModal}
+        onClose={() => setShowVisitModal(false)}
+        title="Tambah Kunjungan"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setShowVisitModal(false)}>Batal</Button>
+            <Button variant="primary" size="md" onClick={async () => {
+              if (!id) return;
+              if (!visitForm.date) { toast.error('Tanggal kunjungan wajib diisi.'); return; }
+              try {
+                await createVisit({
+                  prospectId: id,
+                  date: visitForm.date,
+                  notes: visitForm.notes || undefined,
+                  picName: visitForm.picName || undefined,
+                });
+                setVisitForm({ date: '', notes: '', picName: '' });
+                setShowVisitModal(false);
+                toast.success('Kunjungan berhasil ditambahkan.');
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || 'Gagal menambahkan kunjungan.');
+              }
+            }}>
+              Simpan
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Tanggal Kunjungan *</label>
+            <input
+              type="date"
+              value={visitForm.date}
+              onChange={(e) => setVisitForm({ ...visitForm, date: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Nama PIC</label>
+            <input
+              value={visitForm.picName}
+              onChange={(e) => setVisitForm({ ...visitForm, picName: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Nama petugas kunjungan"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Catatan</label>
+            <textarea
+              value={visitForm.notes}
+              onChange={(e) => setVisitForm({ ...visitForm, notes: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+              placeholder="Hasil kunjungan..."
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* ─── TASK MODAL ─── */}
+      <Modal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        title="Buat Tugas Tindak Lanjut"
+        footer={
+          <>
+            <Button variant="secondary" size="md" onClick={() => setShowTaskModal(false)}>Batal</Button>
+            <Button variant="primary" size="md" onClick={async () => {
+              if (!id) return;
+              if (!taskForm.title) { toast.error('Judul tugas wajib diisi.'); return; }
+              if (!taskForm.toUserId) { toast.error('Pilih PIC tujuan.'); return; }
+              try {
+                await createTask({
+                  title: taskForm.title,
+                  prospectId: id,
+                  fromUserId: authUser?.id || '',
+                  toUserId: taskForm.toUserId,
+                  priority: taskForm.priority,
+                  notes: taskForm.notes || undefined,
+                  deadline: taskForm.deadline || undefined,
+                });
+                setTaskForm({ title: '', toUserId: '', priority: 'medium', notes: '', deadline: '' });
+                setShowTaskModal(false);
+                toast.success('Tugas berhasil dibuat.');
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || 'Gagal membuat tugas.');
+              }
+            }}>
+              Simpan
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Judul *</label>
+            <input
+              value={taskForm.title}
+              onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Contoh: Follow-up proposal ke customer"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">PIC Tujuan *</label>
+            <select
+              value={taskForm.toUserId}
+              onChange={(e) => setTaskForm({ ...taskForm, toUserId: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Pilih PIC</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>{u.fullName}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Prioritas</label>
+            <select
+              value={taskForm.priority}
+              onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value as any })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="low">Rendah</option>
+              <option value="medium">Sedang</option>
+              <option value="high">Tinggi</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Deadline</label>
+            <input
+              type="date"
+              value={taskForm.deadline}
+              onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="font-semibold text-sm">Catatan</label>
+            <textarea
+              value={taskForm.notes}
+              onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+              placeholder="Deskripsi tugas..."
+            />
+          </div>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
       <Modal

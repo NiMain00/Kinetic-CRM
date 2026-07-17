@@ -7,26 +7,36 @@ import { deepClone } from '@/utils/clone';
  * Auto-create a Procurement entry from a winning project.
  * Called when PemenangTab sets outcome to 'menang'.
  */
-export function createProcurementFromProject(project: Project): Procurement {
+export async function createProcurementFromProject(project: Project): Promise<Procurement> {
+  console.log('[createProcurementFromProject] called for project:', project.id, project.name);
   const store = useProcurementStore.getState();
 
-  // Prevent duplicate: check if procurement already exists for this project
+  // Hanya gunakan existing jika sudah punya ID real dari backend (UUID)
+  // Abaikan data temp (ID `PRC-...`) yang gagal persist sebelumnya
   const existing = store.procurements.find(
-    (p) => p.sourceProjectId === project.id,
+    (p) => p.sourceProjectId === project.id && !p.id.startsWith('PRC-'),
   );
   if (existing) return existing;
 
-  const procurement = store.addProcurement({
+  // Hapus data temp lama yang gagal persist, biar nggak nyumbat index
+  const stale = store.procurements.filter(
+    (p) => p.sourceProjectId === project.id && p.id.startsWith('PRC-'),
+  );
+  for (const s of stale) {
+    store.deleteProcurement(s.id);
+  }
+
+  const procurement = await store.addProcurement({
     // ── Identity (reference ke source) ──────────────────────────────────
     sourceProjectId: project.id,
     sourceProjectCode: project.code,
     sourceProjectName: project.name,
 
     // ── Snapshot (copy sekali saat transisi) ────────────────────────────
-    client: project.client,
+    client: project.client || project.name || 'Unknown',
     location: project.location,
-    createdBy: project.author,
-    createdByUserId: project.createdByUserId,
+    createdBy: project.author || project.createdByUserId || 'System',
+    createdByUserId: project.createdByUserId || project.author || undefined,
     contractValue: project.winnerDetails?.contractValue || project.estimatedValue || 0,
 
     status: 'Draft',
@@ -69,10 +79,13 @@ export function createProcurementFromProject(project: Project): Procurement {
  * Projects with winnerDetails.outcome === 'menang' and not already
  * converted get a procurement entry.
  */
-export function migrateExistingProjects(projects: Project[]): number {
+export async function migrateExistingProjects(projects: Project[]): Promise<number> {
   const store = useProcurementStore.getState();
+  // Hanya akui procurement dengan ID real (UUID), bukan temp (PRC-...)
   const existingIds = new Set(
-    store.procurements.map((p) => p.sourceProjectId),
+    store.procurements
+      .filter((p) => !p.id.startsWith('PRC-'))
+      .map((p) => p.sourceProjectId),
   );
   let count = 0;
 
@@ -85,7 +98,7 @@ export function migrateExistingProjects(projects: Project[]): number {
       project.winnerDetails?.outcome === 'menang';
 
     if (isPastWinner && !existingIds.has(project.id)) {
-      createProcurementFromProject(project);
+      await createProcurementFromProject(project);
       count++;
     }
   }

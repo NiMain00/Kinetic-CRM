@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { masterDataService } from '@/services/master-data';
-import apiClient from '@/services/api-client';
+import { unwrap } from '@/services/api-client';
 import type { Supplier, SupplierEvaluation } from '@/types/domain/procurement';
 
 interface SupplierState {
@@ -41,8 +41,8 @@ export const useSupplierStore = create<SupplierState>()(
         set({ loading: true });
         try {
           const res = await masterDataService.get('suppliers');
-          if (res.data?.data) {
-            const suppliers = res.data.data as unknown as Supplier[];
+          const suppliers = unwrap<Supplier[]>(res);
+          if (suppliers && Array.isArray(suppliers)) {
             const entities: Record<string, Supplier> = {};
             const ids: string[] = [];
             suppliers.forEach((s) => {
@@ -103,7 +103,7 @@ export const useSupplierStore = create<SupplierState>()(
 
       addEvaluation: async (supplierId, evaluation) => {
         try {
-          await apiClient.post('/master/supplierEvaluations', { supplierId, ...evaluation } as any);
+          await masterDataService.create('supplierEvaluations', { ...evaluation, supplierId } as any);
         } catch (err) {
           console.error('[supplierStore] addEvaluation API failed:', err);
         }

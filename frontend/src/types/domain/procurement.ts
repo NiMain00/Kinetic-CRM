@@ -179,5 +179,8 @@ export function generateProcurementCode(index: number): string {
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
-  return `PR-${year}${month}-${String(index + 1).padStart(4, '0')}`;
+  const seq = String(index + 1).padStart(4, '0');
+  // Random suffix prevents unique constraint collision after soft-delete
+  const unique = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `PR-${year}${month}-${seq}-${unique}`;
 }

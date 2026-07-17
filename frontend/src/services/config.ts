@@ -39,4 +39,13 @@ export const configService = {
   // Upload Config
   getUploadConfig: () => apiClient.get('/config/upload'),
   updateUploadConfig: (data: any) => apiClient.put('/config/upload', data),
+
+  // Integration Configurations (API keys)
+  listIntegrations: () => apiClient.get('/config/integrations'),
+  getIntegration: (key: string) => apiClient.get(`/config/integrations/${key}`),
+  upsertIntegration: (key: string, data: { value: string; isSecret?: boolean }) =>
+    apiClient.put(`/config/integrations/${key}`, data),
+  verifyIntegration: (key: string, value: string) =>
+    apiClient.post(`/config/integrations/${key}/verify`, { value }),
+  deleteIntegration: (key: string) => apiClient.delete(`/config/integrations/${key}`),
 };

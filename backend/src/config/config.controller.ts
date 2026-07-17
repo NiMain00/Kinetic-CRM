@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from './config.service';
 
@@ -105,6 +105,41 @@ export class ConfigController {
   @Put('workflows/:entityType')
   saveWorkflow(@Param('entityType') entityType: string, @Body() dto: { steps: any[] }) {
     return this.configService.saveWorkflow(entityType, dto.steps || []);
+  }
+
+  // Integration Configurations (API keys, etc.)
+  @Get('integrations')
+  listIntegrations() {
+    return this.configService.listIntegrations();
+  }
+
+  @Get('ping')
+  ping() {
+    return { pong: true };
+  }
+
+  @Get('integrations/:key')
+  getIntegration(@Param('key') key: string) {
+    return this.configService.getIntegration(key);
+  }
+
+  @Put('integrations/:key')
+  upsertIntegration(
+    @Param('key') key: string,
+    @Body() data: { value: string; isSecret?: boolean },
+    @Req() req: any,
+  ) {
+    return this.configService.upsertIntegration(key, data, req.user.id);
+  }
+
+  @Post('integrations/:key/verify')
+  verifyIntegration(@Param('key') key: string, @Body('value') value: string) {
+    return this.configService.verifyIntegration(key, value);
+  }
+
+  @Delete('integrations/:key')
+  deleteIntegration(@Param('key') key: string) {
+    return this.configService.deleteIntegration(key);
   }
 
   // Upload Config

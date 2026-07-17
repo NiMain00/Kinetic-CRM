@@ -79,7 +79,7 @@ export default function Topbar({
         <Link
           to={notificationsTo || '#'}
           className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container transition-all relative cursor-pointer touch-min"
-          aria-label={`Notifikasi${notificationCount > 0 ? `, ${notificationCount} belum dibaca` : ''}`}
+          aria-label={`Buka notifikasi${notificationCount > 0 ? `, ${notificationCount} belum dibaca` : ''}`}
         >
           <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (

@@ -54,6 +54,7 @@ export default function Sidebar({
   const location = useLocation();
   const allowedNavItems = useMemo(() => filterNavItems(navItems, userRole, userPermissions), [userRole, userPermissions]);
   const swipeHandlers = useSwipe(onClose);
+  const [expandedParents, setExpandedParents] = React.useState<Set<string>>(new Set(['/prospects']));
   const [showDeptSwitch, setShowDeptSwitch] = React.useState(false);
   const authUser = useAuthStore((s) => s.user);
   const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (authUser as any)?.departmentId;
@@ -98,7 +99,23 @@ export default function Sidebar({
     links[next].focus();
   };
 
+  const toggleParent = useCallback((path: string) => {
+    setExpandedParents((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }, []);
+
   const renderNavItem = (item: NavItem) => {
+    if (item.children && item.children.length > 0) {
+      return renderExpandableItem(item);
+    }
+    return renderLeafItem(item);
+  };
+
+  const renderLeafItem = (item: NavItem) => {
     const isActive = isPathActive(item.path);
     const badge = item.label === 'Persetujuan' ? pendingApprovalsCount : item.label === 'Notifikasi' ? unreadCount : undefined;
 
@@ -125,6 +142,72 @@ export default function Sidebar({
           </span>
         )}
       </Link>
+    );
+  };
+
+  const renderExpandableItem = (item: NavItem) => {
+    const isExpanded = expandedParents.has(item.path);
+    const isActive = isPathActive(item.path);
+    // Check if any child is active
+    const hasActiveChild = item.children?.some((child) => isPathActive(child.path)) ?? false;
+
+    return (
+      <div key={item.path} className="space-y-0.5">
+        {/* Parent toggle button */}
+        <button
+          onClick={() => {
+            toggleParent(item.path);
+            if (mobile && onClose) onClose();
+          }}
+          className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
+            isActive || hasActiveChild
+              ? 'bg-primary-container/40 text-primary font-semibold border-primary'
+              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
+          }`}
+          aria-label={item.label}
+          aria-expanded={isExpanded}
+        >
+          <span className={`material-symbols-outlined text-[22px] ${isActive || hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+            {item.icon}
+          </span>
+          {!collapsed && (
+            <>
+              <span className="truncate flex-1 text-left">{item.label}</span>
+              <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+                chevron_right
+              </span>
+            </>
+          )}
+        </button>
+
+        {/* Children (only when expanded and not collapsed) */}
+        {!collapsed && isExpanded && item.children && (
+          <div className="ml-3 space-y-0.5 border-l-2 border-border/60 pl-2">
+            {item.children.map((child) => {
+              const isChildActive = isPathActive(child.path);
+              return (
+                <Link
+                  key={child.path}
+                  to={child.path}
+                  onClick={() => { if (mobile && onClose) onClose(); }}
+                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h ${
+                    isChildActive
+                      ? 'bg-primary-container/30 text-primary font-semibold'
+                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                  }`}
+                  aria-label={child.label}
+                  aria-current={isChildActive ? 'page' : undefined}
+                >
+                  <span className={`material-symbols-outlined text-[18px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+                    {child.icon}
+                  </span>
+                  <span className="truncate">{child.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     );
   };
 

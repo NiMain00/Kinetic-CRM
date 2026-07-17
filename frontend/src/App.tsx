@@ -5,9 +5,6 @@ import AppRouter from './routes/router';
 import { ErrorBoundary } from '@/components/shared';
 import { useThemeStore } from '@/stores/themeStore';
 import { registerEventHandlers } from '@/bootstrap/eventHandlers';
-import { migrateExistingProjects } from '@/features/procurement/procurementService';
-import { useProjectStore } from '@/stores/projectStore';
-import { useProcurementStore } from '@/features/procurement/procurementStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,28 +29,36 @@ function App() {
 
 
 
-  // Register domain event handlers once at startup
+  // Register domain event handlers immediately (no race condition with user clicks)
   const initRef = useRef(false);
   useEffect(() => {
     if (initRef.current) return;
     initRef.current = true;
     registerEventHandlers();
 
-    // Wait for Zustand persist hydration before migrating
-    const tryMigrate = () => {
-      if (useProjectStore.persist.hasHydrated() && useProcurementStore.persist.hasHydrated()) {
-        const projects = useProjectStore.getState().projects;
-        migrateExistingProjects(projects);
-        return true;
+    // Migrate existing projects to procurement (deferred after paint)
+    const migrate = async () => {
+      const [{ useProjectStore }, { useProcurementStore }, { migrateExistingProjects }] = await Promise.all([
+        import('@/stores/projectStore'),
+        import('@/features/procurement/procurementStore'),
+        import('@/features/procurement/procurementService'),
+      ]);
+      const tryMigrate = () => {
+        if (useProjectStore.persist.hasHydrated() && useProcurementStore.persist.hasHydrated()) {
+          const projects = useProjectStore.getState().projects;
+          migrateExistingProjects(projects);
+          return true;
+        }
+        return false;
+      };
+      if (!tryMigrate()) {
+        const unsub1 = useProjectStore.persist.onFinishHydration(() => tryMigrate());
+        const unsub2 = useProcurementStore.persist.onFinishHydration(() => tryMigrate());
+        return () => { unsub1(); unsub2(); };
       }
-      return false;
     };
-
-    if (!tryMigrate()) {
-      const unsub1 = useProjectStore.persist.onFinishHydration(() => tryMigrate());
-      const unsub2 = useProcurementStore.persist.onFinishHydration(() => tryMigrate());
-      return () => { unsub1(); unsub2(); };
-    }
+    const timer = setTimeout(migrate, 100);
+    return () => { clearTimeout(timer); };
   }, []);
 
   return (

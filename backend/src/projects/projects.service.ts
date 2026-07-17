@@ -85,12 +85,14 @@ export class ProjectsService {
   async delete(id: string) {
     await this.get(id);
     return this.prisma.$transaction(async (tx) => {
-      // Procurement references the project without ON DELETE CASCADE, so nullify or soft-delete them first
       await tx.procurement.updateMany({
         where: { sourceProjectId: id, deletedAt: null },
         data: { deletedAt: new Date() },
       });
-      return tx.project.delete({ where: { id } });
+      return tx.project.update({
+        where: { id },
+        data: { deletedAt: new Date() },
+      });
     });
   }
 }

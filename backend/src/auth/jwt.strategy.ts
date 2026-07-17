@@ -21,7 +21,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Sesi tidak valid atau sudah logout');
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      include: {
+        orgUnit: true,
+        userRoles: { include: { role: true } },
+      },
+    });
     if (!user || user.deletedAt || user.isLocked || user.status === 'inactive') {
       throw new UnauthorizedException('Akun tidak aktif');
     }

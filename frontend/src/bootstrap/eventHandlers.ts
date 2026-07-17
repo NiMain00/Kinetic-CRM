@@ -35,8 +35,9 @@ export function registerEventHandlers(): void {
 
   // ── PROJECT WON ─────────────────────────────────────────────────────
   // When a project wins tender, create procurement record automatically.
-  eventBus.onEvent('PROJECT_WON', (event) => {
+  eventBus.onEvent('PROJECT_WON', async (event) => {
     const { projectId } = event;
+    console.log('[PROJECT_WON] Handler triggered for project:', projectId);
 
     // Try to resolve the project, with a fallback re-query for persist timing
     let project = useProjectStore.getState().getProjectById(projectId);
@@ -50,31 +51,39 @@ export function registerEventHandlers(): void {
       return;
     }
 
-    // Prevent duplicate via relation store (O(1) instead of scanning all procurements)
-    const existingIds = useRelationStore.getState().getProcurementsByProject(projectId);
-    if (existingIds.length > 0) {
-      return; // Already linked — procurement exists
+    // Prevent duplicate: check relation store AND verify procurements actually exist
+    const linkedIds = useRelationStore.getState().getProcurementsByProject(projectId);
+    const validLinked = linkedIds.filter((id) => useProcurementStore.getState().entities[id]);
+    if (validLinked.length > 0) {
+      console.warn('[PROJECT_WON] Valid linked procurements exist:', validLinked);
+      return; // Already linked
+    }
+    // If relation store has stale links (e.g. temp PRC- IDs from failed creates), clean them
+    if (linkedIds.length > validLinked.length) {
+      const staleIds = linkedIds.filter((id) => !useProcurementStore.getState().entities[id]);
+      console.warn('[PROJECT_WON] Cleaning stale relation links:', staleIds);
+      for (const staleId of staleIds) {
+        useRelationStore.getState().unlinkProjectToProcurement(projectId, staleId);
+      }
     }
 
-    let procurement;
     try {
-      procurement = createProcurementFromProject(project);
+      const procurement = await createProcurementFromProject(project);
+
+      // Link in relation store
+      useRelationStore.getState().linkProjectToProcurement(projectId, procurement.id);
+
+      // Notify
+      useNotificationStore.getState().addNotification({
+        title: 'Pengadaan Dibuat',
+        message: `Pengadaan ${procurement.code} dibuat otomatis dari proyek ${project.code}`,
+        type: 'status_change',
+        entityId: procurement.id,
+        entityType: 'procurement',
+      });
     } catch (err) {
       console.error(`[PROJECT_WON] Failed to create procurement for project ${projectId}:`, err);
-      return;
     }
-
-    // Link in relation store
-    useRelationStore.getState().linkProjectToProcurement(projectId, procurement.id);
-
-    // Notify
-    useNotificationStore.getState().addNotification({
-      title: 'Pengadaan Dibuat',
-      message: `Pengadaan ${procurement.code} dibuat otomatis dari proyek ${project.code}`,
-      type: 'status_change',
-      entityId: procurement.id,
-      entityType: 'procurement',
-    });
   });
 
   // ── PROJECT DELETED ─────────────────────────────────────────────────

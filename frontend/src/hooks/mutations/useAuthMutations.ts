@@ -8,7 +8,10 @@ export function useLoginMutation() {
   return useMutation({
     mutationFn: (data: { username: string; password: string }) => authService.login(data),
     onSuccess: (res) => {
-      const { token, user } = res.data.data;
+      // Backend returns the payload directly at res.data ({ token, user }),
+      // matching LoginPage. Fall back to a nested envelope defensively.
+      const payload = (res.data?.data ?? res.data) as { token: string; user: any };
+      const { token, user } = payload;
       login(token, user);
     },
   });

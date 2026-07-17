@@ -13,6 +13,12 @@ interface CustomerState {
   verifyCustomer: (id: string, verifiedBy: string) => void;
   deleteCustomer: (id: string) => Promise<void>;
   getCustomerById: (id: string) => Customer | undefined;
+  /** Get all sub-customers (children) of a customer */
+  getSubCustomers: (parentId: string) => Customer[];
+  /** Get root customer (top-most ancestor) for roll-up */
+  getRootCustomer: (id: string) => Customer | undefined;
+  /** Build customer tree for hierarcy selector */
+  getCustomerTree: () => Customer[];
 }
 
 export const useCustomerStore = create<CustomerState>()(
@@ -34,10 +40,11 @@ export const useCustomerStore = create<CustomerState>()(
       addCustomer: async (c) => {
         try {
           await masterDataService.create('customers', c as any);
+          set((s) => ({ customers: [...s.customers, c] }));
         } catch (err) {
           console.error('[customerStore] addCustomer API failed:', err);
+          // Jangan update local state jika API gagal
         }
-        set((s) => ({ customers: [...s.customers, c] }));
       },
 
       createCustomer: async (data) => {
@@ -61,16 +68,17 @@ export const useCustomerStore = create<CustomerState>()(
             verifiedAt: new Date().toISOString(),
             verifiedBy,
           });
+          set((s) => ({
+            customers: s.customers.map((c) =>
+              c.id === id
+                ? { ...c, needsVerification: false, verifiedAt: new Date().toISOString(), verifiedBy }
+                : c,
+            ),
+          }));
         } catch (err) {
           console.error('[customerStore] verifyCustomer API failed:', err);
+          // Jangan update local state jika API gagal
         }
-        set((s) => ({
-          customers: s.customers.map((c) =>
-            c.id === id
-              ? { ...c, needsVerification: false, verifiedAt: new Date().toISOString(), verifiedBy }
-              : c,
-          ),
-        }));
       },
 
       deleteCustomer: async (id) => {
@@ -79,6 +87,30 @@ export const useCustomerStore = create<CustomerState>()(
       },
 
       getCustomerById: (id) => get().customers.find((c) => c.id === id),
+
+      getSubCustomers: (parentId) => get().customers.filter((c) => c.parentId === parentId),
+
+      getRootCustomer: (id) => {
+        const customers = get().customers;
+        let current = customers.find((c) => c.id === id);
+        while (current?.parentId) {
+          const parent = customers.find((c) => c.id === current!.parentId);
+          if (!parent) break;
+          current = parent;
+        }
+        return current;
+      },
+
+      getCustomerTree: () => {
+        const customers = get().customers;
+        // Attach children to each customer
+        return customers
+          .filter((c) => !c.parentId)
+          .map((root) => ({
+            ...root,
+            children: customers.filter((c) => c.parentId === root.id),
+          }));
+      },
     }),
     {
       name: 'kinetic-customers',

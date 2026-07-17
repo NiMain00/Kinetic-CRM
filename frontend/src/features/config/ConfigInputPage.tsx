@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { useInputConfigMutations } from '@/hooks/useInputConfig';
@@ -36,7 +36,12 @@ const EMPTY_DRAWER: DrawerState = {
 export default function ConfigInputPage() {
   const groups = useInputConfigStore((s) => s.groups);
   const getGroup = useInputConfigStore((s) => s.getGroup);
+  const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
   const { addOption, updateOption, deleteOption, toggleOption } = useInputConfigMutations();
+
+  useEffect(() => {
+    fetchGroups();
+  }, [fetchGroups]);
 
   const [activeCategory, setActiveCategory] = useState<InputConfigCategory | 'all'>('all');
   const [drawer, setDrawer] = useState<DrawerState>(EMPTY_DRAWER);

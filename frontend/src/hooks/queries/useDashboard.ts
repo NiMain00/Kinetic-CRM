@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { dashboardService, type DashboardStats, type ChartDataPoint, type StatusDistribution, type CriticalDeadline } from '@/services/dashboard';
+import { unwrap } from '@/services/api-client';
 
 export function useDashboardStats() {
   return useQuery<DashboardStats>({
     queryKey: ['dashboard', 'stats'],
     queryFn: async () => {
       const res = await dashboardService.getStats();
-      return res.data.data;
+      return unwrap<DashboardStats>(res);
     },
   });
 }
@@ -16,7 +17,7 @@ export function useWinLossTrend() {
     queryKey: ['dashboard', 'trend'],
     queryFn: async () => {
       const res = await dashboardService.getWinLossTrend();
-      return res.data.data;
+      return unwrap<ChartDataPoint[]>(res);
     },
   });
 }
@@ -26,7 +27,7 @@ export function useStatusDistribution() {
     queryKey: ['dashboard', 'status-distribution'],
     queryFn: async () => {
       const res = await dashboardService.getStatusDistribution();
-      return res.data.data;
+      return unwrap<StatusDistribution>(res);
     },
   });
 }
@@ -36,7 +37,7 @@ export function useCriticalDeadlines() {
     queryKey: ['dashboard', 'deadlines'],
     queryFn: async () => {
       const res = await dashboardService.getCriticalDeadlines();
-      return res.data.data;
+      return unwrap<CriticalDeadline[]>(res);
     },
   });
 }

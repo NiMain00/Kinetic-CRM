@@ -5,7 +5,7 @@ import { useRbacStore } from '@/stores/rbacStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { Modal, Button } from '@/components/ui';
 import { authz } from '@/services/authz';
-import type { ProjectMemberRecord, RbacRole, RbacDepartment } from '@/stores/rbacStore';
+import type { ProjectMemberRecord, RbacDepartment } from '@/stores/rbacStore';
 
 interface ScopeTimTabProps {
   project?: Project;
@@ -25,7 +25,6 @@ export default function ScopeTimTab({ project }: ScopeTimTabProps) {
   const addProjMember = useRbacStore((s) => s.addProjectMember);
   const removeProjMember = useRbacStore((s) => s.removeProjectMember);
 
-  const roles = useMasterDataStore((s) => s.roles as unknown as RbacRole[]);
   const masterUsers = useMasterDataStore((s) => s.users);
 
   const [showAddDeptModal, setShowAddDeptModal] = useState(false);
@@ -66,7 +65,6 @@ export default function ScopeTimTab({ project }: ScopeTimTabProps) {
     [departments, involvedDeptIds],
   );
 
-  const getRoleName = (roleId: string) => roles.find((r) => r.id === roleId)?.name || roleId;
   const getUserName = (uid: string) => masterUsers.find((u) => u.id === uid)?.name || uid;
 
   const canManage = userId
@@ -174,12 +172,7 @@ export default function ScopeTimTab({ project }: ScopeTimTabProps) {
                             {getUserName(m.userId).charAt(0)}
                           </span>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-on-surface">{getUserName(m.userId)}</p>
-                          <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[9px] font-semibold uppercase">
-                            {getRoleName(m.roleId).replace(/_/g, ' ')}
-                          </span>
-                        </div>
+                        <p className="text-sm font-medium text-on-surface">{getUserName(m.userId)}</p>
                       </div>
                       <button
                         onClick={() => removeProjMember(projectId, m.userId)}
@@ -307,7 +300,6 @@ function AddMemberForm({
 }) {
   const addProjMember = useRbacStore((s) => s.addProjectMember);
   const masterUsers = useMasterDataStore((s) => s.users);
-  const roles = useMasterDataStore((s) => s.roles as unknown as RbacRole[]);
   const projectMembers = useRbacStore((s) => s.projectMembers);
 
   // Filter users in this department (based on userRoles)
@@ -323,16 +315,11 @@ function AddMemberForm({
     (u) => deptUserIds.includes(u.id) && !existingMemberIds.includes(u.id),
   );
 
-  const projectRoles = roles.filter((r) =>
-    ['role-pm-viewer', 'role-pm-contrib', 'role-pm-manager'].includes(r.id),
-  );
-
   const [selectedUser, setSelectedUser] = useState('');
-  const [selectedRole, setSelectedRole] = useState(projectRoles[0]?.id || '');
 
   const handleAdd = () => {
-    if (!selectedUser || !selectedRole) return;
-    addProjMember(projectId, selectedUser, selectedRole, departmentId, assignedBy);
+    if (!selectedUser) return;
+    addProjMember(projectId, selectedUser, 'role-pm-contrib', departmentId, assignedBy);
     onAdded();
   };
 
@@ -355,27 +342,11 @@ function AddMemberForm({
           ))}
         </select>
       </div>
-      <div>
-        <label className="text-caption-xs font-semibold text-secondary uppercase tracking-wider mb-1 block">
-          Role
-        </label>
-        <select
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
-          className="w-full px-3 py-2.5 bg-surface-container-low border border-border/60 rounded-xl text-sm"
-        >
-          {projectRoles.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name.replace(/_/g, ' ')}
-            </option>
-          ))}
-        </select>
-      </div>
       <div className="flex justify-end gap-3">
         <Button variant="secondary" size="md" onClick={onAdded}>
           Batal
         </Button>
-        <Button variant="primary" size="md" onClick={handleAdd} disabled={!selectedUser || !selectedRole}>
+        <Button variant="primary" size="md" onClick={handleAdd} disabled={!selectedUser}>
           Tambah
         </Button>
       </div>

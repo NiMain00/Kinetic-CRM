@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
+import { HealthModule } from './health/health.module';
 import { AuthModule } from './auth/auth.module';
 import { RbacModule } from './rbac/rbac.module';
 import { AuditModule } from './audit/audit.module';
@@ -13,10 +14,14 @@ import { LphsModule } from './lphs/lphs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ConfigModule } from './config/config.module';
 import { ApprovalsModule } from './approvals/approvals.module';
+import { VisitsModule } from './visits/visits.module';
+import { FollowUpModule } from './follow-up/follow-up.module';
+import { GformModule } from './gform/gform.module';
 
 @Module({
   imports: [
     PrismaModule,
+    HealthModule,
     AuthModule,
     RbacModule,
     AuditModule,
@@ -30,6 +35,9 @@ import { ApprovalsModule } from './approvals/approvals.module';
     DashboardModule,
     ConfigModule,
     ApprovalsModule,
+    VisitsModule,
+    FollowUpModule,
+    GformModule,
   ],
 })
 export class AppModule {}

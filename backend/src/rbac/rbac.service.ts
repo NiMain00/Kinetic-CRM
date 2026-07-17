@@ -50,8 +50,31 @@ export class RbacService {
 
   async getWorkflowStages() {
     return this.prisma.workflowStage.findMany({
-      include: { slaConfig: true },
+      include: { slaConfig: true, stageDepartments: true },
     });
+  }
+
+  async getStageDepartments(stageId: string) {
+    return this.prisma.workflowStageDepartment.findMany({
+      where: { stageId },
+    });
+  }
+
+  async setStageDepartments(
+    stageId: string,
+    assignments: { departmentCode: string; accessLevel: string }[],
+  ) {
+    await this.prisma.workflowStageDepartment.deleteMany({ where: { stageId } });
+    if (assignments.length > 0) {
+      await this.prisma.workflowStageDepartment.createMany({
+        data: assignments.map((a) => ({
+          stageId,
+          departmentCode: a.departmentCode,
+          accessLevel: a.accessLevel as any,
+        })),
+      });
+    }
+    return this.prisma.workflowStageDepartment.findMany({ where: { stageId } });
   }
 
   // ── Departments (OrgUnit) ──

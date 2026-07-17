@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Procurement } from '@/types/domain/procurement';
@@ -39,6 +39,27 @@ export default function DeliveryTab({ procurement }: Props) {
   const [progressVal, setProgressVal] = useState(procurement.progress || 0);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // --- Refs for auto-save ---
+  const targetStartDateRef = useRef(targetStartDate);
+  useEffect(() => { targetStartDateRef.current = targetStartDate; }, [targetStartDate]);
+  const targetEndDateRef = useRef(targetEndDate);
+  useEffect(() => { targetEndDateRef.current = targetEndDate; }, [targetEndDate]);
+  const poDateRef = useRef(poDate);
+  useEffect(() => { poDateRef.current = poDate; }, [poDate]);
+  const unitReadyDateRef = useRef(unitReadyDate);
+  useEffect(() => { unitReadyDateRef.current = unitReadyDate; }, [unitReadyDate]);
+  const unitShippedDateRef = useRef(unitShippedDate);
+  useEffect(() => { unitShippedDateRef.current = unitShippedDate; }, [unitShippedDate]);
+  const unitReceivedDateRef = useRef(unitReceivedDate);
+  useEffect(() => { unitReceivedDateRef.current = unitReceivedDate; }, [unitReceivedDate]);
+  const deliveryNoteRef = useRef(deliveryNote);
+  useEffect(() => { deliveryNoteRef.current = deliveryNote; }, [deliveryNote]);
+  const progressNotesRef = useRef(progressNotes);
+  useEffect(() => { progressNotesRef.current = progressNotes; }, [progressNotes]);
+  const progressValRef = useRef(progressVal);
+  useEffect(() => { progressValRef.current = progressVal; }, [progressVal]);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
   useEffect(() => {
     setTargetStartDate(procurement.targetStartDate || '');
     setTargetEndDate(procurement.targetEndDate || '');
@@ -49,6 +70,83 @@ export default function DeliveryTab({ procurement }: Props) {
     setDeliveryNote(procurement.deliveryNote || '');
     setProgressNotes(procurement.progressNotes || '');
     setProgressVal(procurement.progress || 0);
+  }, [procurement.id]);
+
+  // Sync to Zustand store on every change (immediate)
+  useEffect(() => {
+    if (!procurement.id) return;
+    const store = useProcurementStore.getState();
+    const current = store.entities[procurement.id];
+    if (!current) return;
+    useProcurementStore.setState((s) => ({
+      entities: {
+        ...s.entities,
+        [procurement.id]: {
+          ...current,
+          targetStartDate: targetStartDateRef.current,
+          targetEndDate: targetEndDateRef.current,
+          poDate: poDateRef.current,
+          unitReadyDate: unitReadyDateRef.current,
+          unitShippedDate: unitShippedDateRef.current,
+          unitReceivedDate: unitReceivedDateRef.current,
+          deliveryNote: deliveryNoteRef.current,
+          progressNotes: progressNotesRef.current,
+          progress: progressValRef.current,
+        },
+      },
+    }));
+  }, [targetStartDate, targetEndDate, poDate, unitReadyDate, unitShippedDate, unitReceivedDate, deliveryNote, progressNotes, progressVal, procurement.id]);
+
+  // Auto-save to backend (debounced)
+  useEffect(() => {
+    if (!procurement.id) return;
+    const hasData = targetStartDate || targetEndDate || poDate || unitReadyDate || unitShippedDate || unitReceivedDate || deliveryNote || progressNotes || progressVal > 0;
+    setAutoSaveStatus(hasData ? 'unsaved' : 'saved');
+    if (!hasData) return;
+    const timer = setTimeout(() => {
+      setAutoSaveStatus('saving');
+      updateProcurement(procurement.id, {
+        targetStartDate: targetStartDateRef.current,
+        targetEndDate: targetEndDateRef.current,
+        poDate: poDateRef.current,
+        unitReadyDate: unitReadyDateRef.current,
+        unitShippedDate: unitShippedDateRef.current,
+        unitReceivedDate: unitReceivedDateRef.current,
+        deliveryNote: deliveryNoteRef.current,
+        progressNotes: progressNotesRef.current,
+        progress: progressValRef.current,
+      }).then(() => setAutoSaveStatus('saved'))
+        .catch(() => { setAutoSaveStatus('unsaved'); });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [targetStartDate, targetEndDate, poDate, unitReadyDate, unitShippedDate, unitReceivedDate, deliveryNote, progressNotes, progressVal, procurement.id]);
+
+  // Save on unmount
+  useEffect(() => {
+    return () => {
+      if (!procurement.id) return;
+      const tsd = targetStartDateRef.current;
+      const ted = targetEndDateRef.current;
+      const pd = poDateRef.current;
+      const urd = unitReadyDateRef.current;
+      const usd = unitShippedDateRef.current;
+      const urcd = unitReceivedDateRef.current;
+      const dn = deliveryNoteRef.current;
+      const pn = progressNotesRef.current;
+      const pv = progressValRef.current;
+      if (!tsd && !ted && !pd && !urd && !usd && !urcd && !dn && !pn && pv === 0) return;
+      updateProcurement(procurement.id, {
+        targetStartDate: tsd,
+        targetEndDate: ted,
+        poDate: pd,
+        unitReadyDate: urd,
+        unitShippedDate: usd,
+        unitReceivedDate: urcd,
+        deliveryNote: dn,
+        progressNotes: pn,
+        progress: pv,
+      }).catch(() => {});
+    };
   }, [procurement.id]);
 
   const handleSave = () => {
@@ -319,7 +417,27 @@ export default function DeliveryTab({ procurement }: Props) {
           />
         </div>
 
-        <div className="flex justify-end gap-3 border-t pt-6 border-border">
+        <div className="flex justify-end items-center gap-3 border-t pt-6 border-border">
+          <div className="flex items-center gap-2 text-xs">
+            {autoSaveStatus === 'saving' && (
+              <span className="text-warning flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
+                Menyimpan...
+              </span>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <span className="text-success flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                Tersimpan
+              </span>
+            )}
+            {autoSaveStatus === 'unsaved' && (
+              <span className="text-outline flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">edit</span>
+                Belum tersimpan
+              </span>
+            )}
+          </div>
           {!isClosed && (
             <Button
               variant="secondary"

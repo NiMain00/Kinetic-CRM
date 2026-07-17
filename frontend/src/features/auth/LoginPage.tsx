@@ -3,11 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Button } from '@/components/ui';
 import { useAuthStore } from '@/stores/authStore';
-import { useRbacStore } from '@/stores/rbacStore';
-import { useNotificationStore } from '@/stores/notificationStore';
-import { useMasterDataStore } from '@/stores/masterDataStore';
-import { useUserStore } from '@/stores/userStore';
-import { useInputConfigStore } from '@/stores/inputConfigStore';
 import { authService } from '@/services/auth';
 import { ROLE_HIERARCHY } from '@/config/constants';
 
@@ -76,14 +71,26 @@ export default function LoginPage() {
         scopeType: user.userRoles?.[0]?.scopeType || 'global',
       });
 
-      // Fetch semua user-role assignments DAN role->permission dari API (tidak blocking)
+      const [
+        { useRbacStore },
+        { useNotificationStore },
+        { useMasterDataStore },
+        { useUserStore },
+        { useInputConfigStore },
+      ] = await Promise.all([
+        import('@/stores/rbacStore'),
+        import('@/stores/notificationStore'),
+        import('@/stores/masterDataStore'),
+        import('@/stores/userStore'),
+        import('@/stores/inputConfigStore'),
+      ]);
+
       const rbacStore = useRbacStore.getState();
       rbacStore.fetchAllUserRoles();
       rbacStore.fetchRoles();
       rbacStore.fetchPermissions();
       useNotificationStore.getState().fetchNotifications();
 
-      // Fetch master data dari API
       const masterStore = useMasterDataStore.getState();
       masterStore.fetchEntity('industries');
       masterStore.fetchEntity('categories');
@@ -97,7 +104,6 @@ export default function LoginPage() {
       masterStore.fetchEntity('items');
       useInputConfigStore.getState().fetchGroups();
 
-      // Fetch users untuk user management page
       useUserStore.getState().fetchUsers();
 
       navigate('/dashboard');

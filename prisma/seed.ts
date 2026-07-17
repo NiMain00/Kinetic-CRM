@@ -569,6 +569,166 @@ async function main() {
     await prisma.inputConfigOption.upsert({ where: { id }, update: data, create: o });
   }
 
+  // ── MASTER ITEMS (Barang/Jasa Catalog) ──────────────────────────────
+  const masterItems = [
+    { id: 'item-001', sku: 'SKU-AC-001', name: 'AC Central 10PK', type: 'barang' as const, unit: 'unit', categoryId: 'cat-infra', categoryName: 'Infrastruktur', basePrice: 85000000 },
+    { id: 'item-002', sku: 'SKU-SVR-001', name: 'Server Rack 42U', type: 'barang' as const, unit: 'unit', categoryId: 'cat-it', categoryName: 'Teknologi Informasi', basePrice: 250000000 },
+    { id: 'item-003', sku: 'SKU-FW-001', name: 'Firewall Fortinet 200F', type: 'barang' as const, unit: 'unit', categoryId: 'cat-it', categoryName: 'Teknologi Informasi', basePrice: 180000000 },
+    { id: 'item-004', sku: 'SKU-SW-001', name: 'Switch Cisco 3850 48 Port', type: 'barang' as const, unit: 'unit', categoryId: 'cat-it', categoryName: 'Teknologi Informasi', basePrice: 95000000 },
+    { id: 'item-005', sku: 'SKU-KBL-001', name: 'Kabel Fiber Optic 1km', type: 'barang' as const, unit: 'roll', categoryId: 'cat-infra', categoryName: 'Infrastruktur', basePrice: 3500000 },
+    { id: 'item-006', sku: 'SKU-CCTV-001', name: 'Camera CCTV 4MP PTZ', type: 'barang' as const, unit: 'unit', categoryId: 'cat-security', categoryName: 'Keamanan', basePrice: 4500000 },
+    { id: 'item-007', sku: 'SKU-UPS-001', name: 'UPS 3000VA Online', type: 'barang' as const, unit: 'unit', categoryId: 'cat-infra', categoryName: 'Infrastruktur', basePrice: 35000000 },
+    { id: 'item-008', sku: 'SKU-INST-001', name: 'Jasa Instalasi Jaringan', type: 'jasa' as const, unit: 'paket', categoryId: 'cat-it', categoryName: 'Teknologi Informasi', basePrice: 75000000 },
+  ];
+  for (const item of masterItems) {
+    await prisma.masterItem.upsert({ where: { id: item.id }, update: {}, create: item });
+  }
+
+  // ── SUPPLIERS ───────────────────────────────────────────────────────
+  const suppliers = [
+    { id: 'sup-001', name: 'PT. Teknologi Solusi Mandiri', code: 'TSM', type: 'distributor' as const, city: 'Jakarta Pusat', phone: '021-12345678', email: 'info@tsm.co.id', picName: 'Hendra Gunawan', picPosition: 'Sales Manager', npwp: '01.234.567.8-091.001', rating: 4.5, totalProjects: 12, totalValue: 25000000000, onTimeDelivery: 92, qualityScore: 88, complianceScore: 95, status: 'active' as const, categories: JSON.stringify(['IT Infrastructure', 'Networking', 'Security']), certificates: JSON.stringify(['ISO 9001', 'ISO 27001']), createdByUserId: 'user-5' },
+    { id: 'sup-002', name: 'CV. Mitra Elektrik Nusantara', code: 'MEN', type: 'manufacturer' as const, city: 'Bandung', phone: '022-87654321', email: 'sales@mitraelektrik.co.id', picName: 'Agus Wijaya', picPosition: 'Direktur', npwp: '02.345.678.9-092.002', rating: 4.2, totalProjects: 8, totalValue: 18500000000, onTimeDelivery: 85, qualityScore: 90, complianceScore: 88, status: 'active' as const, categories: JSON.stringify(['Electrical', 'Infrastructure']), certificates: JSON.stringify(['ISO 9001', 'SNI']), createdByUserId: 'user-5' },
+    { id: 'sup-003', name: 'PT. Global Data Systems', code: 'GDS', type: 'distributor' as const, city: 'Jakarta Selatan', phone: '021-23456789', email: 'contact@gds.co.id', picName: 'Rudi Hartono', picPosition: 'Branch Manager', npwp: '03.456.789.0-093.003', rating: 3.8, totalProjects: 5, totalValue: 12000000000, onTimeDelivery: 78, qualityScore: 82, complianceScore: 75, status: 'active' as const, categories: JSON.stringify(['IT Hardware', 'Server']), certificates: JSON.stringify(['ISO 9001']), createdByUserId: 'user-5' },
+  ];
+  for (const s of suppliers) {
+    await prisma.supplier.upsert({ where: { id: s.id }, update: {}, create: s });
+  }
+
+  // ── PROJECT REQUIREMENT ITEMS (BOM untuk proyek existing) ─────────
+  const reqItems = [
+    { id: 'req-001', projectId: 'PR-2025-001', masterItemId: 'item-002', quantityRequired: 2, quantityUsed: 0, quantityProcured: 2, procurementStatus: 'fully_submitted' as const, basePrice: 250000000, discountPercent: 10, discountAmount: 50000000, taxPercent: 11, totalPrice: 555000000 },
+    { id: 'req-002', projectId: 'PR-2025-001', masterItemId: 'item-003', quantityRequired: 1, quantityUsed: 0, quantityProcured: 1, procurementStatus: 'fully_submitted' as const, basePrice: 180000000, discountPercent: 8, discountAmount: 14400000, taxPercent: 11, totalPrice: 198960000 },
+    { id: 'req-003', projectId: 'PR-2025-001', masterItemId: 'item-007', quantityRequired: 2, quantityUsed: 0, quantityProcured: 0, procurementStatus: 'none' as const, basePrice: 35000000, discountPercent: 5, discountAmount: 3500000, taxPercent: 11, totalPrice: 73080000 },
+    { id: 'req-004', projectId: 'PR-2025-002', masterItemId: 'item-004', quantityRequired: 5, quantityUsed: 0, quantityProcured: 0, procurementStatus: 'none' as const, basePrice: 95000000, discountPercent: 12, discountAmount: 11400000, taxPercent: 11, totalPrice: 500850000 },
+    { id: 'req-005', projectId: 'PR-2025-002', masterItemId: 'item-005', quantityRequired: 10, quantityUsed: 0, quantityProcured: 0, procurementStatus: 'none' as const, basePrice: 3500000, discountPercent: 0, discountAmount: 0, taxPercent: 11, totalPrice: 38850000 },
+    { id: 'req-006', projectId: 'PR-2025-002', masterItemId: 'item-008', quantityRequired: 1, quantityUsed: 0, quantityProcured: 0, procurementStatus: 'none' as const, basePrice: 75000000, discountPercent: 0, discountAmount: 0, taxPercent: 11, totalPrice: 83250000 },
+  ];
+  for (const r of reqItems) {
+    await prisma.projectRequirementItem.upsert({ where: { id: r.id }, update: {}, create: r });
+  }
+
+  // ── PROCUREMENTS ──────────────────────────────────────────────────
+  const procurements = [
+    {
+      id: 'PRC-2025-001', code: 'PR-202601-0001', sourceProjectId: 'PR-2025-001',
+      client: 'PT. Telkom Indonesia Tbk.', contractValue: 753960000, location: 'Gatot Subroto, Jakarta',
+      status: 'Vendor_Selection' as const, phase: 'Vendor Selection', progress: 35,
+      prNumber: 'PR/2026/00123', prDate: new Date('2026-01-15'), prNotes: 'Pengadaan server dan firewall untuk data center tahap II.',
+      selectedVendor: 'PT. Teknologi Solusi Mandiri', vendorPic: 'Hendra Gunawan', vendorContact: '021-12345678',
+      createdBy: 'Bambang Permadi', createdByUserId: 'user-2', createdAt: new Date('2026-01-20'),
+    },
+    {
+      id: 'PRC-2025-002', code: 'PR-202602-0001', sourceProjectId: 'PR-2025-002',
+      client: 'Pemerintah Provinsi DKI Jakarta', contractValue: 623085000, location: 'Balai Kota, Jakarta',
+      status: 'Draft' as const, phase: 'Draft', progress: 10,
+      prNumber: 'PR/2026/00145', prDate: new Date('2026-02-01'), prNotes: 'Pengadaan switch, kabel fiber optic, dan jasa instalasi jaringan.',
+      createdBy: 'Bambang Permadi', createdByUserId: 'user-2', createdAt: new Date('2026-02-05'),
+    },
+  ];
+  for (const p of procurements) {
+    await prisma.procurement.upsert({ where: { id: p.id }, update: {}, create: p });
+  }
+
+  // ── PROCUREMENT ITEMS ────────────────────────────────────────────
+  const procItems = [
+    { id: 'pr-item-001', procurementId: 'PRC-2025-001', masterItemId: 'item-002', quantity: 2, quantityReceived: 0, unitPrice: 225000000, totalPrice: 450000000, status: 'ordered' as const, notes: 'Server Rack 42U - termasuk rail kit' },
+    { id: 'pr-item-002', procurementId: 'PRC-2025-001', masterItemId: 'item-003', quantity: 1, quantityReceived: 0, unitPrice: 165600000, totalPrice: 165600000, status: 'ordered' as const, notes: 'Firewall Fortinet 200F - termasuk lisensi 3 tahun' },
+    { id: 'pr-item-003', procurementId: 'PRC-2025-002', masterItemId: 'item-004', quantity: 5, quantityReceived: 0, unitPrice: 83600000, totalPrice: 418000000, status: 'pending' as const },
+    { id: 'pr-item-004', procurementId: 'PRC-2025-002', masterItemId: 'item-005', quantity: 10, quantityReceived: 0, unitPrice: 3500000, totalPrice: 35000000, status: 'pending' as const },
+    { id: 'pr-item-005', procurementId: 'PRC-2025-002', masterItemId: 'item-008', quantity: 1, quantityReceived: 0, unitPrice: 75000000, totalPrice: 75000000, status: 'pending' as const },
+  ];
+  for (const pi of procItems) {
+    await prisma.procurementItem.upsert({ where: { id: pi.id }, update: {}, create: pi });
+  }
+
+  // ── PROCUREMENT ALLOCATIONS ──────────────────────────────────────
+  const allocations = [
+    { id: 'alloc-001', procurementItemId: 'pr-item-001', projectId: 'PR-2025-001', projectRequirementId: 'req-001', quantity: 2 },
+    { id: 'alloc-002', procurementItemId: 'pr-item-002', projectId: 'PR-2025-001', projectRequirementId: 'req-002', quantity: 1 },
+  ];
+  for (const a of allocations) {
+    await prisma.procurementAllocation.upsert({ where: { id: a.id }, update: {}, create: a });
+  }
+
+  // ── SUPPLIER EVALUATIONS ─────────────────────────────────────────
+  const evaluations = [
+    { id: 'eval-001', supplierId: 'sup-001', projectId: 'PR-2025-001', projectName: 'Pembangunan Infrastruktur Data Center - Tahap II', evaluator: 'Bambang Permadi', evaluatorId: 'user-2', date: new Date('2025-12-15'), quality: 90, delivery: 85, pricing: 80, compliance: 95, communication: 88, notes: 'Supplier handal, respon cepat, harga kompetitif.', overall: 87.6 },
+    { id: 'eval-002', supplierId: 'sup-002', projectId: 'PR-2025-001', projectName: 'Pembangunan Infrastruktur Data Center - Tahap II', evaluator: 'Siti Rahmawati', evaluatorId: 'user-5', date: new Date('2025-11-20'), quality: 85, delivery: 90, pricing: 82, compliance: 85, communication: 78, notes: 'Kualitas produk baik, pengiriman tepat waktu.', overall: 84.0 },
+  ];
+  for (const e of evaluations) {
+    await prisma.supplierEvaluation.upsert({ where: { id: e.id }, update: {}, create: e });
+  }
+
+  // ── RFQs ─────────────────────────────────────────────────────────
+  await prisma.rfq.upsert({
+    where: { id: 'rfq-001' },
+    update: {},
+    create: {
+      id: 'rfq-001', procurementId: 'PRC-2025-001', number: 'RFQ/2026/0001',
+      title: 'RFQ Server & Firewall Data Center', description: 'Pengadaan server rack dan firewall untuk data center tahap II.',
+      deadline: new Date('2026-02-28'), status: 'evaluating' as const, createdBy: 'user-5',
+      sentAt: new Date('2026-02-01'),
+    },
+  });
+
+  // ── RFQ ITEMS ────────────────────────────────────────────────────
+  const rfqItems = [
+    { id: 'rfq-item-001', rfqId: 'rfq-001', name: 'Server Rack 42U', quantity: 2, unit: 'unit', specifications: 'Rack server 42U standar datacenter, termasuk rail kit dan PDU' },
+    { id: 'rfq-item-002', rfqId: 'rfq-001', name: 'Firewall Fortinet 200F', quantity: 1, unit: 'unit', specifications: 'Firewall Fortinet 200F with 3-year license' },
+  ];
+  for (const ri of rfqItems) {
+    await prisma.rfqItem.upsert({ where: { id: ri.id }, update: {}, create: ri });
+  }
+
+  // ── RFQ SUPPLIERS ────────────────────────────────────────────────
+  const rfqSuppliers = [
+    { id: 'rfs-001', rfqId: 'rfq-001', supplierId: 'sup-001' },
+    { id: 'rfs-002', rfqId: 'rfq-001', supplierId: 'sup-002' },
+    { id: 'rfs-003', rfqId: 'rfq-001', supplierId: 'sup-003' },
+  ];
+  for (const rs of rfqSuppliers) {
+    await prisma.rfqSupplier.upsert({ where: { id: rs.id }, update: {}, create: rs });
+  }
+
+  // ── RFQ QUOTES ──────────────────────────────────────────────────
+  await prisma.rfqQuote.upsert({
+    where: { id: 'rfq-quote-001' },
+    update: {},
+    create: {
+      id: 'rfq-quote-001', rfqId: 'rfq-001', supplierId: 'sup-001', supplierName: 'PT. Teknologi Solusi Mandiri',
+      totalAmount: 615600000, deliveryTime: '30 hari', validityPeriod: '60 hari',
+      terms: 'Pembayaran termin: 30% DP, 40% saat pengiriman, 30% setelah instalasi.',
+      status: 'selected' as const, evaluatorNotes: 'Harga terbaik, pengiriman cepat, garansi 3 tahun.',
+    },
+  });
+  await prisma.rfqQuote.upsert({
+    where: { id: 'rfq-quote-002' },
+    update: {},
+    create: {
+      id: 'rfq-quote-002', rfqId: 'rfq-001', supplierId: 'sup-002', supplierName: 'CV. Mitra Elektrik Nusantara',
+      totalAmount: 678000000, deliveryTime: '45 hari', validityPeriod: '60 hari',
+      terms: 'Pembayaran termin: 50% DP, 50% setelah pengiriman.',
+      status: 'evaluated' as const,
+    },
+  });
+
+  // ── RFQ QUOTE ITEMS ──────────────────────────────────────────────
+  const quoteItems = [
+    { id: 'rqi-001', quoteId: 'rfq-quote-001', itemId: 'rfq-item-001', unitPrice: 225000000, totalPrice: 450000000, deliveryTime: '30 hari' },
+    { id: 'rqi-002', quoteId: 'rfq-quote-001', itemId: 'rfq-item-002', unitPrice: 165600000, totalPrice: 165600000, deliveryTime: '30 hari' },
+    { id: 'rqi-003', quoteId: 'rfq-quote-002', itemId: 'rfq-item-001', unitPrice: 248000000, totalPrice: 496000000, deliveryTime: '45 hari' },
+    { id: 'rqi-004', quoteId: 'rfq-quote-002', itemId: 'rfq-item-002', unitPrice: 182000000, totalPrice: 182000000, deliveryTime: '45 hari' },
+  ];
+  for (const qi of quoteItems) {
+    await prisma.rfqQuoteItem.upsert({ where: { id: qi.id }, update: {}, create: qi });
+  }
+
+  // Select the winning quote for RFQ
+  await prisma.rfq.update({
+    where: { id: 'rfq-001' },
+    data: { selectedQuoteId: 'rfq-quote-001', status: 'evaluating' },
+  });
+
   console.log('Seed completed successfully!');
   console.log('Login credentials:');
   console.log('  superadmin / admin123  (Super Admin - full access)');

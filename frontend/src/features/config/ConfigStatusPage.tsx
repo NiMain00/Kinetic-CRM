@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import type { MasterProjectStatus } from '@/stores/masterDataStore';
 
@@ -10,6 +10,11 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
   const statuses = useMasterDataStore((s) => s.projectStatuses);
   const addData = useMasterDataStore((s) => s.addData);
   const updateData = useMasterDataStore((s) => s.updateData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => {
+    fetchEntity('projectStatuses');
+  }, [fetchEntity]);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [newCode, setNewCode] = useState('');

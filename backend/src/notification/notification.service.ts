@@ -58,4 +58,11 @@ export class NotificationService {
   }) {
     return this.prisma.notification.create({ data: data as any });
   }
+
+  async delete(id: string, userId: string) {
+    // Only allow the recipient to delete their own notification.
+    return this.prisma.notification.deleteMany({
+      where: { id, recipientUserId: userId },
+    });
+  }
 }

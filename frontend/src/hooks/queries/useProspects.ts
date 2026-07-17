@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { prospectService } from '@/services/prospects';
+import { unwrap } from '@/services/api-client';
 import type { Prospect } from '@/types/domain';
 
 export function useProspects(params?: Record<string, unknown>) {
@@ -7,7 +8,7 @@ export function useProspects(params?: Record<string, unknown>) {
     queryKey: ['prospects', params],
     queryFn: async () => {
       const res = await prospectService.list(params);
-      return res.data.data;
+      return unwrap<Prospect[]>(res);
     },
   });
 }
@@ -17,7 +18,7 @@ export function useProspect(id: string | undefined) {
     queryKey: ['prospects', id],
     queryFn: async () => {
       const res = await prospectService.get(id!);
-      return res.data.data;
+      return unwrap<Prospect>(res);
     },
     enabled: !!id,
   });

@@ -38,13 +38,13 @@ services:
     environment:
       NODE_ENV: development
       LOG_LEVEL: debug
-      DATABASE_URL: mysql://kinetic_user:secret@mysql:3306/kinetic_crm
+      DATABASE_URL: postgresql://kinetic_user:secret@postgres:5432/kinetic_crm
 
-  mysql:
+  postgres:
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
 
   scheduler:
     profiles: ["disabled"]

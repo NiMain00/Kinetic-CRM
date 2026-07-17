@@ -6,7 +6,6 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useAuthz } from '@/hooks/useAuthz';
-import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
 import { formatDate } from '@/utils/formatters';
@@ -36,7 +35,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const fetchGroups = useInputConfigStore((s) => s.fetchGroups);
   useEffect(() => { fetchProspects(); }, [fetchProspects]);
   useEffect(() => { fetchGroups(); }, [fetchGroups]);
-  const { isStaffOnly, userId } = useOwnerFilter();
+
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const prospectFilterTabOptions = useActiveOptions('prospect_filter_tabs');
@@ -67,13 +66,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     });
   };
 
-  const visibleProspects = prospects.filter(p => {
-    // Staff: hanya lihat milik sendiri
-    if (isStaffOnly && userId && p.ownerUserId && p.ownerUserId !== userId) {
-      return false;
-    }
-    return true;
-  });
+  // Backend sudah filter berdasarkan department + stage access
+  const visibleProspects = prospects;
 
   const tabFilterMap: Record<string, (p: Prospect) => boolean> = useMemo(() => ({
     all: () => true,
@@ -223,6 +217,14 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               >
                 Export CSV
               </Button>
+              <Button
+                variant="ghost"
+                size="md"
+                leftIcon={<span className="material-symbols-outlined text-[16px]">assignment</span>}
+                onClick={() => navigate('/follow-up')}
+              >
+                Ticketing
+              </Button>
               {can('prospect:write:prospecting') && (
                 <Button
                   variant="primary"
@@ -322,6 +324,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <div className="px-6 py-12 text-center text-secondary">
                 <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
                 <p>Tidak ada prospek ditemukan</p>
+                <p className="text-xs text-outline mt-1">Kamu hanya bisa melihat prospek yang berada di stage yang diizinkan untuk department-mu. Hubungi admin jika seharusnya kamu punya akses.</p>
               </div>
             ) : (
               paginatedProspects.map((row, index) => (
@@ -391,7 +394,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       {can('prospect:write:prospecting') && (
                         <button
                           onClick={() => handleDelete(row.id)}
-                          className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
+                          className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-danger/10 rounded-lg transition-all"
                           title="Hapus Prospek"
                           aria-label="Hapus"
                         >
@@ -407,7 +410,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         ) : (
           <div className="overflow-x-auto scrollbar-none">
             <table className="w-full text-left border-collapse text-sm table-fixed">
-              <thead className="bg-surface-container-low text-on-surface font-label-sm border-b border-border/60 sticky top-0 z-10 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.08)]">
+              <thead className="bg-surface-container-low border-b border-border/60 sticky top-0 z-10 shadow-[0_1px_3px_-1px_rgba(0,0,0,0.08)]">
                 <tr>
                   {selectionMode && (
                     <th className="px-4 py-4 w-[40px]">
@@ -420,9 +423,9 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       />
                     </th>
                   )}
-                  <th className="px-6 py-4 font-semibold w-[50px]">No</th>
+                  <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider cursor-pointer hover:text-primary select-none w-[50px]">No</th>
                   <th
-                    className="px-6 py-4 font-semibold cursor-pointer hover:text-primary select-none w-[24%]"
+                    className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider cursor-pointer hover:text-primary select-none w-[24%]"
                     onClick={() => handleSort('name')}
                     aria-label={getSortLabel('name', 'Nama Prospek')}
                     aria-sort={sortKey === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -433,7 +436,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     </div>
                   </th>
                   <th
-                    className="px-6 py-4 font-semibold cursor-pointer hover:text-primary select-none w-[14%]"
+                    className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider cursor-pointer hover:text-primary select-none w-[14%]"
                     onClick={() => handleSort('client')}
                     aria-label={getSortLabel('client', 'Customer')}
                     aria-sort={sortKey === 'client' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -444,7 +447,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     </div>
                   </th>
                   <th
-                    className="px-6 py-4 font-semibold cursor-pointer hover:text-primary select-none w-[14%]"
+                    className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider cursor-pointer hover:text-primary select-none w-[16%]"
                     onClick={() => handleSort('status')}
                     aria-label={getSortLabel('status', 'Status')}
                     aria-sort={sortKey === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -455,7 +458,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     </div>
                   </th>
                   <th
-                    className="px-6 py-4 font-semibold cursor-pointer hover:text-primary select-none w-[14%]"
+                    className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider cursor-pointer hover:text-primary select-none w-[14%]"
                     onClick={() => handleSort('author')}
                     aria-label={getSortLabel('author', 'Dibuat Oleh')}
                     aria-sort={sortKey === 'author' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -466,7 +469,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     </div>
                   </th>
                   <th
-                    className="px-6 py-4 font-semibold cursor-pointer hover:text-primary select-none w-[12%]"
+                    className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider cursor-pointer hover:text-primary select-none w-[12%]"
                     onClick={() => handleSort('date')}
                     aria-label={getSortLabel('date', 'Tgl Dibuat')}
                     aria-sort={sortKey === 'date' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
@@ -476,7 +479,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       <span className="material-symbols-outlined text-[14px] text-outline" aria-hidden="true">{getSortIcon('date')}</span>
                     </div>
                   </th>
-                  <th className="px-6 py-4 font-semibold text-right w-[15%]">Aksi</th>
+                  <th className="px-6 py-4 font-label-sm text-xs text-secondary uppercase tracking-wider text-right w-[15%]">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -485,13 +488,14 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                     <td colSpan={selectionMode ? 8 : 7} className="px-6 py-12 text-center text-secondary">
                       <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
                       <p>Tidak ada prospek ditemukan</p>
+                      <p className="text-xs text-outline mt-1">Kamu hanya bisa melihat prospek yang berada di stage yang diizinkan untuk department-mu. Hubungi admin jika seharusnya kamu punya akses.</p>
                     </td>
                   </tr>
                 ) : (
                   paginatedProspects.map((row, index) => {
                     const globalIndex = (currentPage - 1) * PAGE_SIZE + index + 1;
                     return (
-                    <tr key={row.id} className="border-b border-border/60 hover:bg-primary/5 transition-colors group">
+                    <tr key={row.id} className="border-b border-border/60 hover:bg-surface-container transition-colors group">
                       {selectionMode && (
                         <td className="px-4 py-4">
                           <input
@@ -517,7 +521,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                         )}
                       </td>
                       <td className="px-6 py-4 text-secondary truncate overflow-hidden" title={row.client}>{row.client}</td>
-                      <td className="px-6 py-4 overflow-hidden">
+                      <td className="px-6 py-4 align-middle">
                       <StatusBadge
                         status={row.customerData?.needsVerification ? 'Perlu Verifikasi' : row.status}
                       />
@@ -533,31 +537,31 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       <td className="px-6 py-4 text-xs text-secondary truncate overflow-hidden" title={row.date || ''}>{row.date ? formatDate(row.date) : '-'}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {row.status === 'Approved' && !row.isConverted && (
+                          {row.status === 'Approved' && !row.isConverted && can('project:create') && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleBuatProyek(row); }}
-                              className="touch-min flex items-center justify-center text-success hover:text-success hover:bg-success/10 rounded-lg transition-all"
+                              className="touch-min flex items-center justify-center w-7 h-7 rounded-lg text-success hover:text-success hover:bg-success/10 transition-all"
                               title="Konversi ke Proyek"
                             >
-                              <span className="material-symbols-outlined text-[20px]">add_business</span>
+                              <span className="material-symbols-outlined text-[16px]">add_business</span>
                             </button>
                           )}
                           {can('prospect:write:prospecting') && (
                             <button
                               onClick={() => navigate(`/prospects/${row.id}/edit`)}
-                              className="touch-min flex items-center justify-center text-outline hover:text-primary hover:bg-surface-container-low rounded-lg transition-all"
+                              className="touch-min flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all"
                               title="Sunting Prospek"
                             >
-                              <span className="material-symbols-outlined text-[20px]">edit</span>
+                              <span className="material-symbols-outlined text-[16px]">edit</span>
                             </button>
                           )}
                           {can('prospect:write:prospecting') && (
                             <button
                               onClick={() => handleDelete(row.id)}
-                              className="touch-min flex items-center justify-center text-outline hover:text-danger hover:bg-error-container/20 rounded-lg transition-all"
+                              className="touch-min flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all"
                               title="Hapus Prospek"
                             >
-                              <span className="material-symbols-outlined text-[20px]">delete</span>
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
                             </button>
                           )}
                         </div>

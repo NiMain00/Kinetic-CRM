@@ -71,6 +71,7 @@ class AuthorizationEngine {
 
   /**
    * Get stage-based access level for a user on a record.
+   * Check stageDepartments first (many-to-many), fallback to owner/prev.
    * activeDepartmentId should be passed from the caller (authStore or hook).
    */
   getStageAccess(
@@ -90,6 +91,13 @@ class AuthorizationEngine {
     const userDept = store.departments.find((d) => d.id === activeDepartmentId);
     if (!userDept) return ACCESS_LEVELS.NONE;
 
+    // Check stageDepartments (many-to-many) first
+    if (stage.stageDepartments && stage.stageDepartments.length > 0) {
+      const match = stage.stageDepartments.find((sd) => sd.departmentCode === userDept.code);
+      if (match) return match.accessLevel === 'write' ? ACCESS_LEVELS.WRITE : ACCESS_LEVELS.READ;
+    }
+
+    // Fallback to owner/prev
     if (userDept.code === stage.ownerDepartmentCode) return ACCESS_LEVELS.WRITE;
 
     if (stage.prevDepartmentCode && userDept.code === stage.prevDepartmentCode) return ACCESS_LEVELS.READ;

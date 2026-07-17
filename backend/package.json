@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nest build",
+    "vercel-build": "npx prisma generate && npm run build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -25,6 +26,7 @@
     "passport-jwt": "^4.x",
     "reflect-metadata": "^0.2.x",
     "rxjs": "^7.x",
+    "serverless-http": "^3.x",
     "zod": "^3.x"
   },
   "devDependencies": {

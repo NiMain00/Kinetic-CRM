@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import type { Procurement } from '@/types/domain/procurement';
@@ -17,9 +17,60 @@ export default function ProgressTab({ procurement }: Props) {
   );
   const [progressVal, setProgressVal] = useState(procurement.progress || 0);
 
+  // --- Refs for auto-save ---
+  const progressNotesRef = useRef(progressNotes);
+  useEffect(() => { progressNotesRef.current = progressNotes; }, [progressNotes]);
+  const progressValRef = useRef(progressVal);
+  useEffect(() => { progressValRef.current = progressVal; }, [progressVal]);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+
   useEffect(() => {
     setProgressNotes(procurement.progressNotes || '');
     setProgressVal(procurement.progress || 0);
+  }, [procurement.id]);
+
+  // Sync to Zustand store on every change (immediate)
+  useEffect(() => {
+    if (!procurement.id) return;
+    const store = useProcurementStore.getState();
+    const current = store.entities[procurement.id];
+    if (!current) return;
+    useProcurementStore.setState((s) => ({
+      entities: {
+        ...s.entities,
+        [procurement.id]: {
+          ...current,
+          progressNotes: progressNotesRef.current,
+          progress: progressValRef.current,
+        },
+      },
+    }));
+  }, [progressNotes, progressVal, procurement.id]);
+
+  // Auto-save to backend (debounced)
+  useEffect(() => {
+    if (!procurement.id) return;
+    setAutoSaveStatus('unsaved');
+    const timer = setTimeout(() => {
+      setAutoSaveStatus('saving');
+      updateProcurement(procurement.id, {
+        progressNotes: progressNotesRef.current,
+        progress: progressValRef.current,
+      }).then(() => setAutoSaveStatus('saved'))
+        .catch(() => { setAutoSaveStatus('unsaved'); });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [progressNotes, progressVal, procurement.id]);
+
+  // Save on unmount
+  useEffect(() => {
+    return () => {
+      if (!procurement.id) return;
+      updateProcurement(procurement.id, {
+        progressNotes: progressNotesRef.current,
+        progress: progressValRef.current,
+      }).catch(() => {});
+    };
   }, [procurement.id]);
 
   const handleSave = () => {
@@ -88,7 +139,27 @@ export default function ProgressTab({ procurement }: Props) {
           />
         </div>
 
-        <div className="flex justify-end gap-3 border-t pt-6 border-border">
+        <div className="flex justify-end items-center gap-3 border-t pt-6 border-border">
+          <div className="flex items-center gap-2 text-xs">
+            {autoSaveStatus === 'saving' && (
+              <span className="text-warning flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px] animate-spin">sync</span>
+                Menyimpan...
+              </span>
+            )}
+            {autoSaveStatus === 'saved' && (
+              <span className="text-success flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                Tersimpan
+              </span>
+            )}
+            {autoSaveStatus === 'unsaved' && (
+              <span className="text-outline flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">edit</span>
+                Belum tersimpan
+              </span>
+            )}
+          </div>
           <Button
             variant="secondary"
             onClick={handleSave}

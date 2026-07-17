@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Modal, Button } from '@/components/ui';
 import { PageContainer, PageHeader } from '@/components/shared';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { useOwnerFilter } from '@/hooks/useOwnerFilter';
 import { formatDate } from '@/utils/formatters';
@@ -14,13 +15,34 @@ interface Props {
   onNavigatePage: (page: string) => void;
 }
 
-const PIPELINE_STAGES = [
+const HARDCODED_STAGES = [
+  { key: 'Lead', label: 'Lead', color: 'bg-indigo-50 border-indigo-300', dot: 'bg-indigo-500' },
   { key: 'Non Potensial', label: 'Non Potensial', color: 'bg-gray-100 border-gray-300', dot: 'bg-gray-400' },
   { key: 'Potensial', label: 'Potensial', color: 'bg-emerald-50 border-emerald-300', dot: 'bg-emerald-500' },
   { key: 'Waiting Supervisor', label: 'Waiting Review', color: 'bg-amber-50 border-amber-300', dot: 'bg-amber-500' },
   { key: 'Revision', label: 'Revision', color: 'bg-rose-50 border-rose-300', dot: 'bg-rose-500' },
   { key: 'Approved', label: 'Approved', color: 'bg-blue-50 border-blue-300', dot: 'bg-blue-500' },
 ];
+
+const STAGE_COLORS = [
+  { color: 'bg-indigo-50 border-indigo-300', dot: 'bg-indigo-500' },
+  { color: 'bg-gray-100 border-gray-300', dot: 'bg-gray-400' },
+  { color: 'bg-emerald-50 border-emerald-300', dot: 'bg-emerald-500' },
+  { color: 'bg-amber-50 border-amber-300', dot: 'bg-amber-500' },
+  { color: 'bg-rose-50 border-rose-300', dot: 'bg-rose-500' },
+  { color: 'bg-blue-50 border-blue-300', dot: 'bg-blue-500' },
+  { color: 'bg-purple-50 border-purple-300', dot: 'bg-purple-500' },
+  { color: 'bg-teal-50 border-teal-300', dot: 'bg-teal-500' },
+  { color: 'bg-orange-50 border-orange-300', dot: 'bg-orange-500' },
+  { color: 'bg-pink-50 border-pink-300', dot: 'bg-pink-500' },
+];
+
+function codeToStatusKey(code: string): string {
+  return code
+    .split('_')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
 
 function ProspectCard({
   prospect,
@@ -121,6 +143,30 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
   const { can } = useAuthz();
   const { isStaffOnly, userId } = useOwnerFilter();
 
+  const workflowStages = useRbacStore((s) => s.workflowStages);
+  const fetchStages = useRbacStore((s) => s.fetchStages);
+  const getStagesByModule = useRbacStore((s) => s.getStagesByModule);
+
+  useEffect(() => {
+    fetchStages();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pipelineStages = useMemo(() => {
+    const wfStages = getStagesByModule('prospect');
+    if (wfStages.length > 0) {
+      return wfStages.map((s, i) => {
+        const colors = STAGE_COLORS[i % STAGE_COLORS.length];
+        return {
+          key: codeToStatusKey(s.code),
+          label: s.name,
+          color: colors.color,
+          dot: colors.dot,
+        };
+      });
+    }
+    return HARDCODED_STAGES;
+  }, [workflowStages, getStagesByModule]);
+
   const [dragTarget, setDragTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -129,7 +175,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
     return true;
   });
 
-  const groupedProspects = PIPELINE_STAGES.map((stage) => ({
+  const groupedProspects = pipelineStages.map((stage) => ({
     ...stage,
     prospects: visibleProspects.filter((p) => p.status === stage.key),
   }));

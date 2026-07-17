@@ -157,7 +157,7 @@ export default function MasterCustomerPage() {
       </div>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Customer' : 'Tambah Customer Baru'} size="lg">
-        <form onSubmit={handleSave} className="space-y-5 text-left text-xs">
+        <form onSubmit={handleSave} className="space-y-5 text-left text-xs" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="font-semibold text-secondary block">Nama Customer *</label>

@@ -252,6 +252,56 @@ export class ConfigService {
     return this.prisma.uploadConfig.create({ data: payload });
   }
 
+  // ── Integration Configurations ──
+  async listIntegrations() {
+    return this.prisma.integrationConfiguration.findMany({
+      select: {
+        id: true,
+        key: true,
+        isSecret: true,
+        updatedAt: true,
+        updatedBy: true,
+      },
+    });
+  }
+
+  async getIntegration(key: string) {
+    const config = await this.prisma.integrationConfiguration.findUnique({
+      where: { key },
+    });
+    if (!config) throw new NotFoundException(`Integration config '${key}' not found`);
+    return config;
+  }
+
+  async upsertIntegration(key: string, data: { value: string; isSecret?: boolean }, userId: string) {
+    return this.prisma.integrationConfiguration.upsert({
+      where: { key },
+      create: {
+        key,
+        valueEncrypted: data.value,
+        isSecret: data.isSecret ?? true,
+        updatedBy: userId,
+      },
+      update: {
+        valueEncrypted: data.value,
+        isSecret: data.isSecret ?? true,
+        updatedBy: userId,
+      },
+    });
+  }
+
+  async verifyIntegration(key: string, value: string): Promise<boolean> {
+    const config = await this.prisma.integrationConfiguration.findUnique({
+      where: { key },
+    });
+    if (!config) return false;
+    return config.valueEncrypted === value;
+  }
+
+  async deleteIntegration(key: string) {
+    return this.prisma.integrationConfiguration.delete({ where: { key } });
+  }
+
   private parseArray(value: string | null): string[] {
     if (!value) return [];
     try {

@@ -36,8 +36,8 @@ services:
 
   backend:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: backend/Dockerfile
     container_name: kinetic_backend
     expose:
       - "4000"
@@ -46,12 +46,12 @@ services:
       PORT: 4000
       FRONTEND_URL: ${APP_URL:-http://localhost:3000}
 
-      DB_HOST: mysql
-      DB_PORT: 3306
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-kinetic_crm}
       DB_USERNAME: ${DB_USERNAME:-kinetic_user}
       DB_PASSWORD: ${DB_PASSWORD}
-      DATABASE_URL: mysql://${DB_USERNAME:-kinetic_user}:${DB_PASSWORD}@mysql:3306/${DB_DATABASE:-kinetic_crm}
+      DATABASE_URL: postgresql://${DB_USERNAME:-kinetic_user}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE:-kinetic_crm}
 
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -88,7 +88,7 @@ services:
     volumes:
       - storage_volume:/app/uploads
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -96,26 +96,32 @@ services:
     networks:
       - kinetic_net
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:4000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:4000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
+      start_period: 60s
 
+  # NOTE: The scheduler runs `dist/scheduler.js`, which is not yet implemented
+  # in the backend source (only `dist/main.js` is emitted by `nest build`).
+  # It is gated behind the opt-in "scheduler" profile so the default stack does
+  # not crash-loop. Enable with: `docker compose --profile scheduler up`
+  # once a `src/scheduler.ts` entrypoint exists.
   scheduler:
+    profiles: ["scheduler"]
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: backend/Dockerfile
     container_name: kinetic_scheduler
     command: ["node", "dist/scheduler.js"]
     environment:
       NODE_ENV: ${APP_ENV:-production}
-      DB_HOST: mysql
-      DB_PORT: 3306
+      DB_HOST: postgres
+      DB_PORT: 5432
       DB_DATABASE: ${DB_DATABASE:-kinetic_crm}
       DB_USERNAME: ${DB_USERNAME:-kinetic_user}
       DB_PASSWORD: ${DB_PASSWORD}
-      DATABASE_URL: mysql://${DB_USERNAME:-kinetic_user}:${DB_PASSWORD}@mysql:3306/${DB_DATABASE:-kinetic_crm}
+      DATABASE_URL: postgresql://${DB_USERNAME:-kinetic_user}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE:-kinetic_crm}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
@@ -130,25 +136,23 @@ services:
     networks:
       - kinetic_net
 
-  mysql:
-    image: mysql:8.0
-    container_name: kinetic_mysql
+  postgres:
+    image: postgres:16-alpine
+    container_name: kinetic_postgres
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpass}
-      MYSQL_DATABASE: ${DB_DATABASE:-kinetic_crm}
-      MYSQL_USER: ${DB_USERNAME:-kinetic_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE:-kinetic_crm}
+      POSTGRES_USER: ${DB_USERNAME:-kinetic_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql/my.cnf:/etc/mysql/conf.d/my.cnf:ro
-      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
     expose:
-      - "3306"
+      - "5432"
     restart: unless-stopped
     networks:
       - kinetic_net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u${DB_USERNAME:-kinetic_user}", "-p${DB_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-kinetic_user} -d ${DB_DATABASE:-kinetic_crm}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -171,7 +175,7 @@ services:
       retries: 3
 
 volumes:
-  mysql_data:
+  postgres_data:
     driver: local
   redis_data:
     driver: local

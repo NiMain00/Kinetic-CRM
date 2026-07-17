@@ -1,8 +1,9 @@
 import React, { Suspense, lazy, type ComponentType } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, GuestRoute, RoleRoute, PermissionRoute } from './guards';
-import { AppLayout } from '@/components/layout';
 import { PageLoader } from '@/components/layout';
+
+const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 import { withPageProps } from './page-adapter';
 
 const LazyLoad = (Component: ComponentType<any>) => {
@@ -49,6 +50,7 @@ const ProspectsPage = LazyLoadPermission(lazy(() => import('@/features/prospects
 const ProspectFormPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectFormPage')), ['prospect:read']);
 const ProspectDetailPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectDetailPage')), ['prospect:read']);
 const ProspectPipelinePage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectPipelinePage')), ['prospect:read']);
+const ProspectQualificationPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectQualificationPage')), ['prospect:read']);
 
 // Projects
 const ProjectListPage = LazyLoadPermission(lazy(() => import('@/features/projects/ProjectListPage')), ['project:read']);
@@ -92,6 +94,9 @@ const AuditLogPageSuperAdmin = LazyLoadRole(lazy(() => import('@/features/audit/
 // Notifications
 const NotificationsPage = LazyLoad(lazy(() => import('@/features/notifications/NotificationsPage')));
 
+// Follow-Up
+const FollowUpPage = LazyLoadPermission(lazy(() => import('@/features/follow-up/FollowUpPage')), ['prospect:read']);
+
 // Profile
 const ProfilePage = LazyLoad(lazy(() => import('@/features/profile/ProfilePage')));
 
@@ -109,6 +114,7 @@ const ConfigUploadPage = LazyLoadPermission(lazy(() => import('@/features/config
 const ConfigPeriodPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigPeriodPage')), ['config:access']);
 const ConfigQuestionTypesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigQuestionTypesPage')), ['config:access']);
 const ConfigInputPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigInputPage')), ['config:access']);
+const ConfigStageRulesPage = LazyLoadPermission(lazy(() => import('@/features/config/ConfigStageRulesPage')), ['config:access']);
 
 // Error pages
 const ForbiddenPage = LazyLoad(lazy(() => import('@/features/errors/ForbiddenPage')));
@@ -124,18 +130,19 @@ export default function AppRouter() {
       <Route path="/reset-password/:token" element={<GuestRoute><ResetPasswordPage /></GuestRoute>} />
 
       {/* Profile */}
-      <Route path="/profile" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route path="/profile" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
         <Route index element={<ProfilePage />} />
       </Route>
 
       {/* Main app routes */}
-      <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route path="/" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
 
         {/* Prospects */}
         <Route path="prospects" element={<ProspectsPage />} />
         <Route path="prospects/pipeline" element={<ProspectPipelinePage />} />
+        <Route path="prospects/qualification" element={<ProspectQualificationPage />} />
         <Route path="prospects/new" element={<ProspectFormPage />} />
         <Route path="prospects/:id" element={<ProspectDetailPage />} />
         <Route path="prospects/:id/edit" element={<ProspectFormPage />} />
@@ -151,6 +158,9 @@ export default function AppRouter() {
         <Route path="procurement/new" element={<ProcurementFormPage />} />
         <Route path="procurement/:procurementId" element={<ProcurementDetailPage />} />
         <Route path="procurement/:procurementId/:tab" element={<ProcurementDetailPage />} />
+
+        {/* Follow-Up */}
+        <Route path="follow-up" element={<FollowUpPage />} />
 
         {/* Approvals */}
         <Route path="approvals" element={<ApprovalInboxPage />} />
@@ -211,6 +221,7 @@ export default function AppRouter() {
         <Route path="config/question-types" element={<ConfigQuestionTypesPage />} />
         <Route path="config/access-control" element={<ConfigAccessControlPage />} />
         <Route path="config/input-options" element={<ConfigInputPage />} />
+        <Route path="config/stage-rules" element={<ConfigStageRulesPage />} />
 
         {/* Error pages */}
         <Route path="403" element={<ForbiddenPage />} />

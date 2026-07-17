@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { Button, Modal } from '@/components/ui';
 import { useMasterDataStore, type MasterRole } from '@/stores/masterDataStore';
+import { masterDataService } from '@/services/master-data';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
 interface ModulePerm {
@@ -100,6 +101,9 @@ export default function ConfigRolesPage() {
   const roles = useMasterDataStore((s) => s.roles);
   const addData = useMasterDataStore((s) => s.addData);
   const deleteData = useMasterDataStore((s) => s.deleteData);
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+
+  useEffect(() => { fetchEntity('roles'); }, [fetchEntity]);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [formName, setFormName] = useState('');
@@ -205,33 +209,34 @@ export default function ConfigRolesPage() {
     setSaving(true);
     const entries = Object.entries(draftPermissions);
 
-    await new Promise(r => setTimeout(r, 300));
-
-    // Batch-update all roles at once via the store's setState
-    const currentRoles = useMasterDataStore.getState().roles;
-    const updatedRoles = currentRoles.map(role => {
-      if (role.id in draftPermissions) {
-        return { ...role, permissions: draftPermissions[role.id] };
-      }
-      return role;
-    });
-
-    useMasterDataStore.setState({ roles: updatedRoles });
-
-    // Also directly persist to localStorage as a fallback
     try {
-      const fullState = useMasterDataStore.getState();
-      localStorage.setItem('kinetic-master-data', JSON.stringify({
-        state: fullState,
-        version: 1,
-      }));
-    } catch (e) {
-      console.error('Gagal menyimpan ke localStorage:', e);
-    }
+      // Update store state
+      const currentRoles = useMasterDataStore.getState().roles;
+      const updatedRoles = currentRoles.map(role => {
+        if (role.id in draftPermissions) {
+          return { ...role, permissions: draftPermissions[role.id] };
+        }
+        return role;
+      });
 
-    setDraftPermissions({});
-    setSaving(false);
-    toast.success(`${entries.length} role berhasil diperbarui.`);
+      useMasterDataStore.setState({ roles: updatedRoles });
+
+      // Simpan setiap perubahan role ke database melalui API
+      for (const [roleId, perms] of entries) {
+        await masterDataService.update('roles', roleId, { permissions: perms });
+      }
+
+      // Refresh data dari API untuk memastikan konsistensi
+      await useMasterDataStore.getState().fetchEntity('roles');
+
+      setDraftPermissions({});
+      setSaving(false);
+      toast.success(`${entries.length} role berhasil diperbarui.`);
+    } catch (e) {
+      console.error('Gagal menyimpan ke database:', e);
+      setSaving(false);
+      toast.error('Gagal menyimpan perubahan. Silakan coba lagi.');
+    }
   };
 
   const handleCancelChanges = () => {

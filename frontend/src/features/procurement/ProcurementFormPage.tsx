@@ -26,7 +26,7 @@ export default function ProcurementFormPage() {
   const [prNumber, setPrNumber] = useState('');
   const [prNotes, setPrNotes] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!client.trim()) {
       toast.error('Nama klien wajib diisi');
@@ -37,7 +37,7 @@ export default function ProcurementFormPage() {
       ? projects.find((p) => p.id === sourceProjectId)
       : undefined;
 
-    const procurement = addProcurement({
+    const procurement = await addProcurement({
       sourceProjectId: sourceProjectId || undefined,
       sourceProjectCode: selectedProject?.code,
       sourceProjectName: selectedProject?.name,
@@ -78,7 +78,7 @@ export default function ProcurementFormPage() {
       </div>
 
       <div className="flex-1 overflow-auto px-4 sm:px-6 py-6">
-        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
+        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" noValidate>
           {/* Link to Project */}
           <section className="bg-surface rounded-xl border border-border shadow-card p-6 space-y-4">
             <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center gap-2">

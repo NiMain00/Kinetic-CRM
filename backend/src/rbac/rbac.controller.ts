@@ -125,4 +125,17 @@ export class RbacController {
   async deleteStage(@Param('id') id: string) {
     return this.rbacService.deleteStage(id);
   }
+
+  @Get('workflow-stages/:id/departments')
+  async getStageDepartments(@Param('id') id: string) {
+    return this.rbacService.getStageDepartments(id);
+  }
+
+  @Put('workflow-stages/:id/departments')
+  async setStageDepartments(
+    @Param('id') id: string,
+    @Body() dto: { assignments: { departmentCode: string; accessLevel: string }[] },
+  ) {
+    return this.rbacService.setStageDepartments(id, dto.assignments || []);
+  }
 }
