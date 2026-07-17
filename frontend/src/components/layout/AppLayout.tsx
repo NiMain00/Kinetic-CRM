@@ -84,21 +84,27 @@ export default function AppLayout() {
     fetchProspects();
     fetchProjects();
     fetchNotifications();
-    const store = useMasterDataStore.getState();
-    store.fetchQuestions();
-    const entities: Array<Parameters<typeof store.fetchEntity>[0]> = [
-      'departments', 'users', 'industries', 'customers', 'competitors',
-      'categories', 'periods', 'holidays', 'lossReasons', 'projectStatuses',
-      'documentTypes', 'questionTypes', 'approvalLevels', 'notifTemplates',
-      'auditLogs', 'roles', 'items',
-    ];
-    entities.forEach((e) => store.fetchEntity(e));
-    const rbac = useRbacStore.getState();
-    rbac.fetchStages();
-    rbac.fetchDepartments();
-    rbac.fetchRoles();
-    rbac.fetchPermissions();
-    rbac.fetchAllUserRoles();
+    // Sequential pre-fetch agar tidak membanjiri koneksi database secara simultan
+    const preload = async () => {
+      const mStore = useMasterDataStore.getState();
+      await mStore.fetchQuestions();
+      const masterEntities: Array<Parameters<typeof mStore.fetchEntity>[0]> = [
+        'departments', 'users', 'industries', 'customers', 'competitors',
+        'categories', 'periods', 'holidays', 'lossReasons', 'projectStatuses',
+        'documentTypes', 'questionTypes', 'approvalLevels', 'notifTemplates',
+        'auditLogs', 'roles', 'items',
+      ];
+      for (const e of masterEntities) {
+        await mStore.fetchEntity(e);
+      }
+      const rbac = useRbacStore.getState();
+      await rbac.fetchStages();
+      await rbac.fetchDepartments();
+      await rbac.fetchRoles();
+      await rbac.fetchPermissions();
+      await rbac.fetchAllUserRoles();
+    };
+    preload();
   }, [fetchApprovals, fetchProspects, fetchProjects, fetchNotifications]);
 
   useEffect(() => {

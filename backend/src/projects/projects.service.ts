@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 @Injectable()
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -70,6 +72,30 @@ export class ProjectsService {
   async update(id: string, data: any) {
     const exists = await this.prisma.project.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
     if (!exists) throw new NotFoundException('Project not found');
+
+    // Handle timelineEvents terpisah agar bisa validasi actor UUID
+    const timelinePayload = data.timelineEvents;
+    delete data.timelineEvents;
+    if (timelinePayload?.create) {
+      const events = Array.isArray(timelinePayload.create) ? timelinePayload.create : [timelinePayload.create];
+      for (const evt of events) {
+        try {
+          if (evt.actor && !UUID_REGEX.test(String(evt.actor))) {
+            const user = await this.prisma.user.findFirst({
+              where: { fullName: evt.actor },
+              select: { id: true },
+            });
+            if (user) evt.actor = user.id;
+            else delete evt.actor;
+          }
+          evt.projectId = id;
+          await this.prisma.projectTimelineEvent.create({ data: evt });
+        } catch (e) {
+          console.error('[timeline] Gagal menyimpan event proyek:', e?.message || e);
+        }
+      }
+    }
+
     const oneToOneRelations = ['lphsSios', 'priceSubmission', 'tenderResult', 'deliveryTarget', 'rks'];
     const prismaOps = new Set(['upsert', 'create', 'update', 'delete', 'disconnect', 'connect']);
     const nested: any = {};

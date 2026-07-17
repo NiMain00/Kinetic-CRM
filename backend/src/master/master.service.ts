@@ -121,7 +121,16 @@ export class MasterService {
 
   async create(entity: string, data: any) {
     const model = this.getModel(entity);
-    return model.create({ data });
+    try {
+      return await model.create({ data });
+    } catch (err: any) {
+      if (err?.code === 'P2002') {
+        const target = err.meta?.target || 'field';
+        throw new Error(`Duplicate value for ${target}. ${entity} dengan nilai tersebut sudah ada.`);
+      }
+      console.error(`[master] create ${entity} failed:`, err?.message || err);
+      throw new Error(`Gagal membuat ${entity}: ${err?.message || 'unknown error'}`);
+    }
   }
 
   async update(entity: string, id: string, data: any) {

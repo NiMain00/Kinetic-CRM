@@ -117,10 +117,13 @@ export const useApprovalStore = create<ApprovalState>()(
       },
 
       removeApproval: async (id) => {
-        try {
-          await masterDataService.delete('approvals', id);
-        } catch (err) {
-          console.error('[approvalStore] removeApproval API failed:', err);
+        // Skip API call untuk fake/derived ID yang tidak ada di database
+        if (!id.startsWith('derived-') && !id.startsWith('app-lphs-')) {
+          try {
+            await masterDataService.delete('approvals', id);
+          } catch (err) {
+            console.error('[approvalStore] removeApproval API failed:', err);
+          }
         }
         set(removeById(id));
       },
