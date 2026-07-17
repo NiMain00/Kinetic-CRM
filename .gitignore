@@ -37,3 +37,8 @@ loss-reasons-page.md
 # Build cache
 *.tsbuildinfo
 .vite/
+
+# Vercel
+.vite/
+.backend/
+

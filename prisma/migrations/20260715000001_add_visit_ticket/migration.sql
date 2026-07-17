@@ -1,11 +1,13 @@
 -- CreateEnum
-CREATE TYPE `VisitStatus` AS ENUM('pending', 'completed', 'cancelled');
+CREATE TABLE IF NOT EXISTS `_prisma_enums` (`name` VARCHAR(50) NOT NULL PRIMARY KEY) AS
+SELECT 'VisitStatus' WHERE NOT EXISTS (SELECT 1 FROM `_prisma_enums` WHERE `name` = 'VisitStatus');
 
 -- CreateEnum
-CREATE TYPE `TicketStatus` AS ENUM('open', 'in_progress', 'resolved', 'closed');
+CREATE TABLE IF NOT EXISTS `_prisma_enums` (`name` VARCHAR(50) NOT NULL PRIMARY KEY) AS
+SELECT 'TicketStatus' WHERE NOT EXISTS (SELECT 1 FROM `_prisma_enums` WHERE `name` = 'TicketStatus');
 
 -- CreateTable
-CREATE TABLE `visits` (
+CREATE TABLE IF NOT EXISTS `visits` (
     `id` VARCHAR(191) NOT NULL,
     `prospect_id` VARCHAR(191) NOT NULL,
     `customer_id` VARCHAR(191) NULL,
@@ -25,7 +27,7 @@ CREATE TABLE `visits` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `tickets` (
+CREATE TABLE IF NOT EXISTS `tickets` (
     `id` VARCHAR(191) NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `prospect_id` VARCHAR(191) NOT NULL,

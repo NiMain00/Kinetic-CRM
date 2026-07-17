@@ -25,6 +25,7 @@
     "passport-jwt": "^4.x",
     "reflect-metadata": "^0.2.x",
     "rxjs": "^7.x",
+    "serverless-http": "^3.x",
     "zod": "^3.x"
   },
   "devDependencies": {

@@ -6,4 +6,5 @@ export const prospectService = {
   create: (data: unknown) => apiClient.post('/prospects', data),
   update: (id: string, data: unknown) => apiClient.put(`/prospects/${id}`, data),
   delete: (id: string) => apiClient.delete(`/prospects/${id}`),
+  promote: (id: string, level: string) => apiClient.put(`/prospects/${id}/promote`, { level }),
 };

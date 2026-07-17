@@ -154,6 +154,12 @@ export default function ProspectFormPage() {
     c.code.toLowerCase().includes(customerSearch.toLowerCase())
   );
 
+  // --- Access gate: non-hot customers can't be edited ---
+  const customerLevel = customerMode === 'existing'
+    ? selectedCustomer?.level
+    : (newCustLevel as 'hot' | 'medium' | 'low' | '' | undefined) || (existingProspect?.customerData?.level);
+  const isEditableForm = !isEdit || !customerLevel || customerLevel === 'hot';
+
   const getClientName = (): string => {
     if (customerMode === 'existing' && selectedCustomer) {
       return selectedCustomer.name;
@@ -349,6 +355,16 @@ export default function ProspectFormPage() {
           <h1 className="text-xl font-extrabold text-on-surface">{isEdit ? 'Edit Prospek' : 'Buat Prospek Baru'}</h1>
           <p className="text-sm text-secondary mt-1">Lengkapi informasi prospek, data customer, dan pertanyaan standar di bawah ini.</p>
         </div>
+
+        {!isEditableForm && (
+          <div className="flex items-center gap-2 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-[22px]">lock</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Customer masih level <span className="uppercase">{customerLevel}</span></p>
+              <p className="text-xs text-amber-700 dark:text-amber-400">Hanya customer level <strong>Hot</strong> yang bisa diedit detailnya. Silakan naikkan level terlebih dahulu di halaman Kualifikasi.</p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           {/* LEFT COLUMN: Customer Info */}
@@ -793,7 +809,7 @@ export default function ProspectFormPage() {
           <div className="flex gap-3">
             <button
               onClick={handleSaveDraft}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isEditableForm}
               className="px-6 py-2.5 bg-surface border border-border/60 text-primary font-bold rounded-xl hover:bg-surface-container transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Simpan Draft"
             >
@@ -801,7 +817,7 @@ export default function ProspectFormPage() {
             </button>
             <button
               onClick={handleSubmitReview}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isEditableForm}
               className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-sm hover:bg-primary-light transition-all text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               aria-label="Kirim ke Review"
             >

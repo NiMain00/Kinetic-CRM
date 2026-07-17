@@ -1,17 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// KINETIC CRM — Prisma Schema (MySQL 8)
+// KINETIC CRM — Prisma Schema (PostgreSQL)
 // Dibuat dari analisis frontend (Prioritas 1) + dokumentasi (Prioritas 2)
 // ─────────────────────────────────────────────────────────────────────────────
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["fullTextSearch", "multiSchema"]
 }
 
 datasource db {
-  provider          = "mysql"
+  provider = "postgresql"
   url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 // ── ENUMS ────────────────────────────────────────────────────────────────────
@@ -319,15 +317,15 @@ enum UserStatus {
 
 model OrgUnit {
   id         String      @id @default(uuid()) @map("id")
-  name       String      @db.VarChar(255)
-  code       String      @unique @db.VarChar(50)
+  name       String     
+  code       String      @unique
   parentId   String?     @map("parent_id")
   unitType   OrgUnitType @map("unit_type")
-  city       String?     @db.VarChar(100)
-  province   String?     @db.VarChar(100)
-  address    String?   @db.Text
-  description String?  @db.Text  @map("description")
-  phone      String?   @db.VarChar(50)
+  city       String?    
+  province   String?    
+  address    String?  
+  description String?   @map("description")
+  phone      String?  
   isActive   Boolean     @default(true) @map("is_active")
   sortOrder  Int         @default(0) @map("sort_order")
   createdAt  DateTime    @default(now()) @map("created_at")
@@ -351,12 +349,12 @@ model OrgUnit {
 
 model User {
   id            String      @id @default(uuid()) @map("id")
-  username      String      @unique @db.VarChar(50)
-  fullName      String      @map("full_name") @db.VarChar(255)
-  email         String      @unique @db.VarChar(255)
-  passwordHash  String      @map("password_hash") @db.VarChar(255)
-  phone         String?     @db.VarChar(50)
-  avatarUrl     String?     @map("avatar_url") @db.Text
+  username      String      @unique
+  fullName      String      @map("full_name")
+  email         String      @unique
+  passwordHash  String      @map("password_hash")
+  phone         String?    
+  avatarUrl     String?     @map("avatar_url")
   status        UserStatus  @default(active)
   isLocked      Boolean     @default(false) @map("is_locked")
   failedLoginCount Int      @default(0) @map("failed_login_count")
@@ -424,9 +422,9 @@ model User {
 model ActiveSession {
   id        String    @id @default(uuid()) @map("id")
   userId    String    @map("user_id")
-  tokenJti  String    @unique @map("token_jti") @db.VarChar(255)
-  ipAddress String    @map("ip_address") @db.VarChar(45)
-  userAgent String?   @map("user_agent") @db.Text
+  tokenJti  String    @unique @map("token_jti")
+  ipAddress String    @map("ip_address")
+  userAgent String?   @map("user_agent")
   expiresAt DateTime  @map("expires_at")
   revokedAt DateTime? @map("revoked_at")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -438,8 +436,8 @@ model ActiveSession {
 
 model Role {
   id            String   @id @default(uuid()) @map("id")
-  name          String   @db.VarChar(100)
-  description   String?  @db.Text
+  name          String  
+  description   String? 
   isSystem      Boolean  @default(false) @map("is_system")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -456,10 +454,10 @@ model Role {
 
 model Permission {
   id          String   @id @default(uuid()) @map("id")
-  code        String   @unique @db.VarChar(150)
-  name        String   @db.VarChar(200)
-  module      String   @db.VarChar(100)
-  description String?  @db.Text
+  code        String   @unique
+  name        String  
+  module      String  
+  description String? 
   createdAt   DateTime @default(now()) @map("created_at")
 
   rolePermissions RolePermission[]
@@ -502,12 +500,12 @@ model UserRole {
 
 model WorkflowStage {
   id                  String   @id @default(uuid()) @map("id")
-  code                String   @unique @db.VarChar(100)
-  name                String   @db.VarChar(200)
-  module              String   @db.VarChar(50)
+  code                String   @unique
+  name                String  
+  module              String  
   sequence            Float    @map("sequence")
-  ownerDepartmentCode String   @map("owner_department_code") @db.VarChar(50)
-  prevDepartmentCode  String?  @map("prev_department_code") @db.VarChar(50)
+  ownerDepartmentCode String   @map("owner_department_code")
+  prevDepartmentCode  String?  @map("prev_department_code")
   isActive            Boolean  @default(true) @map("is_active")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
@@ -525,7 +523,7 @@ model WorkflowStage {
 model WorkflowStageDepartment {
   id             String      @id @default(uuid()) @map("id")
   stageId        String      @map("stage_id")
-  departmentCode String      @map("department_code") @db.VarChar(50)
+  departmentCode String      @map("department_code")
   accessLevel    AccessLevel @default(read) @map("access_level")
   createdAt      DateTime    @default(now()) @map("created_at")
 
@@ -567,19 +565,19 @@ model ProjectDepartment {
 
 model Customer {
   id            String       @id @default(uuid()) @map("id")
-  name          String       @unique @db.VarChar(255)
-  code          String       @unique @db.VarChar(50)
+  name          String       @unique
+  code          String       @unique
   type          CustomerType
-  city          String       @db.VarChar(100)
-  npwp          String?      @db.VarChar(50)
-  picName       String?      @map("pic_name") @db.VarChar(255)
-  picPosition   String?      @map("pic_position") @db.VarChar(255)
-  picPhone      String?      @map("pic_phone") @db.VarChar(50)
-  picEmail      String?      @map("pic_email") @db.VarChar(255)
-  address       String?      @db.Text
-  province      String?      @db.VarChar(100)
+  city          String      
+  npwp          String?     
+  picName       String?      @map("pic_name")
+  picPosition   String?      @map("pic_position")
+  picPhone      String?      @map("pic_phone")
+  picEmail      String?      @map("pic_email")
+  address       String?     
+  province      String?     
   industryId    String?      @map("industry_id")
-  providerExisting String?   @map("provider_existing") @db.VarChar(255)
+  providerExisting String?   @map("provider_existing")
   isNew         Boolean?     @default(false) @map("is_new")
   needsVerification Boolean? @default(false) @map("needs_verification")
   verifiedAt    DateTime?    @map("verified_at")
@@ -587,10 +585,10 @@ model Customer {
   isActive      Boolean      @default(true) @map("is_active")
   parentId      String?      @map("parent_id")
   level         CustomerLevel?
-  requirements  String?      @db.Text
-  unitLevel     String?      @map("unit_level") @db.VarChar(100)
-  canonicalName String?      @map("canonical_name") @db.VarChar(255)
-  source        String?      @db.VarChar(50)
+  requirements  String?     
+  unitLevel     String?      @map("unit_level")
+  canonicalName String?      @map("canonical_name")
+  source        String?     
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
   deletedAt     DateTime?    @map("deleted_at")
@@ -608,8 +606,8 @@ model Customer {
 
 model Industry {
   id        String   @id @default(uuid()) @map("id")
-  name      String   @db.VarChar(200)
-  code      String   @unique @db.VarChar(50)
+  name      String  
+  code      String   @unique
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -619,13 +617,13 @@ model Industry {
 
 model ProjectCategory {
   id               String   @id @default(uuid()) @map("id")
-  name             String   @unique @db.VarChar(200)
-  code             String   @unique @db.VarChar(50)
-  description      String?  @db.Text
+  name             String   @unique
+  code             String   @unique
+  description      String? 
   requiresLphs     Boolean  @default(true) @map("requires_lphs")
   requiresRks      Boolean  @default(true) @map("requires_rks")
-  defaultWorkflowType String @default("tender") @map("default_workflow_type") @db.VarChar(50)
-  colorHex         String?  @map("color_hex") @db.VarChar(7)
+  defaultWorkflowType String @default("tender") @map("default_workflow_type")
+  colorHex         String?  @map("color_hex")
   sortOrder        Int      @default(0) @map("sort_order")
   isActive         Boolean  @default(true) @map("is_active")
   createdAt        DateTime @default(now()) @map("created_at")
@@ -639,15 +637,15 @@ model ProjectCategory {
 
 model ProjectStatusDefinition {
   id          String   @id @default(uuid()) @map("id")
-  code        String   @unique @db.VarChar(50)
-  label       String   @db.VarChar(100)
-  description String?  @db.Text
-  colorHex    String   @map("color_hex") @db.VarChar(7)
-  textColorHex String  @map("text_color_hex") @db.VarChar(7)
+  code        String   @unique
+  label       String  
+  description String? 
+  colorHex    String   @map("color_hex")
+  textColorHex String  @map("text_color_hex")
   sortOrder   Int      @map("sort_order")
   isSystem    Boolean  @default(false) @map("is_system")
   isTerminal  Boolean  @default(false) @map("is_terminal")
-  applicableTo String  @default("both") @map("applicable_to") @db.VarChar(20)
+  applicableTo String  @default("both") @map("applicable_to")
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -659,16 +657,16 @@ model ProjectStatusDefinition {
 
 model Competitor {
   id            String      @id @default(uuid()) @map("id")
-  name          String      @unique @db.VarChar(200)
-  code          String?     @db.VarChar(50)
-  minPrice      Decimal?      @map("min_price") @db.Decimal(18, 2)
-  maxPrice      Decimal?      @map("max_price") @db.Decimal(18, 2)
+  name          String      @unique
+  code          String?    
+  minPrice      Decimal?      @map("min_price")
+  maxPrice      Decimal?      @map("max_price")
   industryId    String?     @map("industry_id")
-  bidangUsaha   String?     @map("bidang_usaha") @db.VarChar(200)
-  website       String?     @db.VarChar(255)
-  advantages    String?     @db.Text
-  description   String?     @db.Text
-  notes         String?     @db.Text
+  bidangUsaha   String?     @map("bidang_usaha")
+  website       String?    
+  advantages    String?    
+  description   String?    
+  notes         String?    
   isActive      Boolean     @default(true) @map("is_active")
   createdAt     DateTime    @default(now()) @map("created_at")
   updatedAt     DateTime    @updatedAt @map("updated_at")
@@ -681,11 +679,11 @@ model Competitor {
 
 model QuestionType {
   id              String         @id @default(uuid()) @map("id")
-  name            String         @db.VarChar(100)
+  name            String        
   code            QuestionTypeCode @unique
-  description     String?        @db.Text
+  description     String?       
   hasOptions      Boolean        @default(false) @map("has_options")
-  validationConfig String?       @map("validation_config") @db.Text
+  validationConfig String?       @map("validation_config")
   isSystem        Boolean        @default(false) @map("is_system")
   isActive        Boolean        @default(true) @map("is_active")
   createdAt       DateTime       @default(now()) @map("created_at")
@@ -698,14 +696,14 @@ model QuestionType {
 
 model Question {
   id            String         @id @default(uuid()) @map("id")
-  questionText  String         @map("question_text") @db.Text
+  questionText  String         @map("question_text")
   questionTypeId String        @map("question_type_id")
   context       QuestionContext
-  category      String?        @db.VarChar(100)
+  category      String?       
   isRequired    Boolean        @default(false) @map("is_required")
   sortOrder     Int            @default(0) @map("sort_order")
-  placeholderText String?      @map("placeholder_text") @db.Text
-  helpText      String?        @map("help_text") @db.Text
+  placeholderText String?      @map("placeholder_text")
+  helpText      String?        @map("help_text")
   isActive      Boolean        @default(true) @map("is_active")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
@@ -721,7 +719,7 @@ model Question {
 model QuestionOption {
   id          String   @id @default(uuid()) @map("id")
   questionId  String   @map("question_id")
-  optionLabel String   @map("option_label") @db.VarChar(200)
+  optionLabel String   @map("option_label")
   sortOrder   Int      @default(0) @map("sort_order")
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -734,15 +732,15 @@ model QuestionOption {
 
 model Period {
   id        String     @id @default(uuid()) @map("id")
-  name      String     @db.VarChar(100)
-  code      String     @unique @db.VarChar(50)
+  name      String    
+  code      String     @unique
   type      PeriodType
   year      Int
-  startDate DateTime   @map("start_date") @db.Date
-  endDate   DateTime   @map("end_date") @db.Date
+  startDate DateTime   @map("start_date")
+  endDate   DateTime   @map("end_date")
   isActive  Boolean    @default(true) @map("is_active")
   isLocked  Boolean    @default(false) @map("is_locked")
-  notes     String?    @db.Text
+  notes     String?   
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
 
@@ -753,8 +751,8 @@ model Period {
 
 model Holiday {
   id        String      @id @default(uuid()) @map("id")
-  name      String      @db.VarChar(200)
-  date      DateTime    @db.Date
+  name      String     
+  date      DateTime   
   type      HolidayType
   year      Int
   isActive  Boolean     @default(true) @map("is_active")
@@ -767,10 +765,10 @@ model Holiday {
 
 model LossReason {
   id          String            @id @default(uuid()) @map("id")
-  name        String            @db.VarChar(200)
-  code        String            @unique @db.VarChar(50)
+  name        String           
+  code        String            @unique
   category    LossReasonCategory
-  description String?           @db.Text
+  description String?          
   sortOrder   Int               @default(0) @map("sort_order")
   isActive    Boolean           @default(true) @map("is_active")
   createdAt   DateTime          @default(now()) @map("created_at")
@@ -783,13 +781,13 @@ model LossReason {
 
 model DocumentType {
   id                String   @id @default(uuid()) @map("id")
-  name              String   @db.VarChar(200)
-  code              String   @unique @db.VarChar(50)
-  description       String?  @db.Text
-  allowedExtensions String?  @map("allowed_extensions") @db.Text
+  name              String  
+  code              String   @unique
+  description       String? 
+  allowedExtensions String?  @map("allowed_extensions")
   maxSizeMb         Int?     @map("max_size_mb")
-  isRequiredAtStage String?  @map("is_required_at_stage") @db.Text
-  applicableTo      String   @default("both") @map("applicable_to") @db.VarChar(20)
+  isRequiredAtStage String?  @map("is_required_at_stage")
+  applicableTo      String   @default("both") @map("applicable_to")
   sortOrder         Int      @default(0) @map("sort_order")
   isSystem          Boolean  @default(false) @map("is_system")
   isActive          Boolean  @default(true) @map("is_active")
@@ -806,28 +804,28 @@ model DocumentType {
 
 model Prospect {
   id                String          @id @default(uuid()) @map("id")
-  name              String          @db.VarChar(255)
-  client            String          @db.VarChar(255)
+  name              String         
+  client            String         
   customerId        String?         @map("customer_id")
   customerType      ProspectCustomerType? @map("customer_type")
   status            ProspectStatus  @default(Lead)
-  prospectType      String?         @map("prospect_type") @db.VarChar(50)
+  prospectType      String?         @map("prospect_type")
   potensiUnit       Int             @default(0) @map("potensi_unit")
-  estimatedValue    Decimal?          @map("estimated_value") @db.Decimal(18, 2)
-  description       String?         @db.Text
-  branch            String?         @db.VarChar(100)
+  estimatedValue    Decimal?          @map("estimated_value")
+  description       String?        
+  branch            String?        
   branchId          String?         @map("branch_id")
   categoryId        String?         @map("category_id")
   industryId        String?         @map("industry_id")
-  providerExisting  String?         @map("provider_existing") @db.VarChar(255)
-  projectType       String?         @map("project_type") @db.VarChar(100)
+  providerExisting  String?         @map("provider_existing")
+  projectType       String?         @map("project_type")
   isConverted       Boolean         @default(false) @map("is_converted")
   convertedToProjectId String?      @unique @map("converted_to_project_id")
   createdByUserId   String?         @map("created_by_user_id")
   departmentId      String?         @map("department_id")
   currentStageId    String?         @map("current_stage_id")
   ownerUserId       String?         @map("owner_user_id")
-  source            String?         @db.VarChar(50)
+  source            String?        
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
   deletedAt         DateTime?       @map("deleted_at")
@@ -854,7 +852,7 @@ model ProspectAnswer {
   id              String   @id @default(uuid()) @map("id")
   prospectId      String   @map("prospect_id")
   questionId      String   @map("question_id")
-  answerText      String?  @map("answer_text") @db.Text
+  answerText      String?  @map("answer_text")
   answerOptionId  String?  @map("answer_option_id")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -885,8 +883,8 @@ model ProspectReviewQuestion {
   id            String   @id @default(uuid()) @map("id")
   prospectId    String   @map("prospect_id")
   reviewRound   Int      @map("review_round")
-  questionText  String   @map("question_text") @db.Text
-  answerText    String?  @map("answer_text") @db.Text
+  questionText  String   @map("question_text")
+  answerText    String?  @map("answer_text")
   createdBy     String   @map("created_by")
   answeredAt    DateTime? @map("answered_at")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -901,7 +899,7 @@ model ProspectReviewNote {
   id          String   @id @default(uuid()) @map("id")
   prospectId  String   @map("prospect_id")
   reviewRound Int      @map("review_round")
-  noteText    String   @map("note_text") @db.Text
+  noteText    String   @map("note_text")
   createdBy   String   @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -914,14 +912,14 @@ model ProspectReviewNote {
 model ProspectTimelineEvent {
   id          String   @id @default(uuid()) @map("id")
   prospectId  String   @map("prospect_id")
-  title       String   @db.VarChar(255)
-  actor       String   @db.VarChar(255)
-  role        String?  @db.VarChar(100)
+  title       String  
+  actor       String  
+  role        String? 
   time        DateTime @default(now()) @map("time")
-  type        String   @db.VarChar(50)
-  description String?  @db.Text
-  prevVal     String?  @map("prev_val") @db.VarChar(255)
-  newVal      String?  @map("new_val") @db.VarChar(255)
+  type        String  
+  description String? 
+  prevVal     String?  @map("prev_val")
+  newVal      String?  @map("new_val")
   createdAt   DateTime @default(now()) @map("created_at")
 
   prospect Prospect @relation(fields: [prospectId], references: [id], onDelete: Cascade)
@@ -937,9 +935,9 @@ model Visit {
   customerId  String?     @map("customer_id")
   visitNumber Int         @map("visit_number")
   status      VisitStatus @default(pending)
-  date        DateTime    @map("date") @db.Date
-  notes       String?     @db.Text
-  picName     String?     @map("pic_name") @db.VarChar(255)
+  date        DateTime    @map("date")
+  notes       String?    
+  picName     String?     @map("pic_name")
   picUserId   String?     @map("pic_user_id")
   createdAt   DateTime    @default(now()) @map("created_at")
   updatedAt   DateTime    @updatedAt @map("updated_at")
@@ -958,7 +956,7 @@ model Visit {
 
 model FollowUpTask {
   id          String         @id @default(uuid()) @map("id")
-  title       String         @db.VarChar(255)
+  title       String        
   prospectId  String?        @map("prospect_id")
   customerId  String?        @map("customer_id")
   fromUserId  String         @map("from_user_id")
@@ -966,8 +964,8 @@ model FollowUpTask {
   status      FollowUpStatus @default(pending)
   priority    TaskPriority   @default(medium)
   progress    Int            @default(0)
-  notes       String?        @db.Text
-  deadline    DateTime?      @map("deadline") @db.Date
+  notes       String?       
+  deadline    DateTime?      @map("deadline")
   completedAt DateTime?      @map("completed_at")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
@@ -987,24 +985,24 @@ model FollowUpTask {
 
 model Project {
   id               String   @id @default(uuid()) @map("id")
-  code             String   @unique @db.VarChar(50)
-  name             String   @db.VarChar(255)
-  client           String   @db.VarChar(255)
-  type             String   @db.VarChar(50)
-  location         String   @db.VarChar(255)
-  status           String   @db.VarChar(50)
-  phase            String?  @db.VarChar(50)
+  code             String   @unique
+  name             String  
+  client           String  
+  type             String  
+  location         String  
+  status           String  
+  phase            String? 
   progress         Int      @default(0)
-  estimatedValue   Decimal?   @map("estimated_value") @db.Decimal(18, 2)
-  deadlineTender   DateTime? @map("deadline_tender") @db.Date
+  estimatedValue   Decimal?   @map("estimated_value")
+  deadlineTender   DateTime? @map("deadline_tender")
   sourceProspectId String?  @map("source_prospect_id")
   // DB-computed column: mirrors source_prospect_id while the project is active (NULL once
   // soft-deleted). Backs a unique index so a prospect maps to one ACTIVE project. Never read
   // or written by application code, hence @ignore.
   sourceProspectIdActive String? @ignore @map("source_prospect_id_active")
   customerId      String?  @map("customer_id")
-  providerExisting String?  @map("provider_existing") @db.VarChar(255)
-  branch           String?  @db.VarChar(100)
+  providerExisting String?  @map("provider_existing")
+  branch           String? 
   branchId         String?  @map("branch_id")
   departmentId     String?  @map("department_id")
   categoryId       String?  @map("category_id")
@@ -1012,8 +1010,8 @@ model Project {
   currentStageId   String?  @map("current_stage_id")
   createdByUserId  String?  @map("created_by_user_id")
   ownerUserId      String?  @map("owner_user_id")
-  scopeDepartments String?  @map("scope_departments") @db.Text
-  author           String?  @db.VarChar(255)
+  scopeDepartments String?  @map("scope_departments")
+  author           String? 
   date             DateTime @default(now()) @map("date")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
@@ -1052,16 +1050,16 @@ model Project {
 model ProjectTimelineEvent {
   id          String   @id @default(uuid()) @map("id")
   projectId   String   @map("project_id")
-  title       String   @db.VarChar(255)
-  actor       String   @db.VarChar(255)
-  role        String?  @db.VarChar(100)
+  title       String  
+  actor       String  
+  role        String? 
   time        DateTime @default(now()) @map("time")
-  type        String   @db.VarChar(50)
-  description String?  @db.Text
-  prevVal     String?  @map("prev_val") @db.VarChar(255)
-  newVal      String?  @map("new_val") @db.VarChar(255)
-  fileName    String?  @map("file_name") @db.VarChar(255)
-  fileSize    String?  @map("file_size") @db.VarChar(50)
+  type        String  
+  description String? 
+  prevVal     String?  @map("prev_val")
+  newVal      String?  @map("new_val")
+  fileName    String?  @map("file_name")
+  fileSize    String?  @map("file_size")
   createdAt   DateTime @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -1075,13 +1073,13 @@ model ProjectTimelineEvent {
 model Rks {
   id              String   @id @default(uuid()) @map("id")
   projectId       String   @unique @map("project_id")
-  nomorTender     String?  @map("nomor_tender") @db.VarChar(100)
-  namaTender      String?  @map("nama_tender") @db.VarChar(255)
-  deadlineTender  DateTime? @map("deadline_tender") @db.Date
-  aanwijzing      String?  @db.VarChar(255)
-  workLocation    String?  @map("work_location") @db.VarChar(255)
-  mainScope       String?  @map("main_scope") @db.Text
-  additionalNotes String?  @map("additional_notes") @db.Text
+  nomorTender     String?  @map("nomor_tender")
+  namaTender      String?  @map("nama_tender")
+  deadlineTender  DateTime? @map("deadline_tender")
+  aanwijzing      String? 
+  workLocation    String?  @map("work_location")
+  mainScope       String?  @map("main_scope")
+  additionalNotes String?  @map("additional_notes")
   answers         Json?    @map("answers")
   status          RksStatus @default(draft)
   revisionNumber  Int      @default(1) @map("revision_number")
@@ -1101,8 +1099,8 @@ model RksReviewQuestion {
   id           String   @id @default(uuid()) @map("id")
   rksId        String   @map("rks_id")
   reviewRound  Int      @map("review_round")
-  questionText String   @map("question_text") @db.Text
-  answerText   String?  @map("answer_text") @db.Text
+  questionText String   @map("question_text")
+  answerText   String?  @map("answer_text")
   createdBy    String   @map("created_by")
   answeredAt   DateTime? @map("answered_at")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -1117,7 +1115,7 @@ model RksReviewNote {
   id          String   @id @default(uuid()) @map("id")
   rksId       String   @map("rks_id")
   reviewRound Int      @map("review_round")
-  noteText    String   @map("note_text") @db.Text
+  noteText    String   @map("note_text")
   createdBy   String   @map("created_by")
   createdAt   DateTime @default(now()) @map("created_at")
 
@@ -1133,12 +1131,12 @@ model LphsSios {
   id                   String            @id @default(uuid()) @map("id")
   projectId            String            @unique @map("project_id")
   status               LphsStatus        @default(draft)
-  lphsFileName         String?           @map("lphs_file_name") @db.VarChar(255)
-  lphsFileSize         String?           @map("lphs_file_size") @db.VarChar(50)
-  lphsExternalUrl      String?           @map("lphs_external_url") @db.Text
-  siosFileName         String?           @map("sios_file_name") @db.VarChar(255)
-  siosFileSize         String?           @map("sios_file_size") @db.VarChar(50)
-  selectedDepartments  String?           @map("selected_departments") @db.Text
+  lphsFileName         String?           @map("lphs_file_name")
+  lphsFileSize         String?           @map("lphs_file_size")
+  lphsExternalUrl      String?           @map("lphs_external_url")
+  siosFileName         String?           @map("sios_file_name")
+  siosFileSize         String?           @map("sios_file_size")
+  selectedDepartments  String?           @map("selected_departments")
   departmentsLocked    Boolean           @default(false) @map("departments_locked")
   pmApprovalStatus     LphsApprovalStatus @default(reviewing) @map("pm_approval_status")
   pmApprovedAt         DateTime?         @map("pm_approved_at")
@@ -1149,7 +1147,7 @@ model LphsSios {
   finalApprovalStatus  LphsApprovalStatus @default(pending_pm) @map("final_approval_status")
   finalApprovedAt      DateTime?         @map("final_approved_at")
   finalApprovedBy      String?           @map("final_approved_by")
-  overallStatus        String            @default("draft") @map("overall_status") @db.VarChar(50)
+  overallStatus        String            @default("draft") @map("overall_status")
   revisionNumber       Int               @default(1) @map("revision_number")
   submittedAt          DateTime?         @map("submitted_at")
   createdAt            DateTime          @default(now()) @map("created_at")
@@ -1170,7 +1168,7 @@ model LphsDepartmentReview {
   lphsSiosId      String             @map("lphs_sios_id")
   departmentId    String             @map("department_id")
   approvalStatus  LphsApprovalStatus @default(reviewing) @map("approval_status")
-  comment         String?            @db.Text
+  comment         String?           
   reviewedBy      String?            @map("reviewed_by")
   reviewedAt      DateTime?          @map("reviewed_at")
   createdAt       DateTime           @default(now()) @map("created_at")
@@ -1189,8 +1187,8 @@ model LphsTargetedRevision {
   lphsSiosId      String   @map("lphs_sios_id")
   revisionNumber  Int      @map("revision_number")
   initiatedBy     String   @map("initiated_by")
-  initiatedRole   String   @map("initiated_role") @db.VarChar(20)
-  note            String?  @db.Text
+  initiatedRole   String   @map("initiated_role")
+  note            String? 
   createdAt       DateTime @default(now()) @map("created_at")
 
   lphsSios    LphsSios                        @relation(fields: [lphsSiosId], references: [id], onDelete: Cascade)
@@ -1218,12 +1216,12 @@ model LphsTargetedRevisionDepartment {
 model PriceSubmission {
   id               String   @id @default(uuid()) @map("id")
   projectId        String   @unique @map("project_id")
-  ourPrice         Decimal    @map("our_price") @db.Decimal(18, 2)
-  marginPercentage Decimal?   @map("margin_percentage") @db.Decimal(5, 2)
-  note             String?  @db.Text
-  referenceLink    String?  @map("reference_link") @db.Text
-  referenceUrl     String?  @map("reference_url") @db.Text
-  bottomPrice      Decimal?   @map("bottom_price") @db.Decimal(18, 2)
+  ourPrice         Decimal    @map("our_price")
+  marginPercentage Decimal?   @map("margin_percentage")
+  note             String? 
+  referenceLink    String?  @map("reference_link")
+  referenceUrl     String?  @map("reference_url")
+  bottomPrice      Decimal?   @map("bottom_price")
   submittedAt      DateTime @default(now()) @map("submitted_at")
   submittedBy      String   @map("submitted_by")
   createdAt        DateTime @default(now()) @map("created_at")
@@ -1239,9 +1237,9 @@ model ProjectCompetitor {
   id              String   @id @default(uuid()) @map("id")
   projectId       String   @map("project_id")
   competitorId    String   @map("competitor_id")
-  competitorPrice Decimal?   @map("competitor_price") @db.Decimal(18, 2)
-  advantageNote   String?  @map("advantage_note") @db.Text
-  notes           String?  @db.Text
+  competitorPrice Decimal?   @map("competitor_price")
+  advantageNote   String?  @map("advantage_note")
+  notes           String? 
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -1258,11 +1256,11 @@ model TenderResult {
   id             String          @id @default(uuid()) @map("id")
   projectId      String          @unique @map("project_id")
   result         TenderResultEnum
-  contractValue  Decimal?          @map("contract_value") @db.Decimal(18, 2)
+  contractValue  Decimal?          @map("contract_value")
   lossReasonId   String?         @map("loss_reason_id")
-  lossReasonNote String?         @map("loss_reason_note") @db.Text
-  spkDocument    String?         @map("spk_document") @db.Text
-  startDate      DateTime?       @map("start_date") @db.Date
+  lossReasonNote String?         @map("loss_reason_note")
+  spkDocument    String?         @map("spk_document")
+  startDate      DateTime?       @map("start_date")
   durationDays   Int?            @map("duration_days")
   decidedAt      DateTime        @default(now()) @map("decided_at")
   decidedBy      String          @map("decided_by")
@@ -1279,15 +1277,15 @@ model TenderResult {
 model DeliveryTarget {
   id              String         @id @default(uuid()) @map("id")
   projectId       String         @unique @map("project_id")
-  startDate       DateTime?      @map("start_date") @db.Date
-  endDate         DateTime?      @map("end_date") @db.Date
-  actualEndDate   DateTime?      @map("actual_end_date") @db.Date
-  note            String?        @db.Text
+  startDate       DateTime?      @map("start_date")
+  endDate         DateTime?      @map("end_date")
+  actualEndDate   DateTime?      @map("actual_end_date")
+  note            String?       
   isCompleted     Boolean        @default(false) @map("is_completed")
   completedAt     DateTime?      @map("completed_at")
   completedBy     String?        @map("completed_by")
   status          DeliveryStatus @default(scheduled)
-  picName         String?        @map("pic_name") @db.VarChar(255)
+  picName         String?        @map("pic_name")
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
 
@@ -1301,12 +1299,12 @@ model DeliveryTarget {
 model SlaConfiguration {
   id                  String   @id @default(uuid()) @map("id")
   stageId             String   @unique @map("stage_id")
-  name                String   @db.VarChar(200)
-  entityType          String   @map("entity_type") @db.VarChar(50)
+  name                String  
+  entityType          String   @map("entity_type")
   warningThreshold    Int      @map("warning_threshold")
   criticalThreshold   Int      @map("critical_threshold")
-  unit                String   @db.VarChar(20)
-  escalationRole      String   @map("escalation_role") @db.VarChar(100)
+  unit                String  
+  escalationRole      String   @map("escalation_role")
   slaWorkingDays      Int?     @map("sla_working_days")
   isEnforcementActive Boolean  @default(true) @map("is_enforcement_active")
   active              Boolean  @default(true)
@@ -1343,7 +1341,7 @@ model Approval {
   assignedToRoleId        String?              @map("assigned_to_role_id")
   assignedToDepartmentId  String?              @map("assigned_to_department_id")
   status                  ApprovalStatus       @default(pending)
-  decisionComment         String?              @map("decision_comment") @db.Text
+  decisionComment         String?              @map("decision_comment")
   decidedBy               String?              @map("decided_by")
   decidedAt               DateTime?            @map("decided_at")
   slaDeadline             DateTime?            @map("sla_deadline")
@@ -1366,7 +1364,7 @@ model ApprovalReassignment {
   approvalId                String   @map("approval_id")
   previousAssigneeUserId    String?  @map("previous_assignee_user_id")
   newAssigneeUserId         String   @map("new_assignee_user_id")
-  reason                    String   @db.Text
+  reason                    String  
   reassignedBy              String   @map("reassigned_by")
   reassignedAt              DateTime @default(now()) @map("reassigned_at")
 
@@ -1380,8 +1378,8 @@ model ApprovalReassignment {
 
 model ApprovalChain {
   id        String   @id @default(uuid()) @map("id")
-  name      String   @db.VarChar(200)
-  module    String   @db.VarChar(50)
+  name      String  
+  module    String  
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1395,11 +1393,11 @@ model ApprovalChain {
 model ApprovalChainLevel {
   id            String   @id @default(uuid()) @map("id")
   chainId       String   @map("chain_id")
-  name          String   @db.VarChar(200)
-  role          String   @db.VarChar(100)
+  name          String  
+  role          String  
   order         Int      @map("order_level")
-  minAmount     Decimal?   @map("min_amount") @db.Decimal(18, 2)
-  maxAmount     Decimal?   @map("max_amount") @db.Decimal(18, 2)
+  minAmount     Decimal?   @map("min_amount")
+  maxAmount     Decimal?   @map("max_amount")
   createdAt     DateTime @default(now()) @map("created_at")
 
   chain ApprovalChain @relation(fields: [chainId], references: [id], onDelete: Cascade)
@@ -1411,14 +1409,14 @@ model ApprovalRequest {
   id            String   @id @default(uuid()) @map("id")
   chainId       String   @map("chain_id")
   entityId      String   @map("entity_id")
-  entityType    String   @map("entity_type") @db.VarChar(50)
-  entityName    String   @map("entity_name") @db.VarChar(255)
-  entityCode    String   @map("entity_code") @db.VarChar(50)
-  amount        Decimal    @default(0) @db.Decimal(18, 2)
+  entityType    String   @map("entity_type")
+  entityName    String   @map("entity_name")
+  entityCode    String   @map("entity_code")
+  amount        Decimal    @default(0)
   currentLevel  Int      @default(0) @map("current_level")
   status        ApprovalStatus @default(pending)
   createdBy     String   @map("created_by")
-  note          String?  @db.Text
+  note          String? 
   createdAt     DateTime @default(now()) @map("created_at")
   resolvedAt    DateTime? @map("resolved_at")
 
@@ -1433,10 +1431,10 @@ model ApprovalRequestLevel {
   id          String        @id @default(uuid()) @map("id")
   requestId   String        @map("request_id")
   levelId     String        @map("level_id")
-  levelName   String        @map("level_name") @db.VarChar(200)
+  levelName   String        @map("level_name")
   status      ApprovalStatus @default(pending)
-  approver    String?       @db.VarChar(255)
-  note        String?       @db.Text
+  approver    String?      
+  note        String?      
   resolvedAt  DateTime?     @map("resolved_at")
   createdAt   DateTime      @default(now()) @map("created_at")
 
@@ -1450,8 +1448,8 @@ model BackupApproverDelegation {
   positionId    String   @map("position_id")
   primaryUserId String   @map("primary_user_id")
   backupUserId  String   @map("backup_user_id")
-  validFrom     DateTime @map("valid_from") @db.Date
-  validUntil    DateTime @map("valid_until") @db.Date
+  validFrom     DateTime @map("valid_from")
+  validUntil    DateTime @map("valid_until")
   createdBy     String   @map("created_by")
   createdAt     DateTime @default(now()) @map("created_at")
 
@@ -1470,11 +1468,11 @@ model Document {
   resourceType    DocumentResourceType @map("resource_type")
   resourceId      String               @map("resource_id")
   departmentId    String?              @map("department_id")
-  fileName        String               @map("file_name") @db.VarChar(255)
-  fileSize        String?              @map("file_size") @db.VarChar(50)
+  fileName        String               @map("file_name")
+  fileSize        String?              @map("file_size")
   fileSizeBytes   Int?                 @map("file_size_bytes")
-  mimeType        String?              @map("mime_type") @db.VarChar(150)
-  storagePath     String?              @map("storage_path") @db.Text
+  mimeType        String?              @map("mime_type")
+  storagePath     String?              @map("storage_path")
   versionNumber   Int                  @default(1) @map("version_number")
   isLatestVersion Boolean              @default(true) @map("is_latest_version")
   uploadedBy      String               @map("uploaded_by")
@@ -1494,9 +1492,9 @@ model Document {
 
 model KpiDefinition {
   id                 String   @id @default(uuid()) @map("id")
-  code               String   @unique @db.VarChar(50)
-  name               String   @db.VarChar(200)
-  formulaDescription String   @map("formula_description") @db.Text
+  code               String   @unique
+  name               String  
+  formulaDescription String   @map("formula_description")
   unit               KpiUnit
   isActive           Boolean  @default(true) @map("is_active")
   createdAt          DateTime @default(now()) @map("created_at")
@@ -1511,9 +1509,9 @@ model KpiDefinition {
 model KpiWeight {
   id                String   @id @default(uuid()) @map("id")
   kpiDefinitionId   String   @map("kpi_definition_id")
-  weightPercentage  Decimal    @map("weight_percentage") @db.Decimal(5, 2)
-  effectiveFrom     DateTime @map("effective_from") @db.Date
-  effectiveUntil    DateTime? @map("effective_until") @db.Date
+  weightPercentage  Decimal    @map("weight_percentage")
+  effectiveFrom     DateTime @map("effective_from")
+  effectiveUntil    DateTime? @map("effective_until")
   createdBy         String   @map("created_by")
   createdAt         DateTime @default(now()) @map("created_at")
 
@@ -1526,16 +1524,16 @@ model KpiWeight {
 model Target {
   id                String   @id @default(uuid()) @map("id")
   kpiDefinitionId   String   @map("kpi_definition_id")
-  name              String?  @db.VarChar(200)
-  category          String?  @db.VarChar(50)
+  name              String? 
+  category          String? 
   scopeType         ScopeType @map("scope_type")
   scopeId           String   @map("scope_id")
   periodId          String   @map("period_id")
-  targetValue       Decimal    @map("target_value") @db.Decimal(18, 2)
-  actualValue       Decimal?   @map("actual_value") @db.Decimal(18, 2)
-  unit              String?  @db.VarChar(50)
-  description       String?  @db.Text
-  status            String?  @db.VarChar(50)
+  targetValue       Decimal    @map("target_value")
+  actualValue       Decimal?   @map("actual_value")
+  unit              String? 
+  description       String? 
+  status            String? 
   versionNumber     Int      @default(1) @map("version_number")
   isCurrentVersion  Boolean  @default(true) @map("is_current_version")
   createdBy         String   @map("created_by")
@@ -1552,9 +1550,9 @@ model Target {
 model TargetProgressSnapshot {
   id                  String        @id @default(uuid()) @map("id")
   targetId            String        @map("target_id")
-  snapshotDate        DateTime      @map("snapshot_date") @db.Date
-  actualValue         Decimal         @map("actual_value") @db.Decimal(18, 2)
-  percentageAchieved  Decimal         @map("percentage_achieved") @db.Decimal(6, 2)
+  snapshotDate        DateTime      @map("snapshot_date")
+  actualValue         Decimal         @map("actual_value")
+  percentageAchieved  Decimal         @map("percentage_achieved")
   trafficLightStatus  TrafficLight  @map("traffic_light_status")
   createdAt           DateTime      @default(now()) @map("created_at")
 
@@ -1568,12 +1566,12 @@ model TargetProgressSnapshot {
 
 model NotificationTemplate {
   id            String   @id @default(uuid()) @map("id")
-  eventCode     String   @unique @map("event_code") @db.VarChar(100)
-  eventName     String?  @map("event_name") @db.VarChar(200)
-  templateInapp String?  @map("template_inapp") @db.Text
+  eventCode     String   @unique @map("event_code")
+  eventName     String?  @map("event_name")
+  templateInapp String?  @map("template_inapp")
   channel       NotificationChannel @default(in_app)
-  recipientRoles String? @map("recipient_roles") @db.Text
-  availableVariables String? @map("available_variables") @db.Text
+  recipientRoles String? @map("recipient_roles")
+  availableVariables String? @map("available_variables")
   isActive      Boolean  @default(true) @map("is_active")
   isSystem      Boolean  @default(false) @map("is_system")
   createdAt     DateTime @default(now()) @map("created_at")
@@ -1603,17 +1601,17 @@ model Notification {
   id                      String           @id @default(uuid()) @map("id")
   notificationTemplateId  String?          @map("notification_template_id")
   recipientUserId         String           @map("recipient_user_id")
-  title                   String           @db.VarChar(255)
-  message                 String           @db.Text
+  title                   String          
+  message                 String          
   type                    NotificationType
   read                    Boolean          @default(false)
   readAt                  DateTime?        @map("read_at")
-  resourceType            String?          @map("resource_type") @db.VarChar(50)
+  resourceType            String?          @map("resource_type")
   resourceId              String?          @map("resource_id")
   entityId                String?          @map("entity_id")
-  entityType              String?          @map("entity_type") @db.VarChar(50)
-  icon                    String?          @db.VarChar(50)
-  color                   String?          @db.VarChar(50)
+  entityType              String?          @map("entity_type")
+  icon                    String?         
+  color                   String?         
   createdAt               DateTime         @default(now()) @map("created_at")
 
   template NotificationTemplate? @relation(fields: [notificationTemplateId], references: [id])
@@ -1628,21 +1626,21 @@ model Notification {
 model AuditLog {
   id                String      @id @default(uuid()) @map("id")
   actorId           String?     @map("actor_id")
-  actorName         String?     @map("actor_name") @db.VarChar(255)
-  actorInitials     String?     @map("actor_initials") @db.VarChar(10)
-  action            String      @db.VarChar(100)
-  entityType        String?     @map("entity_type") @db.VarChar(50)
+  actorName         String?     @map("actor_name")
+  actorInitials     String?     @map("actor_initials")
+  action            String     
+  entityType        String?     @map("entity_type")
   entityId          String?     @map("entity_id")
-  entityName        String?     @map("entity_name") @db.VarChar(255)
-  summary           String?     @db.Text
-  ipAddress         String?     @map("ip_address") @db.VarChar(45)
-  userAgent         String?     @map("user_agent") @db.Text
-  payloadBefore     String?     @map("payload_before") @db.Text
-  payloadAfter      String?     @map("payload_after") @db.Text
-  metadata          String?     @db.Text
-  impact            String?     @default("Low") @db.VarChar(20)
+  entityName        String?     @map("entity_name")
+  summary           String?    
+  ipAddress         String?     @map("ip_address")
+  userAgent         String?     @map("user_agent")
+  payloadBefore     String?     @map("payload_before")
+  payloadAfter      String?     @map("payload_after")
+  metadata          String?    
+  impact            String?     @default("Low")
   result            AuditResult @default(success)
-  errorCode         String?     @map("error_code") @db.VarChar(100)
+  errorCode         String?     @map("error_code")
   createdAt         DateTime    @default(now()) @map("created_at")
 
   actor User? @relation(fields: [actorId], references: [id])
@@ -1658,11 +1656,11 @@ model AuditLog {
 model UploadConfig {
   id                  String   @id @default(uuid()) @map("id")
   maxFileSizeMb       Int      @default(10) @map("max_file_size_mb")
-  allowedExtensions   String   @map("allowed_extensions") @db.Text
-  storagePath         String   @map("storage_path") @db.VarChar(255)
+  allowedExtensions   String   @map("allowed_extensions")
+  storagePath         String   @map("storage_path")
   maxFilesPerUpload   Int      @default(5) @map("max_files_per_upload")
   enableCompression   Boolean  @default(true) @map("enable_compression")
-  allowedMimeTypes    String   @map("allowed_mime_types") @db.Text
+  allowedMimeTypes    String   @map("allowed_mime_types")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
@@ -1685,7 +1683,7 @@ model UploadPolicyConfiguration {
 model UploadPolicyMimeType {
   id                              String   @id @default(uuid()) @map("id")
   uploadPolicyConfigurationId     String   @map("upload_policy_configuration_id")
-  mimeType                        String   @map("mime_type") @db.VarChar(150)
+  mimeType                        String   @map("mime_type")
   createdAt                       DateTime @default(now()) @map("created_at")
 
   policy UploadPolicyConfiguration @relation(fields: [uploadPolicyConfigurationId], references: [id], onDelete: Cascade)
@@ -1696,13 +1694,13 @@ model UploadPolicyMimeType {
 
 model Connector {
   id          String         @id @default(uuid()) @map("id")
-  name        String         @db.VarChar(200)
+  name        String        
   type        ConnectorType
-  description String?        @db.Text
+  description String?       
   status      ConnectorStatus @default(disconnected)
   active      Boolean        @default(true)
-  lastTested  String?        @map("last_tested") @db.VarChar(100)
-  configJson  String?        @map("config_json") @db.Text
+  lastTested  String?        @map("last_tested")
+  configJson  String?        @map("config_json")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
 
@@ -1711,8 +1709,8 @@ model Connector {
 
 model IntegrationConfiguration {
   id              String   @id @default(uuid()) @map("id")
-  key             String   @unique @db.VarChar(100)
-  valueEncrypted  String   @map("value_encrypted") @db.Text
+  key             String   @unique
+  valueEncrypted  String   @map("value_encrypted")
   isSecret        Boolean  @default(false) @map("is_secret")
   updatedBy       String   @map("updated_by")
   updatedAt       DateTime @updatedAt @map("updated_at")
@@ -1724,13 +1722,13 @@ model IntegrationConfiguration {
 
 model KpiTarget {
   id          String   @id @default(uuid()) @map("id")
-  name        String   @db.VarChar(200)
-  category    String   @map("category") @db.VarChar(50)
+  name        String  
+  category    String   @map("category")
   targetValue Float    @map("target_value")
   actualValue Float    @map("actual_value") @default(0)
-  unit        String   @db.VarChar(20)
-  period      String   @db.VarChar(50)
-  description String?  @db.Text
+  unit        String  
+  period      String  
+  description String? 
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -1739,8 +1737,8 @@ model KpiTarget {
 
 model ProjectPhase {
   id       String  @id @default(uuid()) @map("id")
-  status   String  @db.VarChar(100)
-  phase    String  @db.VarChar(100)
+  status   String 
+  phase    String 
   order    Int     @map("order") @default(0)
   isActive Boolean @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
@@ -1751,11 +1749,11 @@ model ProjectPhase {
 
 model WorkflowStep {
   id           String  @id @default(uuid()) @map("id")
-  entityType   String  @map("entity_type") @db.VarChar(50)
-  name         String  @db.VarChar(200)
+  entityType   String  @map("entity_type")
+  name         String 
   order        Int     @map("order") @default(0)
-  description  String? @db.Text
-  assigneeRole String  @map("assignee_role") @db.VarChar(100)
+  description  String?
+  assigneeRole String  @map("assignee_role")
   isRequired   Boolean @default(true) @map("is_required")
   isActive     Boolean @default(true) @map("is_active")
   createdAt    DateTime @default(now()) @map("created_at")
@@ -1766,12 +1764,12 @@ model WorkflowStep {
 
 model SlaPolicy {
   id                String   @id @default(uuid()) @map("id")
-  name              String   @db.VarChar(200)
-  entityType        String   @map("entity_type") @db.VarChar(50) @unique
+  name              String  
+  entityType        String   @map("entity_type") @unique
   warningThreshold  Int      @map("warning_threshold")
   criticalThreshold Int      @map("critical_threshold")
-  unit              String   @db.VarChar(20)
-  escalationRole    String   @map("escalation_role") @db.VarChar(100)
+  unit              String  
+  escalationRole    String   @map("escalation_role")
   active            Boolean  @default(true)
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
@@ -1782,14 +1780,14 @@ model SlaPolicy {
 model AiRequestLog {
   id            String          @id @default(uuid()) @map("id")
   requestedBy   String          @map("requested_by")
-  featureCode   String          @map("feature_code") @db.VarChar(50)
-  resourceType  String?         @map("resource_type") @db.VarChar(50)
+  featureCode   String          @map("feature_code")
+  resourceType  String?         @map("resource_type")
   resourceId    String?         @map("resource_id")
-  provider      String          @db.VarChar(50)
-  model         String          @db.VarChar(100)
+  provider      String         
+  model         String         
   status        AiRequestStatus
   latencyMs     Int?            @map("latency_ms")
-  errorCode     String?         @map("error_code") @db.VarChar(100)
+  errorCode     String?         @map("error_code")
   createdAt     DateTime        @default(now()) @map("created_at")
 
   requester User @relation(fields: [requestedBy], references: [id])
@@ -1799,9 +1797,9 @@ model AiRequestLog {
 
 model InputConfigGroup {
   id          String             @id @default(uuid()) @map("id")
-  key         String             @unique @db.VarChar(100)
-  name        String             @db.VarChar(200)
-  description String?            @db.Text
+  key         String             @unique
+  name        String            
+  description String?           
   category    InputConfigCategory
   isSystem    Boolean            @default(false) @map("is_system")
   createdAt   DateTime           @default(now()) @map("created_at")
@@ -1815,12 +1813,12 @@ model InputConfigGroup {
 model InputConfigOption {
   id        String   @id @default(uuid()) @map("id")
   groupId   String   @map("group_id")
-  value     String   @db.VarChar(100)
-  label     String   @db.VarChar(200)
+  value     String  
+  label     String  
   sortOrder Int      @default(0) @map("sort_order")
   isActive  Boolean  @default(true) @map("is_active")
-  colorHex  String?  @map("color_hex") @db.VarChar(7)
-  metadata  String?  @db.Text
+  colorHex  String?  @map("color_hex")
+  metadata  String? 
   createdAt DateTime @default(now()) @map("created_at")
 
   group InputConfigGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -1833,35 +1831,35 @@ model InputConfigOption {
 
 model Procurement {
   id                  String            @id @default(uuid()) @map("id")
-  code                String            @unique @db.VarChar(50)
+  code                String            @unique
   sourceProjectId     String?           @map("source_project_id")
-  client              String            @db.VarChar(255)
-  contractValue       Decimal             @default(0) @map("contract_value") @db.Decimal(18, 2)
-  location            String?           @db.VarChar(255)
+  client              String           
+  contractValue       Decimal             @default(0) @map("contract_value")
+  location            String?          
   status              ProcurementStatus @default(Draft)
-  phase               String?           @db.VarChar(50)
+  phase               String?          
   progress            Int               @default(0)
-  prNumber            String?           @map("pr_number") @db.VarChar(50)
-  prDate              DateTime?         @map("pr_date") @db.Date
-  prNotes             String?           @map("pr_notes") @db.Text
-  selectedVendor      String?           @map("selected_vendor") @db.VarChar(255)
-  vendorPic           String?           @map("vendor_pic") @db.VarChar(255)
-  vendorContact       String?           @map("vendor_contact") @db.VarChar(100)
-  poNumber            String?           @map("po_number") @db.VarChar(50)
-  poDate              DateTime?         @map("po_date") @db.Date
-  poValue             Decimal?            @map("po_value") @db.Decimal(18, 2)
-  poNotes             String?           @map("po_notes") @db.Text
-  targetStartDate     DateTime?         @map("target_start_date") @db.Date
-  targetEndDate       DateTime?         @map("target_end_date") @db.Date
-  unitReadyDate       DateTime?         @map("unit_ready_date") @db.Date
-  unitShippedDate     DateTime?         @map("unit_shipped_date") @db.Date
-  unitReceivedDate    DateTime?         @map("unit_received_date") @db.Date
-  actualEndDate       DateTime?         @map("actual_end_date") @db.Date
-  deliveryNote        String?           @map("delivery_note") @db.Text
+  prNumber            String?           @map("pr_number")
+  prDate              DateTime?         @map("pr_date")
+  prNotes             String?           @map("pr_notes")
+  selectedVendor      String?           @map("selected_vendor")
+  vendorPic           String?           @map("vendor_pic")
+  vendorContact       String?           @map("vendor_contact")
+  poNumber            String?           @map("po_number")
+  poDate              DateTime?         @map("po_date")
+  poValue             Decimal?            @map("po_value")
+  poNotes             String?           @map("po_notes")
+  targetStartDate     DateTime?         @map("target_start_date")
+  targetEndDate       DateTime?         @map("target_end_date")
+  unitReadyDate       DateTime?         @map("unit_ready_date")
+  unitShippedDate     DateTime?         @map("unit_shipped_date")
+  unitReceivedDate    DateTime?         @map("unit_received_date")
+  actualEndDate       DateTime?         @map("actual_end_date")
+  deliveryNote        String?           @map("delivery_note")
   isDelivered         Boolean           @default(false) @map("is_delivered")
   deliveredAt         DateTime?         @map("delivered_at")
   deliveredBy         String?           @map("delivered_by")
-  progressNotes       String?           @map("progress_notes") @db.Text
+  progressNotes       String?           @map("progress_notes")
   isClosed            Boolean           @default(false) @map("is_closed")
   closedAt            DateTime?         @map("closed_at")
   closedBy            String?           @map("closed_by")
@@ -1885,26 +1883,26 @@ model Procurement {
 
 model Supplier {
   id                String         @id @default(uuid()) @map("id")
-  name              String         @db.VarChar(255)
-  code              String         @unique @db.VarChar(50)
+  name              String        
+  code              String         @unique
   type              SupplierType
-  city              String         @db.VarChar(100)
-  phone             String?        @db.VarChar(50)
-  email             String?        @db.VarChar(255)
-  picName           String?        @map("pic_name") @db.VarChar(255)
-  picPosition       String?        @map("pic_position") @db.VarChar(255)
-  npwp              String?        @db.VarChar(50)
-  rating            Decimal          @default(0) @db.Decimal(3, 1)
+  city              String        
+  phone             String?       
+  email             String?       
+  picName           String?        @map("pic_name")
+  picPosition       String?        @map("pic_position")
+  npwp              String?       
+  rating            Decimal          @default(0)
   totalProjects     Int            @default(0) @map("total_projects")
-  totalValue        Decimal          @default(0) @map("total_value") @db.Decimal(18, 2)
-  onTimeDelivery    Decimal          @default(0) @map("on_time_delivery") @db.Decimal(5, 1)
-  qualityScore      Decimal          @default(0) @map("quality_score") @db.Decimal(5, 1)
-  complianceScore   Decimal          @default(0) @map("compliance_score") @db.Decimal(5, 1)
+  totalValue        Decimal          @default(0) @map("total_value")
+  onTimeDelivery    Decimal          @default(0) @map("on_time_delivery")
+  qualityScore      Decimal          @default(0) @map("quality_score")
+  complianceScore   Decimal          @default(0) @map("compliance_score")
   status            SupplierStatus @default(active)
-  notes             String?        @db.Text
-  categories        String?        @db.Text
-  certificates      String?        @db.Text
-  blacklistReason   String?        @map("blacklist_reason") @db.Text
+  notes             String?       
+  categories        String?       
+  certificates      String?       
+  blacklistReason   String?        @map("blacklist_reason")
   blacklistedAt     DateTime?      @map("blacklisted_at")
   createdByUserId   String?        @map("created_by_user_id")
   createdAt         DateTime       @default(now()) @map("created_at")
@@ -1922,17 +1920,17 @@ model SupplierEvaluation {
   id          String   @id @default(uuid()) @map("id")
   supplierId  String   @map("supplier_id")
   projectId   String?  @map("project_id")
-  projectName String?  @map("project_name") @db.VarChar(255)
-  evaluator   String?  @db.VarChar(255)
+  projectName String?  @map("project_name")
+  evaluator   String? 
   evaluatorId String?  @map("evaluator_id")
-  date        DateTime? @map("date") @db.Date
+  date        DateTime? @map("date")
   quality     Int      @default(0)
   delivery    Int      @default(0)
   pricing     Int      @default(0)
   compliance  Int      @default(0)
   communication Int    @default(0)
-  notes       String?  @db.Text
-  overall     Decimal    @default(0) @db.Decimal(3, 1)
+  notes       String? 
+  overall     Decimal    @default(0)
   createdAt   DateTime @default(now()) @map("created_at")
 
   supplier      Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
@@ -1944,9 +1942,9 @@ model SupplierEvaluation {
 model Rfq {
   id              String     @id @default(uuid()) @map("id")
   procurementId   String     @map("procurement_id")
-  number          String     @unique @db.VarChar(50)
-  title           String     @db.VarChar(255)
-  description     String?    @db.Text
+  number          String     @unique
+  title           String    
+  description     String?   
   deadline        DateTime?  @map("deadline")
   status          RfqStatus  @default(draft)
   selectedQuoteId String?    @map("selected_quote_id")
@@ -1954,7 +1952,7 @@ model Rfq {
   createdBy       String     @map("created_by")
   sentAt          DateTime?  @map("sent_at")
   completedAt     DateTime?  @map("completed_at")
-  notes           String?    @db.Text
+  notes           String?   
   updatedAt       DateTime   @updatedAt @map("updated_at")
 
   procurement Procurement @relation(fields: [procurementId], references: [id], onDelete: Cascade)
@@ -1969,10 +1967,10 @@ model Rfq {
 model RfqItem {
   id              String   @id @default(uuid()) @map("id")
   rfqId           String   @map("rfq_id")
-  name            String   @db.VarChar(255)
+  name            String  
   quantity        Int      @default(0)
-  unit            String   @db.VarChar(50)
-  specifications  String?  @db.Text
+  unit            String  
+  specifications  String? 
   createdAt       DateTime @default(now()) @map("created_at")
 
   rfq Rfq @relation(fields: [rfqId], references: [id], onDelete: Cascade)
@@ -1997,13 +1995,13 @@ model RfqQuote {
   id            String         @id @default(uuid()) @map("id")
   rfqId         String         @map("rfq_id")
   supplierId    String         @map("supplier_id")
-  supplierName  String         @map("supplier_name") @db.VarChar(255)
-  totalAmount   Decimal          @map("total_amount") @db.Decimal(18, 2)
-  deliveryTime  String?        @map("delivery_time") @db.VarChar(100)
-  validityPeriod String?       @map("validity_period") @db.VarChar(100)
-  terms         String?        @db.Text
+  supplierName  String         @map("supplier_name")
+  totalAmount   Decimal          @map("total_amount")
+  deliveryTime  String?        @map("delivery_time")
+  validityPeriod String?       @map("validity_period")
+  terms         String?       
   status        RfqQuoteStatus @default(pending)
-  evaluatorNotes String?       @map("evaluator_notes") @db.Text
+  evaluatorNotes String?       @map("evaluator_notes")
   submittedAt   DateTime       @default(now()) @map("submitted_at")
   createdAt     DateTime       @default(now()) @map("created_at")
 
@@ -2018,10 +2016,10 @@ model RfqQuoteItem {
   id            String   @id @default(uuid()) @map("id")
   quoteId       String   @map("quote_id")
   itemId        String   @map("item_id")
-  unitPrice     Decimal    @map("unit_price") @db.Decimal(18, 2)
-  totalPrice    Decimal    @map("total_price") @db.Decimal(18, 2)
-  deliveryTime  String?  @map("delivery_time") @db.VarChar(100)
-  notes         String?  @db.Text
+  unitPrice     Decimal    @map("unit_price")
+  totalPrice    Decimal    @map("total_price")
+  deliveryTime  String?  @map("delivery_time")
+  notes         String? 
   createdAt     DateTime @default(now()) @map("created_at")
 
   quote RfqQuote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
@@ -2033,14 +2031,14 @@ model RfqQuoteItem {
 
 model MasterItem {
   id           String        @id @default(uuid()) @map("id")
-  sku          String        @unique @db.VarChar(100)
-  name         String        @db.VarChar(255)
+  sku          String        @unique
+  name         String       
   type         MasterItemType
-  unit         String        @db.VarChar(50)
+  unit         String       
   categoryId   String        @map("category_id")
-  categoryName String        @map("category_name") @db.VarChar(200)
-  basePrice    Decimal         @map("base_price") @db.Decimal(18, 2)
-  description  String?       @db.Text
+  categoryName String        @map("category_name")
+  basePrice    Decimal         @map("base_price")
+  description  String?      
   isActive     Boolean       @default(true) @map("is_active")
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
@@ -2058,12 +2056,12 @@ model DealLineItem {
   dealId                String   @map("deal_id")
   masterItemId          String   @map("master_item_id")
   quantity              Int      @default(0)
-  basePrice             Decimal    @default(0) @map("base_price") @db.Decimal(18, 2)
-  discountPercent       Decimal    @default(0) @map("discount_percent") @db.Decimal(5, 2)
-  discountAmount        Decimal    @default(0) @map("discount_amount") @db.Decimal(18, 2)
-  taxPercent            Decimal    @default(0) @map("tax_percent") @db.Decimal(5, 2)
-  totalPrice            Decimal    @default(0) @map("total_price") @db.Decimal(18, 2)
-  notes                 String?  @db.Text
+  basePrice             Decimal    @default(0) @map("base_price")
+  discountPercent       Decimal    @default(0) @map("discount_percent")
+  discountAmount        Decimal    @default(0) @map("discount_amount")
+  taxPercent            Decimal    @default(0) @map("tax_percent")
+  totalPrice            Decimal    @default(0) @map("total_price")
+  notes                 String? 
   projectRequirementId  String?  @map("project_requirement_id")
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
@@ -2083,11 +2081,11 @@ model ProjectRequirementItem {
   quantityProcured    Int                  @default(0) @map("quantity_procured")
   sourceDealLineId    String?              @map("source_deal_line_id")
   procurementStatus   ProcurementStatusEnum @default(none) @map("procurement_status")
-  basePrice           Decimal                @default(0) @map("base_price") @db.Decimal(18, 2)
-  discountPercent     Decimal                @default(0) @map("discount_percent") @db.Decimal(5, 2)
-  discountAmount      Decimal                @default(0) @map("discount_amount") @db.Decimal(18, 2)
-  taxPercent          Decimal                @default(0) @map("tax_percent") @db.Decimal(5, 2)
-  totalPrice          Decimal                @default(0) @map("total_price") @db.Decimal(18, 2)
+  basePrice           Decimal                @default(0) @map("base_price")
+  discountPercent     Decimal                @default(0) @map("discount_percent")
+  discountAmount      Decimal                @default(0) @map("discount_amount")
+  taxPercent          Decimal                @default(0) @map("tax_percent")
+  totalPrice          Decimal                @default(0) @map("total_price")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
@@ -2105,10 +2103,10 @@ model ProcurementItem {
   masterItemId        String               @map("master_item_id")
   quantity            Int                  @default(0)
   quantityReceived    Int                  @default(0) @map("quantity_received")
-  unitPrice           Decimal                @default(0) @map("unit_price") @db.Decimal(18, 2)
-  totalPrice          Decimal                @default(0) @map("total_price") @db.Decimal(18, 2)
+  unitPrice           Decimal                @default(0) @map("unit_price")
+  totalPrice          Decimal                @default(0) @map("total_price")
   status              ProcurementItemStatus @default(pending)
-  notes               String?              @db.Text
+  notes               String?             
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
@@ -2140,12 +2138,12 @@ model ProcurementAllocation {
 model Task {
   id          String     @id @default(uuid()) @map("id")
   projectId   String     @map("project_id")
-  title       String     @db.VarChar(255)
-  description String?    @db.Text
-  assignee    String?    @db.VarChar(255)
+  title       String    
+  description String?   
+  assignee    String?   
   priority    TaskPriority @default(medium)
   status      TaskStatus @default(todo)
-  dueDate     DateTime?  @map("due_date") @db.Date
+  dueDate     DateTime?  @map("due_date")
   parentId    String?    @map("parent_id")
   order       Int        @default(0) @map("task_order")
   createdBy   String     @map("created_by")
@@ -2170,14 +2168,14 @@ model ChatMessage {
   id          String          @id @default(uuid()) @map("id")
   projectId   String          @map("project_id")
   senderId    String          @map("sender_id")
-  senderName  String          @map("sender_name") @db.VarChar(255)
-  senderRole  String?         @map("sender_role") @db.VarChar(100)
-  content     String          @db.Text
+  senderName  String          @map("sender_name")
+  senderRole  String?         @map("sender_role")
+  content     String         
   messageType ChatMessageType @default(text) @map("message_type")
-  fileUrl     String?         @map("file_url") @db.Text
-  fileName    String?         @map("file_name") @db.VarChar(255)
+  fileUrl     String?         @map("file_url")
+  fileName    String?         @map("file_name")
   fileSize    Int?            @map("file_size")
-  mentions    String?         @db.Text
+  mentions    String?        
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
 
@@ -2206,11 +2204,11 @@ model ChatMessageReadReceipt {
 
 model EntityRelation {
   id              String   @id @default(uuid()) @map("id")
-  sourceType      String   @map("source_type") @db.VarChar(50)
+  sourceType      String   @map("source_type")
   sourceId        String   @map("source_id")
-  targetType      String   @map("target_type") @db.VarChar(50)
+  targetType      String   @map("target_type")
   targetId        String   @map("target_id")
-  relationType    String   @map("relation_type") @db.VarChar(50)
+  relationType    String   @map("relation_type")
   createdAt       DateTime @default(now()) @map("created_at")
 
   @@unique([sourceType, sourceId, targetType, targetId, relationType])

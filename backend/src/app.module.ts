@@ -16,6 +16,7 @@ import { ConfigModule } from './config/config.module';
 import { ApprovalsModule } from './approvals/approvals.module';
 import { VisitsModule } from './visits/visits.module';
 import { FollowUpModule } from './follow-up/follow-up.module';
+import { GformModule } from './gform/gform.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { FollowUpModule } from './follow-up/follow-up.module';
     ApprovalsModule,
     VisitsModule,
     FollowUpModule,
+    GformModule,
   ],
 })
 export class AppModule {}

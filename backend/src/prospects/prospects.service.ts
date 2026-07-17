@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 const ELEVATED_ROLES = ['super_admin', 'director', 'admin', 'manager', 'supervisor'];
@@ -150,6 +150,18 @@ export class ProspectsService {
     const prospect = await this.get(id, user);
     await this.checkWriteAccess(prospect, user);
 
+    // Validasi: jika customer level bukan hot, hanya izinkan promote level saja
+    if (prospect.customerId && !data.customer?.level) {
+      const customer = await this.prisma.customer.findUnique({
+        where: { id: prospect.customerId },
+      });
+      if (customer && customer.level && customer.level !== 'hot') {
+        throw new ForbiddenException(
+          `Customer masih level ${customer.level}. Hanya customer level Hot yang bisa diubah detailnya.`
+        );
+      }
+    }
+
     const mapped: any = { ...data };
 
     // Validasi promosi Lead → Potensial
@@ -201,6 +213,33 @@ export class ProspectsService {
         where: { id },
         data: { deletedAt: new Date() },
       });
+    });
+  }
+
+  async promoteLevel(prospectId: string, newLevel: string, user: any) {
+    const prospect = await this.get(prospectId, user);
+    if (!prospect.customerId) {
+      throw new BadRequestException('Prospek ini tidak memiliki customer');
+    }
+
+    const validLevels = ['low', 'medium', 'hot'] as const;
+    if (!validLevels.includes(newLevel as any)) {
+      throw new BadRequestException('Level tidak valid. Pilihan: low, medium, hot');
+    }
+
+    const customer = await this.prisma.customer.findUnique({
+      where: { id: prospect.customerId },
+    });
+
+    // Validasi: hanya boleh naik level
+    const levelOrder = { low: 0, medium: 1, hot: 2 };
+    if (customer?.level && levelOrder[newLevel as keyof typeof levelOrder] <= levelOrder[customer.level]) {
+      throw new BadRequestException('Level hanya bisa dinaikkan (low → medium → hot)');
+    }
+
+    return this.prisma.customer.update({
+      where: { id: prospect.customerId },
+      data: { level: newLevel as any },
     });
   }
 }

@@ -27,6 +27,11 @@ export class ProspectsController {
     return this.service.update(id, data, req.user);
   }
 
+  @Put(':id/promote')
+  promote(@Param('id') id: string, @Body('level') level: string, @Req() req: any) {
+    return this.service.promoteLevel(id, level, req.user);
+  }
+
   @Delete(':id')
   delete(@Param('id') id: string, @Req() req: any) {
     return this.service.delete(id, req.user);
