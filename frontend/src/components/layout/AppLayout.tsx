@@ -83,6 +83,15 @@ export default function AppLayout() {
     fetchProspects();
     fetchProjects();
     fetchNotifications();
+    const store = useMasterDataStore.getState();
+    store.fetchQuestions();
+    const entities: Array<Parameters<typeof store.fetchEntity>[0]> = [
+      'departments', 'users', 'industries', 'customers', 'competitors',
+      'categories', 'periods', 'holidays', 'lossReasons', 'projectStatuses',
+      'documentTypes', 'questionTypes', 'approvalLevels', 'notifTemplates',
+      'auditLogs', 'roles', 'items',
+    ];
+    entities.forEach((e) => store.fetchEntity(e));
   }, [fetchApprovals, fetchProspects, fetchProjects, fetchNotifications]);
 
   useEffect(() => {
@@ -114,20 +123,29 @@ export default function AppLayout() {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {mobileSidebarOpen && (
-        <Sidebar
-          collapsed={false}
-          setCollapsed={() => {}}
-          pendingApprovalsCount={pendingApprovalsCount}
-          unreadCount={unreadCount}
-          onLogout={handleLogout}
-          userRole={userRole}
-          userPermissions={userPermissions}
-          mobile
-          onClose={() => setMobileSidebarOpen(false)}
-        />
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed inset-y-0 left-0 z-50 w-64 slide-in-left md:hidden">
+            <Sidebar
+              collapsed={false}
+              setCollapsed={() => {}}
+              pendingApprovalsCount={pendingApprovalsCount}
+              unreadCount={unreadCount}
+              onLogout={handleLogout}
+              userRole={userRole}
+              userPermissions={userPermissions}
+              mobile
+              onClose={() => setMobileSidebarOpen(false)}
+            />
+          </div>
+        </>
       )}
 
-      <div className={`hidden md:flex ${sidebarOpen ? 'w-64' : 'w-18'} transition-all duration-300 shrink-0`}>
+      <div className={`hidden lg:flex ${sidebarOpen ? 'w-64' : 'w-18'} transition-all duration-300 shrink-0`}>
         <Sidebar
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
@@ -137,6 +155,17 @@ export default function AppLayout() {
           userRole={userRole}
           userPermissions={userPermissions}
         />
+      </div>
+
+      {/* Tablet sidebar toggle button */}
+      <div className="hidden md:flex lg:hidden fixed left-0 top-0 z-30 h-screen w-0">
+        <button
+          onClick={() => setMobileSidebarOpen(true)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-12 bg-surface border border-border/60 rounded-r-xl flex items-center justify-center shadow-md hover:bg-surface-container transition-all cursor-pointer"
+          aria-label="Buka sidebar"
+        >
+          <span className="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
+        </button>
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -153,7 +182,7 @@ export default function AppLayout() {
         <Breadcrumb />
         <ShortcutHelpModal isOpen={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />
         <main className="flex-1 flex flex-col min-h-0 bg-background">
-          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 sm:px-8 lg:px-10 py-3 sm:py-4">
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-3 sm:px-6 lg:px-10 py-3 sm:py-4">
             <Outlet />
           </div>
         </main>

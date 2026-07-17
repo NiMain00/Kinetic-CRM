@@ -42,21 +42,6 @@ function App() {
       try { localStorage.removeItem(key); } catch {}
     }
 
-    // Pre-fetch semua master data di awal biar gak perlu buka halaman tertentu dulu
-    const preload = async () => {
-      const { useMasterDataStore } = await import('@/stores/masterDataStore');
-      const { masterDataConfig } = await import('@/features/master-data/components/masterDataConfig');
-      const store = useMasterDataStore.getState();
-      masterDataConfig.forEach((entry) => {
-        if (entry.storeKey === 'questions') {
-          store.fetchQuestions();
-        } else {
-          store.fetchEntity(entry.storeKey as any);
-        }
-      });
-    };
-    preload();
-
     // Migrate existing projects to procurement (deferred after paint)
     const migrate = async () => {
       const [{ useProjectStore }, { useProcurementStore }, { migrateExistingProjects }] = await Promise.all([
