@@ -55,14 +55,16 @@ const LEVEL_ORDER: Record<CustomerLevel, number> = { low: 0, medium: 1, hot: 2 }
 
 export default function ProspectQualificationPage() {
   const navigate = useNavigate();
-  const { prospects, loading, fetchProspects } = useProspectStore();
+  const prospects = useProspectStore((s) => s.prospects);
+  const loading = useProspectStore((s) => s.loading);
+  const fetchProspects = useProspectStore((s) => s.fetchProspects);
   const updateCustomer = useCustomerStore((s) => s.updateCustomer);
   const [promoting, setPromoting] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
     if (!dataLoaded) {
-      fetchProspects().finally(() => setDataLoaded(true));
+      fetchProspects({ perPage: 100, page: 1 }).finally(() => setDataLoaded(true));
     }
   }, [dataLoaded, fetchProspects]);
 
@@ -89,7 +91,7 @@ export default function ProspectQualificationPage() {
       await updateCustomer(prospect.customerId, { level: targetLevel });
       toast.success(`Level ${prospect.customerData?.name || prospect.client} dinaikkan ke ${LEVEL_LABELS[targetLevel]}`);
       // Refresh data
-      await fetchProspects();
+      await fetchProspects({ perPage: 100, page: 1 });
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Gagal promote level';
       toast.error(msg);
@@ -235,7 +237,7 @@ export default function ProspectQualificationPage() {
               </span>
             )}
             <button
-              onClick={() => fetchProspects()}
+              onClick={() => fetchProspects({ perPage: 100, page: 1 })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-surface-variant bg-surface border border-border/60 rounded-lg hover:bg-surface-container transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">refresh</span>
