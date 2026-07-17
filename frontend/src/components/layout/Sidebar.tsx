@@ -147,8 +147,6 @@ export default function Sidebar({
 
   const renderExpandableItem = (item: NavItem) => {
     const isExpanded = expandedParents.has(item.path);
-    const isActive = isPathActive(item.path);
-    // Check if any child is active
     const hasActiveChild = item.children?.some((child) => isPathActive(child.path)) ?? false;
 
     return (
@@ -160,14 +158,14 @@ export default function Sidebar({
             if (mobile && onClose) onClose();
           }}
           className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
-            isActive || hasActiveChild
+            hasActiveChild
               ? 'bg-primary-container/40 text-primary font-semibold border-primary'
               : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
           }`}
           aria-label={item.label}
           aria-expanded={isExpanded}
         >
-          <span className={`material-symbols-outlined text-[22px] ${isActive || hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+          <span className={`material-symbols-outlined text-[22px] ${hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
             {item.icon}
           </span>
           {!collapsed && (

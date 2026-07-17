@@ -173,6 +173,22 @@ export default function MasterDataDetailView({ config, data }: DetailViewProps) 
             showPagination
             exportable
             exportFilename={`master-${config.id}`}
+            mobileCardRenderer={(row: any) => (
+              <div className="p-3 space-y-2">
+                {columns.slice(0, 4).map((col: any) => {
+                  const val = row[col.key];
+                  if (val === null || val === undefined) return null;
+                  return (
+                    <div key={col.key} className="flex justify-between items-start gap-2">
+                      <span className="text-[10px] text-outline uppercase tracking-wider shrink-0 min-w-[80px]">{col.header}</span>
+                      <span className="text-xs text-on-surface text-right truncate max-w-[180px]">
+                        {col.render ? <>{col.render(row)}</> : String(val)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           />
         ) : (
           <div className="text-center py-12 text-outline text-xs italic">Tidak ada data untuk ditampilkan.</div>
