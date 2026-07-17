@@ -12,6 +12,7 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
+import { useRbacStore } from '@/stores/rbacStore';
 import type { ApprovalItem } from '@/types/domain';
 import { authz } from '@/services/authz';
 
@@ -92,6 +93,12 @@ export default function AppLayout() {
       'auditLogs', 'roles', 'items',
     ];
     entities.forEach((e) => store.fetchEntity(e));
+    const rbac = useRbacStore.getState();
+    rbac.fetchStages();
+    rbac.fetchDepartments();
+    rbac.fetchRoles();
+    rbac.fetchPermissions();
+    rbac.fetchAllUserRoles();
   }, [fetchApprovals, fetchProspects, fetchProjects, fetchNotifications]);
 
   useEffect(() => {

@@ -80,6 +80,7 @@ export class ProspectsService {
           createdAt: true,
           ownerUserId: true,
           isConverted: true,
+          convertedToProjectId: true,
           estimatedValue: true,
           customerId: true,
           currentStageId: true,

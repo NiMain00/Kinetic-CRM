@@ -82,7 +82,7 @@ function mapApiProspect(p: any): Prospect {
   return {
     ...p,
     customerData: p.customer || p.customerData || undefined,
-    isConverted: projectId != null,
+    isConverted: p.isConverted === true || projectId != null,
     timeline: p.timeline || p.timelineEvents || [],
     projectId,
     estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : undefined,
