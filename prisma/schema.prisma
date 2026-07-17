@@ -1878,10 +1878,31 @@ model Procurement {
   closer      User?    @relation("ProcurementClosed", fields: [closedBy], references: [id])
   rfqs        Rfq[]
   items       ProcurementItem[]
+  timelineEvents ProcurementTimelineEvent[]
 
   @@index([status])
   @@index([sourceProjectId])
   @@map("procurements")
+}
+
+model ProcurementTimelineEvent {
+  id             String   @id @default(uuid()) @map("id")
+  procurementId  String   @map("procurement_id")
+  title          String
+  actor          String
+  role           String?
+  time           DateTime @default(now())
+  type           String
+  description    String?
+  prevVal        String?  @map("prev_val")
+  newVal         String?  @map("new_val")
+  fileName       String?  @map("file_name")
+  fileSize       String?  @map("file_size")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  procurement Procurement @relation(fields: [procurementId], references: [id], onDelete: Cascade)
+
+  @@map("procurement_timeline_events")
 }
 
 model Supplier {

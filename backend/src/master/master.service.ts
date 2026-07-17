@@ -62,6 +62,7 @@ export class MasterService {
   private getInclude(entity: string) {
     if (entity === 'inputConfigGroups') return { options: { orderBy: { sortOrder: 'asc' as const } } };
     if (entity === 'questions') return { questionOptions: { orderBy: { sortOrder: 'asc' as const } } };
+    if (entity === 'procurements') return { timelineEvents: { orderBy: { time: 'desc' as const } } };
     return undefined;
   }
 
@@ -136,6 +137,21 @@ export class MasterService {
   async update(entity: string, id: string, data: any) {
     const model = this.getModel(entity);
     await this.get(entity, id);
+
+    // Handle timelineEvents khusus untuk procurement
+    if (entity === 'procurements' && data.timelineEvents?.create) {
+      const events = Array.isArray(data.timelineEvents.create) ? data.timelineEvents.create : [data.timelineEvents.create];
+      delete data.timelineEvents;
+      for (const evt of events) {
+        try {
+          evt.procurementId = id;
+          await this.prisma.procurementTimelineEvent.create({ data: evt });
+        } catch (e) {
+          console.error('[timeline] Gagal menyimpan event pengadaan:', e?.message || e);
+        }
+      }
+    }
+
     return model.update({ where: { id }, data });
   }
 

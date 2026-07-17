@@ -133,6 +133,19 @@ export const useProcurementStore = create<ProcurementState>()(
             const status = mapPrismaStatus(item.status) as ProcurementStatus;
             return {
               id: item.id,
+              timeline: item.timelineEvents?.map((e: any) => ({
+                id: e.id,
+                title: e.title,
+                actor: e.actor,
+                role: e.role,
+                time: e.time,
+                type: e.type,
+                description: e.description,
+                prevVal: e.prevVal,
+                newVal: e.newVal,
+                fileName: e.fileName,
+                fileSize: e.fileSize,
+              })) || [],
               code: item.code,
               sourceProjectId: item.sourceProjectId || undefined,
               client: item.client,
@@ -267,6 +280,24 @@ export const useProcurementStore = create<ProcurementState>()(
       getProcurementById: (id) => get().entities[id],
 
       addTimelineEvent: (id, event) => {
+        // Persist ke backend
+        masterDataService.update('procurements', id, {
+          timelineEvents: {
+            create: {
+              title: event.title,
+              actor: event.actor,
+              role: event.role || null,
+              time: event.time ? new Date(event.time).toISOString() : new Date().toISOString(),
+              type: event.type,
+              description: event.description || null,
+              prevVal: event.prevVal || null,
+              newVal: event.newVal || null,
+              fileName: event.fileName || null,
+              fileSize: event.fileSize || null,
+            },
+          },
+        } as any).catch((err) => console.error('[timeline-persist] Gagal menyimpan event pengadaan:', err));
+        // Update lokal
         set((s) => {
           const r = updateOne(s.entities, s.ids, id, (e) => ({
             ...e,
