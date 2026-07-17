@@ -45,6 +45,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
   const [showDuplicatePanel, setShowDuplicatePanel] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const paginationParams = useMemo(() => ({ perPage: PAGE_SIZE, page: currentPage }), [currentPage]);
   useEffect(() => { fetchProspects(paginationParams); }, [fetchProspects, paginationParams]);
@@ -54,11 +55,18 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     setDeleteTarget(id);
   };
 
-  const confirmDelete = () => {
-    if (!deleteTarget) return;
-    deleteProspect(deleteTarget);
-    onShowNotification('Prospek berhasil dihapus.', 'success');
-    setDeleteTarget(null);
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteProspect(deleteTarget);
+      onShowNotification('Prospek berhasil dihapus.', 'success');
+      setDeleteTarget(null);
+    } catch {
+      onShowNotification('Gagal menghapus prospek.', 'error');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const handleBuatProyek = (prospek: typeof prospects[0]) => {
@@ -297,7 +305,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <input
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:ring-primary w-[260px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 placeholder="Cari prospek atau klien..."
                 type="text"
               />
@@ -624,8 +632,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         title="Konfirmasi Hapus"
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
-            <Button variant="danger" size="md" onClick={confirmDelete}>Hapus</Button>
+            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)} disabled={deleting}>Batal</Button>
+            <Button variant="danger" size="md" onClick={confirmDelete} disabled={deleting} leftIcon={deleting ? <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> : undefined}>{deleting ? 'Menghapus...' : 'Hapus'}</Button>
           </>
         }
       >

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -41,6 +41,16 @@ export default function MasterDataView(_props: MasterDataViewProps) {
   const store = useMasterDataStore();
   const [searchQuery, setSearchQuery] = React.useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
+
+  useEffect(() => {
+    masterDataConfig.forEach((entry) => {
+      if (entry.storeKey === 'questions') {
+        store.fetchQuestions();
+      } else {
+        store.fetchEntity(entry.storeKey as any);
+      }
+    });
+  }, []);
 
   const getCount = useCallback((entry: MasterDataEntry) => {
     const data = (store as any)[entry.storeKey];
