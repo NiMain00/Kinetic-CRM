@@ -52,6 +52,7 @@ export default function ProjectListPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [drawerProject, setDrawerProject] = useState<typeof projects[number] | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<typeof projects[number] | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const deleteProject = useProjectStore((s) => s.deleteProject);
@@ -542,18 +543,20 @@ export default function ProjectListPage() {
         title="Konfirmasi Hapus"
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
+            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)} disabled={deleting}>Batal</Button>
             <Button variant="danger" size="md" onClick={async () => {
-              if (deleteTarget) {
-                try {
-                  await deleteProject(deleteTarget.id);
-                  toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
-                  setDeleteTarget(null);
-                } catch (err: any) {
-                  toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus proyek');
-                }
+              if (!deleteTarget || deleting) return;
+              setDeleting(true);
+              try {
+                await deleteProject(deleteTarget.id);
+                toast.success(`Proyek "${deleteTarget.name}" berhasil dihapus.`);
+                setDeleteTarget(null);
+              } catch (err: any) {
+                toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus proyek');
+              } finally {
+                setDeleting(false);
               }
-            }}>Hapus</Button>
+            }} disabled={deleting} leftIcon={deleting ? <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> : undefined}>{deleting ? 'Menghapus...' : 'Hapus'}</Button>
           </>
         }
       >

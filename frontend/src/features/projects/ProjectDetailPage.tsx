@@ -94,6 +94,7 @@ export default function ProjectDetailView({
   }, [project?.currentStageId, project?.departmentId, workflowStages, can, canWrite]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Single source of truth for tabs & stepper — MUST be before early return to keep hook count stable
   const tabs = React.useMemo(() => {
@@ -206,7 +207,8 @@ export default function ProjectDetailView({
   };
 
   const confirmDeleteProject = async () => {
-    if (!projectId) return;
+    if (!projectId || deleting) return;
+    setDeleting(true);
     try {
       // Reset prospect langsung di store & backend
       if (project.sourceProspectId) {
@@ -233,6 +235,8 @@ export default function ProjectDetailView({
       onNavigatePage('projects');
     } catch (err: any) {
       toast.error(err?.response?.data?.message || err?.message || 'Gagal menghapus proyek');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -480,8 +484,8 @@ export default function ProjectDetailView({
         title="Konfirmasi Hapus"
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)}>Batal</Button>
-            <Button variant="danger" size="md" onClick={confirmDeleteProject}>Hapus</Button>
+            <Button variant="secondary" size="md" onClick={() => setShowDeleteModal(false)} disabled={deleting}>Batal</Button>
+            <Button variant="danger" size="md" onClick={confirmDeleteProject} disabled={deleting} leftIcon={deleting ? <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> : undefined}>{deleting ? 'Menghapus...' : 'Hapus'}</Button>
           </>
         }
       >

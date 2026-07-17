@@ -169,6 +169,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
 
   const [dragTarget, setDragTarget] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const visibleProspects = prospects.filter((p) => {
     if (isStaffOnly && userId && p.ownerUserId && p.ownerUserId !== userId) return false;
@@ -215,12 +216,19 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
     [navigate],
   );
 
-  const confirmDelete = useCallback(() => {
-    if (!deleteTarget) return;
-    deleteProspect(deleteTarget);
-    onShowNotification('Prospek berhasil dihapus.', 'success');
-    setDeleteTarget(null);
-  }, [deleteTarget, deleteProspect, onShowNotification]);
+  const confirmDelete = useCallback(async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteProspect(deleteTarget);
+      onShowNotification('Prospek berhasil dihapus.', 'success');
+      setDeleteTarget(null);
+    } catch {
+      onShowNotification('Gagal menghapus prospek.', 'error');
+    } finally {
+      setDeleting(false);
+    }
+  }, [deleteTarget, deleteProspect, onShowNotification, deleting]);
 
   const canWrite = can('prospect:write:prospecting');
   const canCreateProject = can('project:create');
@@ -304,8 +312,8 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
         title="Konfirmasi Hapus"
         footer={
           <>
-            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)}>Batal</Button>
-            <Button variant="danger" size="md" onClick={confirmDelete}>Hapus</Button>
+            <Button variant="secondary" size="md" onClick={() => setDeleteTarget(null)} disabled={deleting}>Batal</Button>
+            <Button variant="danger" size="md" onClick={confirmDelete} disabled={deleting} leftIcon={deleting ? <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> : undefined}>{deleting ? 'Menghapus...' : 'Hapus'}</Button>
           </>
         }
       >
