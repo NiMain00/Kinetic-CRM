@@ -51,7 +51,9 @@ async function bootstrap() {
   return cachedHandler;
 }
 
-export default async function handler(event: any, context: any) {
+async function handler(event: any, context: any) {
   const h = await bootstrap();
   return h(event, context);
 };
+
+module.exports = handler;
