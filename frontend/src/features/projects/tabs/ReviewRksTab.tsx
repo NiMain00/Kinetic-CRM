@@ -46,6 +46,13 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [approving, setApproving] = useState(false);
 
+  // Department-specific questions
+  const [deptQuestions, setDeptQuestions] = useState<Record<string, string>>(() => {
+    const saved = (rks?.answers as Record<string, string>)?.['_deptQuestions'];
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [newDeptQuestion, setNewDeptQuestion] = useState('');
+
   // Auto-save reviewNotes
   useEffect(() => {
     if (!project?.id || !reviewNotes) return;
@@ -470,6 +477,86 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
           </div>
         )}
       </section>
+
+      {/* Pertanyaan Spesifik Departemen */}
+      {deptApprovals.length > 0 && (
+        <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <span className="w-10 h-10 rounded-lg bg-status-indigo/10 text-status-indigo flex items-center justify-center">
+              <span className="material-symbols-outlined">help_outline</span>
+            </span>
+            <div>
+              <h3 className="font-heading-section text-base font-bold text-on-surface">Pertanyaan Spesifik Departemen</h3>
+              <p className="text-secondary text-xs">Setiap departemen dapat mengajukan pertanyaan spesifik terkait RKS.</p>
+            </div>
+          </div>
+
+          {/* Daftar pertanyaan yang sudah diajukan */}
+          {Object.keys(deptQuestions).length > 0 && (
+            <div className="space-y-3 mb-4">
+              {Object.entries(deptQuestions).map(([key, val]) => {
+                const [deptId, qIndex] = key.split('_q_');
+                const dept = departments.find((d: any) => d.id === deptId);
+                return (
+                  <div key={key} className="p-4 bg-surface-container-low rounded-lg border border-border">
+                    <p className="text-xs text-outline font-semibold mb-1">{dept?.name || 'Departemen'}</p>
+                    <p className="text-sm font-medium text-on-surface">{val}</p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Form tambah pertanyaan — hanya untuk user yang bisa review dept */}
+          {needsDeptAction && (
+            <div className="flex gap-2 items-start">
+              <textarea
+                value={newDeptQuestion}
+                onChange={(e) => setNewDeptQuestion(e.target.value)}
+                placeholder="Tulis pertanyaan untuk departemen ini..."
+                className="flex-1 px-4 py-2 bg-background border border-border rounded-lg resize-none text-sm"
+                rows={2}
+              />
+              <button
+                onClick={() => {
+                  if (!newDeptQuestion.trim()) return;
+                  const targetDeptId = deptApprovals.find(a => a.status === 'reviewing' && canReviewDept(a.departmentId))?.departmentId;
+                  if (!targetDeptId) return;
+                  const key = `${targetDeptId}_q_${Date.now()}`;
+                  const updated = { ...deptQuestions, [key]: newDeptQuestion.trim() };
+                  setDeptQuestions(updated);
+                  setNewDeptQuestion('');
+
+                  // Simpan ke RKS answers
+                  const existingRks = (useProjectStore.getState().entities[project.id!]?.rks || {}) as any;
+                  const existingAnswers = (existingRks.answers || {}) as Record<string, string>;
+                  const mergedRks: RksData = {
+                    nomorTender: existingRks.nomorTender || '',
+                    namaTender: existingRks.namaTender || '',
+                    deadlineTender: existingRks.deadlineTender || '',
+                    aanwijzing: existingRks.aanwijzing || '',
+                    workLocation: existingRks.workLocation || '',
+                    mainScope: existingRks.mainScope || '',
+                    additionalNotes: existingRks.additionalNotes || '',
+                    uploadedFiles: existingRks.uploadedFiles || [],
+                    answers: { ...existingAnswers, _deptQuestions: JSON.stringify(updated) },
+                    selectedDepartments: existingRks.selectedDepartments,
+                    departmentsLocked: existingRks.departmentsLocked,
+                    overallStatus: existingRks.overallStatus,
+                    departmentApprovals: existingRks.departmentApprovals,
+                  };
+                  updateProjectRks(project.id!, mergedRks);
+                  onShowNotification?.('Pertanyaan berhasil ditambahkan.', 'success');
+                }}
+                disabled={!newDeptQuestion.trim()}
+                className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-1 cursor-pointer"
+              >
+                Tambah
+              </button>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* Catatan Review */}
       <section className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 sm:p-8">

@@ -25,6 +25,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const prospects = useProspectStore((s) => s.prospects);
+  const loading = useProspectStore((s) => s.loading);
   const deleteProspect = useProspectStore((s) => s.deleteProspect);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const fetchProspects = useProspectStore((s) => s.fetchProspects);
