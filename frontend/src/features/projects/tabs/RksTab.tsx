@@ -7,6 +7,7 @@ import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Stepper, type StepperStep } from '@/components/ui';
+import { UPLOAD } from '@/config/constants';
 
 interface TabProps {
   project?: Project;
@@ -62,7 +63,10 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
   const [workLocation, setWorkLocation] = useState(project?.rks?.workLocation || project?.location || '');
   const [mainScope, setMainScope] = useState(project?.rks?.mainScope || '');
   const [additionalNotes, setAdditionalNotes] = useState(project?.rks?.additionalNotes || '');
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; size: string; time: string }>>(project?.rks?.uploadedFiles || []);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; size: string; time: string; progress?: number }>>(project?.rks?.uploadedFiles || []);
+  const [fileSizeWarning, setFileSizeWarning] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   // Answers state for RKS questions
   const [answers, setAnswers] = useState<Record<string, string>>(project?.rks?.answers || {});
@@ -177,18 +181,52 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.docx,.doc';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-        setUploadedFiles(prev => [...prev, { name: file.name, size: `${sizeMB} MB`, time: 'Just now' }]);
+      if (!file) return;
+
+      const sizeMB = file.size / (1024 * 1024);
+
+      if (sizeMB > UPLOAD.MAX_FILE_SIZE_MB) {
+        toast.error(`File terlalu besar. Maksimal ${UPLOAD.MAX_FILE_SIZE_MB}MB`);
+        return;
       }
+
+      if (sizeMB > UPLOAD.LARGE_FILE_WARNING_MB) {
+        const proceed = window.confirm(`File berukuran ${sizeMB.toFixed(1)}MB (di atas ${UPLOAD.LARGE_FILE_WARNING_MB}MB). Tetap upload?`);
+        if (!proceed) return;
+      }
+
+      setFileSizeWarning(sizeMB > UPLOAD.LARGE_FILE_WARNING_MB ? `File besar (${sizeMB.toFixed(1)}MB). Upload mungkin memakan waktu.` : null);
+      setUploading(true);
+      setUploadProgress(0);
+
+      // Simulasi progress bar untuk upload file besar
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const next = prev + Math.random() * 15;
+          return next >= 95 ? 95 : next;
+        });
+      }, 300);
+
+      // Simulasi waktu upload berdasarkan ukuran file
+      const uploadTime = Math.min(3000, Math.max(500, sizeMB * 60));
+      await new Promise(resolve => setTimeout(resolve, uploadTime));
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      setUploadedFiles(prev => [...prev, { name: file.name, size: `${sizeMB.toFixed(1)} MB`, time: 'Just now', progress: 100 }]);
+      setUploading(false);
+      setFileSizeWarning(null);
+      toast.success('File berhasil diupload');
     };
     input.click();
   };
 
   const handleDeleteFile = (idx: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== idx));
+    setFileSizeWarning(null);
   };
 
   const handleSave = () => {
@@ -403,15 +441,35 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
             </div>
 
             <div
-              onClick={handleUpload}
-              className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer group"
+              onClick={uploading ? undefined : handleUpload}
+              className={`border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center bg-surface-container-low hover:bg-surface-container transition-all cursor-pointer group ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
             >
-              <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary mb-3 transition-colors">cloud_upload</span>
-              <p className="font-label-sm text-sm text-on-surface mb-1">
-                Drag and drop file here, atau <span className="text-primary font-semibold hover:underline">browse</span>
-              </p>
-              <p className="text-xs text-outline">PDF atau DOCX format (Max size: 25MB)</p>
+              {uploading ? (
+                <>
+                  <span className="material-symbols-outlined text-4xl text-primary mb-3 animate-spin">sync</span>
+                  <p className="font-label-sm text-sm text-primary mb-1">Mengupload file...</p>
+                  <div className="w-full max-w-xs bg-surface-container-highest rounded-full h-2.5 mt-2">
+                    <div className="bg-primary h-2.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+                  </div>
+                  <p className="text-xs text-outline mt-1">{uploadProgress.toFixed(0)}%</p>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-4xl text-outline group-hover:text-primary mb-3 transition-colors">cloud_upload</span>
+                  <p className="font-label-sm text-sm text-on-surface mb-1">
+                    Drag and drop file here, atau <span className="text-primary font-semibold hover:underline">browse</span>
+                  </p>
+                  <p className="text-xs text-outline">PDF, DOCX atau DOC format (Max size: {UPLOAD.MAX_FILE_SIZE_MB}MB)</p>
+                </>
+              )}
             </div>
+
+            {fileSizeWarning && (
+              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-sm text-warning mt-3">
+                <span className="material-symbols-outlined text-[18px]">warning</span>
+                <span>{fileSizeWarning}</span>
+              </div>
+            )}
 
             {uploadedFiles.length > 0 && (
               <div className="mt-6 space-y-3">
@@ -422,6 +480,12 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                       <div className="truncate">
                         <p className="font-label-sm text-sm font-semibold text-on-surface truncate">{file.name}</p>
                         <p className="text-xs text-outline">{file.size} • Uploaded {file.time}</p>
+                        {file.size && parseFloat(file.size) > UPLOAD.LARGE_FILE_WARNING_MB && (
+                          <span className="inline-flex items-center gap-1 text-[10px] text-warning mt-0.5">
+                            <span className="material-symbols-outlined text-[12px]">warning</span>
+                            File besar
+                          </span>
+                        )}
                       </div>
                     </div>
                     <button
