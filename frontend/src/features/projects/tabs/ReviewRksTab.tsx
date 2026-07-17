@@ -35,6 +35,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   const reviewNotesRef = useRef(reviewNotes);
   useEffect(() => { reviewNotesRef.current = reviewNotes; }, [reviewNotes]);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  const [approving, setApproving] = useState(false);
 
   // Auto-save reviewNotes ke RKS answers._reviewNotes (debounced)
   useEffect(() => {
@@ -126,49 +127,56 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
     return qt?.code || 'text';
   };
 
-  const handleApprove = () => {
-    if (!project?.id) return;
-    updateProject(project.id, { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' });
-    // Hapus approval RKS yang sudah di-review
-    const rksApproval = approvals.find(a => a.entityId === project.id && a.type === 'RKS');
-    if (rksApproval) {
-      removeApproval(rksApproval.id);
+  const handleApprove = async () => {
+    if (!project?.id || approving) return;
+    setApproving(true);
+    try {
+      await updateProject(project.id, { status: 'LPHS/SIOS', phase: 'LPHS/SIOS' });
+      // Hapus approval RKS yang sudah di-review
+      const rksApproval = approvals.find(a => a.entityId === project.id && a.type === 'RKS');
+      if (rksApproval) {
+        await removeApproval(rksApproval.id);
+      }
+      // Buat approval LPHS untuk tahap berikutnya
+      await addApproval({
+        id: `app-lphs-${project.id}-${Date.now()}`,
+        ref: `LPHS-${project.code}`,
+        name: project.name,
+        branch: project.location,
+        waitingSince: new Date().toISOString(),
+        slaStatus: 'Normal',
+        type: 'LPHS',
+        resourceType: 'lphs_sios',
+        resourceId: project.id,
+        client: project.client,
+        entityId: project.id,
+        entityType: 'project',
+        assigneeUserId: authUser?.id,
+      });
+      const event: TimelineEvent = {
+        id: `evt-${Date.now()}`,
+        title: 'RKS Direview & Disetujui',
+        actor: project.author,
+        role: 'Project Manager',
+        time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        type: 'approve',
+        description: 'Review RKS selesai, lanjut ke tahap LPHS/SIOS.',
+      };
+      addTimelineEvent(project.id, event);
+      onShowNotification?.('Review RKS disetujui. Melanjutkan ke LPHS/SIOS.', 'success');
+      addNotification({
+        title: 'RKS Disetujui',
+        message: `RKS proyek "${project.name}" telah disetujui. Melanjutkan ke tahap LPHS/SIOS.`,
+        type: 'approval',
+        entityId: project.id,
+        entityType: 'project',
+      });
+      navigate(`/projects/${project.id}/lphs`);
+    } catch {
+      onShowNotification?.('Gagal approve RKS. Silakan coba lagi.', 'error');
+    } finally {
+      setApproving(false);
     }
-    // Buat approval LPHS untuk tahap berikutnya
-    addApproval({
-      id: `app-lphs-${project.id}-${Date.now()}`,
-      ref: `LPHS-${project.code}`,
-      name: project.name,
-      branch: project.location,
-      waitingSince: new Date().toISOString(),
-      slaStatus: 'Normal',
-      type: 'LPHS',
-      resourceType: 'lphs_sios',
-      resourceId: project.id,
-      client: project.client,
-      entityId: project.id,
-      entityType: 'project',
-      assigneeUserId: authUser?.id,
-    });
-    const event: TimelineEvent = {
-      id: `evt-${Date.now()}`,
-      title: 'RKS Direview & Disetujui',
-      actor: project.author,
-      role: 'Project Manager',
-      time: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-      type: 'approve',
-      description: 'Review RKS selesai, lanjut ke tahap LPHS/SIOS.',
-    };
-    addTimelineEvent(project.id, event);
-    onShowNotification?.('Review RKS disetujui. Melanjutkan ke LPHS/SIOS.', 'success');
-    addNotification({
-      title: 'RKS Disetujui',
-      message: `RKS proyek "${project.name}" telah disetujui. Melanjutkan ke tahap LPHS/SIOS.`,
-      type: 'approval',
-      entityId: project.id,
-      entityType: 'project',
-    });
-    navigate(`/projects/${project.id}/lphs`);
   };
 
   const handleRevisi = () => {
@@ -432,11 +440,14 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
               </button>
               <button
                 onClick={handleApprove}
+                disabled={approving}
                 type="button"
-                className="flex-1 sm:flex-initial px-6 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:opacity-90 shadow transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="flex-1 sm:flex-initial px-6 py-2.5 bg-success text-white font-semibold text-sm rounded-lg hover:opacity-90 shadow transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                Approve
+                <span className={`material-symbols-outlined text-[18px] ${approving ? 'animate-spin' : ''}`}>
+                  {approving ? 'progress_activity' : 'check_circle'}
+                </span>
+                {approving ? 'Menyetujui...' : 'Approve'}
               </button>
             </div>
           </>

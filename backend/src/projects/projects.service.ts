@@ -68,7 +68,8 @@ export class ProjectsService {
   }
 
   async update(id: string, data: any) {
-    await this.get(id);
+    const exists = await this.prisma.project.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
+    if (!exists) throw new NotFoundException('Project not found');
     const oneToOneRelations = ['lphsSios', 'priceSubmission', 'tenderResult', 'deliveryTarget', 'rks'];
     const prismaOps = new Set(['upsert', 'create', 'update', 'delete', 'disconnect', 'connect']);
     const nested: any = {};
@@ -83,7 +84,8 @@ export class ProjectsService {
   }
 
   async delete(id: string) {
-    await this.get(id);
+    const exists = await this.prisma.project.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
+    if (!exists) throw new NotFoundException('Project not found');
     return this.prisma.$transaction(async (tx) => {
       await tx.procurement.updateMany({
         where: { sourceProjectId: id, deletedAt: null },
