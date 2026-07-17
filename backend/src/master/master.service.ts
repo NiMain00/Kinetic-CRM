@@ -89,8 +89,8 @@ export class MasterService {
   }
 
   private getInclude(entity: string) {
-    if (entity === 'inputConfigGroups') return { options: { orderBy: { sortOrder: 'asc' as const }, select: { id: true, value: true, label: true, color_hex: true, sort_order: true, is_active: true } } };
-    if (entity === 'questions') return { questionOptions: { orderBy: { sortOrder: 'asc' as const }, select: { id: true, option_label: true, sort_order: true } } };
+    if (entity === 'inputConfigGroups') return { options: { orderBy: { sortOrder: 'asc' as const } } };
+    if (entity === 'questions') return { questionOptions: { orderBy: { sortOrder: 'asc' as const } } };
     if (entity === 'procurements') return { timelineEvents: { orderBy: { time: 'desc' as const } } };
     return undefined;
   }
