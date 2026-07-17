@@ -2,8 +2,12 @@
   "name": "kinetic-crm-backend",
   "version": "0.1.0",
   "private": true,
+  "prisma": {
+    "schema": "../prisma/schema.prisma"
+  },
   "scripts": {
-    "build": "npx prisma generate --schema=../prisma/schema.prisma && nest build",
+    "postinstall": "npx prisma generate",
+    "build": "npx prisma generate && nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
