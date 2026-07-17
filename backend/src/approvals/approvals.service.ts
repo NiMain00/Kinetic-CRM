@@ -26,7 +26,7 @@ export class ApprovalsService {
           resourceType: true,
           resourceId: true,
           status: true,
-          assigneeUserId: true,
+          assignedToUserId: true,
           createdAt: true,
           decidedAt: true,
           decisionComment: true,

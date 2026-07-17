@@ -324,7 +324,19 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
           </div>
         )}
 
-        {isMobile ? (
+        {loading && prospects.length === 0 ? (
+          <div className="p-6 space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="animate-pulse flex items-center gap-4">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-surface-container-high rounded w-3/4" />
+                  <div className="h-3 bg-surface-container-high rounded w-1/2" />
+                </div>
+                <div className="h-6 w-20 bg-surface-container-high rounded-full" />
+              </div>
+            ))}
+          </div>
+        ) : isMobile ? (
           <div className="divide-y divide-border">
             {paginatedProspects.length === 0 ? (
               <div className="px-6 py-12 text-center text-secondary">
@@ -489,7 +501,22 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {sortedProspects.length === 0 ? (
+                {loading && sortedProspects.length === 0 ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <tr key={i}>
+                      <td colSpan={selectionMode ? 8 : 7} className="px-6 py-4">
+                        <div className="animate-pulse flex items-center gap-4">
+                          <div className="h-4 w-4 bg-surface-container-high rounded" />
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-surface-container-high rounded w-3/4" />
+                            <div className="h-3 bg-surface-container-high rounded w-1/2" />
+                          </div>
+                          <div className="h-6 w-20 bg-surface-container-high rounded-full" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : sortedProspects.length === 0 ? (
                   <tr>
                     <td colSpan={selectionMode ? 8 : 7} className="px-6 py-12 text-center text-secondary">
                       <span className="material-symbols-outlined text-4xl text-outline mb-2">info</span>
