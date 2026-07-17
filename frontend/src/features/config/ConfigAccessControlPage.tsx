@@ -580,7 +580,7 @@ function UserAssignmentsTab() {
         </div>
         <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setShowModal(false)}>Batal</Button>
-          <Button variant="primary" size="sm" onClick={handleSave}>Simpan</Button>
+          <Button variant="primary" size="sm" onClick={handleAssign}>Assign</Button>
         </div>
       </Modal>
     </div>
