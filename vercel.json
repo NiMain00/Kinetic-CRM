@@ -12,13 +12,7 @@
       "entrypoint": "src/main.ts"
     }
   },
-  "rewrites": [
-    {
-      "source": "/api(/.*)?",
-      "destination": {
-        "type": "service",
-        "service": "backend"
-      }
+  "rewrites": [ { "source": "/(.*)", "destination": "/index.html"
     },
     {
       "source": "/(.*)",
