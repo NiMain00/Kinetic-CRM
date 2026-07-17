@@ -12,7 +12,6 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
-import { useRbacStore } from '@/stores/rbacStore';
 import type { ApprovalItem } from '@/types/domain';
 import { authz } from '@/services/authz';
 
@@ -81,31 +80,10 @@ export default function AppLayout() {
 
   useEffect(() => {
     fetchApprovals();
+    fetchNotifications();
     fetchProspects();
     fetchProjects();
-    fetchNotifications();
-    // Sequential pre-fetch agar tidak membanjiri koneksi database secara simultan
-    const preload = async () => {
-      const mStore = useMasterDataStore.getState();
-      await mStore.fetchQuestions();
-      const masterEntities: Array<Parameters<typeof mStore.fetchEntity>[0]> = [
-        'departments', 'users', 'industries', 'customers', 'competitors',
-        'categories', 'periods', 'holidays', 'lossReasons', 'projectStatuses',
-        'documentTypes', 'questionTypes', 'approvalLevels', 'notifTemplates',
-        'auditLogs', 'roles', 'items',
-      ];
-      for (const e of masterEntities) {
-        await mStore.fetchEntity(e);
-      }
-      const rbac = useRbacStore.getState();
-      await rbac.fetchStages();
-      await rbac.fetchDepartments();
-      await rbac.fetchRoles();
-      await rbac.fetchPermissions();
-      await rbac.fetchAllUserRoles();
-    };
-    preload();
-  }, [fetchApprovals, fetchProspects, fetchProjects, fetchNotifications]);
+  }, [fetchApprovals, fetchNotifications, fetchProspects, fetchProjects]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);

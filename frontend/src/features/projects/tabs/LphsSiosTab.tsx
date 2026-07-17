@@ -9,6 +9,7 @@ import { useApprovalStore } from '@/stores/approvalStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { lphsSiosService } from '@/services/lphs-sios';
 import { Card, Button, Badge } from '@/components/ui';
+import { UPLOAD } from '@/config/constants';
 
 interface TabProps {
   project?: Project;
@@ -108,16 +109,59 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
   }, [departments, project?.scopeDepartments, project?.type]);
 
   // --- Document Upload Handlers ---
+  const [uploadProgressLPHS, setUploadProgressLPHS] = useState(0);
+  const [uploadingLPHS, setUploadingLPHS] = useState(false);
+  const [uploadProgressSIOS, setUploadProgressSIOS] = useState(0);
+  const [uploadingSIOS, setUploadingSIOS] = useState(false);
+
+  const validateFile = (file: File): boolean => {
+    const sizeMB = file.size / (1024 * 1024);
+    if (sizeMB > UPLOAD.MAX_FILE_SIZE_MB) {
+      onShowNotification?.(`File terlalu besar. Maksimal ${UPLOAD.MAX_FILE_SIZE_MB}MB`, 'error');
+      return false;
+    }
+    if (sizeMB > UPLOAD.LARGE_FILE_WARNING_MB) {
+      const ok = window.confirm(`File berukuran ${sizeMB.toFixed(1)}MB (di atas ${UPLOAD.LARGE_FILE_WARNING_MB}MB). Tetap upload?`);
+      if (!ok) return false;
+    }
+    return true;
+  };
+
+  const simulateUploadProgress = (setProgress: (v: number) => void, setUploading: (v: boolean) => void, fileSizeMB: number): Promise<void> => {
+    return new Promise(resolve => {
+      setUploading(true);
+      setProgress(0);
+      const interval = setInterval(() => {
+        setProgress(prev => {
+          const next = prev + Math.random() * 15;
+          return next >= 95 ? 95 : next;
+        });
+      }, 300);
+      const uploadTime = Math.min(3000, Math.max(500, fileSizeMB * 60));
+      setTimeout(() => {
+        clearInterval(interval);
+        setProgress(100);
+        setTimeout(() => {
+          setUploading(false);
+          setProgress(0);
+          resolve();
+        }, 500);
+      }, uploadTime);
+    });
+  };
+
   const handleUploadLphs = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.docx,.xlsx,.zip';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        setLphsFile(file);
-        onShowNotification?.('File LPHS dipilih: ' + file.name, 'success');
-      }
+      if (!file) return;
+      if (!validateFile(file)) return;
+      const sizeMB = file.size / (1024 * 1024);
+      await simulateUploadProgress(setUploadProgressLPHS, setUploadingLPHS, sizeMB);
+      setLphsFile(file);
+      onShowNotification?.('File LPHS berhasil dipilih: ' + file.name, 'success');
     };
     input.click();
   };
@@ -126,12 +170,14 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.pdf,.docx,.xlsx,.zip';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        setSiosFile(file);
-        onShowNotification?.('File SIOS dipilih: ' + file.name, 'success');
-      }
+      if (!file) return;
+      if (!validateFile(file)) return;
+      const sizeMB = file.size / (1024 * 1024);
+      await simulateUploadProgress(setUploadProgressSIOS, setUploadingSIOS, sizeMB);
+      setSiosFile(file);
+      onShowNotification?.('File SIOS berhasil dipilih: ' + file.name, 'success');
     };
     input.click();
   };
@@ -619,10 +665,22 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
           {!lphs.departmentsLocked && isCabang && (
             <>
-              <button onClick={handleUploadLphs} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer mb-3">
-                <span className="material-symbols-outlined text-primary text-2xl">upload_file</span>
-                <p className="text-xs font-semibold mt-1">Upload dokumen LPHS</p>
-                <p className="text-[10px] text-outline mt-0.5">PDF, DOCX, XLSX (Max 25MB)</p>
+              <button onClick={uploadingLPHS ? undefined : handleUploadLphs} disabled={uploadingLPHS} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer mb-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                {uploadingLPHS ? (
+                  <>
+                    <span className="material-symbols-outlined text-primary text-2xl animate-spin">sync</span>
+                    <p className="text-xs font-semibold mt-1">Mengupload...</p>
+                    <div className="w-full bg-surface-container-highest rounded-full h-1.5 mt-2 max-w-[200px] mx-auto">
+                      <div className="bg-primary h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgressLPHS}%` }} />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="material-symbols-outlined text-primary text-2xl">upload_file</span>
+                    <p className="text-xs font-semibold mt-1">Upload dokumen LPHS</p>
+                    <p className="text-[10px] text-outline mt-0.5">PDF, DOCX, XLSX (Max {UPLOAD.MAX_FILE_SIZE_MB}MB)</p>
+                  </>
+                )}
               </button>
 
               <div className="relative my-3">
@@ -673,10 +731,22 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
           )}
 
           {!lphs.departmentsLocked && isCabang && (
-            <button onClick={handleUploadSios} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer">
-              <span className="material-symbols-outlined text-primary text-2xl">upload_file</span>
-              <p className="text-xs font-semibold mt-1">Upload dokumen SIOS</p>
-              <p className="text-[10px] text-outline mt-0.5">PDF, DOCX (Max 25MB)</p>
+            <button onClick={uploadingSIOS ? undefined : handleUploadSios} disabled={uploadingSIOS} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              {uploadingSIOS ? (
+                <>
+                  <span className="material-symbols-outlined text-primary text-2xl animate-spin">sync</span>
+                  <p className="text-xs font-semibold mt-1">Mengupload...</p>
+                  <div className="w-full bg-surface-container-highest rounded-full h-1.5 mt-2 max-w-[200px] mx-auto">
+                    <div className="bg-primary h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgressSIOS}%` }} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-primary text-2xl">upload_file</span>
+                  <p className="text-xs font-semibold mt-1">Upload dokumen SIOS</p>
+                  <p className="text-[10px] text-outline mt-0.5">PDF, DOCX (Max {UPLOAD.MAX_FILE_SIZE_MB}MB)</p>
+                </>
+              )}
             </button>
           )}
 

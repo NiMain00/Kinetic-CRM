@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ApprovalsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(params?: { type?: string; status?: string }) {
+  async list(params?: { type?: string; status?: string; page?: number; perPage?: number }) {
     const where: any = {};
     if (params?.status) where.status = params.status;
     if (params?.type) {
@@ -13,14 +13,30 @@ export class ApprovalsService {
       else if (params.type === 'RKS') where.resourceType = 'rks';
       else if (params.type === 'LPHS') where.resourceType = 'lphs_sios';
     }
-    return this.prisma.approval.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        assigneeUser: { select: { id: true, fullName: true } },
-        stage: true,
-      },
-    });
+    const page = params?.page || 1;
+    const perPage = Math.min(Number(params?.perPage) || 50, 100);
+    const [data, total] = await Promise.all([
+      this.prisma.approval.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * perPage,
+        take: perPage,
+        select: {
+          id: true,
+          resourceType: true,
+          resourceId: true,
+          status: true,
+          assignedToUserId: true,
+          createdAt: true,
+          decidedAt: true,
+          decisionComment: true,
+          assigneeUser: { select: { id: true, fullName: true } },
+          stage: { select: { id: true, name: true } },
+        },
+      }),
+      this.prisma.approval.count({ where }),
+    ]);
+    return { data, total, page, perPage };
   }
 
   async get(id: string) {

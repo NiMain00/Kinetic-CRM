@@ -8,7 +8,7 @@ export class ApprovalsController {
   constructor(private readonly service: ApprovalsService) {}
 
   @Get()
-  list(@Query() params: { type?: string; status?: string }) {
+  list(@Query() params: { type?: string; status?: string; page?: number; perPage?: number }) {
     return this.service.list(params);
   }
 

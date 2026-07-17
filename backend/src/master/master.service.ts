@@ -1,6 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+interface CacheEntry {
+  data: any;
+  timestamp: number;
+}
+
+const MASTER_CACHE_TTL_MS = 5 * 60 * 1000;
+const masterCache = new Map<string, CacheEntry>();
+
+function getCachedOrFetch<T>(key: string, fetchFn: () => Promise<T>): Promise<T> {
+  const cached = masterCache.get(key);
+  if (cached && Date.now() - cached.timestamp < MASTER_CACHE_TTL_MS) {
+    return Promise.resolve(cached.data);
+  }
+  return fetchFn().then((data) => {
+    masterCache.set(key, { data, timestamp: Date.now() });
+    return data;
+  });
+}
+
+function invalidateMasterCache(entity?: string) {
+  if (entity) {
+    for (const key of masterCache.keys()) {
+      if (key.startsWith(entity)) masterCache.delete(key);
+    }
+  } else {
+    masterCache.clear();
+  }
+}
+
 const ENTITY_MAP: Record<string, string> = {
   industries: 'industry',
   categories: 'projectCategory',
@@ -60,8 +89,8 @@ export class MasterService {
   }
 
   private getInclude(entity: string) {
-    if (entity === 'inputConfigGroups') return { options: { orderBy: { sortOrder: 'asc' as const } } };
-    if (entity === 'questions') return { questionOptions: { orderBy: { sortOrder: 'asc' as const } } };
+    if (entity === 'inputConfigGroups') return { options: { orderBy: { sortOrder: 'asc' as const }, select: { id: true, value: true, label: true, color_hex: true, sort_order: true, is_active: true } } };
+    if (entity === 'questions') return { questionOptions: { orderBy: { sortOrder: 'asc' as const }, select: { id: true, option_label: true, sort_order: true } } };
     if (entity === 'procurements') return { timelineEvents: { orderBy: { time: 'desc' as const } } };
     return undefined;
   }
@@ -81,34 +110,52 @@ export class MasterService {
     }
     const page = Number(params?.page) || 1;
     const perPage = Math.min(Number(params?.perPage) || 50, 100);
-    try {
-      const [data, total] = await Promise.all([
-        model.findMany({
-          where,
-          skip: (page - 1) * perPage,
-          take: perPage,
-          orderBy: { createdAt: 'desc' },
-          include: this.getInclude(entity),
-        }),
-        model.count({ where }),
-      ]);
-      return { data, total, page, perPage };
-    } catch (err: any) {
-      // Fallback for entities whose model lacks a `createdAt` column.
-      if (String(err?.message ?? '').includes('createdAt')) {
+
+    const isCacheable = !params?.search && params?.is_active === undefined && page === 1;
+    const cacheKey = isCacheable ? `${entity}:list:${perPage}` : null;
+
+    if (cacheKey) {
+      const cached = masterCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < MASTER_CACHE_TTL_MS) {
+        return cached.data;
+      }
+    }
+
+    const fetchData = async () => {
+      try {
         const [data, total] = await Promise.all([
           model.findMany({
             where,
             skip: (page - 1) * perPage,
             take: perPage,
+            orderBy: { createdAt: 'desc' },
             include: this.getInclude(entity),
           }),
           model.count({ where }),
         ]);
         return { data, total, page, perPage };
+      } catch (err: any) {
+        if (String(err?.message ?? '').includes('createdAt')) {
+          const [data, total] = await Promise.all([
+            model.findMany({
+              where,
+              skip: (page - 1) * perPage,
+              take: perPage,
+              include: this.getInclude(entity),
+            }),
+            model.count({ where }),
+          ]);
+          return { data, total, page, perPage };
+        }
+        throw err;
       }
-      throw err;
+    };
+
+    const result = await fetchData();
+    if (cacheKey) {
+      masterCache.set(cacheKey, { data: result, timestamp: Date.now() });
     }
+    return result;
   }
 
   async get(entity: string, id: string) {
@@ -123,7 +170,9 @@ export class MasterService {
   async create(entity: string, data: any) {
     const model = this.getModel(entity);
     try {
-      return await model.create({ data });
+      const result = await model.create({ data });
+      invalidateMasterCache(entity);
+      return result;
     } catch (err: any) {
       if (err?.code === 'P2002') {
         const target = err.meta?.target || 'field';
@@ -152,17 +201,21 @@ export class MasterService {
       }
     }
 
-    return model.update({ where: { id }, data });
+    const result = await model.update({ where: { id }, data });
+    invalidateMasterCache(entity);
+    return result;
   }
 
   async delete(entity: string, id: string) {
     const model = this.getModel(entity);
     await this.get(entity, id);
-    // Only entities with a `deletedAt` column can be soft-deleted; the rest
-    // (e.g. entityRelations, join tables) must be hard-deleted.
+    let result: any;
     if (SOFT_DELETE_ENTITIES.has(entity)) {
-      return model.update({ where: { id }, data: { deletedAt: new Date() } });
+      result = await model.update({ where: { id }, data: { deletedAt: new Date() } });
+    } else {
+      result = await model.delete({ where: { id } });
     }
-    return model.delete({ where: { id } });
+    invalidateMasterCache(entity);
+    return result;
   }
 }

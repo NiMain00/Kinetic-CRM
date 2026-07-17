@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type {
   Project,
   RksData,
+  RksDepartmentApproval,
   LphsData,
   LphsDepartmentApproval,
   CompetitorEntry,
@@ -81,6 +82,8 @@ interface ProjectState {
   deleteProject: (id: string) => Promise<void>;
   getProjectById: (id: string) => Project | undefined;
   updateProjectRks: (id: string, rks: RksData) => Promise<void>;
+  updateRksDepartmentApproval: (id: string, approval: RksDepartmentApproval) => void;
+  updateRksStatus: (id: string, status: Partial<Pick<RksData, 'pmStatus' | 'overallStatus'>>) => void;
   updateProjectLphs: (id: string, lphs: LphsData) => void;
   updateLphsDepartmentApproval: (id: string, approval: LphsDepartmentApproval) => void;
   updateLphsStatus: (id: string, status: Partial<Pick<LphsData, 'pmStatus' | 'mgmtStatus' | 'overallStatus'>>) => void;
@@ -265,6 +268,12 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
           const data = res.data.data || res.data;
           const list = Array.isArray(data) ? data : [];
           const mapped = list.map(mapApiProject);
+          const existing = get().entities;
+          for (const p of mapped) {
+            if (existing[p.id]?.timeline?.length) {
+              p.timeline = existing[p.id].timeline;
+            }
+          }
           const { entities, ids } = normalizeProjects(mapped);
           set({ entities, ids, projects: deriveProjects(entities, ids), loading: false, _lastFetchAt: Date.now() });
         } catch {
@@ -279,15 +288,16 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
           if (project?.id) {
             set((s) => {
               const existing = s.entities[id];
+              // Data API detail selalu diutamakan (lebih lengkap dari list)
               const merged = {
+                ...existing,
                 ...project,
-                // Data lokal selalu diutamakan — baru fallback ke API
-                competitors: existing?.competitors?.length ? existing.competitors : (project.competitors || []),
-                winnerDetails: existing?.winnerDetails || project.winnerDetails || undefined,
-                delivery: existing?.delivery || project.delivery || undefined,
-                pricing: existing?.pricing || project.pricing || undefined,
-                lphs: existing?.lphs || project.lphs || undefined,
-                rks: existing?.rks || project.rks || undefined,
+                competitors: project.competitors?.length ? project.competitors : (existing?.competitors || []),
+                winnerDetails: project.winnerDetails || existing?.winnerDetails || undefined,
+                delivery: project.delivery || existing?.delivery || undefined,
+                pricing: project.pricing || existing?.pricing || undefined,
+                lphs: project.lphs || existing?.lphs || undefined,
+                rks: project.rks || existing?.rks || undefined,
               };
               const entities = { ...s.entities, [project.id]: merged };
               const ids = s.ids.includes(project.id) ? s.ids : [...s.ids, project.id];
@@ -491,6 +501,28 @@ export const useProjectStore = create<ProjectState>()((set, get) => ({
           return { ...r, ids: s.ids };
         });
       },
+      updateRksDepartmentApproval: (id, approval) =>
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => {
+            if (!e.rks) return e;
+            const existing = e.rks.departmentApprovals?.findIndex(
+              (a) => a.departmentId === approval.departmentId,
+            ) ?? -1;
+            const newApprovals = existing >= 0
+              ? (e.rks.departmentApprovals || []).map((a, i) => (i === existing ? approval : a))
+              : [...(e.rks.departmentApprovals || []), approval];
+            return { ...e, rks: { ...e.rks, departmentApprovals: newApprovals } };
+          });
+          return { ...r, ids: s.ids };
+        }),
+      updateRksStatus: (id, status) =>
+        set((s) => {
+          const r = updateEntity(s.entities, s.ids, id, (e) => {
+            if (!e.rks) return e;
+            return { ...e, rks: { ...e.rks, ...status } };
+          });
+          return { ...r, ids: s.ids };
+        }),
       updateProjectLphs: (id, lphs) => {
         set((s) => {
           const r = updateEntity(s.entities, s.ids, id, (e) => ({ ...e, lphs }));

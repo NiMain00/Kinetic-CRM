@@ -26,4 +26,12 @@ export class RksController {
   review(@Param('projectId') projectId: string, @Body() action: { action: 'approve' | 'revision'; notes?: string }) {
     return this.service.review(projectId, action);
   }
+
+  @Post('review-department')
+  reviewDepartment(
+    @Param('projectId') projectId: string,
+    @Body() body: { departmentId: string; action: 'approve' | 'revision'; notes?: string; reviewerName?: string },
+  ) {
+    return this.service.reviewDepartment(projectId, body);
+  }
 }

@@ -155,7 +155,9 @@ export const PAGINATION = {
 };
 
 export const UPLOAD = {
-  MAX_FILE_SIZE_MB: 10,
+  MAX_FILE_SIZE_MB: 100,
+  MAX_FILE_SIZE_BYTES: 100 * 1024 * 1024,
+  LARGE_FILE_WARNING_MB: 50,
   MAX_FILES_PER_UPLOAD: 5,
   ENABLE_COMPRESSION: true,
   STORAGE_PATH: '/uploads/documents/',

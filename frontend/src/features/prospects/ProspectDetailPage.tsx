@@ -136,6 +136,7 @@ export default function ProspectDetailPage() {
   const authUser = useAuthStore((s) => s.user);
   const { can, stageAccess } = useAuthz();
   const questions = useMasterDataStore((s) => s.questions);
+  const questionsMap = useMemo(() => new Map(questions.map(q => [q.id, q])), [questions]);
   const industries = useMasterDataStore((s) => s.industries);
   const industryMap = useMemo(
     () => Object.fromEntries(industries.map(i => [i.id, i.name])),
@@ -845,7 +846,7 @@ export default function ProspectDetailPage() {
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {Object.entries(prospect.answers).map(([key, value]) => {
-                          const masterQ = questions.find(q => q.id === key);
+                          const masterQ = questionsMap.get(key);
                           const label = masterQ?.question_text || legacyLabels[key] || key;
                           return (
                             <div key={key} className="p-4 bg-surface border border-border/60 border-l-2 border-l-status-indigo/50 rounded-lg shadow-card">

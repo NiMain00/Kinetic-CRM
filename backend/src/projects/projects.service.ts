@@ -25,14 +25,20 @@ export class ProjectsService {
     }
 
     const page = params?.page || 1;
-    const perPage = params?.perPage || 200;
+    const perPage = Math.min(Number(params?.perPage) || 50, 100);
     const [data, total] = await Promise.all([
       this.prisma.project.findMany({
         where, skip: (page - 1) * perPage, take: perPage, orderBy: { createdAt: 'desc' },
-        include: {
-          members: { include: { user: { select: { id: true, fullName: true } } } },
-          rks: true, lphsSios: true, priceSubmission: true, tenderResult: true, deliveryTarget: true,
-          category: true, statusDef: true, ownerUser: { select: { id: true, fullName: true } },
+        select: {
+          id: true, name: true, code: true, status: true, client: true,
+          type: true, estimatedValue: true,
+          createdAt: true, updatedAt: true, ownerUserId: true,
+          sourceProspectId: true, branch: true,
+          category: { select: { id: true, name: true, colorHex: true } },
+          statusDef: { select: { id: true, label: true, colorHex: true, textColorHex: true } },
+          ownerUser: { select: { id: true, fullName: true } },
+          lphsSios: { select: { overallStatus: true } },
+          tenderResult: { select: { result: true } },
         },
       }),
       this.prisma.project.count({ where }),
