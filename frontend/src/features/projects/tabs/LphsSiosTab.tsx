@@ -127,7 +127,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
     return true;
   };
 
-  const simulateUploadProgress = (setProgress: (v: number) => void, setUploading: (v: boolean) => void, fileSizeMB: number): Promise<void> => {
+  const simulateUploadProgress = (setProgress: React.Dispatch<React.SetStateAction<number>>, setUploading: (v: boolean) => void, fileSizeMB: number): Promise<void> => {
     return new Promise(resolve => {
       setUploading(true);
       setProgress(0);
@@ -143,9 +143,8 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
         setProgress(100);
         setTimeout(() => {
           setUploading(false);
-          setProgress(0);
           resolve();
-        }, 500);
+        }, 300);
       }, uploadTime);
     });
   };
