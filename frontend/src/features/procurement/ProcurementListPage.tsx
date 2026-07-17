@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
 import { StatusBadge, BulkActions, PageContainer, PageHeader } from '@/components/shared';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import { useProcurementStore } from './procurementStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useAuthz } from '@/hooks/useAuthz';
@@ -21,6 +22,7 @@ const STATUS_COLORS: Record<ProcurementStatus, string> = {
 
 export default function ProcurementListPage() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const procurements = useProcurementStore((s) => s.procurements);
   const loading = useProcurementStore((s) => s.loading);
   const fetchProcurements = useProcurementStore((s) => s.fetchProcurements);
@@ -209,8 +211,54 @@ export default function ProcurementListPage() {
               </button>
             )}
           </div>
+        ) : isMobile ? (
+          <div className="divide-y divide-border/60">
+            {filtered.map((p) => (
+              <div
+                key={p.id}
+                onClick={() => { if (!selectionMode) navigate(`/procurement/${p.id}`); }}
+                className="p-4 space-y-3 active:bg-surface-container-low transition-colors cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Link to={`/procurement/${p.id}`} className="text-sm font-medium text-on-surface hover:text-primary transition-colors line-clamp-2">
+                      {(() => {
+                        const projectName = getProjectName(p);
+                        return projectName ? projectName : p.sourceProjectCode ? p.sourceProjectCode : 'Manual';
+                      })()}
+                    </Link>
+                    <p className="text-[11px] text-outline font-mono mt-0.5">{p.code}</p>
+                  </div>
+                  <StatusBadge status={p.status} />
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 text-secondary min-w-0">
+                    <span className="material-symbols-outlined text-[14px] shrink-0">business</span>
+                    <span className="truncate">{p.client}</span>
+                  </div>
+                  <span className="font-medium text-on-surface tabular-nums">{formatCurrency(p.contractValue)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="flex-1 h-1.5 bg-surface-container-high rounded-full overflow-hidden max-w-[80px]">
+                      <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${p.progress}%` }} />
+                    </div>
+                    <span className="text-[10px] font-mono-data text-secondary">{p.progress}%</span>
+                  </div>
+                  <span className="text-[10px] text-outline">
+                    {new Date(p.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                  {can('pengadaan:write') && (
+                    <button onClick={(e) => handleDeleteClick(e, p)} className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all shrink-0 ml-2" title="Hapus pengadaan">
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-none">
             <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-border/60">
@@ -225,26 +273,26 @@ export default function ProcurementListPage() {
                         />
                       </th>
                     )}
-                    <th className="text-left px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">
+                    <th className="text-left px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider whitespace-nowrap">
                       Nama Proyek
                     </th>
-                    <th className="text-left px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">
+                    <th className="text-left px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider whitespace-nowrap">
                       Klien
                     </th>
-                    <th className="text-right px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">
+                    <th className="text-right px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider whitespace-nowrap">
                       Nilai Kontrak
                     </th>
-                    <th className="text-center px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">
+                    <th className="text-center px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider whitespace-nowrap">
                       Status
                     </th>
-                    <th className="text-right px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">
+                    <th className="text-right px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider whitespace-nowrap">
                       Progress
                     </th>
-                    <th className="text-right px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider">
+                    <th className="text-right px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider whitespace-nowrap">
                       Dibuat
                     </th>
                     {can('pengadaan:write') && (
-                      <th className="text-center px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider w-16">
+                      <th className="text-center px-4 sm:px-6 py-3 sm:py-4 font-label-sm text-xs text-secondary uppercase tracking-wider w-16 whitespace-nowrap">
                         Aksi
                       </th>
                     )}

@@ -295,10 +295,10 @@ export default function ProjectListPage() {
         title="Proyek"
         description="Kelola dan pantau semua proyek aktif"
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="ghost"
-              size="md"
+              size="sm"
               leftIcon={<span className="material-symbols-outlined text-[16px]">file_download</span>}
               onClick={() => exportCSV(
                 displayFiltered,
@@ -320,7 +320,7 @@ export default function ProjectListPage() {
             {can('project:create') && (
             <Button
               variant="primary"
-              size="md"
+              size="sm"
               leftIcon={<span className="material-symbols-outlined text-sm">add</span>}
               onClick={() => navigate('/projects/new')}
             >
@@ -347,9 +347,9 @@ export default function ProjectListPage() {
         ))}
       </nav>
 
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-        <div className="flex gap-3 items-center w-full sm:w-auto">
-          <div className="relative w-full sm:w-72">
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div className="flex gap-3 items-stretch sm:items-center w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-72">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
             <input
               placeholder="Cari nama, klien, kode..."
@@ -448,6 +448,59 @@ export default function ProjectListPage() {
               <p className="text-secondary text-sm">Tidak ada proyek ditemukan</p>
             </div>
           }
+          mobileCardRenderer={(p) => (
+            <div className="p-4 space-y-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-medium text-on-surface text-sm leading-tight truncate">{p.name}</div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[11px] text-outline font-mono">{p.code}</span>
+                    <span className="text-[11px] text-outline">•</span>
+                    <span className="text-[11px] text-secondary truncate">{p.client}</span>
+                  </div>
+                </div>
+                <StatusBadge status={p.status} />
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-secondary truncate flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[14px] text-outline">person</span>
+                  {p.author}
+                </span>
+                <span className="font-medium text-on-surface">{formatCurrencyShort(p.estimatedValue)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full ${p.progress >= 71 ? 'bg-success' : p.progress >= 31 ? 'bg-gold' : 'bg-danger'}`} style={{ width: `${p.progress}%` }} />
+                </div>
+                <span className="text-[10px] text-outline tabular-nums">{p.progress}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                {(() => {
+                  const info = getDeadlineInfo(p.deadlineTender);
+                  if (!info) return <span className="text-[10px] text-outline">Tidak ada deadline</span>;
+                  const dotColor = info.variant === 'danger' ? 'bg-danger' : info.variant === 'warning' ? 'bg-gold' : 'bg-success';
+                  return (
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${info.variant === 'danger' ? 'text-danger' : info.variant === 'warning' ? 'text-warning' : 'text-success'}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
+                      {info.label}
+                    </span>
+                  );
+                })()}
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  {can('project:write') && (
+                    <>
+                      <button onClick={() => navigate(`/projects/${p.id}/edit`)} className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all" title="Edit Proyek">
+                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                      </button>
+                      <button onClick={() => setDeleteTarget(p)} className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all" title="Hapus Proyek">
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         />
       </Card>
 
