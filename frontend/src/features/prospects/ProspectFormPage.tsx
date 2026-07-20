@@ -59,14 +59,29 @@ export default function ProspectFormPage() {
   const userBranch = authUser?.branchName || 'Jakarta Pusat';
 
   // Customer selection: 'existing' | 'new'
-  // Kalau customer sudah verified, otomatis pindah ke 'existing' meskipun dulu dibuat dengan 'new'
-  const existingCustomersCheck = useCustomerStore.getState().customers;
-  const isCustomerVerified = !!(existingProspect?.customerId && existingCustomersCheck.some(
-    c => c.id === existingProspect.customerId && c.verifiedAt
-  ));
   const [customerMode, setCustomerMode] = useState<'existing' | 'new'>(
-    isCustomerVerified ? 'existing' : (existingProspect?.customerType || 'existing')
+    () => (existingProspect?.customerType as 'existing' | 'new') || 'existing'
   );
+
+  // Bersihkan state antar mode untuk mencegah data tercampur
+  const switchToExisting = () => {
+    setCustomerMode('existing');
+    setCustomerSearch('');
+    setPicName('');
+    setPicPosition('');
+    setPicPhone('');
+    setIndustryId('');
+    setProviderExisting('');
+  };
+  const switchToNew = () => {
+    setCustomerMode('new');
+    setSelectedCustomerId('');
+    setPicName('');
+    setPicPosition('');
+    setPicPhone('');
+    setIndustryId('');
+    setProviderExisting('');
+  };
 
   // Existing customer fields
   const [selectedCustomerId, setSelectedCustomerId] = useState(
@@ -86,6 +101,13 @@ export default function ProspectFormPage() {
   const [newCustRequirements, setNewCustRequirements] = useState(existingProspect?.customerData?.requirements || '');
   const [newCustUnitLevel, setNewCustUnitLevel] = useState(existingProspect?.customerData?.unitLevel || '');
   const [newCustCanonicalName, setNewCustCanonicalName] = useState(existingProspect?.customerData?.canonicalName || '');
+
+  // Reset unitLevel jika tipe bukan pemerintah
+  React.useEffect(() => {
+    if (newCustType !== 'pemerintah' && newCustUnitLevel) {
+      setNewCustUnitLevel('');
+    }
+  }, [newCustType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // PIC Customer fields
   const [picName, setPicName] = useState(existingProspect?.customerData?.picName || '');
@@ -141,16 +163,28 @@ export default function ProspectFormPage() {
     if (customers.length === 0) fetchCustomers();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Koreksi customerMode saat edit — jika customer sudah diverifikasi, paksa ke 'existing'
+  React.useEffect(() => {
+    if (isEdit && existingProspect?.customerId) {
+      const cust = customers.find(c => c.id === existingProspect.customerId);
+      if (cust?.verifiedAt && customerMode === 'new') {
+        setCustomerMode('existing');
+      }
+    }
+  }, [isEdit, existingProspect?.id, customers.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Saat selectedCustomerId berubah, auto-fill PIC, industry, provider
   React.useEffect(() => {
     if (customerMode === 'existing' && selectedCustomer) {
-      // Auto-fill PIC fields (readonly display)
       setPicName(selectedCustomer.picName);
       setPicPosition(selectedCustomer.picPosition);
       setPicPhone(selectedCustomer.picPhone);
-      // Auto-fill industry & provider
       setIndustryId(selectedCustomer.industryId || '');
       setProviderExisting(selectedCustomer.providerExisting || '');
+      setNewCustLevel(selectedCustomer.level || '');
+      if (selectedCustomer.level === 'hot' || selectedCustomer.level === 'medium') {
+        setShowDetail(true);
+      }
     }
   }, [selectedCustomerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -203,13 +237,23 @@ export default function ProspectFormPage() {
       return false;
     }
 
+    // Validasi new customer fields sebelum submit
+    if (customerMode === 'new') {
+      const errors: string[] = [];
+      if (!newCustName.trim()) errors.push('Nama Customer baru wajib diisi');
+      if (errors.length > 0) {
+        toast.error(errors.join(', '));
+        setIsSubmitting(false);
+        return false;
+      }
+    }
+
     // Build customerData untuk new customer
     let customerData: Customer | undefined;
     let customerId: string | undefined;
     if (customerMode === 'new') {
       const existingCustomerId = existingProspect?.customerData?.id;
-      const payload: Customer = {
-        id: existingCustomerId || `new-${Date.now()}`,
+      const payload: Partial<Customer> = {
         name: newCustName,
         code: newCustCode || newCustName.substring(0, 3).toUpperCase(),
         type: newCustType as 'swasta' | 'bumn' | 'pemerintah' | 'asing',
@@ -352,6 +396,8 @@ export default function ProspectFormPage() {
     setPicPhone(c.picPhone);
     setIndustryId(c.industryId || '');
     setProviderExisting(c.providerExisting || '');
+    setNewCustLevel(c.level || '');
+    if (c.level === 'hot' || c.level === 'medium') setShowDetail(true);
   };
 
   const handleLevelChange = (level: string) => {
@@ -382,14 +428,14 @@ export default function ProspectFormPage() {
           <div className="flex gap-2 p-1 bg-surface-container-low rounded-xl border border-border/60 w-fit">
             <button
               type="button"
-              onClick={() => setCustomerMode('existing')}
+              onClick={switchToExisting}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${customerMode === 'existing' ? 'bg-surface text-primary shadow-sm border border-border/60' : 'text-secondary hover:text-on-surface'}`}
             >
               Customer Existing
             </button>
             <button
               type="button"
-              onClick={() => setCustomerMode('new')}
+              onClick={switchToNew}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${customerMode === 'new' ? 'bg-surface text-primary shadow-sm border border-border/60' : 'text-secondary hover:text-on-surface'}`}
             >
               + Customer Baru
@@ -397,47 +443,59 @@ export default function ProspectFormPage() {
           </div>
 
           {customerMode === 'existing' ? (
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Cari Customer Existing</label>
-                <input
-                  value={customerSearch}
-                  onChange={(e) => setCustomerSearch(e.target.value)}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
-                  placeholder="Ketik nama atau kode customer..."
-                  type="text"
-                />
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-sm text-on-surface-variant">Cari Customer Existing</label>
+                  <input
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+                    placeholder="Ketik nama atau kode customer..."
+                    type="text"
+                  />
+                </div>
+
+                {/* Loading state — tampilkan selama fetch awal */}
+                {customersLoading && (
+                  <div className="p-4 border border-border rounded-lg flex items-center gap-2 text-sm text-secondary">
+                    <span className="animate-spin border-2 border-primary border-t-transparent rounded-full w-5 h-5" />
+                    Memuat data customer...
+                  </div>
+                )}
+
+                {!customersLoading && customerSearch && (
+                  <div className="max-h-48 overflow-y-auto border border-border rounded-lg divide-y divide-border">
+                    {filteredCustomers.length === 0 ? (
+                      <div className="p-3 text-sm text-secondary">Customer tidak ditemukan</div>
+                    ) : (
+                      filteredCustomers.map(c => (
+                        <button
+                          key={c.id}
+                          onClick={() => handleSelectCustomer(c)}
+                          className={`w-full text-left p-3 text-sm hover:bg-surface-container-low transition-colors ${selectedCustomerId === c.id ? 'bg-primary/5 font-semibold' : ''}`}
+                        >
+                          <div className="font-medium">{c.name}</div>
+                          <div className="text-xs text-secondary">{c.code} · {c.type}</div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {/* Empty state — customers loaded, no search yet */}
+                {!customersLoading && !customerSearch && customers.length === 0 && (
+                  <div className="p-3 border border-border rounded-lg text-sm text-secondary">
+                    Belum ada data customer. Ketik untuk mencari.
+                  </div>
+                )}
+
+                {selectedCustomer && (
+                  <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-1">
+                    <div className="font-semibold text-sm">{selectedCustomer.name}</div>
+                    <div className="text-xs text-secondary">Kode: {selectedCustomer.code} | Tipe: {selectedCustomer.type}</div>
+                  </div>
+                )}
               </div>
-              {customerSearch && (
-                <div className="max-h-48 overflow-y-auto border border-border rounded-lg divide-y divide-border">
-                  {customersLoading ? (
-                    <div className="p-4 flex items-center gap-2 text-sm text-secondary">
-                      <span className="animate-spin border-2 border-primary border-t-transparent rounded-full w-4 h-4" />
-                      Mencari customer...
-                    </div>
-                  ) : filteredCustomers.length === 0 ? (
-                    <div className="p-3 text-sm text-secondary">Customer tidak ditemukan</div>
-                  ) : (
-                    filteredCustomers.map(c => (
-                      <button
-                        key={c.id}
-                        onClick={() => handleSelectCustomer(c)}
-                        className={`w-full text-left p-3 text-sm hover:bg-surface-container-low transition-colors ${selectedCustomerId === c.id ? 'bg-primary/5 font-semibold' : ''}`}
-                      >
-                        <div className="font-medium">{c.name}</div>
-                        <div className="text-xs text-secondary">{c.code} · {c.type}</div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-              {selectedCustomer && (
-                <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg space-y-1">
-                  <div className="font-semibold text-sm">{selectedCustomer.name}</div>
-                  <div className="text-xs text-secondary">Kode: {selectedCustomer.code} | Tipe: {selectedCustomer.type}</div>
-                </div>
-              )}
-            </div>
           ) : (
             <div className="space-y-4">
               {/* Badge peringatan untuk customer baru */}
@@ -580,28 +638,33 @@ export default function ProspectFormPage() {
           <div className="space-y-1.5">
             <label className="font-semibold text-sm text-on-surface-variant">Kategori Customer <span className="text-danger">*</span></label>
             <div className="flex gap-3">
-              {(['low', 'medium', 'hot'] as const).map(level => (
-                <label key={level} className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all text-sm font-semibold ${
-                  newCustLevel === level
-                    ? level === 'hot' ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-700'
-                      : level === 'medium' ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-700'
-                      : 'border-slate-500 bg-slate-50 dark:bg-slate-900/50 text-slate-700'
-                    : 'border-border text-outline hover:border-outline'
-                }`}>
-                  <input
-                    type="radio"
-                    name="level"
-                    value={level}
-                    checked={newCustLevel === level}
-                    onChange={() => handleLevelChange(level)}
-                    className="sr-only"
-                  />
-                  <span className={`w-2.5 h-2.5 rounded-full ${
-                    level === 'hot' ? 'bg-rose-500' : level === 'medium' ? 'bg-amber-500' : 'bg-slate-500'
-                  }`} />
-                  {level === 'hot' ? 'Hot' : level === 'medium' ? 'Medium' : 'Low'}
-                </label>
-              ))}
+              {(['low', 'medium', 'hot'] as const).map(level => {
+                const isActive = customerMode === 'existing'
+                  ? selectedCustomer?.level === level
+                  : newCustLevel === level;
+                return (
+                  <label key={level} className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all text-sm font-semibold ${
+                    isActive
+                      ? level === 'hot' ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-700'
+                        : level === 'medium' ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-700'
+                        : 'border-slate-500 bg-slate-50 dark:bg-slate-900/50 text-slate-700'
+                      : 'border-border text-outline hover:border-outline'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="level"
+                      value={level}
+                      checked={isActive}
+                      onChange={() => handleLevelChange(level)}
+                      className="sr-only"
+                    />
+                    <span className={`w-2.5 h-2.5 rounded-full ${
+                      level === 'hot' ? 'bg-rose-500' : level === 'medium' ? 'bg-amber-500' : 'bg-slate-500'
+                    }`} />
+                    {level === 'hot' ? 'Hot' : level === 'medium' ? 'Medium' : 'Low'}
+                  </label>
+                );
+              })}
             </div>
           </div>
 
@@ -620,7 +683,7 @@ export default function ProspectFormPage() {
             <div className="bg-gradient-to-r from-primary/5 to-transparent border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
               <span className="material-symbols-outlined text-primary">expand_content</span>
               <p className="text-sm text-on-surface font-medium">
-                Level <strong className="uppercase">{newCustLevel}</strong> — Silakan lengkapi detail prospek.
+                Level <strong className="uppercase">{customerMode === 'existing' ? selectedCustomer?.level || newCustLevel : newCustLevel}</strong> — Silakan lengkapi detail prospek.
               </p>
             </div>
 
