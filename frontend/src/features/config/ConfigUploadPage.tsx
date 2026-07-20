@@ -59,11 +59,11 @@ export default function ConfigUploadPage() {
   };
 
   const handleReset = () => {
-    setFormMaxSize(String(10));
+    setFormMaxSize(String(100));
     setFormMaxFiles(String(5));
     setFormStoragePath('/uploads/documents/');
     setFormCompression(true);
-    setSelectedExtensions(['pdf', 'doc,docx', 'xls,xlsx', 'jpg,jpeg,png,gif']);
+    setSelectedExtensions(['pdf', 'doc,docx', 'xls,xlsx', 'jpg,jpeg,png,gif', 'zip,rar,7z']);
     toast.success('Pengaturan direset ke default.');
   };
 

@@ -220,15 +220,19 @@ export class ProspectsService {
     const prospect = await this.get(id, user);
     await this.checkWriteAccess(prospect, user);
 
-    // Validasi: jika customer level bukan hot, hanya izinkan promote level saja
-    if (prospect.customerId && !data.customer?.level) {
+    // Validasi: jika customer level bukan hot, blokir perubahan pada field detail prospek
+    const detailFields = ['name', 'client', 'estimatedValue', 'description', 'answers', 'projectType', 'source', 'branch', 'industryId', 'providerExisting'];
+    if (prospect.customerId) {
       const customer = await this.prisma.customer.findUnique({
         where: { id: prospect.customerId },
       });
       if (customer && customer.level && customer.level !== 'hot') {
-        throw new ForbiddenException(
-          `Customer masih level ${customer.level}. Hanya customer level Hot yang bisa diubah detailnya.`
-        );
+        const changedDetailFields = detailFields.filter(f => f in data);
+        if (changedDetailFields.length > 0) {
+          throw new ForbiddenException(
+            `Customer masih level ${customer.level}. Hanya customer level Hot yang bisa mengubah detail prospek. Perubahan pada field: ${changedDetailFields.join(', ')} tidak diizinkan.`
+          );
+        }
       }
     }
 

@@ -577,11 +577,17 @@ export default function ProspectDetailPage() {
           </Button>
         )}
 
-        {/* Edit & Delete: hanya jika user punya akses write di stage ini */}
-        {access === 'write' && (
+        {/* Edit: hanya jika user punya akses write DAN customer level Hot */}
+        {access === 'write' && (!customer?.level || customer.level === 'hot') && (
           <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>} onClick={() => navigate(`/prospects/${prospect.id}/edit`)}>
             Edit
           </Button>
+        )}
+        {access === 'write' && customer?.level && customer.level !== 'hot' && (
+          <div className="px-3 py-1.5 bg-warning/10 border border-warning/30 rounded-lg text-caption-xs text-warning flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[14px]">lock</span>
+            Customer level {customer.level} — hanya Hot yang bisa edit
+          </div>
         )}
 
         {access === 'write' && (
