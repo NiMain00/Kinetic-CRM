@@ -37,7 +37,7 @@ async function configureApp(app: INestApplication) {
 
 let cachedApp: Express;
 
-export async function handler(req: any, res: any) {
+async function handler(req: any, res: any) {
   if (!cachedApp) {
     const app = await NestFactory.create(AppModule);
     await configureApp(app);
@@ -46,6 +46,8 @@ export async function handler(req: any, res: any) {
   }
   cachedApp(req, res);
 }
+
+export = handler;
 
 if (!process.env.VERCEL) {
   (async () => {
