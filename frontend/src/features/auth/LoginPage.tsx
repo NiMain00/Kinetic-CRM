@@ -58,7 +58,7 @@ export default function LoginPage() {
 
     try {
       const res = await authService.login({ username: username.trim(), password });
-      const { token, user } = res.data;
+      const { token, user } = res?.data ?? {};
 
       login(token, {
         id: user.id,

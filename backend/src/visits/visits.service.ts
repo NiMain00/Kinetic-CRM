@@ -20,24 +20,26 @@ export class VisitsService {
   }
 
   async create(data: { prospectId: string; customerId?: string; date: string; notes?: string; picName?: string; picUserId?: string }) {
-    const lastVisit = await this.prisma.visit.findFirst({
-      where: { prospectId: data.prospectId },
-      orderBy: { visitNumber: 'desc' },
-      select: { visitNumber: true },
-    });
-    const visitNumber = (lastVisit?.visitNumber || 0) + 1;
+    return this.prisma.$transaction(async (tx) => {
+      const lastVisit = await tx.visit.findFirst({
+        where: { prospectId: data.prospectId },
+        orderBy: { visitNumber: 'desc' },
+        select: { visitNumber: true },
+      });
+      const visitNumber = (lastVisit?.visitNumber || 0) + 1;
 
-    return this.prisma.visit.create({
-      data: {
-        prospectId: data.prospectId,
-        customerId: data.customerId,
-        visitNumber,
-        date: new Date(data.date),
-        notes: data.notes,
-        picName: data.picName,
-        picUserId: data.picUserId,
-        status: 'pending',
-      },
+      return tx.visit.create({
+        data: {
+          prospectId: data.prospectId,
+          customerId: data.customerId,
+          visitNumber,
+          date: new Date(data.date),
+          notes: data.notes,
+          picName: data.picName,
+          picUserId: data.picUserId,
+          status: 'pending',
+        },
+      });
     });
   }
 

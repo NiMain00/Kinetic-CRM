@@ -44,14 +44,18 @@ function App() {
 
     // Migrate existing projects to procurement (deferred after paint)
     const migrate = async () => {
-      const [{ useProjectStore }, { useProcurementStore }, { migrateExistingProjects }] = await Promise.all([
-        import('@/stores/projectStore'),
-        import('@/features/procurement/procurementStore'),
-        import('@/features/procurement/procurementService'),
-      ]);
-      const projects = useProjectStore.getState().projects;
-      if (projects.length > 0) {
-        migrateExistingProjects(projects);
+      try {
+        const [{ useProjectStore }, { useProcurementStore }, { migrateExistingProjects }] = await Promise.all([
+          import('@/stores/projectStore'),
+          import('@/features/procurement/procurementStore'),
+          import('@/features/procurement/procurementService'),
+        ]);
+        const projects = useProjectStore.getState().projects;
+        if (projects.length > 0) {
+          migrateExistingProjects(projects);
+        }
+      } catch (err) {
+        console.error('[App] Migration failed:', err);
       }
     };
     const timer = setTimeout(migrate, 100);

@@ -49,7 +49,8 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
   // Department-specific questions
   const [deptQuestions, setDeptQuestions] = useState<Record<string, string>>(() => {
     const saved = (rks?.answers as Record<string, string>)?.['_deptQuestions'];
-    return saved ? JSON.parse(saved) : {};
+    if (!saved) return {};
+    try { return JSON.parse(saved); } catch { return {}; }
   });
   const [newDeptQuestion, setNewDeptQuestion] = useState('');
 

@@ -85,20 +85,16 @@ export class ProjectsService {
     if (timelinePayload?.create) {
       const events = Array.isArray(timelinePayload.create) ? timelinePayload.create : [timelinePayload.create];
       for (const evt of events) {
-        try {
-          if (evt.actor && !UUID_REGEX.test(String(evt.actor))) {
-            const user = await this.prisma.user.findFirst({
-              where: { fullName: evt.actor },
-              select: { id: true },
-            });
-            if (user) evt.actor = user.id;
-            else delete evt.actor;
-          }
-          evt.projectId = id;
-          await this.prisma.projectTimelineEvent.create({ data: evt });
-        } catch (e) {
-          console.error('[timeline] Gagal menyimpan event proyek:', e?.message || e);
+        if (evt.actor && !UUID_REGEX.test(String(evt.actor))) {
+          const user = await this.prisma.user.findFirst({
+            where: { fullName: evt.actor },
+            select: { id: true },
+          });
+          if (user) evt.actor = user.id;
+          else delete evt.actor;
         }
+        evt.projectId = id;
+        await this.prisma.projectTimelineEvent.create({ data: evt });
       }
     }
 
@@ -106,7 +102,7 @@ export class ProjectsService {
     const prismaOps = new Set(['upsert', 'create', 'update', 'delete', 'disconnect', 'connect']);
     const nested: any = {};
     for (const key of oneToOneRelations) {
-      if (data[key] !== undefined) {
+      if (data[key] !== undefined && data[key] !== null) {
         const isPrismaOp = data[key] && typeof data[key] === 'object' && Object.keys(data[key]).some(k => prismaOps.has(k));
         nested[key] = isPrismaOp ? data[key] : { upsert: { create: data[key], update: data[key] } };
         delete data[key];

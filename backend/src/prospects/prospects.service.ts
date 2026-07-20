@@ -288,6 +288,7 @@ export class ProspectsService {
 
   async promoteLevel(prospectId: string, newLevel: string, user: any) {
     const prospect = await this.get(prospectId, user);
+    await this.checkWriteAccess(prospect, user);
     if (!prospect.customerId) {
       throw new BadRequestException('Prospek ini tidak memiliki customer');
     }

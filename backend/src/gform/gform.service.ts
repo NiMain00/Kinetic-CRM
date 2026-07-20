@@ -111,6 +111,7 @@ export class GformService {
       where: { name: customerData.name, deletedAt: null },
     });
 
+    let isNew = false;
     if (customer) {
       // Update customer yang sudah ada
       customer = await this.prisma.customer.update({
@@ -125,6 +126,7 @@ export class GformService {
         },
       });
     } else {
+      isNew = true;
       // Buat customer baru
       customer = await this.prisma.customer.create({
         data: {
@@ -187,7 +189,7 @@ export class GformService {
       customerId: customer.id,
       prospectId: prospect.id,
       customerLevel: customer.level,
-      isNew: !customerData.name,
+      isNew,
     };
   }
 }

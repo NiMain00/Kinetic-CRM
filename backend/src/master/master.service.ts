@@ -219,12 +219,8 @@ export class MasterService {
       const events = Array.isArray(data.timelineEvents.create) ? data.timelineEvents.create : [data.timelineEvents.create];
       delete data.timelineEvents;
       for (const evt of events) {
-        try {
-          evt.procurementId = id;
-          await this.prisma.procurementTimelineEvent.create({ data: evt });
-        } catch (e) {
-          console.error('[timeline] Gagal menyimpan event pengadaan:', e?.message || e);
-        }
+        evt.procurementId = id;
+        await this.prisma.procurementTimelineEvent.create({ data: evt });
       }
     }
 

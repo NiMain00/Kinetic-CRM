@@ -155,7 +155,7 @@ function mapBackendLphsToFrontend(lphsSios: any): LphsData {
     siosFileSize: lphsSios.siosFileSize || undefined,
     selectedDepartments: lphsSios.selectedDepartments
       ? (typeof lphsSios.selectedDepartments === 'string'
-          ? JSON.parse(lphsSios.selectedDepartments)
+          ? (() => { try { return JSON.parse(lphsSios.selectedDepartments); } catch { return []; } })()
           : lphsSios.selectedDepartments)
       : [],
     departmentsLocked: lphsSios.departmentsLocked || false,
@@ -228,7 +228,7 @@ function mapApiProject(p: any): Project {
       duration: tenderResult.durationDays != null ? Number(tenderResult.durationDays) : undefined,
       loseReason: p.winnerDetails?.loseReason || undefined,
       loseNote: tenderResult.lossReasonNote || p.winnerDetails?.loseNote || undefined,
-      spkDocument: tenderResult.spkDocument ? (typeof tenderResult.spkDocument === 'string' ? JSON.parse(tenderResult.spkDocument) : tenderResult.spkDocument) : p.winnerDetails?.spkDocument || undefined,
+      spkDocument: tenderResult.spkDocument ? (typeof tenderResult.spkDocument === 'string' ? (() => { try { return JSON.parse(tenderResult.spkDocument); } catch { return undefined; } })() : tenderResult.spkDocument) : p.winnerDetails?.spkDocument || undefined,
     } : p.winnerDetails || undefined,
     lphs: lphsSios ? mapBackendLphsToFrontend(lphsSios) : p.lphs || undefined,
     delivery: deliveryTarget ? {
