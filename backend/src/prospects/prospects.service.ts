@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 const ELEVATED_ROLES = ['super_admin', 'director', 'admin', 'manager', 'supervisor'];
 
 @Injectable()
 export class ProspectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   private isElevated(user: any): boolean {
     return user.userRoles?.some((ur: any) =>
@@ -185,13 +189,24 @@ export class ProspectsService {
   }
 
   async create(data: any, user: any) {
-    return this.prisma.prospect.create({
+    const result = await this.prisma.prospect.create({
       data: {
         ...data,
         ownerUserId: data.ownerUserId || user.id,
         createdByUserId: user.id,
       },
     });
+    this.auditService.log({
+      actorId: user.id,
+      actorName: user.fullName || user.username,
+      action: 'prospect.create',
+      entityType: 'prospect',
+      entityId: result.id,
+      summary: `Membuat prospek "${result.name || result.client || result.id}"`,
+      payloadAfter: JSON.stringify(data).substring(0, 3000),
+      result: 'success',
+    }).catch(() => {});
+    return result;
   }
 
   private async checkWriteAccess(prospect: any, user: any): Promise<void> {
@@ -263,13 +278,26 @@ export class ProspectsService {
       mapped.isConverted = mapped.projectId != null;
       delete mapped.projectId;
     }
-    return this.prisma.prospect.update({ where: { id }, data: mapped });
+    const result = await this.prisma.prospect.update({ where: { id }, data: mapped });
+    const changedFields = Object.keys(data).join(', ');
+    this.auditService.log({
+      actorId: user.id,
+      actorName: user.fullName || user.username,
+      action: 'prospect.update',
+      entityType: 'prospect',
+      entityId: id,
+      summary: `Memperbarui prospek "${prospect.name || prospect.client || id}" — ${changedFields}`,
+      payloadBefore: JSON.stringify({ status: prospect.status, customerId: prospect.customerId }).substring(0, 1000),
+      payloadAfter: JSON.stringify(data).substring(0, 3000),
+      result: 'success',
+    }).catch(() => {});
+    return result;
   }
 
   async delete(id: string, user: any) {
     const prospect = await this.get(id, user);
     await this.checkWriteAccess(prospect, user);
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const linked = await tx.project.findMany({
         where: { sourceProspectId: id, deletedAt: null },
       });
@@ -288,6 +316,17 @@ export class ProspectsService {
         data: { deletedAt: new Date() },
       });
     });
+    this.auditService.log({
+      actorId: user.id,
+      actorName: user.fullName || user.username,
+      action: 'prospect.delete',
+      entityType: 'prospect',
+      entityId: id,
+      summary: `Menghapus prospek "${prospect.name || prospect.client || id}"`,
+      payloadBefore: JSON.stringify({ status: prospect.status, name: prospect.name }).substring(0, 1000),
+      result: 'success',
+    }).catch(() => {});
+    return result;
   }
 
   async promoteLevel(prospectId: string, newLevel: string, user: any) {
@@ -312,9 +351,21 @@ export class ProspectsService {
       throw new BadRequestException('Level hanya bisa dinaikkan (low → medium → hot)');
     }
 
-    return this.prisma.customer.update({
+    const result = await this.prisma.customer.update({
       where: { id: prospect.customerId },
       data: { level: newLevel as any },
     });
+    this.auditService.log({
+      actorId: user.id,
+      actorName: user.fullName || user.username,
+      action: 'prospect.promoteLevel',
+      entityType: 'customer',
+      entityId: prospect.customerId,
+      summary: `Menaikkan level customer prospek "${prospect.name}" dari ${customer?.level} ke ${newLevel}`,
+      payloadBefore: JSON.stringify({ level: customer?.level }),
+      payloadAfter: JSON.stringify({ level: newLevel }),
+      result: 'success',
+    }).catch(() => {});
+    return result;
   }
 }
