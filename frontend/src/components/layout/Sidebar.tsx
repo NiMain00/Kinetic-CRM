@@ -72,11 +72,23 @@ export default function Sidebar({
     };
   }, [mobile]);
 
+  const allPaths = useMemo(() => {
+    const paths = new Set<string>();
+    const collect = (items: NavItem[]) => {
+      for (const item of items) {
+        paths.add(item.path);
+        if (item.children) collect(item.children);
+      }
+    };
+    collect(navItems);
+    return paths;
+  }, []);
+
   const isPathActive = (itemPath: string): boolean => {
     if (location.pathname === itemPath) return true;
     if (itemPath !== '/' && location.pathname.startsWith(itemPath + '/')) {
-      const hasChildItem = navItems.some(
-        (other) => other.path !== itemPath && other.path.startsWith(itemPath + '/'),
+      const hasChildItem = [...allPaths].some(
+        (p) => p !== itemPath && p.startsWith(itemPath + '/'),
       );
       if (hasChildItem) return false;
       return true;

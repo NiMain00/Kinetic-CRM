@@ -22,8 +22,8 @@ export default function AppLayout() {
   const { sidebarOpen, toggleSidebar } = useUiStore();
   const { unreadCount, fetchNotifications } = useNotificationStore();
   const { approvals, fetchApprovals } = useApprovalStore();
-  const { prospects, fetchProspects } = useProspectStore();
-  const { projects, fetchProjects } = useProjectStore();
+  const prospects = useProspectStore((s) => s.prospects);
+  const projects = useProjectStore((s) => s.projects);
 
   // Compute pending approvals count matching the logic in ApprovalInboxPage
   const pendingApprovalsCount = user?.id
@@ -81,9 +81,7 @@ export default function AppLayout() {
   useEffect(() => {
     fetchApprovals();
     fetchNotifications();
-    fetchProspects();
-    fetchProjects();
-  }, [fetchApprovals, fetchNotifications, fetchProspects, fetchProjects]);
+  }, [fetchApprovals, fetchNotifications]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);

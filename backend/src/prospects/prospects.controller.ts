@@ -12,6 +12,11 @@ export class ProspectsController {
     return this.service.list(params, req.user);
   }
 
+  @Get('light')
+  listLight(@Query() params: any, @Req() req: any) {
+    return this.service.listLight(params, req.user);
+  }
+
   @Get(':id')
   get(@Param('id') id: string, @Req() req: any) {
     return this.service.get(id, req.user);

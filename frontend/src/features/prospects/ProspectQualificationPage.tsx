@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
+import { useProspectStore } from '@/stores/prospectStore';
 import { PageContainer, PageHeader } from '@/components/shared';
+import { Button } from '@/components/ui';
 import { prospectService } from '@/services/prospects';
 import type { Prospect } from '@/types/domain';
 
@@ -55,18 +56,41 @@ const LEVEL_ORDER: Record<CustomerLevel, number> = { low: 0, medium: 1, hot: 2 }
 
 export default function ProspectQualificationPage() {
   const navigate = useNavigate();
-  const prospects = useProspectStore((s) => s.prospects);
-  const loading = useProspectStore((s) => s.loading);
-  const fetchProspects = useProspectStore((s) => s.fetchProspects);
   const updateCustomer = useCustomerStore((s) => s.updateCustomer);
+  const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [loading, setLoading] = useState(true);
   const [promoting, setPromoting] = useState<string | null>(null);
-  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const fetchLight = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await prospectService.listLight({ perPage: 100, page: 1 });
+      const raw: any[] = res.data?.data || res.data || [];
+      const list: Prospect[] = Array.isArray(raw) ? raw.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        client: item.client,
+        customerId: item.customerId,
+        customerData: item.customer
+          ? { id: item.customer.id, name: item.customer.name, level: item.customer.level } as any
+          : undefined,
+        source: item.source,
+        potensiUnit: item.potensiUnit ?? 0,
+        date: item.createdAt || '',
+        author: item.ownerUser?.fullName || '',
+        status: 'Lead' as const,
+      })) : [];
+      setProspects(list);
+    } catch {
+      toast.error('Gagal memuat data kualifikasi');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (!dataLoaded) {
-      fetchProspects({ perPage: 100, page: 1 }).finally(() => setDataLoaded(true));
-    }
-  }, [dataLoaded, fetchProspects]);
+    fetchLight();
+  }, [fetchLight]);
 
   // Group prospects by customer level
   const grouped = useMemo(() => {
@@ -91,7 +115,7 @@ export default function ProspectQualificationPage() {
       await updateCustomer(prospect.customerId, { level: targetLevel });
       toast.success(`Level ${prospect.customerData?.name || prospect.client} dinaikkan ke ${LEVEL_LABELS[targetLevel]}`);
       // Refresh data
-      await fetchProspects({ perPage: 100, page: 1 });
+      await fetchLight();
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Gagal promote level';
       toast.error(msg);
@@ -214,7 +238,7 @@ export default function ProspectQualificationPage() {
   // Count prospects without level
   const unqualifiedCount = prospects.filter((p) => !p.customerData?.level).length;
 
-  if (loading && !dataLoaded) {
+  if (loading) {
     return (
       <PageContainer>
         <div className="flex items-center justify-center py-20">
@@ -237,7 +261,7 @@ export default function ProspectQualificationPage() {
               </span>
             )}
             <button
-              onClick={() => fetchProspects({ perPage: 100, page: 1 })}
+              onClick={() => fetchLight()}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-surface-variant bg-surface border border-border/60 rounded-lg hover:bg-surface-container transition-colors"
             >
               <span className="material-symbols-outlined text-[16px]">refresh</span>

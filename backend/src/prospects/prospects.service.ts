@@ -137,6 +137,53 @@ export class ProspectsService {
     return prospect;
   }
 
+  async listLight(params: any, user: any) {
+    const conditions: any[] = [{ deletedAt: null }];
+
+    if (!this.isElevated(user)) {
+      const deptCode = this.getUserDeptCode(user);
+      if (!deptCode) return { data: [], total: 0, page: 1, perPage: 20 };
+      const stageIds = await this.getAccessibleStageIds(deptCode);
+      const accessOr: any[] = [{ ownerUserId: user.id }];
+      if (stageIds.length > 0) accessOr.push({ currentStageId: { in: stageIds } });
+      conditions.push({ OR: accessOr });
+    }
+
+    const where = conditions.length === 1 ? conditions[0] : { AND: conditions };
+    const page = params?.page || 1;
+    const perPage = Math.min(Number(params?.perPage) || 100, 100);
+
+    const [data, total] = await Promise.all([
+      this.prisma.prospect.findMany({
+        where,
+        skip: (page - 1) * perPage,
+        take: perPage,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          client: true,
+          customerId: true,
+          source: true,
+          potensiUnit: true,
+          createdAt: true,
+          ownerUser: {
+            select: { id: true, fullName: true },
+          },
+          customer: {
+            select: {
+              id: true,
+              name: true,
+              level: true,
+            },
+          },
+        },
+      }),
+      this.prisma.prospect.count({ where }),
+    ]);
+    return { data, total, page, perPage };
+  }
+
   async create(data: any, user: any) {
     return this.prisma.prospect.create({
       data: {
