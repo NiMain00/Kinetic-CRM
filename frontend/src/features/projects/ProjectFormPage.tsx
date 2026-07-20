@@ -29,8 +29,8 @@ export default function ProjectFormPage() {
   const customers = useCustomerStore((s) => s.customers);
   const projectTypeOptions = useActiveOptions('project_types');
 
-  // RBAC
-  const departments = useMasterDataStore((s) => s.departments as unknown as RbacDepartment[]);
+  // RBAC — departments from rbacStore (already populated on app mount)
+  const departments = useRbacStore((s) => s.departments);
   const userRoles = useRbacStore((s) => s.userRoles);
   const addProjectDept = useRbacStore((s) => s.addProjectDepartment);
   const addProjMember = useRbacStore((s) => s.addProjectMember);
@@ -63,10 +63,14 @@ export default function ProjectFormPage() {
   const [newMemberDept, setNewMemberDept] = useState('');
   const [newMemberUser, setNewMemberUser] = useState('');
 
-  // Fetch customers for client dropdown when form mounts
+  // Fetch data dependencies when form mounts
   useEffect(() => {
-    const { fetchCustomers } = useCustomerStore.getState();
-    fetchCustomers();
+    const customerStore = useCustomerStore.getState();
+    const rbacStore = useRbacStore.getState();
+    const masterData = useMasterDataStore.getState();
+    customerStore.fetchCustomers();
+    rbacStore.fetchDepartments();
+    masterData.fetchEntity('users');
   }, []);
 
   const activeDepts = departments.filter((d) => d.is_active);
