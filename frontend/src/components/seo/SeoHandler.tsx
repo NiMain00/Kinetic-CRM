@@ -51,6 +51,15 @@ const PAGE_META: Record<string, { title: string; description?: string }> = {
   '/projects/:id': {
     title: 'Detail Proyek',
   },
+  '/projects/:projectId/:tab': {
+    title: 'Detail Proyek',
+  },
+  '/project/:id': {
+    title: 'Detail Proyek',
+  },
+  '/project/:projectId/:tab': {
+    title: 'Detail Proyek',
+  },
   '/procurement': {
     title: 'Pengadaan',
     description: 'Kelola pengadaan barang dan jasa perusahaan di Kinetic CRM.',
@@ -59,6 +68,9 @@ const PAGE_META: Record<string, { title: string; description?: string }> = {
     title: 'Pengadaan Baru',
   },
   '/procurement/:id': {
+    title: 'Detail Pengadaan',
+  },
+  '/procurement/:procurementId/:tab': {
     title: 'Detail Pengadaan',
   },
   '/approvals': {
