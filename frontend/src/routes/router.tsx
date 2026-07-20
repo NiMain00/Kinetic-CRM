@@ -2,6 +2,7 @@ import React, { Suspense, lazy, type ComponentType } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, GuestRoute, RoleRoute, PermissionRoute } from './guards';
 import { PageLoader } from '@/components/layout';
+import SeoHandler from '@/components/seo/SeoHandler';
 
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 import { withPageProps } from './page-adapter';
@@ -123,7 +124,9 @@ const ServerErrorPage = LazyLoad(lazy(() => import('@/features/errors/ServerErro
 
 export default function AppRouter() {
   return (
-    <Routes>
+    <>
+      <SeoHandler />
+      <Routes>
       {/* Public auth routes */}
       <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
       <Route path="/forgot-password" element={<GuestRoute><ForgotPasswordPage /></GuestRoute>} />
@@ -232,5 +235,6 @@ export default function AppRouter() {
       {/* 404 catch-all */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </>
   );
 }

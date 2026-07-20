@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import AppRouter from './routes/router';
 import { ErrorBoundary } from '@/components/shared';
 import { useThemeStore } from '@/stores/themeStore';
@@ -63,13 +64,15 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ErrorBoundary>
-          <AppRouter />
-        </ErrorBoundary>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ErrorBoundary>
+            <AppRouter />
+          </ErrorBoundary>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 

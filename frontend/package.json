@@ -10,26 +10,27 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.x",
+    "@tanstack/react-query": "^5.x",
+    "axios": "^1.x",
+    "date-fns": "^3.x",
+    "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "react-router-dom": "^7.18.0",
-    "@tanstack/react-query": "^5.x",
-    "zustand": "^4.x",
-    "axios": "^1.x",
+    "react-helmet-async": "^3.0.0",
     "react-hook-form": "^7.x",
+    "react-hot-toast": "^2.x",
+    "react-router-dom": "^7.18.0",
     "zod": "^3.x",
-    "@hookform/resolvers": "^3.x",
-    "lucide-react": "^0.546.0",
-    "date-fns": "^3.x",
-    "react-hot-toast": "^2.x"
+    "zustand": "^4.x"
   },
   "devDependencies": {
-    "typescript": "~5.8.2",
-    "vite": "^6.2.3",
-    "@vitejs/plugin-react": "^5.0.4",
-    "tailwindcss": "^4.1.14",
     "@tailwindcss/vite": "^4.1.14",
     "@types/react": "^19.x",
-    "@types/react-dom": "^19.x"
+    "@types/react-dom": "^19.x",
+    "@vitejs/plugin-react": "^5.0.4",
+    "tailwindcss": "^4.1.14",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.3"
   }
 }
