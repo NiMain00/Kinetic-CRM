@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { exportCSV } from '@/utils/export';
+import apiClient from '@/services/api-client';
 import type { AuditLogEntry } from '../../types/domain/users';
 
 const ACTION_COLORS: Record<string, string> = {
@@ -17,13 +18,40 @@ const ACTION_COLORS: Record<string, string> = {
 };
 
 export default function AuditPage() {
-  const [logs] = useState<AuditLogEntry[]>([]);
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
   const [actionFilter, setActionFilter] = useState<string>('all');
   const [impactFilter, setImpactFilter] = useState<'all' | 'Low' | 'Medium' | 'High'>('all');
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    apiClient.get('/master/auditLogs', { params: { perPage: 100 } })
+      .then((res: any) => {
+        const raw = res.data?.data ?? res.data ?? [];
+        const mapped: AuditLogEntry[] = raw.map((item: any) => ({
+          id: item.id,
+          timestamp: item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '-',
+          actor: item.actorName || item.actor || '-',
+          actorInitials: item.actorInitials || (item.actorName ? item.actorName.charAt(0).toUpperCase() : '?'),
+          action: item.action || 'UNKNOWN',
+          entityType: item.entityType || '-',
+          entityId: item.entityId || '-',
+          entityName: item.entityName || item.entityType || '-',
+          summary: item.summary || '-',
+          before: item.payloadBefore || undefined,
+          after: item.payloadAfter || undefined,
+          ipAddress: item.ipAddress || undefined,
+          impact: (item.impact === 'High' || item.impact === 'Medium') ? item.impact : 'Low',
+        }));
+        setLogs(mapped);
+      })
+      .catch(() => toast.error('Gagal memuat audit log'))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filteredLogs = useMemo(() => logs.filter(l => {
     const q = debouncedSearch.toLowerCase();
@@ -101,7 +129,9 @@ export default function AuditPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {filteredLogs.length === 0 ? (
+                  {loading ? (
+                    <tr><td colSpan={7} className="px-6 py-12 text-center text-outline italic">Memuat audit log...</td></tr>
+                  ) : filteredLogs.length === 0 ? (
                     <tr><td colSpan={7} className="px-6 py-12 text-center text-outline italic">Tidak ada audit log ditemukan.</td></tr>
                   ) : (
                     filteredLogs.map(l => (
@@ -134,8 +164,8 @@ export default function AuditPage() {
               </table>
             </div>
             <div className="p-4 bg-surface-container-low border-t border-border flex justify-between items-center text-[10px] text-outline">
-              <span>Showing {filteredLogs.length} of {logs.length} events</span>
-              <span>Real-time audit stream (static demo)</span>
+              <span>Menampilkan {filteredLogs.length} dari {logs.length} events</span>
+              <span>{loading ? 'Memuat...' : 'Real-time audit stream'}</span>
             </div>
           </div>
         </div>

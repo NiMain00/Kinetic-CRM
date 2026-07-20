@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Input, Select, Badge } from '@/components/ui';
+import apiClient from '@/services/api-client';
 import type { AuditLogEntry } from '@/types/domain/users';
 
 const actionVariant: Record<string, 'info' | 'success' | 'warning' | 'danger' | 'default' | 'purple'> = {
@@ -23,10 +24,37 @@ const impactColor = (impact: string) => {
 };
 
 export default function AuditLogPage() {
-  const [logs] = useState<AuditLogEntry[]>([]);
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState('all');
   const [impactFilter, setImpactFilter] = useState('all');
+
+  useEffect(() => {
+    setLoading(true);
+    apiClient.get('/master/auditLogs', { params: { perPage: 100 } })
+      .then((res: any) => {
+        const raw = res.data?.data ?? res.data ?? [];
+        const mapped: AuditLogEntry[] = raw.map((item: any) => ({
+          id: item.id,
+          timestamp: item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID') : '-',
+          actor: item.actorName || item.actor || '-',
+          actorInitials: item.actorInitials || (item.actorName ? item.actorName.charAt(0).toUpperCase() : '?'),
+          action: item.action || 'UNKNOWN',
+          entityType: item.entityType || '-',
+          entityId: item.entityId || '-',
+          entityName: item.entityName || item.entityType || '-',
+          summary: item.summary || '-',
+          before: item.payloadBefore || undefined,
+          after: item.payloadAfter || undefined,
+          ipAddress: item.ipAddress || undefined,
+          impact: (item.impact === 'High' || item.impact === 'Medium') ? item.impact : 'Low',
+        }));
+        setLogs(mapped);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = logs.filter((log) => {
     const q = search.toLowerCase();
@@ -104,7 +132,7 @@ export default function AuditLogPage() {
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-outline text-sm">Tidak ada log yang ditemukan</td>
+                  <td colSpan={7} className="px-6 py-12 text-center text-outline text-sm">{loading ? 'Memuat...' : 'Tidak ada log yang ditemukan'}</td>
                 </tr>
               ) : (
                 filtered.map((log) => (
