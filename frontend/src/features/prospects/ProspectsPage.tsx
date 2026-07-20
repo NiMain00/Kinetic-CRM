@@ -90,12 +90,30 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
   }), [authUser?.id]);
 
   const tabCounts = useMemo(() => {
-    return prospectFilterTabOptions.map(opt => {
-      const filterFn = tabFilterMap[opt.value];
-      if (!filterFn) return 0;
-      return visibleProspects.filter(filterFn).length;
+    const all = visibleProspects.length;
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    let myProspects = 0, recent = 0, needsReview = 0, won = 0, lost = 0;
+    for (const p of visibleProspects) {
+      if (p.ownerUserId === authUser?.id) myProspects++;
+      const d = p.date ? new Date(p.date) : new Date(0);
+      if (!isNaN(d.getTime()) && d >= weekAgo) recent++;
+      if (p.customerData?.needsVerification || p.status === 'Waiting Supervisor') needsReview++;
+      if (p.status === 'Approved') won++;
+      if (p.status === 'Non Potensial') lost++;
+    }
+    return prospectFilterTabOptions.map(o => {
+      switch (o.value) {
+        case 'all': return all;
+        case 'my_prospects': return myProspects;
+        case 'recent': return recent;
+        case 'needs_review': return needsReview;
+        case 'won': return won;
+        case 'lost': return lost;
+        default: return 0;
+      }
     });
-  }, [visibleProspects, prospectFilterTabOptions, tabFilterMap]);
+  }, [visibleProspects, prospectFilterTabOptions, authUser?.id]);
 
   const filteredProspects = useMemo(() => visibleProspects.filter(p => {
     const q = debouncedSearch.toLowerCase();

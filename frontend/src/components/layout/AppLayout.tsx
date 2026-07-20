@@ -79,8 +79,11 @@ export default function AppLayout() {
   });
 
   useEffect(() => {
-    fetchApprovals();
-    fetchNotifications();
+    const timer = setTimeout(() => {
+      fetchApprovals();
+      fetchNotifications();
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [fetchApprovals, fetchNotifications]);
 
   useEffect(() => {

@@ -69,7 +69,6 @@ export default function ProjectListPage() {
   const fetchProjects = useProjectStore((s) => s.fetchProjects);
   const fetchProjectPhases = useConfigStore((s) => s.fetchProjectPhases);
 
-  useEffect(() => { fetchProjects(); }, [fetchProjects]);
   useEffect(() => { fetchProjects(getTabFetchParams(activeTab)); }, [activeTab, fetchProjects]);
   useEffect(() => { fetchProjectPhases(); }, [fetchProjectPhases]);
 
@@ -128,20 +127,18 @@ export default function ProjectListPage() {
     return list;
   }, [debouncedSearch, projects, filterValues, isStaffOnly, userId]);
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE,
-  );
-
   // Override progress with value derived from project status for display
   const displayFiltered = useMemo(
     () => filtered.map((p) => ({ ...p, progress: deriveProgress(p.status) })),
     [filtered, deriveProgress],
   );
+  const totalPages = Math.ceil(displayFiltered.length / PAGE_SIZE);
   const displayPaginated = useMemo(
-    () => paginated.map((p) => ({ ...p, progress: deriveProgress(p.status) })),
-    [paginated, deriveProgress],
+    () => displayFiltered.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE,
+    ),
+    [displayFiltered, currentPage],
   );
 
   const handleTabClick = (tab: string) => {
