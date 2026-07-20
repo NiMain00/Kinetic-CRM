@@ -106,9 +106,17 @@ export class MasterService {
       'documentTypes', 'departments', 'users', 'approvalLevels',
       'notifTemplates', 'roles', 'auditLogs', 'questions',
     ];
-    const entries: [string, any][] = await Promise.all(
+    const results = await Promise.allSettled(
       entities.map(async (e) => [e, (await this.list(e, { perPage: 100 })).data] as [string, any]),
     );
+    const entries: [string, any][] = [];
+    for (const r of results) {
+      if (r.status === 'fulfilled') {
+        entries.push(r.value);
+      } else {
+        console.error(`[master] listAll failed for entity: ${r.reason?.message || r.reason}`);
+      }
+    }
     const result = Object.fromEntries(entries);
     masterCache.set('all', { data: result, timestamp: Date.now() });
     return result;

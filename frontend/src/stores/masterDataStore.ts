@@ -382,9 +382,10 @@ export const useMasterDataStore = create<MasterDataState>()((set, get) => ({
             updates.questions = list;
             newLoaded.questions = true;
           }
+          console.log('[masterDataStore] fetchBatch loaded entities:', Object.keys(newLoaded));
           set((s) => ({ ...updates, loaded: { ...s.loaded, ...newLoaded } } as any));
-        } catch {
-          // silent — individual fetches will retry
+        } catch (err) {
+          console.error('[masterDataStore] fetchBatch failed:', err);
         }
       },
 
