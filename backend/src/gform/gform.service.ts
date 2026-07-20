@@ -166,10 +166,11 @@ export class GformService {
       const branchName = branch?.name || answers.cabang || null;
 
       // Cek duplikat lebih baik
-      let customer = await this.findExistingCustomer(customerData);
+      const existing = await this.findExistingCustomer(customerData);
+      let customer: any;
       let isNew = false;
 
-      if (customer) {
+      if (existing) {
         // Update customer yang sudah ada dengan data baru
         const updateData: any = { ...customerData };
         delete updateData.source;
@@ -177,7 +178,7 @@ export class GformService {
         delete updateData.name;
 
         customer = await this.prisma.customer.update({
-          where: { id: customer.id },
+          where: { id: existing.id },
           data: {
             ...updateData,
             code: customerData.code || this.generateCode(customerData.name),
