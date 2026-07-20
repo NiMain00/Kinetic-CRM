@@ -1,16 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, INestApplication } from '@nestjs/common';
 import { AppModule } from './app.module';
 import {
   PrismaExceptionFilter,
   PrismaValidationExceptionFilter,
 } from './common/prisma-exception.filter';
+import serverless from 'serverless-http';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-
-  // `/health` is excluded so the Docker/nginx healthcheck can reach it at
-  // the root path rather than under `/api/v1`.
+async function configureApp(app: INestApplication) {
   app.setGlobalPrefix('api/v1', { exclude: ['health'] });
 
   const corsOrigins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:3000')
@@ -30,15 +27,35 @@ async function bootstrap() {
     }),
   );
 
-  // Map Prisma constraint errors (unique / FK / not-found) to proper HTTP codes
-  // instead of leaking opaque 500s.
   app.useGlobalFilters(
     new PrismaExceptionFilter(),
     new PrismaValidationExceptionFilter(),
   );
 
-  const port = process.env.PORT || process.env.API_PORT || 4000;
-  await app.listen(port, '0.0.0.0');
-  console.log(`Server running on http://localhost:${port}`);
+  return app;
 }
-bootstrap();
+
+let cachedHandler: serverless.Handler;
+
+async function bootstrapServerless() {
+  const app = await NestFactory.create(AppModule);
+  await configureApp(app);
+  await app.init();
+  const expressApp = app.getHttpAdapter().getInstance();
+  return serverless(expressApp);
+}
+
+export const handler = async (event: any, context: any) => {
+  cachedHandler ??= await bootstrapServerless();
+  return cachedHandler(event, context);
+};
+
+if (!process.env.VERCEL) {
+  (async () => {
+    const app = await NestFactory.create(AppModule);
+    await configureApp(app);
+    const port = process.env.PORT || process.env.API_PORT || 4000;
+    await app.listen(port, '0.0.0.0');
+    console.log(`Server running on http://localhost:${port}`);
+  })();
+}
