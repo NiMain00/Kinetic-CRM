@@ -654,30 +654,26 @@ export default function ProspectFormPage() {
             <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Kategori Customer <span className="text-danger">*</span></label>
             <div className="flex gap-3">
               {(['low', 'medium', 'hot'] as const).map(level => {
-                const isActive = customerMode === 'existing'
-                  ? selectedCustomer?.level === level
-                  : newCustLevel === level;
+                const displayLevel = newCustLevel || selectedCustomer?.level || '';
+                const isActive = displayLevel === level;
                 return (
-                  <label key={level} className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all text-sm font-semibold ${
-                    isActive
-                      ? level === 'hot' ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-700'
-                        : level === 'medium' ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-700'
-                        : 'border-slate-500 bg-slate-50 dark:bg-slate-900/50 text-slate-700'
-                      : 'border-border text-outline hover:border-outline'
-                  }`}>
-                    <input
-                      type="radio"
-                      name="level"
-                      value={level}
-                      checked={isActive}
-                      onChange={() => handleLevelChange(level)}
-                      className="sr-only"
-                    />
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => handleLevelChange(level)}
+                    className={`flex-1 flex items-center justify-center gap-2 p-3 border-2 rounded-xl cursor-pointer transition-all text-sm font-semibold ${
+                      isActive
+                        ? level === 'hot' ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30 text-rose-700'
+                          : level === 'medium' ? 'border-amber-500 bg-amber-50 dark:bg-amber-950/30 text-amber-700'
+                          : 'border-slate-500 bg-slate-50 dark:bg-slate-900/50 text-slate-700'
+                        : 'border-border text-outline hover:border-outline'
+                    }`}
+                  >
                     <span className={`w-2.5 h-2.5 rounded-full ${
                       level === 'hot' ? 'bg-rose-500' : level === 'medium' ? 'bg-amber-500' : 'bg-slate-500'
                     }`} />
                     {level === 'hot' ? 'Hot' : level === 'medium' ? 'Medium' : 'Low'}
-                  </label>
+                  </button>
                 );
               })}
             </div>
