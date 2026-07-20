@@ -257,9 +257,9 @@ export default function ProspectDetailPage() {
           <span className="material-symbols-outlined text-6xl text-outline">search_off</span>
           <h2 className="text-xl font-bold text-on-surface">Prospek Tidak Ditemukan</h2>
           <p className="text-secondary text-sm">Prospek dengan ID {id} tidak tersedia.</p>
-          <button onClick={() => navigate('/prospects')} className="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-semibold text-sm hover:brightness-110 transition-all">
+          <Button variant="primary" size="sm" onClick={() => navigate('/prospects')}>
             Kembali ke Daftar
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -508,7 +508,7 @@ export default function ProspectDetailPage() {
         {/* ─── LEAD: Promosi ke Prospek ─── */}
         {!isConverted && prospect.status === 'Lead' && (
           <div className="w-full flex flex-col items-end gap-2">
-            <div className="flex items-center gap-2 text-[10px] text-secondary bg-surface-container-low px-3 py-1.5 rounded-lg flex-wrap">
+            <div className="flex items-center gap-2 text-caption-xs text-secondary bg-surface-container-low px-3 py-1.5 rounded-lg flex-wrap">
               <span className={customer?.needsVerification ? 'text-danger' : 'text-success'}>
                 <span className="material-symbols-outlined text-[14px]">{customer?.needsVerification ? 'cancel' : 'check_circle'}</span>
               </span>
@@ -585,13 +585,13 @@ export default function ProspectDetailPage() {
         )}
 
         {access === 'write' && (
-          <button onClick={handleDelete} className="px-3 py-1.5 border border-danger/30 text-danger rounded-xl text-sm font-semibold hover:bg-danger/5 transition-all flex items-center gap-1.5" aria-label="Hapus prospek">
-            <span className="material-symbols-outlined text-[18px]">delete</span>
-          </button>
+          <Button variant="outline" size="sm" onClick={handleDelete} leftIcon={<span className="material-symbols-outlined text-[18px]">delete</span>} aria-label="Hapus prospek">
+            Hapus
+          </Button>
         )}
 
         {access === 'read' && (
-          <div className="px-3 py-1.5 bg-surface-container-low border border-border rounded-lg text-[10px] text-outline flex items-center gap-1.5">
+          <div className="px-3 py-1.5 bg-surface-container-low border border-border rounded-lg text-caption-xs text-outline flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[14px]">visibility</span>
             Mode read-only — department kamu hanya bisa melihat prospek ini
           </div>
@@ -630,7 +630,7 @@ export default function ProspectDetailPage() {
                   {event.fileName} {event.fileSize && `(${event.fileSize})`}
                 </div>
               )}
-              <p className="text-[10px] text-outline mt-1">{event.time}</p>
+              <p className="text-caption-xs text-outline mt-1">{event.time}</p>
             </div>
           </div>
         );
@@ -647,7 +647,7 @@ export default function ProspectDetailPage() {
           onChange={(e) => setCommentText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSendComment(); }}
           placeholder="Tulis komentar..."
-          className="flex-1 border border-border rounded-lg text-sm p-2.5 outline-none focus:ring-1 focus:ring-primary bg-surface-container-low"
+          className="flex-1 border border-border rounded-lg text-sm p-2.5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-surface-container-low transition-all"
         />
         <Button variant="primary" size="sm" onClick={handleSendComment} disabled={!commentText.trim()}>
           <span className="material-symbols-outlined text-[18px]">send</span>
@@ -674,12 +674,12 @@ export default function ProspectDetailPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-xs font-bold text-on-surface truncate">{act.title}</p>
-                    <span className="text-[10px] text-outline whitespace-nowrap">{act.time}</span>
+                    <span className="text-caption-xs text-outline whitespace-nowrap">{act.time}</span>
                   </div>
                   {act.description && (
                     <p className="text-[11px] text-secondary mt-0.5 line-clamp-2">{act.description}</p>
                   )}
-                  <p className="text-[10px] text-outline mt-0.5">{act.actor} &middot; {act.role}</p>
+                  <p className="text-caption-xs text-outline mt-0.5">{act.actor} &middot; {act.role}</p>
                 </div>
               </div>
             );
@@ -701,7 +701,7 @@ export default function ProspectDetailPage() {
             {/* Left: Identity + Pills */}
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-xl font-extrabold text-on-surface truncate">{prospect.name}</h1>
+                <h1 className="font-display-title text-display-title text-on-surface truncate">{prospect.name}</h1>
                 <StatusBadge status={needsVerification ? 'Perlu Verifikasi' : (STATUS_LABELS[prospect.status] || prospect.status)} />
               </div>
               <p className="text-sm text-secondary">{prospect.client}</p>
@@ -720,7 +720,7 @@ export default function ProspectDetailPage() {
                 <p className="text-xs text-secondary mb-1">Nilai Prospek</p>
                 <p className="text-2xl font-extrabold text-primary">{formatCurrencyShort(prospect.estimatedValue || 0)}</p>
                 {prospect.estimatedValue !== undefined && (
-                  <p className="text-[10px] text-outline mt-0.5">{formatCurrency(prospect.estimatedValue)}</p>
+                  <p className="text-caption-xs text-outline mt-0.5">{formatCurrency(prospect.estimatedValue)}</p>
                 )}
               </div>
               {renderActionButtons()}
@@ -781,7 +781,7 @@ export default function ProspectDetailPage() {
                             {customer.picPosition && <p className="text-xs text-secondary">{customer.picPosition}</p>}
                             {customer.picPhone && (
                               <div className="flex items-center gap-1 text-xs text-secondary mt-0.5">
-                                <span className="material-symbols-outlined text-[12px]">phone</span>
+                                <span className="material-symbols-outlined text-xs">phone</span>
                                 {customer.picPhone}
                               </div>
                             )}
@@ -1048,7 +1048,7 @@ export default function ProspectDetailPage() {
                       }`}
                     >
                       {f.label}
-                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
+                      <span className="ml-1.5 text-caption-xs font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
                         {visits.filter(v => f.value === 'all' || v.status === f.value).length}
                       </span>
                     </button>
@@ -1078,7 +1078,7 @@ export default function ProspectDetailPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-sm font-bold text-on-surface">Kunjungan #{v.visitNumber}</span>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            <span className={`text-caption-xs font-semibold px-2 py-0.5 rounded-full ${
                               v.status === 'completed' ? 'bg-success/10 text-success' :
                               v.status === 'cancelled' ? 'bg-danger/10 text-danger' :
                               'bg-warning/10 text-warning'
@@ -1088,12 +1088,12 @@ export default function ProspectDetailPage() {
                           </div>
                           <div className="flex items-center gap-3 mt-1 text-xs text-secondary">
                             <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                              <span className="material-symbols-outlined text-xs">calendar_today</span>
                               {formatDate(v.date)}
                             </span>
                             {v.picName && (
                               <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px]">person</span>
+                                <span className="material-symbols-outlined text-xs">person</span>
                                 {v.picName}
                               </span>
                             )}
@@ -1109,15 +1109,16 @@ export default function ProspectDetailPage() {
                               }}>
                                 Selesaikan
                               </Button>
-                              <button
+                              <Button
+                                variant="danger"
+                                size="sm"
                                 onClick={async () => {
                                   try { await updateVisit(v.id, { status: 'cancelled' }); toast.success('Kunjungan dibatalkan.'); }
                                   catch { toast.error('Gagal membatalkan kunjungan.'); }
                                 }}
-                                className="px-3 py-1.5 border border-danger/30 text-danger rounded-lg text-xs font-semibold hover:bg-danger/5 transition-all"
                               >
                                 Batalkan
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -1164,7 +1165,7 @@ export default function ProspectDetailPage() {
                       }`}
                     >
                       {f.label}
-                      <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
+                      <span className="ml-1.5 text-caption-xs font-bold px-1.5 py-0.5 rounded-full bg-surface-container-high">
                         {tasks.filter(t => f.value === 'all' || t.status === f.value).length}
                       </span>
                     </button>
@@ -1190,10 +1191,10 @@ export default function ProspectDetailPage() {
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${pColor}`}>
+                                <span className={`text-caption-xs font-bold px-2 py-0.5 rounded-full border ${pColor}`}>
                                   {t.priority === 'high' ? 'Tinggi' : t.priority === 'medium' ? 'Sedang' : 'Rendah'}
                                 </span>
-                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                                <span className={`text-caption-xs font-semibold px-2 py-0.5 rounded-full ${
                                   t.status === 'completed' ? 'bg-success/10 text-success' :
                                   t.status === 'in_progress' ? 'bg-warning/10 text-warning' :
                                   'bg-info/10 text-info'
@@ -1205,18 +1206,18 @@ export default function ProspectDetailPage() {
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-secondary">
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 text-caption-xs text-secondary">
                             <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[12px]">person_outline</span>
+                              <span className="material-symbols-outlined text-xs">person_outline</span>
                               Dari: {users.find(u => u.id === t.fromUserId)?.fullName || '-'}
                             </span>
                             <span className="flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[12px]">person</span>
+                              <span className="material-symbols-outlined text-xs">person</span>
                               Untuk: {users.find(u => u.id === t.toUserId)?.fullName || '-'}
                             </span>
                             {t.deadline && (
                               <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                                <span className="material-symbols-outlined text-xs">calendar_today</span>
                                 Deadline: {formatDate(t.deadline)}
                               </span>
                             )}
@@ -1230,7 +1231,7 @@ export default function ProspectDetailPage() {
                             <div className="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
                               <div className={`h-full rounded-full ${progressColor} transition-all`} style={{ width: `${t.progress}%` }} />
                             </div>
-                            <span className="text-[10px] text-outline font-mono-data min-w-[32px] text-right">{t.progress}%</span>
+                            <span className="text-caption-xs text-outline font-mono-data min-w-[32px] text-right">{t.progress}%</span>
                           </div>
 
                           {t.status !== 'completed' && (
@@ -1345,29 +1346,29 @@ export default function ProspectDetailPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Tanggal Kunjungan *</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tanggal Kunjungan *</label>
             <input
               type="date"
               value={visitForm.date}
               onChange={(e) => setVisitForm({ ...visitForm, date: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Nama PIC</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama PIC</label>
             <input
               value={visitForm.picName}
               onChange={(e) => setVisitForm({ ...visitForm, picName: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               placeholder="Nama petugas kunjungan"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Catatan</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Catatan</label>
             <textarea
               value={visitForm.notes}
               onChange={(e) => setVisitForm({ ...visitForm, notes: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[80px]"
               placeholder="Hasil kunjungan..."
             />
           </div>
@@ -1410,20 +1411,20 @@ export default function ProspectDetailPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Judul *</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Judul *</label>
             <input
               value={taskForm.title}
               onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               placeholder="Contoh: Follow-up proposal ke customer"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">PIC Tujuan *</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">PIC Tujuan *</label>
             <select
               value={taskForm.toUserId}
               onChange={(e) => setTaskForm({ ...taskForm, toUserId: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
               <option value="">Pilih PIC</option>
               {users.map((u) => (
@@ -1432,11 +1433,11 @@ export default function ProspectDetailPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Prioritas</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Prioritas</label>
             <select
               value={taskForm.priority}
               onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value as any })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             >
               <option value="low">Rendah</option>
               <option value="medium">Sedang</option>
@@ -1444,20 +1445,20 @@ export default function ProspectDetailPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Deadline</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Deadline</label>
             <input
               type="date"
               value={taskForm.deadline}
               onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Catatan</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Catatan</label>
             <textarea
               value={taskForm.notes}
               onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
-              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+              className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[80px]"
               placeholder="Deskripsi tugas..."
             />
           </div>

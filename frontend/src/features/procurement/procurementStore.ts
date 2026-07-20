@@ -211,9 +211,7 @@ export const useProcurementStore = create<ProcurementState>()(
         // Simpan ke DB dulu
         try {
           const payload = stripTransientFields(newProc as any);
-          console.log('[procurementStore] Sending payload:', JSON.stringify(payload, null, 2));
           const res = await masterDataService.create('procurements', payload);
-          console.log('[procurementStore] API success response:', res.data);
           const saved = (res.data as any)?.data || res.data;
           if ((saved as any)?.id) {
             newProc.id = (saved as any).id;

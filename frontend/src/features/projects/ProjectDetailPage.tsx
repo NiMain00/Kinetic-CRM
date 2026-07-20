@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
+import { StatusBadge } from '@/components/shared';
 import PhaseStepper from '@/components/shared/PhaseStepper';
 import type { Project } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
@@ -160,9 +161,11 @@ export default function ProjectDetailView({
     return (
       <div className="py-20 text-center space-y-4">
         <span className="material-symbols-outlined text-5xl text-outline">search_off</span>
-        <h3 className="font-heading-section text-base text-on-surface">Project not found</h3>
-        <p className="text-sm text-outline">The project you are looking for does not exist or has been removed.</p>
-        <button onClick={() => onNavigatePage('projects')} className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold">Back to Projects</button>
+        <h3 className="font-heading-section text-base text-on-surface">Proyek tidak ditemukan</h3>
+        <p className="text-sm text-outline">Proyek yang Anda cari tidak ditemukan atau telah dihapus.</p>
+        <Button variant="primary" size="md" onClick={() => onNavigatePage('projects')}>
+          Kembali ke Proyek
+        </Button>
       </div>
     );
   }
@@ -314,9 +317,7 @@ export default function ProjectDetailView({
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
                 <h2 className="font-display-title text-base sm:text-xl font-bold tracking-tight truncate">{project.name}</h2>
-                <span className="px-2 py-0.5 rounded-full bg-status-indigo/10 text-status-indigo font-semibold text-[10px] sm:text-xs border border-status-indigo/20 whitespace-nowrap">
-                  {project.status}
-                </span>
+                <StatusBadge status={project.status} size="sm" />
               </div>
               <p className="text-secondary text-[10px] sm:text-xs line-clamp-1 truncate">{project.code}</p>
             </div>

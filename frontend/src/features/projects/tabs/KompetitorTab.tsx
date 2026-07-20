@@ -124,7 +124,7 @@ export default function KompetitorTab({ project, onShowNotification }: TabProps)
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">{row.name}</span>
                       {isLowestCompetitor(row) && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 font-bold uppercase tracking-wider whitespace-nowrap">
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-warning-container dark:bg-amber-900 text-warning dark:text-amber-300 font-bold uppercase tracking-wider whitespace-nowrap">
                           Harga Terendah
                         </span>
                       )}

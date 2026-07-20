@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
 import PhaseStepper from '@/components/shared/PhaseStepper';
+import { StatusBadge } from '@/components/shared';
 import { useProcurementStore } from './procurementStore';
 import { useAuthz } from '@/hooks/useAuthz';
 import { PROCUREMENT_PHASES } from '@/types/domain/procurement';
@@ -74,12 +75,13 @@ export default function ProcurementDetailView() {
           <p className="text-sm text-outline">
             Pengadaan tidak ditemukan atau telah dihapus.
           </p>
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={() => navigate('/procurement')}
-            className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold"
           >
             Kembali ke Pengadaan
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -149,17 +151,7 @@ export default function ProcurementDetailView() {
                 <h2 className="font-display-title text-base sm:text-xl font-bold tracking-tight truncate">
                   {procurement.code}
                 </h2>
-                <span
-                  className={`px-2 py-0.5 rounded-full font-semibold text-[10px] sm:text-xs border whitespace-nowrap ${
-                    procurement.status === 'Closed'
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300'
-                      : procurement.status === 'Cancelled'
-                        ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-300'
-                        : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300'
-                  }`}
-                >
-                  {procurement.status}
-                </span>
+                <StatusBadge status={procurement.status} size="md" />
               </div>
               <p className="text-secondary text-xs sm:text-sm line-clamp-1 truncate">
                 {procurement.client}
@@ -169,15 +161,15 @@ export default function ProcurementDetailView() {
 
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             {can('pengadaan:write') && (
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setShowDeleteModal(true)}
-                className="px-4 py-1.5 border border-danger text-danger font-semibold text-xs rounded-xl hover:bg-danger/5 transition-all flex items-center gap-1.5"
+                className="border-danger text-danger hover:bg-danger/5"
+                leftIcon={<span className="material-symbols-outlined text-[16px]">delete</span>}
               >
-                <span className="material-symbols-outlined text-[16px]">
-                  delete
-                </span>
                 Hapus
-              </button>
+              </Button>
             )}
           </div>
         </div>

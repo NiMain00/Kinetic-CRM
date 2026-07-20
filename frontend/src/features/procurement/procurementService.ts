@@ -8,7 +8,6 @@ import { deepClone } from '@/utils/clone';
  * Called when PemenangTab sets outcome to 'menang'.
  */
 export async function createProcurementFromProject(project: Project): Promise<Procurement> {
-  console.log('[createProcurementFromProject] called for project:', project.id, project.name);
   const store = useProcurementStore.getState();
 
   // Hanya gunakan existing jika sudah punya ID real dari backend (UUID)

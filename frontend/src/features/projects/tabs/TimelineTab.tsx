@@ -19,12 +19,12 @@ const eventIcons: Record<TimelineEvent['type'], string> = {
 };
 
 const eventColors: Record<TimelineEvent['type'], { bg: string; border: string; text: string; dot: string }> = {
-  approve: { bg: 'bg-emerald-50 dark:bg-emerald-950/30', border: 'border-emerald-500', text: 'text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-50 dark:bg-emerald-950/300' },
-  submit: { bg: 'bg-blue-50 dark:bg-blue-950/30', border: 'border-blue-500', text: 'text-blue-600 dark:text-blue-400', dot: 'bg-blue-50 dark:bg-blue-950/300' },
-  revision: { bg: 'bg-rose-50 dark:bg-rose-950/30', border: 'border-rose-500', text: 'text-rose-600 dark:text-rose-400', dot: 'bg-rose-50 dark:bg-rose-950/300' },
-  upload: { bg: 'bg-indigo-50 dark:bg-indigo-950/30', border: 'border-indigo-500', text: 'text-indigo-600 dark:text-indigo-400', dot: 'bg-indigo-50 dark:bg-indigo-950/300' },
-  status_change: { bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-500', text: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-50 dark:bg-amber-950/300' },
-  comment: { bg: 'bg-purple-50 dark:bg-purple-950/30', border: 'border-purple-500', text: 'text-purple-600 dark:text-purple-400', dot: 'bg-purple-50 dark:bg-purple-950/300' },
+  approve: { bg: 'bg-success-container dark:bg-emerald-950/30', border: 'border-emerald-500', text: 'text-success dark:text-emerald-400', dot: 'bg-success-container dark:bg-emerald-950/30' },
+  submit: { bg: 'bg-info-container dark:bg-blue-950/30', border: 'border-blue-500', text: 'text-info dark:text-blue-400', dot: 'bg-info-container dark:bg-blue-950/30' },
+  revision: { bg: 'bg-danger-container dark:bg-rose-950/30', border: 'border-rose-500', text: 'text-danger dark:text-rose-400', dot: 'bg-danger-container dark:bg-rose-950/30' },
+  upload: { bg: 'bg-status-indigo/10 dark:bg-indigo-950/30', border: 'border-indigo-500', text: 'text-status-indigo dark:text-indigo-400', dot: 'bg-status-indigo/10 dark:bg-indigo-950/30' },
+  status_change: { bg: 'bg-warning-container dark:bg-amber-950/30', border: 'border-amber-500', text: 'text-warning dark:text-amber-400', dot: 'bg-warning-container dark:bg-amber-950/30' },
+  comment: { bg: 'bg-status-purple/10 dark:bg-purple-950/30', border: 'border-purple-500', text: 'text-status-purple dark:text-purple-400', dot: 'bg-status-purple/10 dark:bg-purple-950/30' },
 };
 
 const typeLabels: Record<TimelineEvent['type'], string> = {
@@ -87,10 +87,10 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
       ? project.documents
       : [
           { key: 'RKS', label: 'Rencana Kerja & Syarat-Syarat', icon: 'RKS', color: 'bg-primary/10 text-primary', documents: [] },
-          { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400', documents: [] },
-          { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400', documents: [] },
-          { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400', documents: [] },
-          { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400', documents: [] },
+          { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-status-teal/10 dark:bg-teal-950/30 text-status-teal dark:text-teal-400', documents: [] },
+          { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-status-purple/10 dark:bg-purple-950/30 text-status-purple dark:text-purple-400', documents: [] },
+          { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-warning-container dark:bg-amber-950/30 text-warning dark:text-amber-400', documents: [] },
+          { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-info-container dark:bg-sky-950/30 text-info dark:text-sky-400', documents: [] },
         ];
     const updated = docGroups.map(g =>
       g.key === 'MISC' ? { ...g, documents: [...g.documents, newDoc] } : g
@@ -317,18 +317,18 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                       <span className="text-[10px] uppercase font-mono tracking-wider text-outline">Nilai Sebelumnya</span>
                       <span className="text-sm font-semibold text-secondary line-through">{event.prevVal}</span>
                     </div>
-                    <div className="bg-rose-50 dark:bg-rose-950/30/60 p-3 rounded-lg border border-rose-100 flex flex-col">
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-rose-600 dark:text-rose-400">Nilai Menjadi</span>
-                      <span className="text-sm font-bold text-rose-700">{event.newVal}</span>
+                    <div className="bg-danger-container dark:bg-rose-950/30 p-3 rounded-lg border border-danger/20 dark:border-rose-100 flex flex-col">
+                      <span className="text-[10px] uppercase font-mono tracking-wider text-danger dark:text-rose-400">Nilai Menjadi</span>
+                      <span className="text-sm font-bold text-danger">{event.newVal}</span>
                     </div>
                   </div>
                 )}
 
                 {event.prevVal && event.newVal && event.type === 'status_change' && (
-                  <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-950/30/60 p-3 rounded-lg border border-amber-200 dark:border-amber-800 w-fit mb-3">
-                    <span className="text-xs font-semibold text-amber-800">{event.prevVal}</span>
-                    <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 text-sm">arrow_forward</span>
-                    <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-200">{event.newVal}</span>
+                  <div className="flex items-center gap-3 bg-warning-container dark:bg-amber-950/30 p-3 rounded-lg border border-warning/20 dark:border-amber-800 w-fit mb-3">
+                    <span className="text-xs font-semibold text-warning">{event.prevVal}</span>
+                    <span className="material-symbols-outlined text-warning dark:text-amber-400 text-sm">arrow_forward</span>
+                    <span className="text-xs font-semibold text-success bg-success-container dark:bg-emerald-950/30 px-2 py-0.5 rounded border border-success/20 dark:border-emerald-200">{event.newVal}</span>
                   </div>
                 )}
 
@@ -341,7 +341,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                 {event.fileName && (
                   <div className="flex items-center justify-between p-3 border border-border rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors w-full sm:w-2/3 cursor-pointer">
                     <div className="flex items-center gap-3">
-                      <span className="material-symbols-outlined text-red-500 text-3xl">picture_as_pdf</span>
+                      <span className="material-symbols-outlined text-danger text-3xl">picture_as_pdf</span>
                       <div>
                         <p className="text-xs font-bold text-on-surface">{event.fileName}</p>
                         {event.fileSize && <p className="text-[10px] text-outline">{event.fileSize}</p>}

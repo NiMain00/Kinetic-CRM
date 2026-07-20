@@ -11,17 +11,17 @@ interface Props {
 }
 
 const PRIORITY_CONFIG = {
-  urgent: { label: 'Urgent', color: 'text-red-600 bg-red-50 border-red-200', icon: 'priority_high' },
-  high: { label: 'High', color: 'text-orange-600 bg-orange-50 border-orange-200', icon: 'arrow_upward' },
-  medium: { label: 'Medium', color: 'text-amber-600 bg-amber-50 border-amber-200', icon: 'remove' },
-  low: { label: 'Low', color: 'text-green-600 bg-green-50 border-green-200', icon: 'arrow_downward' },
+  urgent: { label: 'Urgent', color: 'text-danger bg-danger-container border-danger/20', icon: 'priority_high' },
+  high: { label: 'High', color: 'text-status-orange bg-orange-50 border-orange-200', icon: 'arrow_upward' },
+  medium: { label: 'Medium', color: 'text-warning bg-warning-container border-warning/20', icon: 'remove' },
+  low: { label: 'Low', color: 'text-success bg-success-container border-success/20', icon: 'arrow_downward' },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: string }> = {
-  todo: { label: 'To Do', color: 'bg-gray-100 text-gray-600', icon: 'radio_button_unchecked' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-600', icon: 'progress_activity' },
-  review: { label: 'Review', color: 'bg-purple-100 text-purple-600', icon: 'rate_review' },
-  done: { label: 'Done', color: 'bg-emerald-100 text-emerald-600', icon: 'check_circle' },
+  todo: { label: 'To Do', color: 'bg-surface-container text-secondary', icon: 'radio_button_unchecked' },
+  in_progress: { label: 'In Progress', color: 'bg-info-container text-info', icon: 'progress_activity' },
+  review: { label: 'Review', color: 'bg-status-purple/10 text-status-purple', icon: 'rate_review' },
+  done: { label: 'Done', color: 'bg-success-container text-success', icon: 'check_circle' },
 };
 
 const STATUS_OPTIONS = [
@@ -74,7 +74,7 @@ function TaskItem({ task, allTasks, onUpdate, onDelete, onAdd, depth = 0 }: Task
           onClick={() => onUpdate(task.id, { status: task.status === 'done' ? 'todo' : 'done' })}
           className={`mt-0.5 shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
             task.status === 'done'
-              ? 'bg-emerald-500 border-emerald-500 text-white'
+              ? 'bg-success border-success text-white'
               : 'border-border hover:border-primary'
           }`}
         >
@@ -396,7 +396,7 @@ export default function TasksTab({ project, onShowNotification }: Props) {
                                 onClick={() => updateTask(st.id, { status: st.status === 'done' ? 'todo' : 'done' })}
                                 className={`shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
                                   st.status === 'done'
-                                    ? 'bg-emerald-400 border-emerald-400 text-white'
+                                    ? 'bg-success border-success text-white'
                                     : 'border-border hover:border-primary'
                                 }`}
                               >

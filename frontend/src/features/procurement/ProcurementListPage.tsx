@@ -122,13 +122,14 @@ export default function ProcurementListPage() {
         description="Kelola seluruh aktivitas pengadaan barang/jasa"
         actions={
           can('pengadaan:write') ? (
-            <button
+            <Button
+              variant="primary"
+              size="md"
               onClick={() => navigate('/procurement/new')}
-              className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold hover:brightness-110 transition-all flex items-center gap-2"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
               Pengadaan Baru
-            </button>
+            </Button>
           ) : undefined
         }
       />
@@ -145,6 +146,7 @@ export default function ProcurementListPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Cari pengadaan..."
               className="w-full pl-10 pr-4 py-2 rounded-xl border border-border focus:ring-2 focus:ring-primary focus:outline-none text-sm bg-surface text-on-surface"
+              aria-label="Cari pengadaan"
             />
           </div>
           <select
@@ -153,6 +155,7 @@ export default function ProcurementListPage() {
               setStatusFilter(e.target.value as ProcurementStatus | 'all')
             }
             className="px-3 py-2 rounded-xl border border-border/60 text-sm focus:ring-2 focus:ring-primary focus:outline-none bg-surface text-on-surface"
+            aria-label="Filter status"
           >
             <option value="all">Semua Status</option>
             {Object.keys(STATUS_COLORS).map((s) => (
@@ -203,12 +206,13 @@ export default function ProcurementListPage() {
                 : 'Pengadaan akan muncul setelah proyek dinyatakan MENANG, atau Anda dapat membuat manual.'}
             </p>
             {can('pengadaan:write') && !search && statusFilter === 'all' && (
-              <button
+              <Button
+                variant="primary"
+                size="md"
                 onClick={() => navigate('/procurement/new')}
-                className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold"
               >
                 Buat Pengadaan Baru
-              </button>
+              </Button>
             )}
           </div>
         ) : isMobile ? (
@@ -227,7 +231,7 @@ export default function ProcurementListPage() {
                         return projectName ? projectName : p.sourceProjectCode ? p.sourceProjectCode : 'Manual';
                       })()}
                     </Link>
-                    <p className="text-[11px] text-outline font-mono mt-0.5">{p.code}</p>
+                    <p className="font-mono-data text-outline mt-0.5">{p.code}</p>
                   </div>
                   <StatusBadge status={p.status} />
                 </div>
@@ -243,9 +247,9 @@ export default function ProcurementListPage() {
                     <div className="flex-1 h-1.5 bg-surface-container-high rounded-full overflow-hidden max-w-[80px]">
                       <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${p.progress}%` }} />
                     </div>
-                    <span className="text-[10px] font-mono-data text-secondary">{p.progress}%</span>
+                    <span className="text-caption-xs font-mono-data text-secondary">{p.progress}%</span>
                   </div>
-                  <span className="text-[10px] text-outline">
+                  <span className="text-caption-xs text-outline">
                     {new Date(p.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                   {can('pengadaan:write') && (
@@ -347,7 +351,7 @@ export default function ProcurementListPage() {
                               style={{ width: `${p.progress}%` }}
                             />
                           </div>
-                          <span className="text-[10px] font-mono-data text-secondary">
+                          <span className="text-caption-xs font-mono-data text-secondary">
                             {p.progress}%
                           </span>
                         </div>

@@ -65,7 +65,7 @@ function ProspectCard({
     <div
       draggable
       onDragStart={(e) => onDragStart(e, prospect.id)}
-      className="bg-white rounded-xl border border-border/60 p-3.5 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing active:shadow-lg group"
+      className="bg-surface rounded-xl border border-border/60 p-3.5 shadow-card hover:shadow-card-hover transition-all cursor-grab active:cursor-grabbing active:shadow-lg group"
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0 flex-1">
@@ -73,7 +73,7 @@ function ProspectCard({
             {prospect.name}
           </p>
         </div>
-        <span className="text-[10px] font-mono-data text-outline whitespace-nowrap shrink-0 mt-0.5">
+        <span className="text-caption-xs font-mono-data text-outline whitespace-nowrap shrink-0 mt-0.5">
           {formatDate(prospect.date)}
         </span>
       </div>
@@ -86,7 +86,7 @@ function ProspectCard({
       {prospect.estimatedValue && (
         <div className="flex items-center gap-1.5 mb-2">
           <span className="material-symbols-outlined text-[14px] text-outline">payments</span>
-          <span className="text-xs font-semibold text-on-surface">
+          <span className="text-caption-xs font-semibold text-on-surface">
             Rp {prospect.estimatedValue.toLocaleString('id-ID')}
           </span>
         </div>
@@ -94,18 +94,19 @@ function ProspectCard({
 
       <div className="flex items-center justify-between pt-2 border-t border-border/40">
         <div className="flex items-center gap-1.5">
-          <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">
+          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-caption-xs font-bold text-primary">
             {(prospect.author || '?')[0]}
           </div>
-          <span className="text-[10px] text-secondary truncate max-w-[80px]">{prospect.author}</span>
+          <span className="text-caption-xs text-secondary truncate max-w-[80px]">{prospect.author}</span>
         </div>
 
         <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           {prospect.status === 'Approved' && !prospect.isConverted && canCreateProject && (
             <button
               onClick={() => onConvert(prospect)}
-              className="p-1 rounded-lg text-success hover:bg-success/10 transition-all"
+              className="p-1.5 rounded-lg text-success hover:bg-success/10 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
               title="Buat Proyek"
+              aria-label="Buat Proyek"
             >
               <span className="material-symbols-outlined text-[16px]">add_business</span>
             </button>
@@ -113,8 +114,9 @@ function ProspectCard({
           {canWrite && (
             <button
               onClick={() => onEdit(prospect.id)}
-              className="p-1 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all"
+              className="p-1.5 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
               title="Edit"
+              aria-label="Edit prospek"
             >
               <span className="material-symbols-outlined text-[16px]">edit</span>
             </button>
@@ -122,8 +124,9 @@ function ProspectCard({
           {canWrite && (
             <button
               onClick={() => onDelete(prospect.id)}
-              className="p-1 rounded-lg text-outline hover:text-danger hover:bg-error-container/20 transition-all"
+              className="p-1.5 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all focus:outline-none focus:ring-2 focus:ring-danger/20"
               title="Hapus"
+              aria-label="Hapus prospek"
             >
               <span className="material-symbols-outlined text-[16px]">delete</span>
             </button>
@@ -237,7 +240,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
     <PageContainer>
       <PageHeader
         title="Pipeline Prospek"
-        description="Drag & drop untuk mengubah status prospek"
+        description="Seret & lepas untuk mengubah status prospek"
         actions={
           <div className="flex gap-2">
             <Button
@@ -246,7 +249,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
               leftIcon={<span className="material-symbols-outlined text-[16px]">table_rows</span>}
               onClick={() => navigate('/prospects')}
             >
-              Table View
+              Tabel
             </Button>
             {canWrite && (
               <Button
@@ -270,13 +273,15 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
             style={{ scrollSnapAlign: 'start' }}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, stage.key as Prospect['status'])}
+            role="region"
+            aria-label={`Kolom ${stage.label}`}
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${stage.dot}`} />
                 <h3 className="font-semibold text-sm text-on-surface">{stage.label}</h3>
               </div>
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-surface-container-high text-secondary">
+              <span className="text-caption-xs font-bold px-2 py-0.5 rounded-full bg-surface-container-high text-secondary">
                 {stage.prospects.length}
               </span>
             </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { Button } from '@/components/ui';
 import { useProcurementStore } from './procurementStore';
 import { useProjectStore } from '@/stores/projectStore';
 import { useRelationStore } from '@/stores/relationStore';
@@ -65,7 +66,8 @@ export default function ProcurementFormPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/procurement')}
-            className="p-1 hover:bg-surface-container rounded-full transition-colors"
+            className="p-1 hover:bg-surface-container rounded-full transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+            aria-label="Kembali ke daftar pengadaan"
           >
             <span className="material-symbols-outlined text-primary text-[20px]">
               arrow_back
@@ -88,7 +90,7 @@ export default function ProcurementFormPage() {
               Referensi Proyek (Opsional)
             </h3>
             <div>
-              <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
                 Hubungkan dengan Proyek yang Menang
               </label>
               <select
@@ -109,6 +111,7 @@ export default function ProcurementFormPage() {
                   }
                 }}
                 className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
+                aria-label="Pilih proyek sumber"
               >
                 <option value="">Tidak ada (input manual)</option>
                 {winningProjects.map((p) => (
@@ -123,7 +126,7 @@ export default function ProcurementFormPage() {
                   </option>
                 ))}
               </select>
-              <p className="text-[10px] text-outline mt-1">
+              <p className="text-caption-xs text-outline mt-1">
                 Pilih proyek yang sudah MENANG untuk mengisi data otomatis
               </p>
             </div>
@@ -136,7 +139,7 @@ export default function ProcurementFormPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
-                <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
                   Nama Klien *
                 </label>
                 <input
@@ -145,10 +148,11 @@ export default function ProcurementFormPage() {
                   className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
                   placeholder="Nama perusahaan klien"
                   required
+                  aria-label="Nama Klien"
                 />
               </div>
               <div>
-                <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
                   Nilai Kontrak
                 </label>
                 <input
@@ -157,10 +161,11 @@ export default function ProcurementFormPage() {
                   onChange={(e) => setContractValue(Number(e.target.value))}
                   className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
                   placeholder="0"
+                  aria-label="Nilai Kontrak"
                 />
               </div>
               <div>
-                <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
                   Lokasi
                 </label>
                 <input
@@ -168,6 +173,7 @@ export default function ProcurementFormPage() {
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
                   placeholder="Lokasi proyek"
+                  aria-label="Lokasi"
                 />
               </div>
             </div>
@@ -183,7 +189,7 @@ export default function ProcurementFormPage() {
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
                   Nomor PR
                 </label>
                 <input
@@ -191,11 +197,12 @@ export default function ProcurementFormPage() {
                   onChange={(e) => setPrNumber(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
                   placeholder="PR-2026-001"
+                  aria-label="Nomor PR"
                 />
               </div>
             </div>
             <div>
-              <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
                 Catatan PR
               </label>
               <textarea
@@ -204,26 +211,28 @@ export default function ProcurementFormPage() {
                 rows={3}
                 className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none bg-surface text-on-surface"
                 placeholder="Deskripsi kebutuhan pengadaan..."
+                aria-label="Catatan PR"
               />
             </div>
           </section>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 flex-wrap pt-4">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="md"
               onClick={() => navigate('/procurement')}
-              className="px-4 py-2 border border-border text-secondary rounded-lg text-sm font-semibold hover:bg-surface-container transition-colors"
             >
               Batal
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
               type="submit"
-              className="px-6 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold hover:brightness-110 transition-all flex items-center gap-2"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">save</span>}
             >
-              <span className="material-symbols-outlined text-[18px]">save</span>
               Simpan Pengadaan
-            </button>
+            </Button>
           </div>
         </form>
       </div>

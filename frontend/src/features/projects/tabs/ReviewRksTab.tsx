@@ -449,7 +449,7 @@ export default function ReviewRksTab({ project, onShowNotification }: TabProps) 
                 <div key={q.id} className={`p-4 rounded-lg border-l-4 ${isAnswered ? 'border-success bg-surface-container-low' : 'border-warning bg-surface-container border border-border'}`}>
                   <p className="font-semibold text-sm text-on-surface mb-2">
                     {index + 1}. {q.question_text}
-                    {q.is_required && <span className="text-red-500 ml-1">*</span>}
+                    {q.is_required && <span className="text-danger ml-1">*</span>}
                   </p>
                   {hasOptions && q.options && (
                     <div className="flex flex-wrap gap-2 mb-2">

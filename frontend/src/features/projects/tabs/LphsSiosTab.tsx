@@ -664,7 +664,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
           {!lphs.departmentsLocked && isCabang && (
             <>
-              <button onClick={uploadingLPHS ? undefined : handleUploadLphs} disabled={uploadingLPHS} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer mb-3 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button onClick={uploadingLPHS ? undefined : handleUploadLphs} disabled={uploadingLPHS} className="w-full border-2 border-dashed border-border rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer mb-3 disabled:opacity-50 disabled:cursor-not-allowed">
                 {uploadingLPHS ? (
                   <>
                     <span className="material-symbols-outlined text-primary text-2xl animate-spin">sync</span>
@@ -730,7 +730,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
           )}
 
           {!lphs.departmentsLocked && isCabang && (
-            <button onClick={uploadingSIOS ? undefined : handleUploadSios} disabled={uploadingSIOS} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={uploadingSIOS ? undefined : handleUploadSios} disabled={uploadingSIOS} className="w-full border-2 border-dashed border-border rounded-xl p-4 text-center hover:bg-surface-container-low transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
               {uploadingSIOS ? (
                 <>
                   <span className="material-symbols-outlined text-primary text-2xl animate-spin">sync</span>
@@ -809,7 +809,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
           {/* Re-upload after revision */}
           {needsRevisionReupload && isCabang && (
-            <button onClick={handleReuploadRevision} className="w-full inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-amber-50 dark:bg-amber-950/300 text-white hover:brightness-110" type="button">
+            <button onClick={handleReuploadRevision} className="w-full inline-flex items-center justify-center gap-2 font-label-sm font-semibold rounded-lg transition-all active:scale-[0.98] px-4 py-2 text-sm bg-warning-container dark:bg-amber-950/30 text-warning hover:brightness-110" type="button">
               <span className="material-symbols-outlined text-[18px]">upload</span>
               Upload Ulang Revisi
             </button>
@@ -848,7 +848,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                     <button onClick={handlePmApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                       Setujui
                     </button>
-                    <button onClick={handlePmRevision} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                    <button onClick={handlePmRevision} className="px-3 py-1.5 bg-warning-container dark:bg-amber-950/30 text-warning text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                       Revisi
                     </button>
                   </>
@@ -859,13 +859,13 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
 
             {/* Management Row */}
             {lphs.overallStatus !== 'draft' && (
-              <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 mb-3">
-                <div className="w-12 h-12 rounded-full bg-amber/10 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-amber-700 dark:text-amber-400">verified</span>
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-warning-container dark:bg-amber-950/30 border border-warning/20 dark:border-amber-800 mb-3">
+                <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-warning dark:text-amber-400">verified</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-amber-800">Management</p>
-                  <p className="text-xs text-amber-600 dark:text-amber-400">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}${project?.status === 'LPHS/SIOS' ? ' — Klik Lanjutkan' : ''}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
+                  <p className="text-sm font-bold text-warning">Management</p>
+                  <p className="text-xs text-warning dark:text-amber-400">{STATUS_LABEL[lphs.mgmtStatus]}{lphs.mgmtApprovedAt ? ` • ${new Date(lphs.mgmtApprovedAt).toLocaleDateString('id-ID')}${project?.status === 'LPHS/SIOS' ? ' — Klik Lanjutkan' : ''}` : lphs.overallStatus === 'mgmt_review' ? ' • Menunggu approval...' : ''}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   {statusIcon(lphs.mgmtStatus)}
@@ -875,7 +875,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                       <button onClick={handleMgmtApprove} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                         Setujui
                       </button>
-                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-warning-container dark:bg-amber-950/30 text-warning text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                         Revisi
                       </button>
                     </>
@@ -887,7 +887,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                         <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
                         Lanjutkan ke Input Harga
                       </button>
-                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                      <button onClick={handleMgmtRevision} className="px-3 py-1.5 bg-warning-container dark:bg-amber-950/30 text-warning text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                         Revisi
                       </button>
                     </>
@@ -925,7 +925,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                         <p className="text-[10px] text-outline mt-1 italic">"{approval.reviewNotes}"</p>
                       )}
                       {approval.revisionNotes && (
-                        <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1 italic">Catatan revisi: {approval.revisionNotes}</p>
+                        <p className="text-[10px] text-warning dark:text-amber-400 mt-1 italic">Catatan revisi: {approval.revisionNotes}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -936,7 +936,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
                           <button onClick={() => handleDeptApprove(approval.departmentId)} className="px-3 py-1.5 bg-success text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                             Setujui
                           </button>
-                          <button onClick={() => handleDeptRevisionClick(approval.departmentId)} className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/300 text-white text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
+                          <button onClick={() => handleDeptRevisionClick(approval.departmentId)} className="px-3 py-1.5 bg-warning-container dark:bg-amber-950/30 text-warning text-[10px] font-bold rounded-lg hover:brightness-110 transition-all cursor-pointer">
                             Revisi
                           </button>
                         </div>
@@ -1058,7 +1058,7 @@ export default function LphsSiosTab({ project, onShowNotification }: TabProps) {
               <button onClick={() => setDeptRevisionDialog({ open: false, departmentId: '', departmentName: '', notes: '' })} className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">
                 Batal
               </button>
-              <button onClick={handleDeptRevisionSend} className="px-4 py-2 bg-amber-50 dark:bg-amber-950/300 text-white text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
+              <button onClick={handleDeptRevisionSend} className="px-4 py-2 bg-warning-container dark:bg-amber-950/30 text-warning text-xs font-bold rounded-lg hover:brightness-110 transition-colors cursor-pointer">
                 Kirim Revisi
               </button>
             </div>

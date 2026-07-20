@@ -260,7 +260,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 }`}
               >
                 {opt.label}
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                <span className={`text-caption-xs font-bold px-1.5 py-0.5 rounded-full ${
                   activeFilter === opt.value
                     ? 'bg-primary/10 text-primary'
                     : 'bg-surface-container-high text-secondary'
@@ -302,8 +302,9 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
               <input
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:ring-primary w-full sm:w-[260px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full sm:w-[260px] transition-all"
                 placeholder="Cari prospek atau klien..."
+                aria-label="Cari prospek"
                 type="text"
               />
             </div>
@@ -384,7 +385,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary">
+                      <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-caption-xs font-bold text-primary">
                         {(row.author || '?')[0]}
                       </div>
                       <span className="text-on-surface text-xs truncate" title={row.author}>{row.author}</span>
@@ -561,7 +562,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                       </td>
                       <td className="px-6 py-4 overflow-hidden">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center text-caption-xs font-bold text-primary shrink-0">
                             {(row.author || '')[0] || '?'}
                           </div>
                           <span className="text-on-surface text-xs truncate" title={row.author || ''}>{row.author || '-'}</span>

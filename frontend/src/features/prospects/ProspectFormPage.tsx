@@ -9,6 +9,7 @@ import { useCustomerStore } from '@/stores/customerStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useApprovalStore } from '@/stores/approvalStore';
+import { Button } from '@/components/ui';
 import CurrencyInput from '@/components/ui/CurrencyInput';
 
 // Resolve question_type_id ke kode render (radio/checkbox/textarea/select/text)
@@ -413,7 +414,7 @@ export default function ProspectFormPage() {
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
           <div>
-            <h1 className="text-xl font-extrabold text-on-surface">{isEdit ? 'Edit Prospek' : 'Buat Prospek Baru'}</h1>
+            <h1 className="font-display-title text-display-title text-on-surface">{isEdit ? 'Edit Prospek' : 'Buat Prospek Baru'}</h1>
             <p className="text-sm text-secondary mt-1">{showDetail ? 'Lengkapi detail prospek di bawah untuk prospek level ini.' : 'Isi informasi dasar prospek terlebih dahulu.'}</p>
           </div>
 
@@ -445,11 +446,11 @@ export default function ProspectFormPage() {
           {customerMode === 'existing' ? (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Cari Customer Existing</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Cari Customer Existing</label>
                   <input
                     value={customerSearch}
                     onChange={(e) => setCustomerSearch(e.target.value)}
-                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+                    className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all"
                     placeholder="Ketik nama atau kode customer..."
                     type="text"
                   />
@@ -505,16 +506,16 @@ export default function ProspectFormPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Nama Customer <span className="text-danger">*</span></label>
-                <input value={newCustName} onChange={(e) => setNewCustName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="Contoh: PT. Maju Bersama" type="text" />
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama Customer <span className="text-danger">*</span></label>
+                <input value={newCustName} onChange={(e) => setNewCustName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all" placeholder="Contoh: PT. Maju Bersama" type="text" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Kode Customer</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Kode Customer</label>
                   <input value={newCustCode} onChange={(e) => setNewCustCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: MB" type="text" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Tipe Customer</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tipe Customer</label>
                   <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     {customerTypeOptions.map(t => (
                       <option key={t.value} value={t.value}>{t.label}</option>
@@ -524,23 +525,23 @@ export default function ProspectFormPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Kota</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Kota</label>
                   <input value={newCustCity} onChange={(e) => setNewCustCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Kota" type="text" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">NPWP (opsional)</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">NPWP (opsional)</label>
                   <input value={newCustNpwp} onChange={(e) => setNewCustNpwp(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: 01.234.567.8-091.000" type="text" />
                 </div>
               </div>
 
               {/* Hierarki & Level */}
               <div className="border border-border/60 rounded-xl p-4 space-y-4 bg-surface-container-low/30">
-                <h4 className="font-semibold text-sm text-on-surface-variant flex items-center gap-1">
+                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-secondary flex items-center gap-1">
                   <span className="material-symbols-outlined text-[18px]">account_tree</span>
                   Hierarki & Level
                 </h4>
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Sub Company / Perusahaan Induk</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Sub Company / Perusahaan Induk</label>
                   <select value={newCustParentId} onChange={(e) => setNewCustParentId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Tidak ada (Root)</option>
                     {customers.filter(c => c.id !== selectedCustomerId).map(c => (
@@ -549,12 +550,12 @@ export default function ProspectFormPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Nama Perusahaan Induk (Canonical)</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama Perusahaan Induk (Canonical)</label>
                   <input value={newCustCanonicalName} onChange={(e) => setNewCustCanonicalName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Nama perusahaan induk untuk standarisasi" type="text" />
-                  <p className="text-[10px] text-secondary">Gunakan nama yang sama untuk perusahaan induk agar project tergabung di 1 root.</p>
+                  <p className="text-caption-xs text-secondary">Gunakan nama yang sama untuk perusahaan induk agar project tergabung di 1 root.</p>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Level Customer</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Level Customer</label>
                   <select value={newCustLevel} onChange={(e) => handleLevelChange(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Pilih Level</option>
                     <option value="low">Low</option>
@@ -565,13 +566,13 @@ export default function ProspectFormPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Kebutuhan (Requirements)</label>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Kebutuhan (Requirements)</label>
                 <textarea value={newCustRequirements} onChange={(e) => setNewCustRequirements(e.target.value)} rows={3} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none resize-none" placeholder="Catat kebutuhan utama customer..." />
               </div>
 
               {newCustType === 'pemerintah' && (
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Unit Level (Instansi Pemerintah)</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Unit Level (Instansi Pemerintah)</label>
                   <select value={newCustUnitLevel} onChange={(e) => setNewCustUnitLevel(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Pilih Level</option>
                     <option value="kementerian">Kementerian</option>
@@ -585,7 +586,7 @@ export default function ProspectFormPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Bidang Customer / Industri</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Bidang Customer / Industri</label>
                   <select value={newCustIndustryId} onChange={(e) => setNewCustIndustryId(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Pilih Industri</option>
                     {industries.map(ind => (
@@ -594,7 +595,7 @@ export default function ProspectFormPage() {
                   </select>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Provider Existing</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Provider Existing</label>
                   <select value={providerExisting} onChange={(e) => setProviderExisting(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Tidak Ada</option>
                     {competitors.map(prov => (
@@ -606,21 +607,21 @@ export default function ProspectFormPage() {
 
               {/* PIC Customer */}
               <div className="border border-border/60 rounded-xl p-4 space-y-4 bg-surface-container-low/30">
-                <h4 className="font-semibold text-sm text-on-surface-variant flex items-center gap-1">
+                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-secondary flex items-center gap-1">
                   <span className="material-symbols-outlined text-[18px]">contact_phone</span>
                   PIC Customer
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Nama PIC</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama PIC</label>
                     <input value={picName} onChange={(e) => setPicName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Nama lengkap PIC" type="text" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Jabatan PIC</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Jabatan PIC</label>
                     <input value={picPosition} onChange={(e) => setPicPosition(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: Procurement Manager" type="text" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">No HP PIC</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">No HP PIC</label>
                     <input value={picPhone} onChange={(e) => setPicPhone(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: 0812-3456-7890" type="text" />
                   </div>
                 </div>
@@ -631,12 +632,12 @@ export default function ProspectFormPage() {
           <hr className="border-border" />
 
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm text-on-surface-variant">Nama Aset / Prospek <span className="text-danger">*</span></label>
-            <input value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm" placeholder="Contoh: Pengadaan Server - Jakarta" type="text" />
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama Aset / Prospek <span className="text-danger">*</span></label>
+            <input value={formName} onChange={(e) => setFormName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm transition-all" placeholder="Contoh: Pengadaan Server - Jakarta" type="text" />
           </div>
 
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm text-on-surface-variant">Kategori Customer <span className="text-danger">*</span></label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Kategori Customer <span className="text-danger">*</span></label>
             <div className="flex gap-3">
               {(['low', 'medium', 'hot'] as const).map(level => {
                 const isActive = customerMode === 'existing'
@@ -670,7 +671,7 @@ export default function ProspectFormPage() {
 
           {/* Branch — READONLY */}
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm text-on-surface-variant">Cabang</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Cabang</label>
             <div className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-sm text-on-surface">
               {userBranch}
             </div>
@@ -709,7 +710,7 @@ export default function ProspectFormPage() {
                 </h3>
 
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Bidang Customer / Industri</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Bidang Customer / Industri</label>
                   <select value={customerMode === 'new' ? newCustIndustryId : industryId} onChange={(e) => { if (customerMode === 'new') setNewCustIndustryId(e.target.value); else setIndustryId(e.target.value); }} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Pilih Industri</option>
                     {industries.map(ind => (
@@ -719,7 +720,7 @@ export default function ProspectFormPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="font-semibold text-sm text-on-surface-variant">Provider Existing</label>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Provider Existing</label>
                   <select value={providerExisting} onChange={(e) => setProviderExisting(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                     <option value="">Tidak Ada</option>
                     {competitors.map(prov => (
@@ -730,21 +731,21 @@ export default function ProspectFormPage() {
 
                 {/* PIC Customer */}
                 <div className="border-t border-border pt-4 space-y-3">
-                  <h4 className="font-semibold text-sm text-on-surface-variant flex items-center gap-1">
+                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-secondary flex items-center gap-1">
                     <span className="material-symbols-outlined text-[18px]">contact_phone</span>
                     PIC Customer
                   </h4>
                   <div className="space-y-3">
                     <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">Nama PIC</label>
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama PIC</label>
                       <input value={picName} onChange={(e) => setPicName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Nama lengkap PIC" type="text" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">Jabatan PIC</label>
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Jabatan PIC</label>
                       <input value={picPosition} onChange={(e) => setPicPosition(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: Procurement Manager" type="text" />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="font-semibold text-sm text-on-surface-variant">No HP PIC</label>
+                      <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">No HP PIC</label>
                       <input value={picPhone} onChange={(e) => setPicPhone(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: 0812-3456-7890" type="text" />
                     </div>
                   </div>
@@ -760,7 +761,7 @@ export default function ProspectFormPage() {
                   </h3>
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tipe Proyek</label>
                     <select value={projectType} onChange={(e) => setProjectType(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                       {projectTypeOptions.length === 0 && <option value="Tender">Tender</option>}
                       {projectTypeOptions.map((opt) => (
@@ -772,17 +773,17 @@ export default function ProspectFormPage() {
                   <CurrencyInput label="Estimasi Nilai Proyek" value={formValue} onChange={setFormValue} placeholder="Rp 0" />
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Estimasi Tanggal Closing</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Estimasi Tanggal Closing</label>
                     <input value={formDate} onChange={(e) => setFormDate(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none" type="date" />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Potensi Penambahan Unit</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Potensi Penambahan Unit</label>
                     <input value={potensiUnit} onChange={(e) => setPotensiUnit(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none" placeholder="0" type="number" min="0" />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Sumber Lead</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Sumber Lead</label>
                     <select value={formSource} onChange={(e) => setFormSource(e.target.value as 'ho' | 'branch')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
                       <option value="branch">Branch / Kantor Cabang</option>
                       <option value="ho">Head Office (HO)</option>
@@ -790,7 +791,7 @@ export default function ProspectFormPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="font-semibold text-sm text-on-surface-variant">Deskripsi</label>
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Deskripsi</label>
                     <textarea value={formDesc} onChange={(e) => setFormDesc(e.target.value)} rows={4} className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none resize-none" placeholder="Keterangan singkat mengenai kebutuhan proyek..." />
                   </div>
                 </div>
@@ -813,7 +814,7 @@ export default function ProspectFormPage() {
                             {q.question_text}
                             {q.is_required && <span className="text-danger ml-1">*</span>}
                           </p>
-                          {q.help_text && <p className="text-[10px] text-secondary">{q.help_text}</p>}
+                          {q.help_text && <p className="text-caption-xs text-secondary">{q.help_text}</p>}
 
                           {(typeCode === 'text' || typeCode === 'textarea') && (
                             <textarea value={answers[q.id] || ''} onChange={(e) => setAnswers({ ...answers, [q.id]: e.target.value })} placeholder={q.placeholder_text || 'Masukkan jawaban...'} rows={typeCode === 'textarea' ? 4 : 2} className="w-full px-4 py-2 border border-border rounded-lg text-sm bg-surface-container-lowest outline-none resize-none" />
@@ -868,20 +869,16 @@ export default function ProspectFormPage() {
 
         {/* Actions */}
         <div className="flex justify-between items-center bg-surface border border-border/60 p-4 rounded-2xl shadow-card">
-          <button onClick={() => navigate('/prospects')} className="px-6 py-2.5 bg-surface border border-border/60 text-on-surface font-semibold rounded-xl hover:bg-surface-container transition-all text-sm">
+          <Button variant="ghost" size="md" onClick={() => navigate('/prospects')}>
             Kembali ke Daftar
-          </button>
+          </Button>
           <div className="flex gap-3">
-            <button onClick={handleSaveDraft} disabled={isSubmitting} className="px-6 py-2.5 bg-surface border border-border/60 text-primary font-bold rounded-xl hover:bg-surface-container transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+            <Button variant="outline" size="md" onClick={handleSaveDraft} isLoading={isSubmitting}>
               {isSubmitting ? 'Menyimpan...' : (isEdit ? 'Simpan Draft' : 'Simpan sebagai Lead')}
-            </button>
-            <button onClick={handleSubmitReview} disabled={isSubmitting} className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-sm hover:bg-primary-light transition-all text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-              {isSubmitting ? (
-                <><span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4" /> Mengirim...</>
-              ) : (
-                <>Kirim ke Review <span className="material-symbols-outlined text-[18px]">send</span></>
-              )}
-            </button>
+            </Button>
+            <Button variant="primary" size="md" onClick={handleSubmitReview} isLoading={isSubmitting} rightIcon={!isSubmitting ? <span className="material-symbols-outlined text-[18px]">send</span> : undefined}>
+              {isSubmitting ? 'Mengirim...' : 'Kirim ke Review'}
+            </Button>
           </div>
         </div>
       </div>
