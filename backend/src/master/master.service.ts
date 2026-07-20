@@ -95,6 +95,25 @@ export class MasterService {
     return undefined;
   }
 
+  async listAll() {
+    const cached = masterCache.get('all');
+    if (cached && Date.now() - cached.timestamp < MASTER_CACHE_TTL_MS) {
+      return cached.data;
+    }
+    const entities = [
+      'industries', 'categories', 'competitors', 'questionTypes',
+      'projectStatuses', 'periods', 'holidays', 'lossReasons',
+      'documentTypes', 'departments', 'users', 'approvalLevels',
+      'notifTemplates', 'roles', 'auditLogs', 'questions',
+    ];
+    const entries: [string, any][] = await Promise.all(
+      entities.map(async (e) => [e, (await this.list(e, { perPage: 100 })).data] as [string, any]),
+    );
+    const result = Object.fromEntries(entries);
+    masterCache.set('all', { data: result, timestamp: Date.now() });
+    return result;
+  }
+
   async list(entity: string, params?: any) {
     const model = this.getModel(entity);
     const where: any = {};

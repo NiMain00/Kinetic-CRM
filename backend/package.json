@@ -6,16 +6,16 @@
     "schema": "../prisma/schema.prisma"
   },
   "scripts": {
-  "postinstall": "prisma generate",
-  "vercel-build": "prisma generate && nest build",
-  "build": "prisma generate && nest build",
-  "start": "nest start",
-  "start:dev": "nest start --watch",
-  "start:debug": "nest start --debug --watch",
-  "start:prod": "node dist/main",
-  "lint": "tsc --noEmit",
-  "format": "prettier --write \"src/**/*.ts\""
-},
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && nest build",
+    "build": "prisma generate && nest build",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
   "dependencies": {
     "@nestjs/common": "^10.x",
     "@nestjs/core": "^10.x",
@@ -23,6 +23,7 @@
     "@nestjs/passport": "^10.x",
     "@nestjs/platform-express": "^10.x",
     "@prisma/client": "^5.22.0",
+    "@upstash/redis": "^1.38.0",
     "bcrypt": "^5.x",
     "class-transformer": "^0.5.x",
     "class-validator": "^0.14.x",

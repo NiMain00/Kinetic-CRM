@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMasterDataStore } from '@/stores/masterDataStore';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue';
@@ -20,7 +20,11 @@ function getActiveCount(store: any, entry: MasterDataEntry): number | undefined 
     return data.filter((d: any) => d.active === true).length;
   }
   if ('status' in sample) {
-    return data.filter((d: any) => d.status === true).length;
+    return data.filter((d: any) => {
+      if (typeof d.status === 'boolean') return d.status === true;
+      if (typeof d.status === 'string') return d.status === 'active';
+      return false;
+    }).length;
   }
   return undefined;
 }
@@ -39,8 +43,21 @@ export default function MasterDataView(_props: MasterDataViewProps) {
   const navigate = useNavigate();
   const { entity } = useParams();
   const store = useMasterDataStore();
+  const fetchEntity = useMasterDataStore((s) => s.fetchEntity);
+  const fetchBatch = useMasterDataStore((s) => s.fetchBatch);
   const [searchQuery, setSearchQuery] = React.useState('');
   const debouncedSearch = useDebouncedValue(searchQuery, 300);
+
+  useEffect(() => {
+    if (entity) {
+      const entry = masterDataConfig.find((e) => e.id === entity);
+      if (entry && !entry.path) {
+        fetchEntity(entry.storeKey as any);
+      }
+    } else {
+      fetchBatch();
+    }
+  }, [entity, fetchEntity, fetchBatch]);
 
   const getCount = useCallback((entry: MasterDataEntry) => {
     const data = (store as any)[entry.storeKey];

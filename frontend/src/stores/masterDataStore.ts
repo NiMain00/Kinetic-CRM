@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { MasterItem } from '@/types/domain/master-item';
 import { masterDataService } from '@/services/master-data';
+import apiClient from '@/services/api-client';
 
 export interface MasterCategory {
   id: string;
@@ -236,6 +237,7 @@ interface MasterDataState {
   loading: Record<string, boolean>;
   loaded: Record<string, boolean>;
   fetchEntity: (entity: EntityType, force?: boolean) => Promise<void>;
+  fetchBatch: () => Promise<void>;
   fetchQuestions: (force?: boolean) => Promise<void>;
   getData: <T>(entity: EntityType) => T[];
   addData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, item: T) => Promise<void>;
@@ -282,6 +284,25 @@ function toApiPayload(entity: EntityType, item: Record<string, unknown>): Record
   return snakeToCamelKeys(stripped);
 }
 
+const BATCH_ENTITY_MAP: Record<string, EntityType> = {
+  industries: 'industries',
+  categories: 'categories',
+  competitors: 'competitors',
+  questionTypes: 'questionTypes',
+  projectStatuses: 'projectStatuses',
+  periods: 'periods',
+  holidays: 'holidays',
+  lossReasons: 'lossReasons',
+  documentTypes: 'documentTypes',
+  departments: 'departments',
+  users: 'users',
+  approvalLevels: 'approvalLevels',
+  notifTemplates: 'notifTemplates',
+  roles: 'roles',
+  auditLogs: 'auditLogs',
+  questions: 'questions',
+};
+
 export const useMasterDataStore = create<MasterDataState>()((set, get) => ({
       categories: [],
       competitors: [],
@@ -322,6 +343,48 @@ export const useMasterDataStore = create<MasterDataState>()((set, get) => ({
           set((s) => ({ [entity]: normalized as any, loading: { ...s.loading, [entity]: false }, loaded: { ...s.loaded, [entity]: true } } as any));
         } catch {
           set((s) => ({ loading: { ...s.loading, [entity]: false } }));
+        }
+      },
+
+      fetchBatch: async () => {
+        try {
+          const res = await apiClient.get('/master/all');
+          const entities: Record<string, any[]> = res.data || {};
+          const updates: Record<string, any> = {};
+          const newLoaded: Record<string, boolean> = {};
+          for (const [key, list] of Object.entries(entities)) {
+            const entityKey = BATCH_ENTITY_MAP[key];
+            if (!entityKey || !Array.isArray(list)) continue;
+            const normalized = list.map((item: any) => camelToSnakeKeys(item));
+            updates[entityKey] = normalized;
+            newLoaded[entityKey] = true;
+          }
+          // Handle questions specially (includes questionOptions)
+          if (entities.questions && Array.isArray(entities.questions)) {
+            const raw = entities.questions;
+            const list = raw.map((item: any) => {
+              const q: Record<string, unknown> = {};
+              q.id = item.id;
+              q.question_text = item.questionText || '';
+              q.question_type_id = item.questionTypeId || '';
+              q.context = item.context || 'prospect';
+              q.category = item.category || '';
+              q.is_required = item.isRequired ?? false;
+              q.sort_order = item.sortOrder ?? 0;
+              q.placeholder_text = item.placeholderText || '';
+              q.help_text = item.helpText || '';
+              q.is_active = item.isActive !== false;
+              q.options = Array.isArray(item.questionOptions)
+                ? item.questionOptions.map((o: any) => o.optionLabel || '')
+                : [];
+              return q as any;
+            });
+            updates.questions = list;
+            newLoaded.questions = true;
+          }
+          set((s) => ({ ...updates, loaded: { ...s.loaded, ...newLoaded } } as any));
+        } catch {
+          // silent — individual fetches will retry
         }
       },
 

@@ -9,6 +9,12 @@ const RESERVED_ENTITIES = ['customers'];
 export class MasterController {
   constructor(private readonly service: MasterService) {}
 
+  // ── Batch: all entities for master data grid ──
+  @Get('all')
+  listAll() {
+    return this.service.listAll();
+  }
+
   // ── Generic CRUD (menangani juga inputConfigOptions via ENTITY_MAP) ─────
 
   @Get(':entity')
