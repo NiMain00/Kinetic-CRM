@@ -40,6 +40,7 @@ const ENTITY_MAP: Record<string, string> = {
   periods: 'period',
   holidays: 'holiday',
   lossReasons: 'lossReason',
+  docTypes: 'documentType',
   documentTypes: 'documentType',
   departments: 'orgUnit',
   users: 'user',

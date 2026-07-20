@@ -33,7 +33,7 @@ export default function ConfigQuestionTypesPage() {
     setFormName(qt.name);
     setFormDescription(qt.description);
     setFormStatus(qt.is_active);
-    setFormHasOptions((qt as unknown as Record<string, unknown>)?.hasOptions as boolean ?? qt.has_options ?? false);
+    setFormHasOptions(qt.has_options ?? false);
     setModalOpen(true);
   };
 

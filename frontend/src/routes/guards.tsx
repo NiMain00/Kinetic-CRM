@@ -1,7 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
 import { authz } from '@/services/authz';
+import PageLoader from '@/components/layout/PageLoader';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
@@ -32,6 +34,10 @@ export function RoleRoute({ children, roles }: { children: React.ReactNode; role
 export function PermissionRoute({ children, permissions }: { children: React.ReactNode; permissions: string[] }) {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const activeDepartmentId = useAuthStore((s) => s.activeDepartmentId);
+  // Subscribe to RBAC store to re-evaluate when roles/permissions load
+  const rbacUserRoles = useRbacStore((s) => s.userRoles);
+  const rbacRolePermissions = useRbacStore((s) => s.rolePermissions);
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
@@ -40,13 +46,20 @@ export function PermissionRoute({ children, permissions }: { children: React.Rea
   const userId = (user as { id?: string })?.id;
   if (!userId) return <Navigate to="/403" replace />;
 
-  const activeDeptId = useAuthStore.getState().activeDepartmentId || (user as any)?.departmentId;
+  const deptId = activeDepartmentId || (user as any)?.departmentId;
 
   const hasAccess = permissions.some((p) =>
-    authz.hasPermission(userId, p, { departmentId: activeDeptId }),
+    authz.hasPermission(userId, p, { departmentId: deptId }),
   );
 
-  if (!hasAccess) return <Navigate to="/403" replace />;
+  // If no access and RBAC data exists, redirect to 403
+  // If RBAC not yet loaded, show loader instead of false redirect
+  if (!hasAccess) {
+    if (rbacUserRoles.length === 0) {
+      return <PageLoader />;
+    }
+    return <Navigate to="/403" replace />;
+  }
 
   return <>{children}</>;
 }

@@ -132,6 +132,13 @@ export default function ProspectFormPage() {
     existingProspect?.customerData?.level === 'hot'
   );
 
+  // Sync showDetail when prospect data loads (async fetch may update customerData later)
+  useEffect(() => {
+    if (existingProspect?.customerData?.level) {
+      setShowDetail(existingProspect.customerData.level === 'hot');
+    }
+  }, [existingProspect?.customerData?.level]);
+
   // Source (untuk Lead dari HO)
   const [formSource, setFormSource] = useState<'ho' | 'branch'>(
     (existingProspect?.source as 'ho' | 'branch') || 'branch'
@@ -185,6 +192,8 @@ export default function ProspectFormPage() {
       setNewCustLevel(selectedCustomer.level || '');
       if (selectedCustomer.level === 'hot') {
         setShowDetail(true);
+      } else {
+        setShowDetail(false);
       }
     }
   }, [selectedCustomerId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -199,9 +208,7 @@ export default function ProspectFormPage() {
   const customerLevel = customerMode === 'existing'
     ? selectedCustomer?.level
     : ((newCustLevel || existingProspect?.customerData?.level) as 'hot' | 'medium' | 'low' | '' | undefined);
-  const isEditableForm = customerMode === 'existing'
-    ? (customerLevel === 'hot' || !customerLevel)
-    : true;
+  const isEditableDetail = customerLevel === 'hot';
 
   const getClientName = (): string => {
     if (customerMode === 'existing' && selectedCustomer) {
@@ -215,6 +222,13 @@ export default function ProspectFormPage() {
 
   const saveProspect = async (status: 'Lead' | 'Potensial' | 'Waiting Supervisor') => {
     if (isSubmitting) return;
+
+    // Non-Hot customers cannot submit to review
+    if (status === 'Waiting Supervisor' && !isEditableDetail) {
+      toast.error('Hanya customer level Hot yang bisa dikirim ke review. Upgrade customer level terlebih dahulu.');
+      return;
+    }
+
     setIsSubmitting(true);
     const clientName = getClientName();
 
@@ -340,6 +354,7 @@ export default function ProspectFormPage() {
       projectType: projectType,
       source: formSource,
       createdByUserId: existingProspect?.createdByUserId || authUser?.id,
+      currentStageId: status === 'Waiting Supervisor' ? 'stage-supervisor-review' : undefined,
       timeline: [...(existingProspect?.timeline || []), ...events],
     };
 
@@ -400,16 +415,13 @@ export default function ProspectFormPage() {
     setIndustryId(c.industryId || '');
     setProviderExisting(c.providerExisting || '');
     setNewCustLevel(c.level || '');
-    if (c.level === 'hot' || c.level === 'medium') setShowDetail(true);
+    if (c.level === 'hot') setShowDetail(true);
+    else setShowDetail(false);
   };
 
   const handleLevelChange = (level: string) => {
     setNewCustLevel(level);
-    if (level === 'hot' || level === 'medium') {
-      setShowDetail(true);
-    } else {
-      setShowDetail(false);
-    }
+    setShowDetail(level === 'hot');
   };
 
   return (
@@ -680,25 +692,35 @@ export default function ProspectFormPage() {
           </div>
         </div>
 
-        {/* CONDITIONAL DETAIL FORM — hanya muncul jika Hot atau Medium */}
-        {showDetail && (
+        {/* Non-Hot blocking message */}
+        {customerLevel && customerLevel !== 'hot' && (
+          <div className="bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-700 rounded-2xl p-5 flex items-start gap-3">
+            <span className="material-symbols-outlined text-amber-600 dark:text-amber-400 mt-0.5">lock</span>
+            <div>
+              <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
+                Customer Level <span className="uppercase">{customerLevel}</span>
+              </p>
+              <p className="text-xs mt-1 text-amber-700 dark:text-amber-400">
+                Hanya customer level <strong>Hot</strong> yang dapat mengisi detail prospek.
+                Silakan simpan prospek ini sebagai Lead terlebih dahulu dan upgrade level customer menjadi Hot melalui menu Master Data.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* CONDITIONAL DETAIL FORM — hanya muncul jika Hot */}
+        {showDetail && isEditableDetail && (
           <div className="space-y-6 animate-fade-in">
-            <div className={`rounded-2xl p-4 flex items-start gap-3 ${
-              newCustLevel === 'hot'
-                ? 'bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-300 dark:border-rose-700'
-                : 'bg-gradient-to-r from-primary/5 to-transparent border border-primary/20'
-            }`}>
-              <span className={`material-symbols-outlined mt-0.5 ${newCustLevel === 'hot' ? 'text-rose-500' : 'text-primary'}`}>
-                {newCustLevel === 'hot' ? 'local_fire_department' : 'expand_content'}
+            <div className="rounded-2xl p-4 flex items-start gap-3 bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-300 dark:border-rose-700">
+              <span className="material-symbols-outlined mt-0.5 text-rose-500">
+                local_fire_department
               </span>
               <div>
-                <p className={`text-sm font-semibold ${newCustLevel === 'hot' ? 'text-rose-700 dark:text-rose-300' : 'text-on-surface'}`}>
+                <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">
                   Level <strong className="uppercase">{customerMode === 'existing' ? selectedCustomer?.level || newCustLevel : newCustLevel}</strong>
                 </p>
-                <p className={`text-xs mt-1 ${newCustLevel === 'hot' ? 'text-rose-600 dark:text-rose-400' : 'text-secondary'}`}>
-                  {newCustLevel === 'hot'
-                    ? 'Prospek prioritas! Silakan isi semua data detail di bawah agar prospek dapat diproses.'
-                    : 'Silakan lengkapi detail prospek di bawah ini.'}
+                <p className="text-xs mt-1 text-rose-600 dark:text-rose-400">
+                  Prospek prioritas! Silakan isi semua data detail di bawah agar prospek dapat diproses.
                 </p>
               </div>
             </div>

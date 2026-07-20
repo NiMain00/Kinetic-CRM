@@ -7,7 +7,6 @@ import {
   RBAC_CONFIG,
   ROLES,
   ELEVATED_ROLES,
-  type RoleLevel,
 } from '@/config';
 
 type StageAccessLevel = 'none' | 'read' | 'write';
@@ -168,6 +167,28 @@ class AuthorizationEngine {
   }
 
   /**
+   * Map backend role display names → ROLE_HIERARCHY keys.
+   * Backend uses names like 'Branch Manager', 'PM', 'Dept Head' but
+   * ROLE_HIERARCHY keys are normalized (manager, supervisor, etc.).
+   */
+  private roleNameLookup: Record<string, string> = {
+    'Super Admin': 'super_admin',
+    'Admin': 'admin',
+    'Branch Manager': 'manager',
+    'PM': 'manager',
+    'Dept Head': 'manager',
+    'Reviewer': 'supervisor',
+    'Staff': 'staff',
+    'Staff Finance': 'staff',
+    'Staff Procurement': 'staff',
+    'Staff PM': 'staff',
+  };
+
+  private normalizeRoleName(name: string): string {
+    return this.roleNameLookup[name] || name.toLowerCase().replace(/[\s-]+/g, '_');
+  }
+
+  /**
    * Get the highest role level for a user across all non-project roles.
    * Used for owner filtering: staff → own data only; manager/admin/director → all data.
    * Returns: 'super_admin' | 'director' | 'admin' | 'manager' | 'staff'
@@ -183,13 +204,10 @@ class AuthorizationEngine {
       .map((r) => r.name)
       .filter((name) => ![ROLES.PROJECT_VIEWER, ROLES.PROJECT_CONTRIBUTOR, ROLES.PROJECT_MANAGER].includes(name as any));
 
-    const normalizeRoleName = (name: string): string =>
-      name.toLowerCase().replace(/[\s-]+/g, '_');
-
     let highest: string = ROLES.STAFF;
     let highestLevel = 0;
     for (const name of roleNames) {
-      const key = normalizeRoleName(name) as RoleLevel;
+      const key = this.normalizeRoleName(name) as keyof typeof ROLE_HIERARCHY;
       const level = ROLE_HIERARCHY[key] || 0;
       if (level > highestLevel) {
         highestLevel = level;

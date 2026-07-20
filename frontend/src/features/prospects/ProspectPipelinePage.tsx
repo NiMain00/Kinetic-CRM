@@ -174,6 +174,9 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
+  const canWrite = can('prospect:write:prospecting');
+  const canCreateProject = can('project:create');
+
   const visibleProspects = prospects.filter((p) => {
     if (isStaffOnly && userId && p.ownerUserId && p.ownerUserId !== userId) return false;
     return true;
@@ -202,6 +205,10 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
       if (!id) return;
       const prospect = visibleProspects.find((p) => p.id === id);
       if (!prospect || prospect.status === status) return;
+      if (!canWrite) {
+        onShowNotification('Anda tidak memiliki izin untuk mengubah status prospek.', 'error');
+        return;
+      }
       updateProspect(id, { status });
       onShowNotification(
         `"${prospect.name}" dipindahkan ke ${status}.`,
@@ -209,7 +216,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
       );
       setDragTarget(null);
     },
-    [visibleProspects, updateProspect, onShowNotification],
+    [visibleProspects, updateProspect, onShowNotification, canWrite],
   );
 
   const handleConvert = useCallback(
@@ -232,9 +239,6 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
       setDeleting(false);
     }
   }, [deleteTarget, deleteProspect, onShowNotification, deleting]);
-
-  const canWrite = can('prospect:write:prospecting');
-  const canCreateProject = can('project:create');
 
   return (
     <PageContainer>
