@@ -24,10 +24,12 @@ const sizes = {
   lg: 'px-4 py-1.5 text-xs',
 };
 
-export default function Badge({ variant = 'default', size = 'sm', children, className = '' }: BadgeProps) {
+const Badge = React.memo(function Badge({ variant = 'default', size = 'sm', children, className = '' }: BadgeProps) {
   return (
     <span className={`inline-flex items-center font-bold tracking-wide rounded-full whitespace-nowrap ${variants[variant]} ${sizes[size]} ${className}`}>
       {children}
     </span>
   );
-}
+});
+
+export default Badge;

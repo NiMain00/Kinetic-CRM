@@ -40,7 +40,7 @@ function useSwipe(onClose?: () => void) {
   return { onTouchStart, onTouchEnd };
 }
 
-export default function Sidebar({
+const Sidebar = React.memo(function Sidebar({
   collapsed,
   setCollapsed,
   pendingApprovalsCount,
@@ -353,4 +353,6 @@ export default function Sidebar({
       </div>
     </aside>
   );
-}
+});
+
+export default Sidebar;

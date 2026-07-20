@@ -71,41 +71,6 @@ export default function LoginPage() {
         scopeType: user.userRoles?.[0]?.scopeType || 'global',
       });
 
-      const [
-        { useRbacStore },
-        { useNotificationStore },
-        { useMasterDataStore },
-        { useUserStore },
-        { useInputConfigStore },
-      ] = await Promise.all([
-        import('@/stores/rbacStore'),
-        import('@/stores/notificationStore'),
-        import('@/stores/masterDataStore'),
-        import('@/stores/userStore'),
-        import('@/stores/inputConfigStore'),
-      ]);
-
-      const rbacStore = useRbacStore.getState();
-      rbacStore.fetchAllUserRoles();
-      rbacStore.fetchRoles();
-      rbacStore.fetchPermissions();
-      useNotificationStore.getState().fetchNotifications();
-
-      const masterStore = useMasterDataStore.getState();
-      masterStore.fetchEntity('industries');
-      masterStore.fetchEntity('categories');
-      masterStore.fetchEntity('competitors');
-      masterStore.fetchEntity('questionTypes');
-      masterStore.fetchQuestions();
-      masterStore.fetchEntity('projectStatuses');
-      masterStore.fetchEntity('departments');
-      masterStore.fetchEntity('users');
-      masterStore.fetchEntity('roles');
-      masterStore.fetchEntity('items');
-      useInputConfigStore.getState().fetchGroups();
-
-      useUserStore.getState().fetchUsers();
-
       navigate('/dashboard');
       toast.success(`Selamat datang, ${user.fullName}!`);
     } catch {

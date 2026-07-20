@@ -8,7 +8,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   rightIcon?: React.ReactNode;
 }
 
-export default function Input({
+const Input = React.memo(function Input({
   label,
   error,
   helperText,
@@ -56,4 +56,6 @@ export default function Input({
       {helperText && !error && <p id={`${inputId}-helper`} className="text-xs text-outline">{helperText}</p>}
     </div>
   );
-}
+});
+
+export default Input;

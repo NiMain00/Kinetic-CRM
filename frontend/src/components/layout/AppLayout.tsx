@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import Breadcrumb from './Breadcrumb';
+import PageLoader from './PageLoader';
 import ShortcutHelpModal from '@/components/shared/ShortcutHelpModal';
 import useKeyboardShortcuts from '@/hooks/useKeyboardShortcuts';
 import { useAuthStore } from '@/stores/authStore';
+import { useRbacStore } from '@/stores/rbacStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useApprovalStore } from '@/stores/approvalStore';
@@ -25,58 +27,72 @@ export default function AppLayout() {
   const prospects = useProspectStore((s) => s.prospects);
   const projects = useProjectStore((s) => s.projects);
 
-  // Compute pending approvals count matching the logic in ApprovalInboxPage
-  const pendingApprovalsCount = user?.id
-    ? (() => {
-        const VALID_TYPES = new Set(['Prospek', 'RKS', 'LPHS']);
-        const derived: ApprovalItem[] = [];
-        prospects.forEach((p: any) => {
-          if (p.status === 'Waiting Supervisor') {
-            derived.push({ entityId: p.id, entityType: 'prospect', type: 'Prospek', id: `derived-prospect-${p.id}` } as ApprovalItem);
-          }
-        });
-        projects.forEach((pr: any) => {
-          if (pr.status === 'Review RKS') {
-            derived.push({ entityId: pr.id, entityType: 'project', type: 'RKS', id: `derived-rks-${pr.id}` } as ApprovalItem);
-          } else if (
-            pr.status === 'LPHS/SIOS' &&
-            pr.lphs &&
-            (pr.lphs.overallStatus === 'dept_review' || pr.lphs.overallStatus === 'mgmt_review')
-          ) {
-            derived.push({ entityId: pr.id, entityType: 'project', type: 'LPHS', id: `derived-lphs-${pr.id}` } as ApprovalItem);
-          }
-        });
-        const map = new Map<string, ApprovalItem>();
-        derived.forEach((a) => map.set(a.entityId ?? a.id, a));
-        approvals.forEach((a) => {
-          if (!VALID_TYPES.has(a.type)) return;
-          const key = a.entityId ?? a.id;
-          if (!map.has(key)) map.set(key, a);
-        });
-        const combined = Array.from(map.values());
-        const userItems = combined.filter((a) => {
-          if (!VALID_TYPES.has(a.type)) return false;
-          if (a.assigneeUserId && a.assigneeUserId !== user.id) return false;
-          if (a.entityType === 'prospect' && a.entityId) {
-            return prospects.some((p: any) => p.id === a.entityId);
-          }
-          if (a.entityType === 'project' && a.entityId) {
-            return projects.some((p: any) => p.id === a.entityId);
-          }
-          return true;
-        });
-        return userItems.length;
-      })()
-    : 0;
+  const pendingApprovalsCount = useMemo(() => {
+    if (!user?.id) return 0;
+    const VALID_TYPES = new Set(['Prospek', 'RKS', 'LPHS']);
+    const derived: ApprovalItem[] = [];
+    prospects.forEach((p: any) => {
+      if (p.status === 'Waiting Supervisor') {
+        derived.push({ entityId: p.id, entityType: 'prospect', type: 'Prospek', id: `derived-prospect-${p.id}` } as ApprovalItem);
+      }
+    });
+    projects.forEach((pr: any) => {
+      if (pr.status === 'Review RKS') {
+        derived.push({ entityId: pr.id, entityType: 'project', type: 'RKS', id: `derived-rks-${pr.id}` } as ApprovalItem);
+      } else if (
+        pr.status === 'LPHS/SIOS' &&
+        pr.lphs &&
+        (pr.lphs.overallStatus === 'dept_review' || pr.lphs.overallStatus === 'mgmt_review')
+      ) {
+        derived.push({ entityId: pr.id, entityType: 'project', type: 'LPHS', id: `derived-lphs-${pr.id}` } as ApprovalItem);
+      }
+    });
+    const map = new Map<string, ApprovalItem>();
+    derived.forEach((a) => map.set(a.entityId ?? a.id, a));
+    approvals.forEach((a) => {
+      if (!VALID_TYPES.has(a.type)) return;
+      const key = a.entityId ?? a.id;
+      if (!map.has(key)) map.set(key, a);
+    });
+    const combined = Array.from(map.values());
+    const userItems = combined.filter((a) => {
+      if (!VALID_TYPES.has(a.type)) return false;
+      if (a.assigneeUserId && a.assigneeUserId !== user.id) return false;
+      if (a.entityType === 'prospect' && a.entityId) {
+        return prospects.some((p: any) => p.id === a.entityId);
+      }
+      if (a.entityType === 'project' && a.entityId) {
+        return projects.some((p: any) => p.id === a.entityId);
+      }
+      return true;
+    });
+    return userItems.length;
+  }, [user?.id, prospects, projects, approvals]);
 
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
+  const [rbacReady, setRbacReady] = useState(false);
 
   useKeyboardShortcuts({
     navigate,
     onToggleHelp: () => setShortcutHelpOpen((v) => !v),
     onClose: () => setShortcutHelpOpen(false),
   });
+
+  useEffect(() => {
+    const loadRbac = async () => {
+      const rbacStore = useRbacStore.getState();
+      if (rbacStore.userRoles.length === 0) {
+        await Promise.all([
+          rbacStore.fetchAllUserRoles(),
+          rbacStore.fetchRoles(),
+          rbacStore.fetchPermissions(),
+        ]);
+      }
+      setRbacReady(true);
+    };
+    loadRbac();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -96,16 +112,19 @@ export default function AppLayout() {
   const oldPermissions = roleConfig?.permissions || [];
   const userId = (user as { id?: string })?.id;
   const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (user as any)?.departmentId;
-  // Combine old + new permissions for backward-compatible sidebar filtering
-  const newRbacPerms = userId
-    ? ['dashboard:view', 'notification:read', 'profile:manage', 'prospect:read', 'prospect:write:prospecting',
+  const newRbacPerms = useMemo(() => {
+    if (!userId) return [];
+    const permList = ['dashboard:view', 'notification:read', 'profile:manage', 'prospect:read', 'prospect:write:prospecting',
        'prospect:approve:transition', 'project:read', 'project:create', 'project:write', 'project:manage:members',
        'project:manage:scope', 'pengadaan:read', 'pengadaan:create', 'pengadaan:write',
-       'report:view:department', 'report:view:crossdept', 'config:access'].filter((p) => {
-         return authz.hasPermission(userId, p, { departmentId: activeDeptId });
-       })
-    : [];
-  const userPermissions = [...new Set([...oldPermissions, ...newRbacPerms])];
+       'report:view:department', 'report:view:crossdept', 'config:access'];
+    return permList.filter((p) => authz.hasPermission(userId, p, { departmentId: activeDeptId }));
+  }, [userId, activeDeptId]);
+  const userPermissions = useMemo(() => [...new Set([...oldPermissions, ...newRbacPerms])], [oldPermissions, newRbacPerms]);
+
+  if (!rbacReady) {
+    return <PageLoader />;
+  }
 
   const handleLogout = () => {
     logout();

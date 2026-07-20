@@ -17,7 +17,7 @@ const sizes = {
   xl: 'max-w-4xl',
 };
 
-export default function Modal({ isOpen, onClose, title, children, footer, size = 'md' }: ModalProps) {
+const Modal = React.memo(function Modal({ isOpen, onClose, title, children, footer, size = 'md' }: ModalProps) {
   const focusTrapRef = useFocusTrap(isOpen);
 
   useEffect(() => {
@@ -60,4 +60,6 @@ export default function Modal({ isOpen, onClose, title, children, footer, size =
       </div>
     </div>
   );
-}
+});
+
+export default Modal;

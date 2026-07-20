@@ -16,7 +16,7 @@ const paddings = {
   lg: 'p-5 sm:p-6',
 };
 
-export default function Card({ children, className = '', padding = 'md', header, footer, hover = false }: CardProps) {
+const Card = React.memo(function Card({ children, className = '', padding = 'md', header, footer, hover = false }: CardProps) {
   const hasBg = /\bbg-\S+/.test(className);
   return (
     <div className={`${hasBg ? '' : 'bg-surface'} rounded-xl border border-border/60 shadow-card ${hover ? 'hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5' : ''} ${className}`}>
@@ -27,4 +27,6 @@ export default function Card({ children, className = '', padding = 'md', header,
       {footer && <div className="border-t border-border/60 px-4 sm:px-5 py-3 sm:py-4">{footer}</div>}
     </div>
   );
-}
+});
+
+export default Card;

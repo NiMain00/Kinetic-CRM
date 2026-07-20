@@ -14,7 +14,7 @@ interface TabsProps {
   variant?: 'underline' | 'pills';
 }
 
-export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' }: TabsProps) {
+const Tabs = React.memo(function Tabs({ tabs, activeTab, onChange, variant = 'underline' }: TabsProps) {
   const tabListRef = useRef<HTMLDivElement>(null);
 
   const onKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -87,4 +87,6 @@ export default function Tabs({ tabs, activeTab, onChange, variant = 'underline' 
       ))}
     </nav>
   );
-}
+});
+
+export default Tabs;

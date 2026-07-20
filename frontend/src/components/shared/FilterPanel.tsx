@@ -55,7 +55,7 @@ interface FilterPanelProps {
   isOpen?: boolean;
 }
 
-export default function FilterPanel({ fields, values, onChange, onReset, onApply, collapsible = false, isOpen = true }: FilterPanelProps) {
+const FilterPanel = React.memo(function FilterPanel({ fields, values, onChange, onReset, onApply, collapsible = false, isOpen = true }: FilterPanelProps) {
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -205,9 +205,9 @@ export default function FilterPanel({ fields, values, onChange, onReset, onApply
       )}
     </div>
   );
-}
+});
 
-function MultiSelect({ label, options, value, onChange, placeholder }: {
+const MultiSelect = React.memo(function MultiSelect({ label, options, value, onChange, placeholder }: {
   label: string;
   options: SelectOption[];
   value: string;
@@ -267,4 +267,6 @@ function MultiSelect({ label, options, value, onChange, placeholder }: {
       )}
     </div>
   );
-}
+});
+
+export default FilterPanel;

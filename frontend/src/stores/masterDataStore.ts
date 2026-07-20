@@ -234,8 +234,9 @@ interface MasterDataState {
   roles: MasterRole[];
   items: MasterItem[];
   loading: Record<string, boolean>;
-  fetchEntity: (entity: EntityType) => Promise<void>;
-  fetchQuestions: () => Promise<void>;
+  loaded: Record<string, boolean>;
+  fetchEntity: (entity: EntityType, force?: boolean) => Promise<void>;
+  fetchQuestions: (force?: boolean) => Promise<void>;
   getData: <T>(entity: EntityType) => T[];
   addData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, item: T) => Promise<void>;
   updateData: <T extends Record<string, any> = Record<string, any>>(entity: EntityType, id: string, data: Partial<T>) => Promise<void>;
@@ -302,29 +303,30 @@ export const useMasterDataStore = create<MasterDataState>()((set, get) => ({
       roles: [],
       items: [],
       loading: {},
+      loaded: {},
 
-      fetchEntity: async (entity) => {
+      fetchEntity: async (entity, force) => {
+        if (!force && get().loaded[entity]) return;
         set((s) => ({ loading: { ...s.loading, [entity]: true } }));
         try {
           const res = await masterDataService.get(entity, { perPage: 50 });
           let data = res.data?.data || res.data || [];
           const list = Array.isArray(data) ? data : [];
-          // transform camelCase API keys → snake_case untuk konsistensi dengan frontend
           const normalized = list.map((item: any) => {
             const transformed = camelToSnakeKeys(item);
-            // pastikan field name terisi dari full_name untuk user entity
             if (entity === 'users' && !transformed.name && transformed.full_name) {
               transformed.name = transformed.full_name;
             }
             return transformed;
           });
-          set((s) => ({ [entity]: normalized as any, loading: { ...s.loading, [entity]: false } } as any));
+          set((s) => ({ [entity]: normalized as any, loading: { ...s.loading, [entity]: false }, loaded: { ...s.loaded, [entity]: true } } as any));
         } catch {
           set((s) => ({ loading: { ...s.loading, [entity]: false } }));
         }
       },
 
-      fetchQuestions: async () => {
+      fetchQuestions: async (force) => {
+        if (!force && get().loaded.questions) return;
         set((s) => ({ loading: { ...s.loading, questions: true } }));
         try {
           const res = await masterDataService.get('questions', { perPage: 50 });
@@ -347,7 +349,7 @@ export const useMasterDataStore = create<MasterDataState>()((set, get) => ({
               : [];
             return q as any;
           });
-          set((s) => ({ questions: list, loading: { ...s.loading, questions: false } } as any));
+          set((s) => ({ questions: list, loading: { ...s.loading, questions: false }, loaded: { ...s.loaded, questions: true } } as any));
         } catch {
           set((s) => ({ loading: { ...s.loading, questions: false } }));
         }

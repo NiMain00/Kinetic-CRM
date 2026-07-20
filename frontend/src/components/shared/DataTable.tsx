@@ -25,7 +25,7 @@ interface DataTableProps<T> {
   exportFilename?: string;
 }
 
-export default function DataTable<T>({
+const DataTable = React.memo(function DataTable<T>({
   columns,
   data,
   keyExtractor,
@@ -153,7 +153,9 @@ export default function DataTable<T>({
       />
     </div>
   );
-}
+});
+
+export default DataTable;
 
 function stripHtml(html: string): string {
   const div = document.createElement('div');

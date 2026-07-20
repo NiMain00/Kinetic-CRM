@@ -27,7 +27,7 @@ const sizes = {
   lg: 'px-6 py-3 text-base',
 };
 
-export default function Button({
+const Button = React.memo(function Button({
   variant = 'primary',
   size = 'md',
   isLoading = false,
@@ -53,4 +53,6 @@ export default function Button({
       {!isLoading && rightIcon}
     </button>
   );
-}
+});
+
+export default Button;

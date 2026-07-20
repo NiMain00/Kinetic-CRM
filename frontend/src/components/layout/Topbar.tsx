@@ -15,10 +15,10 @@ interface TopbarProps {
   notificationCount?: number;
 }
 
-export default function Topbar({
+const Topbar = React.memo(function Topbar({
   userName = 'Alexander Pierce',
   roleName = 'Branch Manager',
-  avatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWDEhx9DDyQcza1Ly6ob2GvUr0RcKFg_ZWPWDX3R89h599PQ2OzX6K21-q2Bb6wr08y-sjWBdJ0UmyRJEjaEB7mRRTEILqTd1oApCKVAcFeJesIsCQ52_trToPbTyXHoo1Ed8D8c6Z0inMzS44qG749ofXtaBpSw-btx_MFUMYLzJsAg_aaXXLqufa_N2Jw2s6ca5NfTPTnJJf0CH5RFHVv38b591w568UukqO4CLBCdt0GAI6TWz8IG_d8Fg4dMoJ1zEMVwF3E3rs',
+  avatarUrl = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDWDEhx9DDyQcza1Ly6ob2GvUr0RcKFg_ZWPWDX3R89h599PQ2OzX6K21-q2Bb6wr08y-sjWBdJ0UmyRJEjaEB7mRRTEILqTd1oApCKVAcFeJesIsCQ52_trToPbTyXHoo1Ed8D8c6Z0inMzS44qG749ofXtaBpSw-btx_MFUMYLzJsAg_aaXXLqufa_N2Jw2s6ca5NfTPTnJJf0CH5RFHVv38b591w568UukqO4CLBCdt0GAI6TWz8IG_d8Fg4dMoJ1zEMVwF3E3rs=s96-c',
   notificationsTo,
   profileTo,
   configTo,
@@ -128,6 +128,7 @@ export default function Topbar({
             className="w-7 h-7 rounded-full ring-2 ring-primary/10 object-cover"
             alt="Foto profil pengguna"
             src={avatarUrl}
+            loading="lazy"
             referrerPolicy="no-referrer"
           />
         </Link>
@@ -167,4 +168,6 @@ export default function Topbar({
       )}
     </header>
   );
-}
+});
+
+export default Topbar;

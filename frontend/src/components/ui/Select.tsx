@@ -12,7 +12,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   placeholder?: string;
 }
 
-export default function Select({
+const Select = React.memo(function Select({
   label,
   error,
   options,
@@ -44,4 +44,6 @@ export default function Select({
       {error && <p className="text-xs text-danger font-medium" role="alert">{error}</p>}
     </div>
   );
-}
+});
+
+export default Select;

@@ -29,7 +29,7 @@ interface TableProps<T> {
   stickyHeader?: boolean;
 }
 
-export default function Table<T = Record<string, unknown>>({
+const Table = React.memo(function Table<T = Record<string, unknown>>({
   columns,
   data,
   keyExtractor,
@@ -301,4 +301,6 @@ export default function Table<T = Record<string, unknown>>({
       </nav>
     );
   }
-}
+});
+
+export default Table;
