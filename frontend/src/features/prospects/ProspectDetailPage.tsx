@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
@@ -125,7 +125,8 @@ export default function ProspectDetailPage() {
   const fetchProspect = useProspectStore((s) => s.fetchProspect);
   const fetchCustomers = useCustomerStore((s) => s.fetchCustomers);
   const verifyCustomer = useCustomerStore((s) => s.verifyCustomer);
-  const getCustomerById = useCustomerStore((s) => s.getCustomerById);
+  const customersData = useCustomerStore((s) => s.customers);
+  const getCustomerById = useCallback((id: string) => customersData.find(c => c.id === id), [customersData]);
   const getProjectById = useProjectStore((s) => s.getProjectById);
 
   useEffect(() => {
@@ -448,6 +449,19 @@ export default function ProspectDetailPage() {
     }
     try {
       await verifyCustomer(customer.id, authUser?.fullName || authUser?.name || 'Super Admin');
+      // Update prospect customerData agar UI reaktif tanpa perlu refresh
+      const now = new Date().toISOString();
+      const verifiedBy = authUser?.fullName || authUser?.name || 'Super Admin';
+      if (prospect?.id) {
+        updateProspect(prospect.id, {
+          customerData: {
+            ...(prospect.customerData || customer),
+            needsVerification: false,
+            verifiedAt: now,
+            verifiedBy,
+          },
+        } as any);
+      }
       await addProspectTimelineEvent(prospect.id, {
         id: `evt-${prospect.id}-verified-${Date.now()}`,
         title: 'Customer Diverifikasi',
@@ -937,30 +951,6 @@ export default function ProspectDetailPage() {
                     </>
                   )}
                 </div>
-
-                {needsVerification && customer?.id && (
-                  <div className="flex items-center justify-between p-3 bg-warning/10 border border-warning/30 rounded-lg">
-                    <div className="flex items-center gap-2 text-xs text-warning">
-                      <span className="material-symbols-outlined text-[16px]">verified</span>
-                      <span>Customer perlu diverifikasi</span>
-                    </div>
-                    <Button
-                      variant={isSuperAdmin ? 'warning' : 'secondary'}
-                      size="sm"
-                      disabled={!isSuperAdmin}
-                      onClick={handleVerifikasi}
-                    >
-                      {isSuperAdmin ? 'Verifikasi' : 'Tidak bisa'}
-                    </Button>
-                  </div>
-                )}
-
-                {customer?.verifiedAt && customer?.verifiedBy && (
-                  <div className="p-3 bg-success/10 border border-success/30 rounded-lg flex items-center gap-2 text-xs text-success">
-                    <span className="material-symbols-outlined text-[16px]">verified</span>
-                    Terverifikasi oleh {customer.verifiedBy} pada {formatDate(customer.verifiedAt)}
-                  </div>
-                )}
 
                 <div className="border-t border-border pt-4">
                   <p className="text-xs text-secondary mb-2">PIC Customer</p>

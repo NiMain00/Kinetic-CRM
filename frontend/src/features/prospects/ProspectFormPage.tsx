@@ -412,10 +412,10 @@ export default function ProspectFormPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-xl font-extrabold text-on-surface">{isEdit ? 'Edit Prospek' : 'Buat Prospek Baru'}</h1>
-          <p className="text-sm text-secondary mt-1">Isi informasi dasar prospek terlebih dahulu.</p>
-        </div>
+          <div>
+            <h1 className="text-xl font-extrabold text-on-surface">{isEdit ? 'Edit Prospek' : 'Buat Prospek Baru'}</h1>
+            <p className="text-sm text-secondary mt-1">{showDetail ? 'Lengkapi detail prospek di bawah untuk prospek level ini.' : 'Isi informasi dasar prospek terlebih dahulu.'}</p>
+          </div>
 
         {/* SIMPLIFIED BASIC FORM */}
         <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
@@ -680,11 +680,24 @@ export default function ProspectFormPage() {
         {/* CONDITIONAL DETAIL FORM — hanya muncul jika Hot atau Medium */}
         {showDetail && (
           <div className="space-y-6 animate-fade-in">
-            <div className="bg-gradient-to-r from-primary/5 to-transparent border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
-              <span className="material-symbols-outlined text-primary">expand_content</span>
-              <p className="text-sm text-on-surface font-medium">
-                Level <strong className="uppercase">{customerMode === 'existing' ? selectedCustomer?.level || newCustLevel : newCustLevel}</strong> — Silakan lengkapi detail prospek.
-              </p>
+            <div className={`rounded-2xl p-4 flex items-start gap-3 ${
+              newCustLevel === 'hot'
+                ? 'bg-rose-50 dark:bg-rose-950/20 border-2 border-rose-300 dark:border-rose-700'
+                : 'bg-gradient-to-r from-primary/5 to-transparent border border-primary/20'
+            }`}>
+              <span className={`material-symbols-outlined mt-0.5 ${newCustLevel === 'hot' ? 'text-rose-500' : 'text-primary'}`}>
+                {newCustLevel === 'hot' ? 'local_fire_department' : 'expand_content'}
+              </span>
+              <div>
+                <p className={`text-sm font-semibold ${newCustLevel === 'hot' ? 'text-rose-700 dark:text-rose-300' : 'text-on-surface'}`}>
+                  Level <strong className="uppercase">{customerMode === 'existing' ? selectedCustomer?.level || newCustLevel : newCustLevel}</strong>
+                </p>
+                <p className={`text-xs mt-1 ${newCustLevel === 'hot' ? 'text-rose-600 dark:text-rose-400' : 'text-secondary'}`}>
+                  {newCustLevel === 'hot'
+                    ? 'Prospek prioritas! Silakan isi semua data detail di bawah agar prospek dapat diproses.'
+                    : 'Silakan lengkapi detail prospek di bawah ini.'}
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
