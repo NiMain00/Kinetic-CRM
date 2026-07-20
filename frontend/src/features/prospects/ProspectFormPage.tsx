@@ -129,7 +129,7 @@ export default function ProspectFormPage() {
 
   // Simplified mode: only show basic fields initially
   const [showDetail, setShowDetail] = useState(
-    existingProspect?.customerData?.level === 'hot' || existingProspect?.customerData?.level === 'medium'
+    existingProspect?.customerData?.level === 'hot'
   );
 
   // Source (untuk Lead dari HO)
@@ -183,7 +183,7 @@ export default function ProspectFormPage() {
       setIndustryId(selectedCustomer.industryId || '');
       setProviderExisting(selectedCustomer.providerExisting || '');
       setNewCustLevel(selectedCustomer.level || '');
-      if (selectedCustomer.level === 'hot' || selectedCustomer.level === 'medium') {
+      if (selectedCustomer.level === 'hot') {
         setShowDetail(true);
       }
     }
@@ -195,11 +195,13 @@ export default function ProspectFormPage() {
     c.code.toLowerCase().includes(customerSearch.toLowerCase())
   );
 
-  // --- Access gate: non-hot customers can't be edited ---
+  // --- Access gate: existing non-hot customers can't create/edit prospects ---
   const customerLevel = customerMode === 'existing'
     ? selectedCustomer?.level
-    : (newCustLevel as 'hot' | 'medium' | 'low' | '' | undefined) || (existingProspect?.customerData?.level);
-  const isEditableForm = !isEdit || !customerLevel || customerLevel === 'hot';
+    : ((newCustLevel || existingProspect?.customerData?.level) as 'hot' | 'medium' | 'low' | '' | undefined);
+  const isEditableForm = customerMode === 'existing'
+    ? (customerLevel === 'hot' || !customerLevel)
+    : true;
 
   const getClientName = (): string => {
     if (customerMode === 'existing' && selectedCustomer) {

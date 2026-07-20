@@ -87,11 +87,17 @@ export default function AppLayout() {
           rbacStore.fetchAllUserRoles(),
           rbacStore.fetchRoles(),
           rbacStore.fetchPermissions(),
+          rbacStore.fetchDepartments(),
+          rbacStore.fetchStages(),
         ]);
       }
       setRbacReady(true);
     };
     loadRbac();
+    // Eager-load master data needed everywhere
+    const ms = useMasterDataStore.getState();
+    if (!ms.loaded.questions) ms.fetchEntity('questions');
+    if (!ms.loaded.questionTypes) ms.fetchEntity('questionTypes');
   }, []);
 
   useEffect(() => {
@@ -112,6 +118,10 @@ export default function AppLayout() {
   const oldPermissions = roleConfig?.permissions || [];
   const userId = (user as { id?: string })?.id;
   const activeDeptId = useAuthStore((s) => s.activeDepartmentId) || (user as any)?.departmentId;
+  const rbacUserRoles = useRbacStore((s) => s.userRoles);
+  const rbacRoles = useRbacStore((s) => s.roles);
+  const rbacPermissions = useRbacStore((s) => s.permissions);
+  const rbacRolePermissions = useRbacStore((s) => s.rolePermissions);
   const newRbacPerms = useMemo(() => {
     if (!userId) return [];
     const permList = ['dashboard:view', 'notification:read', 'profile:manage', 'prospect:read', 'prospect:write:prospecting',
@@ -119,7 +129,7 @@ export default function AppLayout() {
        'project:manage:scope', 'pengadaan:read', 'pengadaan:create', 'pengadaan:write',
        'report:view:department', 'report:view:crossdept', 'config:access'];
     return permList.filter((p) => authz.hasPermission(userId, p, { departmentId: activeDeptId }));
-  }, [userId, activeDeptId]);
+  }, [userId, activeDeptId, rbacUserRoles, rbacRoles, rbacPermissions, rbacRolePermissions]);
   const userPermissions = useMemo(() => [...new Set([...oldPermissions, ...newRbacPerms])], [oldPermissions, newRbacPerms]);
 
   if (!rbacReady) {
