@@ -761,7 +761,7 @@ export default function ProspectDetailPage() {
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
                       <DataField label="Nama Customer" value={prospect.client} />
-                      <DataField label="Tipe Customer" value={customer?.type ? customer.type.charAt(0).toUpperCase() + customer.type.slice(1) : '-'} />
+                      <DataField label="Level Customer" value={customer?.level ? customer.level.charAt(0).toUpperCase() + customer.level.slice(1) : '-'} />
                       <DataField label="Kota" value={customer?.city || '-'} />
                       {customer?.npwp && <DataField label="NPWP" value={customer.npwp} />}
                       <DataField label="Bidang" value={industryMap[prospect.industryId || ''] || '-'} />

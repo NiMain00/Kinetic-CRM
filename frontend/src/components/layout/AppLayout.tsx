@@ -174,7 +174,7 @@ export default function AppLayout() {
         <Breadcrumb />
         <ShortcutHelpModal isOpen={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />
         <main className="flex-1 flex flex-col min-h-0 bg-background">
-          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-3 sm:px-6 lg:px-10 py-3 sm:py-4">
+          <div className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden px-3 sm:px-6 lg:px-10 py-3 sm:py-4">
             <Outlet />
           </div>
         </main>

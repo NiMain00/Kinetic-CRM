@@ -515,11 +515,12 @@ export default function ProspectFormPage() {
                   <input value={newCustCode} onChange={(e) => setNewCustCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none text-sm" placeholder="Contoh: MB" type="text" />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tipe Customer</label>
-                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
-                    {customerTypeOptions.map(t => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Level Customer</label>
+                  <select value={newCustLevel} onChange={(e) => handleLevelChange(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    <option value="">Pilih Level</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="hot">Hot</option>
                   </select>
                 </div>
               </div>
@@ -555,12 +556,11 @@ export default function ProspectFormPage() {
                   <p className="text-caption-xs text-secondary">Gunakan nama yang sama untuk perusahaan induk agar project tergabung di 1 root.</p>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Level Customer</label>
-                  <select value={newCustLevel} onChange={(e) => handleLevelChange(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
-                    <option value="">Pilih Level</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="hot">Hot</option>
+                  <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tipe Perusahaan</label>
+                  <select value={newCustType} onChange={(e) => setNewCustType(e.target.value as 'swasta' | 'bumn' | 'pemerintah' | 'asing')} className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-lowest outline-none text-sm">
+                    {customerTypeOptions.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>

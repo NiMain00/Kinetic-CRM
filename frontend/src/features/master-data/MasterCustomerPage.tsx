@@ -6,8 +6,8 @@ import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import { useCustomerStore } from '@/stores/customerStore';
 import type { Customer } from '@/types/domain';
 
-const typeLabels: Record<string, string> = { swasta: 'Swasta', bumn: 'BUMN', pemerintah: 'Pemerintah', asing: 'Asing' };
-const typeVariants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple'> = { swasta: 'default', bumn: 'info', pemerintah: 'warning', asing: 'purple' };
+const levelLabels: Record<string, string> = { hot: 'Hot', medium: 'Medium', low: 'Low' };
+const levelVariants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple'> = { hot: 'danger', medium: 'warning', low: 'default' };
 
 export default function MasterCustomerPage() {
   const navigate = useNavigate();
@@ -15,7 +15,7 @@ export default function MasterCustomerPage() {
   useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebouncedValue(search, 300);
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [levelFilter, setLevelFilter] = useState<string>('all');
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [form, setForm] = useState<Partial<Customer>>({});
@@ -23,13 +23,13 @@ export default function MasterCustomerPage() {
   const filtered = useMemo(() => customers.filter(c => {
     const q = debouncedSearch.toLowerCase();
     const matchSearch = !q || c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || (c.picName || '').toLowerCase().includes(q);
-    const matchType = typeFilter === 'all' || c.type === typeFilter;
-    return matchSearch && matchType;
-  }), [customers, debouncedSearch, typeFilter]);
+    const matchLevel = levelFilter === 'all' || c.level === levelFilter;
+    return matchSearch && matchLevel;
+  }), [customers, debouncedSearch, levelFilter]);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ type: 'swasta', isActive: true } as any);
+    setForm({ isActive: true } as any);
     setModalOpen(true);
   };
 
@@ -88,7 +88,7 @@ export default function MasterCustomerPage() {
         <Button onClick={openCreate} size="sm" leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}>Tambah Customer</Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 sm:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="md">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -96,14 +96,13 @@ export default function MasterCustomerPage() {
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
                 <input type="text" placeholder="Cari nama, kode, atau PIC..." value={search} onChange={e => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-surface-container-low border border-border rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-primary" aria-label="Cari customer" />
               </div>
-              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none" aria-label="Filter tipe">
-                <option value="all">Semua Tipe</option>
-                <option value="swasta">Swasta</option>
-                <option value="bumn">BUMN</option>
-                <option value="pemerintah">Pemerintah</option>
-                <option value="asing">Asing</option>
+              <select value={levelFilter} onChange={e => setLevelFilter(e.target.value)} className="bg-surface-container-lowest border border-border rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none" aria-label="Filter level">
+                <option value="all">Semua Level</option>
+                <option value="hot">Hot</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
               </select>
-              <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setTypeFilter('all'); }}>Reset Filter</Button>
+              <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setLevelFilter('all'); }}>Reset Filter</Button>
             </div>
           </Card>
 
@@ -114,7 +113,7 @@ export default function MasterCustomerPage() {
                   <tr className="bg-surface-container-low border-b border-border text-secondary uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama</th>
                     <th className="px-6 py-3.5">Kode</th>
-                    <th className="px-6 py-3.5">Tipe</th>
+                    <th className="px-6 py-3.5">Level</th>
                     <th className="px-6 py-3.5">PIC</th>
                     <th className="px-6 py-3.5">Kota</th>
                     <th className="px-6 py-3.5 text-center">Status</th>
@@ -129,7 +128,7 @@ export default function MasterCustomerPage() {
                       <tr key={c.id} className="hover:bg-surface-container-low/65 transition-colors">
                         <td className="px-6 py-4 font-bold text-on-surface">{c.name}</td>
                         <td className="px-6 py-4 font-mono text-outline">{c.code}</td>
-                        <td className="px-6 py-4"><Badge variant={typeVariants[c.type]}>{typeLabels[c.type]}</Badge></td>
+                        <td className="px-6 py-4">{c.level ? <Badge variant={levelVariants[c.level]}>{levelLabels[c.level]}</Badge> : <span className="text-outline italic">-</span>}</td>
                         <td className="px-6 py-4">
                           <div className="text-secondary">{c.picName}</div>
                           <div className="text-[10px] text-outline">{c.picEmail}</div>
@@ -169,12 +168,12 @@ export default function MasterCustomerPage() {
             </div>
           </div>
           <div className="space-y-2">
-            <label className="font-semibold text-secondary block">Tipe Customer *</label>
-              <select value={form.type || 'swasta'} onChange={e => setForm({ ...form, type: e.target.value as Customer['type'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
-              <option value="swasta">Swasta</option>
-              <option value="bumn">BUMN</option>
-              <option value="pemerintah">Pemerintah</option>
-              <option value="asing">Asing</option>
+            <label className="font-semibold text-secondary block">Level Customer</label>
+            <select value={form.level || ''} onChange={e => setForm({ ...form, level: e.target.value as Customer['level'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+              <option value="">Pilih Level</option>
+              <option value="hot">Hot</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
             </select>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
