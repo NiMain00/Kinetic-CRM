@@ -23,3 +23,13 @@ export function useProspect(id: string | undefined) {
     enabled: !!id,
   });
 }
+
+export function useProspectLight(params?: Record<string, unknown>) {
+  return useQuery({
+    queryKey: ['prospects', 'light', params],
+    queryFn: async () => {
+      const res = await prospectService.listLight(params);
+      return unwrap<any[]>(res);
+    },
+  });
+}

@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useCustomerStore } from '@/stores/customerStore';
-import { useProspectStore } from '@/stores/prospectStore';
 import { PageContainer, PageHeader } from '@/components/shared';
 import { Button } from '@/components/ui';
-import { prospectService } from '@/services/prospects';
+import { useQueryClient } from '@tanstack/react-query';
+import { useProspectLight } from '@/hooks/queries/useProspects';
+import { usePromoteProspect } from '@/hooks/mutations/useProspectMutations';
 import type { Prospect } from '@/types/domain';
 
 type CustomerLevel = 'hot' | 'medium' | 'low';
@@ -52,45 +53,31 @@ const LEVEL_LABELS: Record<CustomerLevel, string> = {
   hot: 'Hot',
 };
 
-const LEVEL_ORDER: Record<CustomerLevel, number> = { low: 0, medium: 1, hot: 2 };
-
 export default function ProspectQualificationPage() {
   const navigate = useNavigate();
   const updateCustomer = useCustomerStore((s) => s.updateCustomer);
-  const [prospects, setProspects] = useState<Prospect[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [promoting, setPromoting] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchLight = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await prospectService.listLight({ perPage: 100, page: 1 });
-      const raw: any[] = res.data?.data || res.data || [];
-      const list: Prospect[] = Array.isArray(raw) ? raw.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        client: item.client,
-        customerId: item.customerId,
-        customerData: item.customer
-          ? { id: item.customer.id, name: item.customer.name, level: item.customer.level } as any
-          : undefined,
-        source: item.source,
-        potensiUnit: item.potensiUnit ?? 0,
-        date: item.createdAt || '',
-        author: item.ownerUser?.fullName || '',
-        status: 'Lead' as const,
-      })) : [];
-      setProspects(list);
-    } catch {
-      toast.error('Gagal memuat data kualifikasi');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: raw, isLoading } = useProspectLight({ perPage: 100, page: 1 });
+  const promoteMutation = usePromoteProspect();
 
-  useEffect(() => {
-    fetchLight();
-  }, [fetchLight]);
+  const prospects: Prospect[] = useMemo(() => {
+    const arr: any[] = Array.isArray(raw) ? raw : [];
+    return arr.map((item: any) => ({
+      id: item.id,
+      name: item.name,
+      client: item.client,
+      customerId: item.customerId,
+      customerData: item.customer
+        ? { id: item.customer.id, name: item.customer.name, level: item.customer.level } as any
+        : undefined,
+      source: item.source,
+      potensiUnit: item.potensiUnit ?? 0,
+      date: item.createdAt || '',
+      author: item.ownerUser?.fullName || '',
+      status: 'Lead' as const,
+    }));
+  }, [raw]);
 
   // Group prospects by customer level
   const grouped = useMemo(() => {
@@ -109,18 +96,13 @@ export default function ProspectQualificationPage() {
       toast.error('Prospek ini tidak memiliki data customer');
       return;
     }
-    setPromoting(prospect.id);
     try {
-      await prospectService.promote(prospect.id, targetLevel);
+      await promoteMutation.mutateAsync({ id: prospect.id, level: targetLevel });
       await updateCustomer(prospect.customerId, { level: targetLevel });
       toast.success(`Level ${prospect.customerData?.name || prospect.client} dinaikkan ke ${LEVEL_LABELS[targetLevel]}`);
-      // Refresh data
-      await fetchLight();
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Gagal promote level';
       toast.error(msg);
-    } finally {
-      setPromoting(null);
     }
   };
 
@@ -134,7 +116,6 @@ export default function ProspectQualificationPage() {
         key={prospect.id}
         className="bg-surface rounded-xl border border-border/60 p-4 shadow-card hover:shadow-card-hover transition-all space-y-3"
       >
-        {/* Header: name + level badge */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h4 className="font-semibold text-sm text-on-surface truncate">
@@ -157,7 +138,6 @@ export default function ProspectQualificationPage() {
           )}
         </div>
 
-        {/* Info rows */}
         <div className="space-y-1 text-xs text-secondary">
           <div className="flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[14px]">source</span>
@@ -173,7 +153,6 @@ export default function ProspectQualificationPage() {
           </div>
         </div>
 
-        {/* Action button */}
         <div className="pt-1">
           {currentLevel === 'hot' ? (
             <Button
@@ -190,9 +169,9 @@ export default function ProspectQualificationPage() {
               size="sm"
               fullWidth
               onClick={() => handlePromote(prospect, nextLevel)}
-              isLoading={promoting === prospect.id}
+              isLoading={promoteMutation.isPending && promoteMutation.variables?.id === prospect.id}
             >
-              {promoting === prospect.id ? 'Memproses...' : `Naikkan ke ${LEVEL_LABELS[nextLevel]}`}
+              {promoteMutation.isPending && promoteMutation.variables?.id === prospect.id ? 'Memproses...' : `Naikkan ke ${LEVEL_LABELS[nextLevel]}`}
             </Button>
           ) : null}
         </div>
@@ -207,7 +186,6 @@ export default function ProspectQualificationPage() {
         key={col.level}
         className={`flex flex-col rounded-2xl border border-border/60 ${col.bgColor} min-h-[400px]`}
       >
-        {/* Column header */}
         <div
           className={`flex items-center justify-between px-4 py-3 rounded-t-2xl ${col.headerBg} border-b border-border/60`}
         >
@@ -220,7 +198,6 @@ export default function ProspectQualificationPage() {
           </span>
         </div>
 
-        {/* Cards */}
         <div className="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-280px)]">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-secondary">
@@ -235,10 +212,9 @@ export default function ProspectQualificationPage() {
     );
   };
 
-  // Count prospects without level
   const unqualifiedCount = prospects.filter((p) => !p.customerData?.level).length;
 
-  if (loading) {
+  if (isLoading) {
     return (
       <PageContainer>
         <div className="flex items-center justify-center py-20">
@@ -261,7 +237,7 @@ export default function ProspectQualificationPage() {
               </span>
             )}
             <button
-              onClick={() => fetchLight()}
+              onClick={() => queryClient.invalidateQueries({ queryKey: ['prospects', 'light'] })}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-surface-variant bg-surface border border-border/60 rounded-lg hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
               <span className="material-symbols-outlined text-[16px]">refresh</span>

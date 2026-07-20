@@ -25,3 +25,15 @@ export function useDeleteProspect() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['prospects'] }),
   });
 }
+
+export function usePromoteProspect() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, level }: { id: string; level: string }) =>
+      prospectService.promote(id, level),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prospects', 'light'] });
+      queryClient.invalidateQueries({ queryKey: ['prospects'] });
+    },
+  });
+}
