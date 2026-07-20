@@ -316,7 +316,7 @@ export default function DeliveryTab({ procurement }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Tanggal PO
             </label>
             <input
@@ -328,7 +328,7 @@ export default function DeliveryTab({ procurement }: Props) {
             />
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Tanggal Mulai Delivery <span className="text-danger">*</span>
             </label>
             <input
@@ -348,7 +348,7 @@ export default function DeliveryTab({ procurement }: Props) {
             )}
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Estimasi Tanggal Sampai <span className="text-danger">*</span>
             </label>
             <input
@@ -366,7 +366,7 @@ export default function DeliveryTab({ procurement }: Props) {
             )}
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Tanggal Unit Ready
             </label>
             <input
@@ -378,7 +378,7 @@ export default function DeliveryTab({ procurement }: Props) {
             />
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Tanggal Unit Terkirim
             </label>
             <input
@@ -390,7 +390,7 @@ export default function DeliveryTab({ procurement }: Props) {
             />
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Tanggal Unit Diterima
             </label>
             <input
@@ -404,7 +404,7 @@ export default function DeliveryTab({ procurement }: Props) {
         </div>
 
         <div>
-          <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
             Catatan Logistik
           </label>
           <textarea
@@ -495,7 +495,7 @@ export default function DeliveryTab({ procurement }: Props) {
           </div>
 
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Progress (%)
             </label>
             <div className="flex items-center gap-4">
@@ -520,7 +520,7 @@ export default function DeliveryTab({ procurement }: Props) {
           </div>
 
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Catatan Progress
             </label>
             <textarea

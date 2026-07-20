@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { DocGroup, DocumentEntry } from '@/types/domain';
 import type { Procurement } from '@/types/domain/procurement';
 import { useProcurementStore } from '../procurementStore';
+import { Button } from '@/components/ui';
 
 interface Props {
   procurement: Procurement;
@@ -57,13 +58,14 @@ export default function DokumenTab({ procurement }: Props) {
         <p className="text-sm text-secondary mt-1">
           Upload dokumen procurement di sini.
         </p>
-        <button
+        <Button
+          variant="primary"
+          size="md"
           onClick={handleUpload}
-          className="mt-4 px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold flex items-center gap-2"
+          leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
         >
-          <span className="material-symbols-outlined text-[18px]">upload</span>
           Upload Dokumen
-        </button>
+        </Button>
       </div>
     );
   }
@@ -71,13 +73,14 @@ export default function DokumenTab({ procurement }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button
+        <Button
+          variant="primary"
+          size="md"
           onClick={handleUpload}
-          className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-semibold flex items-center gap-2"
+          leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
         >
-          <span className="material-symbols-outlined text-[18px]">upload</span>
           Upload
-        </button>
+        </Button>
       </div>
       {docGroups.map((group) => (
         <div
@@ -101,14 +104,19 @@ export default function DokumenTab({ procurement }: Props) {
                     <p className="text-xs font-semibold text-on-surface">
                       {doc.name}
                     </p>
-                    <p className="text-[10px] text-secondary">
+                    <p className="text-caption-xs text-secondary">
                       {doc.size} · {doc.uploadDate}
                     </p>
                   </div>
                 </div>
-                <span className="material-symbols-outlined text-outline text-[18px] cursor-pointer">
-                  download
-                </span>
+                <button
+                  type="button"
+                  className="flex items-center justify-center w-9 h-9 rounded-lg text-outline hover:text-primary hover:bg-surface-container-low transition-all"
+                  aria-label="Unduh dokumen"
+                  title="Unduh dokumen"
+                >
+                  <span className="material-symbols-outlined text-[18px]">download</span>
+                </button>
               </div>
             ))}
           </div>

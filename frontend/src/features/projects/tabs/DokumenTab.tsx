@@ -11,10 +11,10 @@ interface TabProps {
 
 const defaultDocGroups: DocGroup[] = [
   { key: 'RKS', label: 'Rencana Kerja & Syarat-Syarat', icon: 'RKS', color: 'bg-primary/10 text-primary', documents: [] },
-  { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-teal-50 dark:bg-teal-950/30 text-teal-600 dark:text-teal-400', documents: [] },
-  { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-purple-50 dark:bg-purple-950/30 text-purple-600 dark:text-purple-400', documents: [] },
-  { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400', documents: [] },
-  { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400', documents: [] },
+  { key: 'LPHS', label: 'Laporan Penilaian Harga Satuan', icon: 'LPHS', color: 'bg-status-teal/10 dark:bg-teal-950/30 text-status-teal dark:text-teal-400', documents: [] },
+  { key: 'SIOS', label: 'Surat Instruksi Operasional Site', icon: 'SIOS', color: 'bg-status-purple/10 dark:bg-purple-950/30 text-status-purple dark:text-purple-400', documents: [] },
+  { key: 'Harga', label: 'Dokumen Penawaran Harga Final', icon: 'HRG', color: 'bg-warning-container dark:bg-amber-950/30 text-warning dark:text-amber-400', documents: [] },
+  { key: 'MISC', label: 'Dokumen Lampiran & Foto Lapangan', icon: 'MISC', color: 'bg-info-container dark:bg-sky-950/30 text-info dark:text-sky-400', documents: [] },
 ];
 
 export default function DokumenTab({ project, onShowNotification }: TabProps) {
@@ -99,7 +99,7 @@ export default function DokumenTab({ project, onShowNotification }: TabProps) {
           </div>
         </div>
         <div className="bg-surface-container-lowest p-4 rounded-xl border border-border shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center text-teal-600 dark:text-teal-400">
+          <div className="w-12 h-12 rounded-lg bg-status-teal/10 dark:bg-teal-950/30 flex items-center justify-center text-status-teal dark:text-teal-400">
             <span className="material-symbols-outlined text-2xl">storage</span>
           </div>
           <div>
@@ -108,7 +108,7 @@ export default function DokumenTab({ project, onShowNotification }: TabProps) {
           </div>
         </div>
         <div className="bg-surface-container-lowest p-4 rounded-xl border border-border shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+          <div className="w-12 h-12 rounded-lg bg-warning-container dark:bg-amber-950/30 flex items-center justify-center text-warning dark:text-amber-400">
             <span className="material-symbols-outlined text-2xl">update</span>
           </div>
           <div>
@@ -117,7 +117,7 @@ export default function DokumenTab({ project, onShowNotification }: TabProps) {
           </div>
         </div>
         <div className="bg-surface-container-lowest p-4 rounded-xl border border-border shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-lg bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+          <div className="w-12 h-12 rounded-lg bg-status-purple/10 dark:bg-purple-950/30 flex items-center justify-center text-status-purple dark:text-purple-400">
             <span className="material-symbols-outlined text-2xl">fact_check</span>
           </div>
           <div>
@@ -173,7 +173,7 @@ export default function DokumenTab({ project, onShowNotification }: TabProps) {
                             </div>
                           </div>
                           <div className="hidden sm:block col-span-2 text-center">
-                            <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 font-bold rounded text-[10px]">{doc.version}</span>
+                            <span className="px-2 py-0.5 bg-success-container dark:bg-emerald-950/30 text-success dark:text-emerald-400 border border-success/20 dark:border-emerald-200 font-bold rounded text-[10px]">{doc.version}</span>
                           </div>
                           <div className="hidden sm:block col-span-2 text-xs text-secondary truncate">{doc.uploader}</div>
                           <div className="col-span-4 sm:col-span-2 text-right flex justify-end gap-1 sm:gap-2">

@@ -548,7 +548,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleDeleteFile(idx); }}
-                      className="p-1.5 hover:bg-red-50 dark:bg-red-950/30 hover:text-danger rounded-lg transition-colors text-outline"
+                      className="p-1.5 hover:bg-danger-container dark:bg-red-950/30 hover:text-danger rounded-lg transition-colors text-outline"
                     >
                       <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
@@ -679,7 +679,7 @@ export default function RksTab({ project, onShowNotification }: TabProps) {
                     <div key={q.id} className="p-4 bg-surface-container-low rounded-lg border border-border">
                       <p className="font-semibold text-sm text-on-surface mb-3">
                         {index + 1}. {q.question_text}
-                        {q.is_required && <span className="text-red-500 ml-1">*</span>}
+                        {q.is_required && <span className="text-danger ml-1">*</span>}
                       </p>
                       {(typeCode === 'text' || typeCode === 'textarea') && (
                         <textarea

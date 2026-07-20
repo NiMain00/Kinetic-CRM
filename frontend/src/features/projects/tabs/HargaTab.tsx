@@ -153,7 +153,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
       <div className="flex items-center gap-2">
         <span className="font-semibold">{row.name}</span>
         {isLowestCompetitor(row) && (
-          <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 font-bold uppercase tracking-wider whitespace-nowrap">
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-warning-container dark:bg-amber-900 text-warning dark:text-amber-300 font-bold uppercase tracking-wider whitespace-nowrap">
             Harga Terendah
           </span>
         )}
@@ -235,14 +235,14 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
           </div>
           {/* Bottom Price Warning */}
           {isBelowBottomPrice && (
-            <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
-              <span className="material-symbols-outlined text-[18px] text-red-600 dark:text-red-400 mt-0.5">warning</span>
+            <div className="p-3 bg-danger-container dark:bg-red-950/30 border border-danger/20 dark:border-red-800 rounded-lg flex items-start gap-2">
+              <span className="material-symbols-outlined text-[18px] text-danger dark:text-red-400 mt-0.5">warning</span>
               <div className="text-xs space-y-1">
-                <span className="font-semibold text-red-700 dark:text-red-400 block">
+                <span className="font-semibold text-danger dark:text-red-400 block">
                   Harga penawaran ({formatCurrency(hargaPenawaran)}) berada di bawah harga minimum ({formatCurrency(effectiveBottomPrice)}). Silakan naikkan harga penawaran.
                 </span>
                 {isCompetitorPushed && (
-                  <span className="text-red-500 dark:text-red-300 block">
+                  <span className="text-danger dark:text-red-300 block">
                     ⬆ Harga minimum dinaikkan dari {formatCurrency(bottomPrice)} → {formatCurrency(lowestCompetitorPrice)} berdasarkan harga termurah kompetitor.
                   </span>
                 )}
@@ -250,10 +250,10 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
             </div>
           )}
           {isAtBottomPrice && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-start gap-2">
-              <span className="material-symbols-outlined text-[18px] text-amber-600 dark:text-amber-400 mt-0.5">info</span>
+            <div className="p-3 bg-warning-container dark:bg-amber-950/30 border border-warning/20 dark:border-amber-800 rounded-lg flex items-start gap-2">
+              <span className="material-symbols-outlined text-[18px] text-warning dark:text-amber-400 mt-0.5">info</span>
               <div className="text-xs space-y-1">
-                <span className="font-semibold text-amber-700 dark:text-amber-400 block">
+                <span className="font-semibold text-warning dark:text-amber-400 block">
                   Harga penawaran sama dengan harga minimum ({formatCurrency(effectiveBottomPrice)}).
                 </span>
                 {isCompetitorPushed && (
@@ -266,9 +266,9 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
           )}
           {/* Info: bottom price pushed by competitor (no warning, just FYI) */}
           {isCompetitorPushed && !isBelowBottomPrice && !isAtBottomPrice && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg flex items-start gap-2">
-              <span className="material-symbols-outlined text-[18px] text-blue-600 dark:text-blue-400 mt-0.5">trending_up</span>
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+            <div className="p-3 bg-info-container dark:bg-blue-950/30 border border-info/20 dark:border-blue-800 rounded-lg flex items-start gap-2">
+              <span className="material-symbols-outlined text-[18px] text-info dark:text-blue-400 mt-0.5">trending_up</span>
+              <span className="text-xs font-semibold text-info dark:text-blue-400">
                 Harga minimum dinaikkan dari {formatCurrency(bottomPrice)} → {formatCurrency(lowestCompetitorPrice)} berdasarkan harga termurah kompetitor. Harga penawaran masih aman.
               </span>
             </div>
@@ -307,7 +307,7 @@ export default function HargaTab({ project, onShowNotification }: TabProps) {
                 <span className="text-secondary font-semibold">Harga Minimum</span>
                 <div className="flex items-center gap-2">
                   {isCompetitorPushed && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 font-bold">DARI KOMPETITOR</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-info-container dark:bg-blue-900 text-info dark:text-blue-300 font-bold">DARI KOMPETITOR</span>
                   )}
                   <span className={`font-semibold font-mono ${isBelowBottomPrice ? 'text-danger' : 'text-on-surface'}`}>{formatCurrency(effectiveBottomPrice)}</span>
                 </div>

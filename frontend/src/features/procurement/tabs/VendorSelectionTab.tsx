@@ -127,7 +127,7 @@ export default function VendorSelectionTab({ procurement }: Props) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Nama Vendor
             </label>
             <input
@@ -135,10 +135,11 @@ export default function VendorSelectionTab({ procurement }: Props) {
               onChange={(e) => setSelectedVendor(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
               placeholder="PT. Supplier Utama"
+              aria-label="Nama Vendor"
             />
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               PIC Vendor
             </label>
             <input
@@ -146,10 +147,11 @@ export default function VendorSelectionTab({ procurement }: Props) {
               onChange={(e) => setVendorPic(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
               placeholder="Nama kontak person"
+              aria-label="PIC Vendor"
             />
           </div>
           <div>
-            <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
               Kontak Vendor
             </label>
             <input
@@ -157,6 +159,7 @@ export default function VendorSelectionTab({ procurement }: Props) {
               onChange={(e) => setVendorContact(e.target.value)}
               className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
               placeholder="Telepon / Email"
+              aria-label="Kontak Vendor"
             />
           </div>
         </div>

@@ -102,7 +102,7 @@ export default function ProgressTab({ procurement }: Props) {
         </div>
 
         <div>
-          <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
             Progress (%)
           </label>
           <div className="flex items-center gap-4">
@@ -127,7 +127,7 @@ export default function ProgressTab({ procurement }: Props) {
         </div>
 
         <div>
-          <label className="font-label-sm text-xs font-semibold text-secondary mb-1.5 block">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
             Catatan Progress
           </label>
           <textarea

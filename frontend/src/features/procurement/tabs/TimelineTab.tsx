@@ -148,16 +148,16 @@ export default function TimelineTab({ procurement }: Props) {
         <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h4 className="text-sm font-bold text-on-surface">Riwayat Perubahan Status</h4>
-            <p className="text-[10px] text-outline">Catat perubahan status pengadaan secara manual.</p>
+            <p className="text-caption-xs text-outline">Catat perubahan status pengadaan secara manual.</p>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => setShowAddStatus(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:brightness-110 transition-all"
+            leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}
           >
-            <span className="material-symbols-outlined text-[16px]">add</span>
             Tambah Update Status
-          </button>
+          </Button>
         </div>
       )}
 
@@ -165,16 +165,16 @@ export default function TimelineTab({ procurement }: Props) {
         <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h4 className="text-sm font-bold text-on-surface">Riwayat Unggahan Dokumen</h4>
-            <p className="text-[10px] text-outline">Daftar dokumen yang pernah diunggah ke pengadaan ini.</p>
+            <p className="text-caption-xs text-outline">Daftar dokumen yang pernah diunggah ke pengadaan ini.</p>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => setShowUpload(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:brightness-110 transition-all"
+            leftIcon={<span className="material-symbols-outlined text-[16px]">cloud_upload</span>}
           >
-            <span className="material-symbols-outlined text-[16px]">cloud_upload</span>
             Unggah Dokumen
-          </button>
+          </Button>
         </div>
       )}
 
@@ -187,17 +187,17 @@ export default function TimelineTab({ procurement }: Props) {
                 <span className="material-symbols-outlined text-primary">published_with_changes</span>
                 Tambah Update Status
               </h4>
-              <button type="button" onClick={() => setShowAddStatus(false)} className="w-7 h-7 rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors">
+              <button type="button" onClick={() => setShowAddStatus(false)} className="w-9 h-9 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors">
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-on-surface-variant mb-1 block">Judul Status *</label>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant mb-1 block">Judul Status *</label>
                 <input value={newStatusTitle} onChange={e => setNewStatusTitle(e.target.value)} type="text" className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface" placeholder="Contoh: Barang dalam perjalanan" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-on-surface-variant mb-1 block">Deskripsi</label>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant mb-1 block">Deskripsi</label>
                 <textarea value={newStatusDesc} onChange={e => setNewStatusDesc(e.target.value)} rows={3} className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface resize-none" placeholder="Penjelasan tambahan (opsional)" />
               </div>
             </div>
@@ -218,21 +218,21 @@ export default function TimelineTab({ procurement }: Props) {
                 <span className="material-symbols-outlined text-primary">cloud_upload</span>
                 Unggah Dokumen
               </h4>
-              <button type="button" onClick={() => setShowUpload(false)} className="w-7 h-7 rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors">
+              <button type="button" onClick={() => setShowUpload(false)} className="w-9 h-9 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors">
                 <span className="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-on-surface-variant mb-1 block">Nama Dokumen *</label>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant mb-1 block">Nama Dokumen *</label>
                 <input value={uploadFileName} onChange={e => setUploadFileName(e.target.value)} type="text" className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs text-on-surface" placeholder="Contoh: Dokumen Pendukung" />
               </div>
               <div>
-                <label className="text-xs font-semibold text-on-surface-variant mb-1 block">File Ungguhan</label>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant mb-1 block">File Ungguhan</label>
                 <div className="border-2 border-dashed border-primary/30 rounded-xl p-8 text-center bg-surface-container-low cursor-pointer">
                   <span className="material-symbols-outlined text-4xl text-primary/40 mb-2">cloud_upload</span>
                   <p className="text-xs font-semibold text-secondary">Klik untuk pilih berkas komputer</p>
-                  <p className="text-[10px] text-outline mt-1">PDF, DOCX, XLSX (Maks 50MB)</p>
+                  <p className="text-caption-xs text-outline mt-1">PDF, DOCX, XLSX (Maks 50MB)</p>
                 </div>
               </div>
             </div>
@@ -285,17 +285,17 @@ export default function TimelineTab({ procurement }: Props) {
                       {event.actor} • {event.role}
                     </p>
                   </div>
-                  <span className="text-[10px] sm:text-xs text-outline font-medium">{event.time}</span>
+                  <span className="text-caption-xs sm:text-xs text-outline font-medium">{event.time}</span>
                 </div>
 
                 {event.prevVal && event.newVal && event.type === 'revision' && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mt-2 mb-3">
                     <div className="bg-surface-container-low p-3 rounded-lg border border-border flex flex-col">
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-outline">Nilai Sebelumnya</span>
+                      <span className="text-caption-xs uppercase font-mono tracking-wider text-outline">Nilai Sebelumnya</span>
                       <span className="text-sm font-semibold text-secondary line-through">{event.prevVal}</span>
                     </div>
                     <div className="bg-rose-50 dark:bg-rose-950/30 p-3 rounded-lg border border-rose-100 flex flex-col">
-                      <span className="text-[10px] uppercase font-mono tracking-wider text-rose-600 dark:text-rose-400">Nilai Menjadi</span>
+                      <span className="text-caption-xs uppercase font-mono tracking-wider text-rose-600 dark:text-rose-400">Nilai Menjadi</span>
                       <span className="text-sm font-bold text-rose-700">{event.newVal}</span>
                     </div>
                   </div>
@@ -310,7 +310,7 @@ export default function TimelineTab({ procurement }: Props) {
                 )}
 
                 {event.description && (
-                  <p className="text-xs text-on-surface-variant bg-surface-container-low p-3 rounded-lg border-l-4 border-primary">
+                  <p className="text-xs text-on-surface-variant bg-surface-container-low p-3 rounded-lg">
                     {event.description}
                   </p>
                 )}
@@ -321,7 +321,7 @@ export default function TimelineTab({ procurement }: Props) {
                       <span className="material-symbols-outlined text-red-500 text-3xl">picture_as_pdf</span>
                       <div>
                         <p className="text-xs font-bold text-on-surface">{event.fileName}</p>
-                        {event.fileSize && <p className="text-[10px] text-outline">{event.fileSize}</p>}
+                        {event.fileSize && <p className="text-caption-xs text-outline">{event.fileSize}</p>}
                       </div>
                     </div>
                     <span className="material-symbols-outlined text-secondary text-[20px]">download</span>
