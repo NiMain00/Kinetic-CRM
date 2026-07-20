@@ -25,7 +25,7 @@ interface DataTableProps<T> {
   exportFilename?: string;
 }
 
-const DataTable = React.memo(function DataTable<T>({
+function DataTableRaw<T>({
   columns,
   data,
   keyExtractor,
@@ -153,7 +153,9 @@ const DataTable = React.memo(function DataTable<T>({
       />
     </div>
   );
-});
+}
+
+const DataTable = React.memo(DataTableRaw) as <T>(props: DataTableProps<T>) => React.ReactElement | null;
 
 export default DataTable;
 
