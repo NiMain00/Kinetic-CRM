@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { configCache } from '../common/cache.util';
 
 const CONNECTOR_TYPE_MAP: Record<string, string> = {
   'Cloud Storage': 'Cloud_Storage',
@@ -10,13 +11,18 @@ function normalizeConnectorType(type: string): string {
   return CONNECTOR_TYPE_MAP[type] ?? type;
 }
 
+const cached =
+  <T>(key: string, fn: () => Promise<T>) =>
+  () =>
+    configCache.getOrFetch(key, fn);
+
 @Injectable()
 export class ConfigService {
   constructor(private readonly prisma: PrismaService) {}
 
   // ── SLA Policies ──
   listSlaPolicies() {
-    return this.prisma.slaPolicy.findMany();
+    return configCache.getOrFetch('slaPolicies', () => this.prisma.slaPolicy.findMany());
   }
   createSlaPolicy(data: {
     name: string;
@@ -27,6 +33,7 @@ export class ConfigService {
     escalationRole: string;
     active?: boolean;
   }) {
+    configCache.invalidate('slaPolicies');
     return this.prisma.slaPolicy.create({ data });
   }
   updateSlaPolicy(
@@ -41,15 +48,17 @@ export class ConfigService {
       active: boolean;
     }>,
   ) {
+    configCache.invalidate('slaPolicies');
     return this.prisma.slaPolicy.update({ where: { id }, data });
   }
   deleteSlaPolicy(id: string) {
+    configCache.invalidate('slaPolicies');
     return this.prisma.slaPolicy.delete({ where: { id } });
   }
 
   // ── KPI Targets ──
   listKpiTargets() {
-    return this.prisma.kpiTarget.findMany();
+    return configCache.getOrFetch('kpiTargets', () => this.prisma.kpiTarget.findMany());
   }
   createKpiTarget(data: {
     name: string;
@@ -60,6 +69,7 @@ export class ConfigService {
     period: string;
     description?: string;
   }) {
+    configCache.invalidate('kpiTargets');
     return this.prisma.kpiTarget.create({ data });
   }
   updateKpiTarget(
@@ -74,15 +84,17 @@ export class ConfigService {
       description: string;
     }>,
   ) {
+    configCache.invalidate('kpiTargets');
     return this.prisma.kpiTarget.update({ where: { id }, data });
   }
   deleteKpiTarget(id: string) {
+    configCache.invalidate('kpiTargets');
     return this.prisma.kpiTarget.delete({ where: { id } });
   }
 
   // ── Connectors ──
   listConnectors() {
-    return this.prisma.connector.findMany();
+    return configCache.getOrFetch('connectors', () => this.prisma.connector.findMany());
   }
   createConnector(data: {
     name: string;
@@ -93,6 +105,7 @@ export class ConfigService {
     lastTested?: string;
     configJson?: string;
   }) {
+    configCache.invalidate('connectors');
     return this.prisma.connector.create({
       data: { ...data, type: normalizeConnectorType(data.type) } as any,
     });
@@ -109,17 +122,21 @@ export class ConfigService {
       configJson: string;
     }>,
   ) {
+    configCache.invalidate('connectors');
     const payload: any = { ...data };
     if (payload.type) payload.type = normalizeConnectorType(payload.type);
     return this.prisma.connector.update({ where: { id }, data: payload });
   }
   deleteConnector(id: string) {
+    configCache.invalidate('connectors');
     return this.prisma.connector.delete({ where: { id } });
   }
 
   // ── Org Units ──
   listOrgUnits() {
-    return this.prisma.orgUnit.findMany({ where: { deletedAt: null } });
+    return configCache.getOrFetch('orgUnits', () =>
+      this.prisma.orgUnit.findMany({ where: { deletedAt: null } }),
+    );
   }
   createOrgUnit(data: {
     code: string;
@@ -133,6 +150,7 @@ export class ConfigService {
     isActive?: boolean;
     sortOrder?: number;
   }) {
+    configCache.invalidate('orgUnits');
     return this.prisma.orgUnit.create({ data: { ...data, unitType: data.unitType as any } });
   }
   updateOrgUnit(
@@ -150,17 +168,21 @@ export class ConfigService {
       sortOrder: number;
     }>,
   ) {
+    configCache.invalidate('orgUnits');
     const payload: any = { ...data };
     if (payload.unitType) payload.unitType = payload.unitType;
     return this.prisma.orgUnit.update({ where: { id }, data: payload });
   }
   deleteOrgUnit(id: string) {
+    configCache.invalidate('orgUnits');
     return this.prisma.orgUnit.update({ where: { id }, data: { deletedAt: new Date() } });
   }
 
   // ── Project Phases ──
   listProjectPhases() {
-    return this.prisma.projectPhase.findMany({ orderBy: { order: 'asc' } });
+    return configCache.getOrFetch('projectPhases', () =>
+      this.prisma.projectPhase.findMany({ orderBy: { order: 'asc' } }),
+    );
   }
   createProjectPhase(data: {
     status: string;
@@ -168,27 +190,32 @@ export class ConfigService {
     order?: number;
     isActive?: boolean;
   }) {
+    configCache.invalidate('projectPhases');
     return this.prisma.projectPhase.create({ data });
   }
   updateProjectPhase(
     id: string,
     data: Partial<{ status: string; phase: string; order: number; isActive: boolean }>,
   ) {
+    configCache.invalidate('projectPhases');
     return this.prisma.projectPhase.update({ where: { id }, data });
   }
   deleteProjectPhase(id: string) {
+    configCache.invalidate('projectPhases');
     return this.prisma.projectPhase.delete({ where: { id } });
   }
 
   // ── Workflows (grouped by entityType) ──
-  async listWorkflows() {
-    const steps = await this.prisma.workflowStep.findMany({ orderBy: { order: 'asc' } });
-    const groups: Record<string, any[]> = {};
-    for (const s of steps) {
-      if (!groups[s.entityType]) groups[s.entityType] = [];
-      groups[s.entityType].push(s);
-    }
-    return Object.entries(groups).map(([entityType, steps]) => ({ entityType, steps }));
+  listWorkflows() {
+    return configCache.getOrFetch('workflows', async () => {
+      const steps = await this.prisma.workflowStep.findMany({ orderBy: { order: 'asc' } });
+      const groups: Record<string, any[]> = {};
+      for (const s of steps) {
+        if (!groups[s.entityType]) groups[s.entityType] = [];
+        groups[s.entityType].push(s);
+      }
+      return Object.entries(groups).map(([entityType, steps]) => ({ entityType, steps }));
+    });
   }
   async saveWorkflow(
     entityType: string,
@@ -202,6 +229,7 @@ export class ConfigService {
       isActive?: boolean;
     }[],
   ) {
+    configCache.invalidate('workflows');
     await this.prisma.workflowStep.deleteMany({ where: { entityType } });
     if (steps.length > 0) {
       await this.prisma.workflowStep.createMany({
@@ -221,7 +249,9 @@ export class ConfigService {
 
   // ── Upload Config (single row, arrays <-> JSON text) ──
   async getUploadConfig() {
-    const cfg = await this.prisma.uploadConfig.findFirst();
+    const cfg = await configCache.getOrFetch('uploadConfig', () =>
+      this.prisma.uploadConfig.findFirst(),
+    );
     if (!cfg) return null;
     return {
       ...cfg,
@@ -238,6 +268,7 @@ export class ConfigService {
     enableCompression: boolean;
     allowedMimeTypes: string[];
   }) {
+    configCache.invalidate('uploadConfig');
     const payload = {
       maxFileSizeMb: data.maxFileSizeMb,
       allowedExtensions: JSON.stringify(data.allowedExtensions || []),
@@ -253,16 +284,18 @@ export class ConfigService {
   }
 
   // ── Integration Configurations ──
-  async listIntegrations() {
-    return this.prisma.integrationConfiguration.findMany({
-      select: {
-        id: true,
-        key: true,
-        isSecret: true,
-        updatedAt: true,
-        updatedBy: true,
-      },
-    });
+  listIntegrations() {
+    return configCache.getOrFetch('integrations', () =>
+      this.prisma.integrationConfiguration.findMany({
+        select: {
+          id: true,
+          key: true,
+          isSecret: true,
+          updatedAt: true,
+          updatedBy: true,
+        },
+      }),
+    );
   }
 
   async getIntegration(key: string) {
@@ -274,6 +307,7 @@ export class ConfigService {
   }
 
   async upsertIntegration(key: string, data: { value: string; isSecret?: boolean }, userId: string) {
+    configCache.invalidate('integrations');
     return this.prisma.integrationConfiguration.upsert({
       where: { key },
       create: {
@@ -299,6 +333,7 @@ export class ConfigService {
   }
 
   async deleteIntegration(key: string) {
+    configCache.invalidate('integrations');
     return this.prisma.integrationConfiguration.delete({ where: { key } });
   }
 

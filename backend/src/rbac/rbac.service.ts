@@ -1,24 +1,27 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { rbacCache } from '../common/cache.util';
 
 @Injectable()
 export class RbacService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getRoles() {
-    return this.prisma.role.findMany({
-      include: {
-        rolePermissions: { include: { permission: true } },
-      },
-    });
+    return rbacCache.getOrFetch('roles', () =>
+      this.prisma.role.findMany({
+        include: {
+          rolePermissions: { include: { permission: true } },
+        },
+      }),
+    );
   }
 
   async getPermissions() {
-    return this.prisma.permission.findMany();
+    return rbacCache.getOrFetch('permissions', () => this.prisma.permission.findMany());
   }
 
   async assignRole(userId: string, roleId: string, scopeType: string, scopeId?: string) {
-    // Pastikan roleId valid
+    rbacCache.invalidate('userRoles');
     const role = await this.prisma.role.findUnique({ where: { id: roleId } });
     if (!role) {
       throw new NotFoundException(`Role ${roleId} not found`);
@@ -29,29 +32,36 @@ export class RbacService {
   }
 
   async removeUserRole(userRoleId: string) {
+    rbacCache.invalidate('userRoles');
     return this.prisma.userRole.delete({ where: { id: userRoleId } });
   }
 
   async getUserRoles(userId: string) {
-    return this.prisma.userRole.findMany({
-      where: { userId },
-      include: { role: { include: { rolePermissions: { include: { permission: true } } } } },
-    });
+    return rbacCache.getOrFetch(`userRoles:${userId}`, () =>
+      this.prisma.userRole.findMany({
+        where: { userId },
+        include: { role: { include: { rolePermissions: { include: { permission: true } } } } },
+      }),
+    );
   }
 
   async getAllUserRoles() {
-    return this.prisma.userRole.findMany({
-      include: {
-        user: { select: { id: true, username: true, fullName: true, email: true } },
-        role: { select: { id: true, name: true } },
-      },
-    });
+    return rbacCache.getOrFetch('userRoles', () =>
+      this.prisma.userRole.findMany({
+        include: {
+          user: { select: { id: true, username: true, fullName: true, email: true } },
+          role: { select: { id: true, name: true } },
+        },
+      }),
+    );
   }
 
   async getWorkflowStages() {
-    return this.prisma.workflowStage.findMany({
-      include: { slaConfig: true, stageDepartments: true },
-    });
+    return rbacCache.getOrFetch('workflowStages', () =>
+      this.prisma.workflowStage.findMany({
+        include: { slaConfig: true, stageDepartments: true },
+      }),
+    );
   }
 
   async getStageDepartments(stageId: string) {
@@ -64,6 +74,7 @@ export class RbacService {
     stageId: string,
     assignments: { departmentCode: string; accessLevel: string }[],
   ) {
+    rbacCache.invalidate('workflowStages');
     await this.prisma.workflowStageDepartment.deleteMany({ where: { stageId } });
     if (assignments.length > 0) {
       await this.prisma.workflowStageDepartment.createMany({
@@ -79,7 +90,9 @@ export class RbacService {
 
   // ── Departments (OrgUnit) ──
   async getDepartments() {
-    return this.prisma.orgUnit.findMany({ where: { deletedAt: null } });
+    return rbacCache.getOrFetch('departments', () =>
+      this.prisma.orgUnit.findMany({ where: { deletedAt: null } }),
+    );
   }
 
   async createDepartment(data: {
@@ -89,6 +102,7 @@ export class RbacService {
     isActive?: boolean;
     unitType?: string;
   }) {
+    rbacCache.invalidate('departments');
     return this.prisma.orgUnit.create({
       data: {
         code: data.code,
@@ -104,6 +118,7 @@ export class RbacService {
     id: string,
     data: { code?: string; name?: string; description?: string; isActive?: boolean },
   ) {
+    rbacCache.invalidate('departments');
     return this.prisma.orgUnit.update({
       where: { id },
       data: {
@@ -116,6 +131,7 @@ export class RbacService {
   }
 
   async deleteDepartment(id: string) {
+    rbacCache.invalidate('departments');
     return this.prisma.orgUnit.update({
       where: { id },
       data: { deletedAt: new Date() },
@@ -124,6 +140,7 @@ export class RbacService {
 
   // ── Roles ──
   async createRole(data: { name: string; description?: string }) {
+    rbacCache.invalidate('roles');
     return this.prisma.role.create({
       data: { name: data.name, description: data.description ?? null },
       include: { rolePermissions: { include: { permission: true } } },
@@ -131,6 +148,7 @@ export class RbacService {
   }
 
   async updateRole(id: string, data: { name?: string; description?: string }) {
+    rbacCache.invalidate('roles');
     return this.prisma.role.update({
       where: { id },
       data: {
@@ -142,6 +160,7 @@ export class RbacService {
   }
 
   async deleteRole(id: string) {
+    rbacCache.invalidate('roles');
     return this.prisma.role.delete({ where: { id } });
   }
 
@@ -152,6 +171,7 @@ export class RbacService {
     module: string;
     description?: string;
   }) {
+    rbacCache.invalidate('permissions');
     return this.prisma.permission.create({
       data: { code: data.code, name: data.name, module: data.module, description: data.description ?? null },
     });
@@ -161,6 +181,7 @@ export class RbacService {
     id: string,
     data: { code?: string; name?: string; module?: string; description?: string },
   ) {
+    rbacCache.invalidate('permissions');
     return this.prisma.permission.update({
       where: { id },
       data: {
@@ -173,6 +194,7 @@ export class RbacService {
   }
 
   async deletePermission(id: string) {
+    rbacCache.invalidate('permissions');
     return this.prisma.permission.delete({ where: { id } });
   }
 
@@ -185,6 +207,7 @@ export class RbacService {
     ownerDepartmentCode: string;
     prevDepartmentCode?: string | null;
   }) {
+    rbacCache.invalidate('workflowStages');
     return this.prisma.workflowStage.create({
       data: {
         code: data.code,
@@ -208,6 +231,7 @@ export class RbacService {
       prevDepartmentCode?: string | null;
     },
   ) {
+    rbacCache.invalidate('workflowStages');
     return this.prisma.workflowStage.update({
       where: { id },
       data: {
@@ -222,6 +246,7 @@ export class RbacService {
   }
 
   async deleteStage(id: string) {
+    rbacCache.invalidate('workflowStages');
     return this.prisma.workflowStage.delete({ where: { id } });
   }
 

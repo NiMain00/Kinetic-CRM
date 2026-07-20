@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { configCache } from '../common/cache.util';
 
 @Injectable()
 export class DashboardService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getStats(userId?: string) {
+    return configCache.getOrFetch(`stats:${userId || 'all'}`, async () => {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 86400000);
 
@@ -55,66 +57,86 @@ export class DashboardService {
       winRate,
       valueChangePercent: 12,
     };
+    });
   }
 
   async getWinLossTrend() {
-    const now = new Date();
-    const months: { label: string; index: number; year: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      months.push({
-        label: d.toLocaleString('en', { month: 'short' }),
-        index: d.getMonth(),
-        year: d.getFullYear(),
-      });
-    }
+    return configCache.getOrFetch('winLossTrend', async () => {
+      const now = new Date();
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+      const months: { label: string; index: number; year: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          label: d.toLocaleString('en', { month: 'short' }),
+          index: d.getMonth(),
+          year: d.getFullYear(),
+        });
+      }
 
-    const wonResults = await this.prisma.tenderResult.findMany({
-      where: { result: 'won', decidedAt: { gte: sixMonthsAgo } },
-      select: { decidedAt: true },
-    });
-    const lostResults = await this.prisma.tenderResult.findMany({
-      where: { result: 'lost', decidedAt: { gte: sixMonthsAgo } },
-      select: { decidedAt: true },
-    });
+      const rows = await this.prisma.$queryRaw<
+        { month: string; result: string; count: bigint }[]
+      >`
+        SELECT
+          to_char(date_trunc('month', "decided_at"), 'YYYY-MM') AS month,
+          result,
+          COUNT(*)::int AS count
+        FROM "tender_results"
+        WHERE "decided_at" >= ${sixMonthsAgo}
+          AND result IN ('won', 'lost')
+        GROUP BY date_trunc('month', "decided_at"), result
+        ORDER BY month
+      `;
 
-    if (wonResults.length > 0 || lostResults.length > 0) {
+      if (rows.length > 0) {
+        const trendMap = new Map<string, { win: number; lose: number }>();
+        for (const r of rows) {
+          const entry = trendMap.get(r.month) ?? { win: 0, lose: 0 };
+          if (r.result === 'won') entry.win += Number(r.count);
+          else entry.lose += Number(r.count);
+          trendMap.set(r.month, entry);
+        }
+
+        return months.map((m) => {
+          const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
+          const data = trendMap.get(key) ?? { win: 0, lose: 0 };
+          return { month: m.label, win: data.win, lose: data.lose };
+        });
+      }
+
+      const projectRows = await this.prisma.$queryRaw<
+        { month: string; status: string; count: bigint }[]
+      >`
+        SELECT
+          to_char(date_trunc('month', "created_at"), 'YYYY-MM') AS month,
+          status,
+          COUNT(*)::int AS count
+        FROM "projects"
+        WHERE "deleted_at" IS NULL
+          AND "created_at" >= ${sixMonthsAgo}
+        GROUP BY date_trunc('month', "created_at"), status
+        ORDER BY month
+      `;
+
+      const projectMap = new Map<string, { win: number; lose: number }>();
+      for (const r of projectRows) {
+        const entry = projectMap.get(r.month) ?? { win: 0, lose: 0 };
+        if (r.status === 'Selesai') entry.win += Number(r.count);
+        if (['Dibatalkan', 'Kalah'].includes(r.status)) entry.lose += Number(r.count);
+        projectMap.set(r.month, entry);
+      }
+
       return months.map((m) => {
-        const win = wonResults.filter(
-          (r) => r.decidedAt.getMonth() === m.index && r.decidedAt.getFullYear() === m.year,
-        ).length;
-        const lose = lostResults.filter(
-          (r) => r.decidedAt.getMonth() === m.index && r.decidedAt.getFullYear() === m.year,
-        ).length;
-        return { month: m.label, win, lose };
+        const key = `${m.year}-${String(m.index + 1).padStart(2, '0')}`;
+        const data = projectMap.get(key) ?? { win: 0, lose: 0 };
+        return { month: m.label, win: data.win, lose: data.lose };
       });
-    }
-
-    const projects = await this.prisma.project.findMany({
-      where: { deletedAt: null, createdAt: { gte: sixMonthsAgo } },
-      select: { status: true, createdAt: true },
-    });
-
-    return months.map((m) => {
-      const win = projects.filter(
-        (p) =>
-          p.status === 'Selesai' &&
-          p.createdAt.getMonth() === m.index &&
-          p.createdAt.getFullYear() === m.year,
-      ).length;
-      const lose = projects.filter(
-        (p) =>
-          ['Dibatalkan', 'Kalah'].includes(p.status) &&
-          p.createdAt.getMonth() === m.index &&
-          p.createdAt.getFullYear() === m.year,
-      ).length;
-      return { month: m.label, win, lose };
     });
   }
 
   async getStatusDistribution() {
+    return configCache.getOrFetch('statusDistribution', async () => {
     const allProjects = await this.prisma.project.findMany({
       where: { deletedAt: null },
       select: { status: true, tenderResult: { select: { result: true } } },
@@ -135,9 +157,11 @@ export class DashboardService {
     const total = allProjects.length;
 
     return { inProgress, completed, postponed: review, planning, total };
+    });
   }
 
   async getCriticalDeadlines() {
+    return configCache.getOrFetch('criticalDeadlines', async () => {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 86400000);
 
@@ -170,9 +194,11 @@ export class DashboardService {
         severity,
       };
     });
+    });
   }
 
   async getApprovalPending(limit?: number) {
+    return configCache.getOrFetch(`approvalPending:${limit || 10}`, async () => {
     const approvals = await this.prisma.approval.findMany({
       where: { status: 'pending' },
       orderBy: { createdAt: 'asc' },
@@ -202,6 +228,7 @@ export class DashboardService {
         deadline: deadline.toISOString(),
         severity,
       };
+    });
     });
   }
 }

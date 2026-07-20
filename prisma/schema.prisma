@@ -848,6 +848,10 @@ model Prospect {
   visits             Visit[]
   followUpTasks      FollowUpTask[]
 
+  @@index([deletedAt, createdAt])
+  @@index([ownerUserId])
+  @@index([currentStageId])
+  @@index([status])
   @@map("prospects")
 }
 
@@ -1047,6 +1051,9 @@ model Project {
   @@index([type])
   @@index([createdByUserId])
   @@index([sourceProspectId])
+  @@index([deletedAt, createdAt])
+  @@index([deletedAt, status, createdAt])
+  @@index([ownerUserId])
   @@map("projects")
 }
 
