@@ -35,6 +35,12 @@ const PAGE_META: Record<string, { title: string; description?: string }> = {
   '/prospects/new': {
     title: 'Prospek Baru',
   },
+  '/prospects/:id': {
+    title: 'Detail Prospek',
+  },
+  '/prospects/:id/edit': {
+    title: 'Edit Prospek',
+  },
   '/projects': {
     title: 'Proyek',
     description: 'Daftar dan kelola proyek perusahaan di Kinetic CRM.',
@@ -42,12 +48,18 @@ const PAGE_META: Record<string, { title: string; description?: string }> = {
   '/projects/new': {
     title: 'Proyek Baru',
   },
+  '/projects/:id': {
+    title: 'Detail Proyek',
+  },
   '/procurement': {
     title: 'Pengadaan',
     description: 'Kelola pengadaan barang dan jasa perusahaan di Kinetic CRM.',
   },
   '/procurement/new': {
     title: 'Pengadaan Baru',
+  },
+  '/procurement/:id': {
+    title: 'Detail Pengadaan',
   },
   '/approvals': {
     title: 'Persetujuan',
@@ -154,6 +166,9 @@ const PAGE_META: Record<string, { title: string; description?: string }> = {
   },
   '/follow-up': {
     title: 'Follow Up',
+  },
+  '/master-data/:entity': {
+    title: 'Master Data',
   },
   '/audit': {
     title: 'Audit',

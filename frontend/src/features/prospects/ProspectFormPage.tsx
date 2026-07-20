@@ -56,6 +56,42 @@ export default function ProspectFormPage() {
     }
   }, [existingProspect?.answers]);
 
+  // Sync all form state when existingProspect loads after async fetch
+  useEffect(() => {
+    if (!isEdit || !existingProspect) return;
+    const p = existingProspect;
+    // Customer mode
+    const custType = p.customerType as 'existing' | 'new';
+    if (custType) setCustomerMode(custType);
+    if (p.customerId) setSelectedCustomerId(p.customerId);
+    // New customer fields
+    if (p.customerData?.name) setNewCustName(p.customerData.name);
+    if (p.customerData?.code) setNewCustCode(p.customerData.code);
+    if (p.customerData?.type) setNewCustType(p.customerData.type as any);
+    if (p.customerData?.city !== undefined) setNewCustCity(p.customerData.city);
+    if (p.customerData?.npwp !== undefined) setNewCustNpwp(p.customerData.npwp);
+    if (p.customerData?.industryId) setNewCustIndustryId(p.customerData.industryId);
+    if (p.customerData?.parentId) setNewCustParentId(p.customerData.parentId);
+    if (p.customerData?.level) setNewCustLevel(p.customerData.level);
+    if (p.customerData?.requirements) setNewCustRequirements(p.customerData.requirements);
+    if (p.customerData?.unitLevel) setNewCustUnitLevel(p.customerData.unitLevel);
+    if (p.customerData?.canonicalName) setNewCustCanonicalName(p.customerData.canonicalName);
+    // PIC fields
+    if (p.customerData?.picName) setPicName(p.customerData.picName);
+    if (p.customerData?.picPosition) setPicPosition(p.customerData.picPosition);
+    if (p.customerData?.picPhone) setPicPhone(p.customerData.picPhone);
+    // Prospect fields
+    if (p.industryId) setIndustryId(p.industryId);
+    if (p.providerExisting) setProviderExisting(p.providerExisting);
+    if (p.name) setFormName(p.name);
+    if (p.estimatedValue !== undefined) setFormValue(p.estimatedValue);
+    if (p.date) setFormDate(p.date.slice(0, 10));
+    if (p.description !== undefined) setFormDesc(p.description);
+    if (p.source) setFormSource(p.source as any);
+    if (p.projectType) setProjectType(p.projectType);
+    if (p.potensiUnit !== undefined) setPotensiUnit(String(p.potensiUnit));
+  }, [isEdit, existingProspect?.id]); // only run when prospect ID changes (first load)
+
   // --- Branch readonly dari user login ---
   const userBranch = authUser?.branchName || 'Jakarta Pusat';
 
