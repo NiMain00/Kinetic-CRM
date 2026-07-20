@@ -81,7 +81,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface-container-lowest border-b border-border px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
+      <div className="bg-surface-container-lowest border-b border-border px-3 sm:px-6 lg:px-8 py-3 sm:py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">Konfigurasi SLA & Eskalasi</h2>
           <p className="text-[11px] text-outline mt-0.5">Atur batas waktu layanan (SLA) dan aturan eskalasi untuk setiap jenis persetujuan.</p>
@@ -91,7 +91,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-5xl mx-auto space-y-6 text-left">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-xs"><p className="text-[10px] text-outline uppercase font-mono tracking-wider">Total Aturan SLA</p><p className="text-xl font-extrabold text-on-surface mt-1">{configs.length}</p></div>

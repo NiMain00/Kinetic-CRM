@@ -186,8 +186,8 @@ export default function ProjectFormPage() {
     `w-full rounded-xl border ${errors[field] ? 'border-danger' : 'border-border/60'} p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm`;
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
-      <div className="max-w-3xl mx-auto space-y-6">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
+      <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
         <div>
           <h1 className="text-xl font-extrabold text-on-surface">
             {fromProspect ? 'Konversi Prospek ke Proyek' : 'Buat Proyek Baru'}

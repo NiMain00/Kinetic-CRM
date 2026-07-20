@@ -37,7 +37,7 @@ export const useApprovalStore = create<ApprovalState>()(
       fetchApprovals: async () => {
         set({ loading: true });
         try {
-          const res = await masterDataService.get('approvals', { perPage: 100 });
+          const res = await approvalService.list({ status: 'pending', perPage: 20 });
           const list = res.data?.data || res.data || [];
           const normalized = Array.isArray(list)
             ? (list as any[]).map((a) => ({
@@ -60,10 +60,6 @@ export const useApprovalStore = create<ApprovalState>()(
       approveItem: async (id) => {
         try {
           await approvalService.approve(id);
-          await masterDataService.update('approvals', id, {
-            status: 'approved',
-            decidedAt: new Date().toISOString(),
-          } as any);
         } catch (err) {
           console.error('[approvalStore] approveItem API failed:', err);
         }
@@ -83,10 +79,6 @@ export const useApprovalStore = create<ApprovalState>()(
       rejectItem: async (id) => {
         try {
           await approvalService.reject(id);
-          await masterDataService.update('approvals', id, {
-            status: 'rejected',
-            decidedAt: new Date().toISOString(),
-          } as any);
         } catch (err) {
           console.error('[approvalStore] rejectItem API failed:', err);
         }

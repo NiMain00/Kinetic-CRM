@@ -434,6 +434,8 @@ model ActiveSession {
 
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId, tokenJti, revokedAt])
+  @@index([tokenJti])
   @@map("active_sessions")
 }
 
@@ -520,6 +522,10 @@ model WorkflowStage {
 
   stageDepartments WorkflowStageDepartment[]
 
+  @@index([module, ownerDepartmentCode])
+  @@index([module, prevDepartmentCode])
+  @@index([ownerDepartmentCode])
+  @@index([prevDepartmentCode])
   @@map("workflow_stages")
 }
 
@@ -533,6 +539,7 @@ model WorkflowStageDepartment {
   stage WorkflowStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
 
   @@unique([stageId, departmentCode])
+  @@index([departmentCode])
   @@map("workflow_stage_departments")
 }
 
@@ -1054,6 +1061,7 @@ model Project {
   @@index([deletedAt, createdAt])
   @@index([deletedAt, status, createdAt])
   @@index([ownerUserId])
+  @@index([deadlineTender])
   @@map("projects")
 }
 
@@ -1366,6 +1374,8 @@ model Approval {
   reassignments   ApprovalReassignment[]
 
   @@index([resourceType, resourceId])
+  @@index([status, createdAt])
+  @@index([assignedToUserId, status])
   @@map("approvals")
 }
 
@@ -1627,7 +1637,8 @@ model Notification {
   template NotificationTemplate? @relation(fields: [notificationTemplateId], references: [id])
   recipient User                 @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
 
-  @@index([recipientUserId, read])
+  @@index([recipientUserId, read, createdAt])
+  @@index([recipientUserId, createdAt])
   @@map("notifications")
 }
 

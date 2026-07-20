@@ -22,7 +22,7 @@ export default function PhaseStepper({
 
   return (
     <section className="bg-surface-container-lowest px-3 sm:px-6 py-3 sm:py-5 border-b border-border/40 overflow-x-auto select-none scrollbar-none">
-      <div className="min-w-[400px] sm:min-w-[500px] flex items-center justify-between relative">
+      <div className="min-w-[300px] sm:min-w-[450px] flex items-center justify-between relative">
         <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 -z-0">
           <div className="h-full bg-border rounded-full relative overflow-hidden">
             <div

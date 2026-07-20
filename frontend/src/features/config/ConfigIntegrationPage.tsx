@@ -112,7 +112,7 @@ export default function ConfigIntegrationPage() {
         <p className="text-[11px] text-outline mt-0.5">Kelola konektor integrasi dengan sistem eksternal dan layanan pihak ketiga.</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-5xl mx-auto space-y-6">
           {/* Google Form Integration */}
           <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">

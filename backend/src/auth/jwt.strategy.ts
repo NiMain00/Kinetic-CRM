@@ -16,41 +16,45 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: { sub: string; username: string; jti: string }) {
     const cacheKey = `session:${payload.jti}`;
-    let session = authCache.get<{ userId: string }>(cacheKey);
-    if (!session) {
-      const dbSession = await this.prisma.activeSession.findFirst({
-        where: { userId: payload.sub, tokenJti: payload.jti, revokedAt: null },
-        select: { userId: true },
-      });
-      if (dbSession) {
-        session = dbSession;
-        authCache.set(cacheKey, session);
+    const cachedSession = authCache.get<{ userId: string }>(cacheKey);
+    if (cachedSession) {
+      // Session valid — try user cache next
+      const cachedUser = authCache.get<any>(`user:${payload.sub}`);
+      if (cachedUser) {
+        return { ...cachedUser, jti: payload.jti };
       }
     }
+
+    // Batch session + user lookup in a single query via Promise.all
+    const [session, user] = await Promise.all([
+      cachedSession
+        ? Promise.resolve(cachedSession)
+        : this.prisma.activeSession.findFirst({
+            where: { userId: payload.sub, tokenJti: payload.jti, revokedAt: null },
+            select: { userId: true },
+          }),
+      this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true, username: true, fullName: true, email: true,
+          phone: true, avatarUrl: true, status: true, isLocked: true,
+          orgUnitId: true, createdAt: true,
+          orgUnit: { select: { id: true, name: true, code: true, unitType: true, parentId: true } },
+          userRoles: { select: { id: true, roleId: true, scopeType: true, scopeId: true, role: { select: { id: true, name: true, description: true } } } },
+        },
+      }),
+    ]);
+
     if (!session) {
       throw new UnauthorizedException('Sesi tidak valid atau sudah logout');
     }
+    authCache.set(cacheKey, { userId: session.userId });
 
-    const userCacheKey = `user:${payload.sub}`;
-    let user: any = authCache.get<any>(userCacheKey);
-    if (!user) {
-      const dbUser = await this.prisma.user.findUnique({
-        where: { id: payload.sub },
-        include: {
-          orgUnit: true,
-          userRoles: { include: { role: true } },
-        },
-      });
-      if (dbUser) {
-        user = dbUser;
-        authCache.set(userCacheKey, user);
-      }
-    }
-    if (!user || user.deletedAt || user.isLocked || user.status === 'inactive') {
+    if (!user || user.status === 'inactive' || user.isLocked) {
       throw new UnauthorizedException('Akun tidak aktif');
     }
+    authCache.set(`user:${payload.sub}`, user);
 
-    const { passwordHash, ...safeUser } = user;
-    return { ...safeUser, jti: payload.jti };
+    return { ...user, jti: payload.jti };
   }
 }

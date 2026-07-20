@@ -28,8 +28,14 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
     const now = Date.now();
     if (!force && now - get().lastFetched < CACHE_TTL) return;
     set({ loading: true, error: null });
-    const [statsRes, trendRes, distRes, deadlinesRes] = await Promise.allSettled([
-      dashboardService.getStats(),
+
+    // Critical: load stats first so stat cards render immediately
+    const statsRes = await dashboardService.getStats().catch(() => null);
+    const stats = statsRes ? (statsRes.data?.data ?? statsRes.data ?? null) as DashboardStats | null : null;
+    set({ stats, loading: !stats }); // keep loading if stats failed, release otherwise
+
+    // Non-critical: load charts + distribution + deadlines in background
+    const [trendRes, distRes, deadlinesRes] = await Promise.allSettled([
       dashboardService.getWinLossTrend(),
       dashboardService.getStatusDistribution(),
       dashboardService.getCriticalDeadlines(),
@@ -37,7 +43,6 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
     const extract = (r: PromiseSettledResult<any>) =>
       r.status === 'fulfilled' ? (r.value.data?.data ?? r.value.data ?? null) : null;
     set({
-      stats: extract(statsRes) as DashboardStats | null,
       chartData: (extract(trendRes) as ChartDataPoint[] | null) ?? [],
       statusDistribution: extract(distRes) as StatusDistribution | null,
       criticalDeadlines: (extract(deadlinesRes) as CriticalDeadline[] | null) ?? [],

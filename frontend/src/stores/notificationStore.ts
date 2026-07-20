@@ -46,7 +46,7 @@ export const useNotificationStore = create<NotificationState>()(
       fetchNotifications: async () => {
         set({ loading: true });
         try {
-          const res = await notificationService.list({ perPage: 50 });
+          const res = await notificationService.list({ perPage: 20 });
           const list = res.data?.data || res.data || [];
           const notifications = Array.isArray(list) ? list.map((n: any) => ({
             ...n,

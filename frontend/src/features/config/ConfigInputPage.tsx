@@ -193,7 +193,7 @@ export default function ConfigInputPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Category Tabs + Search */}
           <div className="flex flex-col sm:flex-row justify-between gap-4">

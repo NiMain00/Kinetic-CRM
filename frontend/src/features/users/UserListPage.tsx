@@ -41,7 +41,7 @@ export default function UserListPage() {
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

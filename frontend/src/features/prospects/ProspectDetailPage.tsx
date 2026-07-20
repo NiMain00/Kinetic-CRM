@@ -696,13 +696,13 @@ export default function ProspectDetailPage() {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
 
         {/* ═══════════════════════════════════════════
             HERO SECTION — merged header + stepper
            ═══════════════════════════════════════════ */}
-        <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
+        <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-6">
           <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-6">
             {/* Left: Identity + Pills */}
             <div className="flex-1 min-w-0 space-y-3">

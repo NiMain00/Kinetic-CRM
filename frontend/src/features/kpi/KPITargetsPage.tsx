@@ -180,7 +180,7 @@ export default function KPITargetsPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">KPI Target Setting</h2>
           <p className="text-[11px] text-outline mt-0.5">Atur dan kelola target KPI untuk setiap periode.</p>
@@ -197,7 +197,7 @@ export default function KPITargetsPage() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="none" header={
             <div className="flex items-center justify-between">

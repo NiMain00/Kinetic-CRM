@@ -246,10 +246,10 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
         title="Pipeline Prospek"
         description="Seret & lepas untuk mengubah status prospek"
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="ghost"
-              size="md"
+              size="sm"
               leftIcon={<span className="material-symbols-outlined text-[16px]">table_rows</span>}
               onClick={() => navigate('/prospects')}
             >
@@ -258,7 +258,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
             {canWrite && (
               <Button
                 variant="primary"
-                size="md"
+                size="sm"
                 onClick={() => navigate('/prospects/new')}
                 leftIcon={<span className="material-symbols-outlined text-[20px]">add</span>}
               >
@@ -269,7 +269,7 @@ export default function ProspectPipelineView({ onShowNotification }: Props) {
         }
       />
 
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[65vh] scrollbar-none" style={{ scrollSnapType: 'x mandatory' }}>
+      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[65vh] scrollbar-none snap-x snap-mandatory">
         {groupedProspects.map((stage) => (
           <div
             key={stage.key}

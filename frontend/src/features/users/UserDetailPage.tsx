@@ -48,7 +48,7 @@ export default function UserDetailPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Profile Card */}
         <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">

@@ -47,16 +47,16 @@ const Topbar = React.memo(function Topbar({
   }, [mobileSearchOpen]);
 
   return (
-    <header className="w-full h-12 sm:h-14 bg-surface flex items-center justify-between px-3 sm:px-4 lg:px-8 shrink-0 relative pb-[3px]">
+    <header className="w-full h-12 sm:h-14 bg-surface flex items-center justify-between px-2 sm:px-4 lg:px-6 shrink-0 relative pb-[3px]">
       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[1000px] h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent"></div>
-      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+      <div className="flex items-center gap-1.5 sm:gap-4 flex-1 min-w-0">
         {/* Hamburger menu - mobile only */}
         <button
           onClick={onMenuClick}
           className="md:hidden flex items-center justify-center w-8 h-8 touch-min rounded-lg hover:bg-surface-container transition-all cursor-pointer"
           aria-label="Buka/tutup menu sidebar"
         >
-          <span className="material-symbols-outlined text-on-surface text-xl" aria-hidden="true">menu</span>
+          <span className="material-symbols-outlined text-on-surface text-lg sm:text-xl" aria-hidden="true">menu</span>
         </button>
 
         {/* Desktop search */}
@@ -74,14 +74,14 @@ const Topbar = React.memo(function Topbar({
         </button>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 sm:gap-1">
         {/* Notification Bell */}
         <Link
           to={notificationsTo || '#'}
-          className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container transition-all relative cursor-pointer touch-min"
+          className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-surface-container transition-all relative cursor-pointer touch-min"
           aria-label={`Buka notifikasi${notificationCount > 0 ? `, ${notificationCount} belum dibaca` : ''}`}
         >
-          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">notifications</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-lg sm:text-xl" aria-hidden="true">notifications</span>
           {notificationCount > 0 && (
             <span className="absolute top-0.5 right-0.5 flex items-center justify-center min-w-[16px] h-4 bg-gold rounded-full ring-2 ring-surface px-1">
               <span className="text-[9px] leading-none text-white font-bold">{notificationCount > 99 ? '99+' : notificationCount}</span>
@@ -91,41 +91,41 @@ const Topbar = React.memo(function Topbar({
 
         {/* Messages - hidden on small mobile */}
         <button
-          className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
+          className="hidden sm:flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label="Pesan"
         >
-          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">chat</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-lg sm:text-xl" aria-hidden="true">chat</span>
         </button>
 
         {/* Global Settings Gear - hidden on small mobile */}
         <Link
           to={configTo || '#'}
-          className="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
+          className="hidden sm:flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label="Pengaturan"
         >
-          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">settings</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-lg sm:text-xl" aria-hidden="true">settings</span>
         </Link>
 
         {/* Dark Mode Toggle */}
         <button
           onClick={toggle}
-          className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
+          className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label={dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
         >
-          <span className="material-symbols-outlined text-on-surface-variant text-xl sm:text-[24px]" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-lg sm:text-xl" aria-hidden="true">{dark ? 'light_mode' : 'dark_mode'}</span>
         </button>
 
-        <div className="h-5 w-[1px] bg-border/60 mx-1"></div>
+        <div className="h-4 sm:h-5 w-[1px] bg-border/60 mx-0.5 sm:mx-1"></div>
 
         {/* User Card */}
         <Link
           to={profileTo || '#'}
-          className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
+          className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg hover:bg-surface-container transition-all cursor-pointer touch-min"
           aria-label="Profil pengguna"
           title={userName}
         >
           <img
-            className="w-7 h-7 rounded-full ring-2 ring-primary/10 object-cover"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full ring-2 ring-primary/10 object-cover"
             alt="Foto profil pengguna"
             src={avatarUrl}
             loading="lazy"

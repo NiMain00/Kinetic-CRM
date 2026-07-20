@@ -461,15 +461,15 @@ export default function ProspectFormPage() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background p-6 sm:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           <div>
             <h1 className="font-display-title text-display-title text-on-surface">{isEdit ? 'Edit Prospek' : 'Buat Prospek Baru'}</h1>
             <p className="text-sm text-secondary mt-1">{showDetail ? 'Lengkapi detail prospek di bawah untuk prospek level ini.' : 'Isi informasi dasar prospek terlebih dahulu.'}</p>
           </div>
 
         {/* SIMPLIFIED BASIC FORM */}
-        <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+        <div className="bg-surface border border-border/60 rounded-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-5">
           <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
             <span className="material-symbols-outlined">business</span>
             Informasi Dasar Prospek
@@ -759,7 +759,7 @@ export default function ProspectFormPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
               {/* LEFT COLUMN */}
-              <div className="lg:col-span-6 bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+              <div className="lg:col-span-6 bg-surface border border-border/60 rounded-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-5">
                 <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
                   <span className="material-symbols-outlined">badge</span>
                   Detail Customer
@@ -810,7 +810,7 @@ export default function ProspectFormPage() {
 
               {/* RIGHT COLUMN */}
               <div className="lg:col-span-6 space-y-6">
-                <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+                <div className="bg-surface border border-border/60 rounded-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-5">
                   <h3 className="font-bold text-sm text-primary border-b border-border pb-3 flex items-center gap-2">
                     <span className="material-symbols-outlined">assignment</span>
                     Detail Prospek
@@ -853,7 +853,7 @@ export default function ProspectFormPage() {
                 </div>
 
                 {/* Questionnaire */}
-                <div className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
+                <div className="bg-surface border border-border/60 rounded-2xl p-4 sm:p-6 shadow-card space-y-4 sm:space-y-5">
                   <h3 className="font-bold text-sm text-status-teal border-b border-border pb-3 flex items-center gap-2">
                     <span className="material-symbols-outlined">quiz</span>
                     Pertanyaan Standar

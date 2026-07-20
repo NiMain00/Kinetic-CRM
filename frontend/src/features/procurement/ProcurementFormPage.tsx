@@ -62,7 +62,7 @@ export default function ProcurementFormPage() {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      <div className="bg-surface border-b border-border/60 px-4 sm:px-6 py-4">
+      <div className="bg-surface border-b border-border/60 px-3 sm:px-6 py-3 sm:py-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/procurement')}
@@ -82,7 +82,7 @@ export default function ProcurementFormPage() {
       <div className="flex-1 overflow-auto px-4 sm:px-6 py-6">
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" noValidate>
           {/* Link to Project */}
-          <section className="bg-surface rounded-xl border border-border shadow-card p-6 space-y-4">
+          <section className="bg-surface rounded-xl border border-border shadow-card p-4 sm:p-6 space-y-4">
             <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[18px]">
                 link
@@ -133,7 +133,7 @@ export default function ProcurementFormPage() {
           </section>
 
           {/* Client Info */}
-          <section className="bg-surface rounded-xl border border-border shadow-card p-6 space-y-4">
+          <section className="bg-surface rounded-xl border border-border shadow-card p-4 sm:p-6 space-y-4">
             <h3 className="font-heading-section text-sm font-bold text-on-surface">
               Informasi Pengadaan
             </h3>
@@ -180,7 +180,7 @@ export default function ProcurementFormPage() {
           </section>
 
           {/* PR Info */}
-          <section className="bg-surface rounded-xl border border-border shadow-card p-6 space-y-4">
+          <section className="bg-surface rounded-xl border border-border shadow-card p-4 sm:p-6 space-y-4">
             <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[18px]">
                 description

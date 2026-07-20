@@ -3,7 +3,7 @@ import type { ApiResponse } from '@/types/api/response';
 import type { ApprovalItem } from '@/types/domain';
 
 export const approvalService = {
-  list: (params?: { type?: string; status?: string }) =>
+  list: (params?: { type?: string; status?: string; perPage?: number; page?: number }) =>
     apiClient.get<ApiResponse<ApprovalItem[]>>('/approvals', { params }),
   get: (id: string) => apiClient.get<ApiResponse<ApprovalItem>>(`/approvals/${id}`),
   approve: (id: string, notes?: string) =>

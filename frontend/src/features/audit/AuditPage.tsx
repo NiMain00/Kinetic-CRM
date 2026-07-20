@@ -68,7 +68,7 @@ export default function AuditPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
-      <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Audit Trail
@@ -92,7 +92,7 @@ export default function AuditPage() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

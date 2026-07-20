@@ -13,16 +13,15 @@ export class DashboardService {
 
     const [
       totalProjects,
-      wonProjects,
+      wonProjectsCount,
       totalValueResult,
       pendingApprovals,
       criticalDeadlines,
       activeProjectsCount,
     ] = await Promise.all([
       this.prisma.project.count({ where: { deletedAt: null } }),
-      this.prisma.project.findMany({
+      this.prisma.project.count({
         where: { deletedAt: null, tenderResult: { result: 'won' } },
-        select: { id: true },
       }),
       this.prisma.project.aggregate({
         where: { deletedAt: null, status: { notIn: ['Selesai', 'Kalah'] } },
@@ -46,7 +45,7 @@ export class DashboardService {
       ? Number(totalValueResult._sum.estimatedValue)
       : 0;
     const winRate = totalProjects > 0
-      ? Math.round((wonProjects.length / totalProjects) * 1000) / 10
+      ? Math.round((wonProjectsCount / totalProjects) * 1000) / 10
       : 0;
 
     return {
@@ -137,24 +136,34 @@ export class DashboardService {
 
   async getStatusDistribution() {
     return configCache.getOrFetch('statusDistribution', async () => {
-    const allProjects = await this.prisma.project.findMany({
-      where: { deletedAt: null },
-      select: { status: true, tenderResult: { select: { result: true } } },
-    });
+    const rows = await this.prisma.$queryRaw<
+      { status: string; won: bigint; cnt: bigint }[]
+    >`
+      SELECT
+        p.status,
+        COUNT(*) FILTER (WHERE tr.result = 'won') AS won,
+        COUNT(*) AS cnt
+      FROM projects p
+      LEFT JOIN tender_results tr ON tr.project_id = p.id
+      WHERE p.deleted_at IS NULL
+      GROUP BY p.status
+    `;
 
-    const planningStatuses = ['Dibuat', 'Potensial', 'rks', 'RKS'];
-    const reviewStatuses = ['Review Departemen', 'LPHS/SIOS', 'lphs', 'Revisi', 'Waiting Supervisor', 'Revision'];
-    const completedStatuses = ['Selesai', 'Dibatalkan'];
+    const planningStatuses = new Set(['Dibuat', 'Potensial', 'rks', 'RKS']);
+    const reviewStatuses = new Set(['Review Departemen', 'LPHS/SIOS', 'lphs', 'Revisi', 'Waiting Supervisor', 'Revision']);
+    const completedStatuses = new Set(['Selesai', 'Dibatalkan']);
 
-    const planning = allProjects.filter((p) => planningStatuses.includes(p.status)).length;
-    const review = allProjects.filter((p) => reviewStatuses.includes(p.status)).length;
-    const completed = allProjects.filter(
-      (p) => completedStatuses.includes(p.status) || p.tenderResult?.result === 'won',
-    ).length;
-    const inProgress = allProjects.filter(
-      (p) => !planningStatuses.includes(p.status) && !reviewStatuses.includes(p.status) && !completedStatuses.includes(p.status) && p.tenderResult?.result !== 'won',
-    ).length;
-    const total = allProjects.length;
+    let planning = 0, review = 0, completed = 0, inProgress = 0, total = 0;
+    for (const r of rows) {
+      const n = Number(r.cnt);
+      total += n;
+      if (planningStatuses.has(r.status)) { planning += n; continue; }
+      if (reviewStatuses.has(r.status)) { review += n; continue; }
+      if (completedStatuses.has(r.status)) { completed += n; continue; }
+      const won = Number(r.won);
+      if (won > 0) { completed += won; inProgress += n - won; }
+      else { inProgress += n; }
+    }
 
     return { inProgress, completed, postponed: review, planning, total };
     });
@@ -176,7 +185,9 @@ export class DashboardService {
         client: true,
         deadlineTender: true,
       },
-      orderBy: { deadlineTender: 'asc' },
+      orderBy: { deadlineTender: 'asc' as const },
+      // deadlineTender index handles filtering + sorting efficiently
+      take: 50, // safety limit — never need more than 50 critical deadlines
     });
 
     return projects.map((p) => {

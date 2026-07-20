@@ -74,7 +74,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
     <div className="flex-1 flex flex-col h-full bg-background overflow-hidden text-on-surface">
       
       {/* Top action header info */}
-      <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
+      <div className="bg-surface border-b border-border/60 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 shrink-0 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-card z-10">
         <div>
           <h2 className="font-display-title text-base font-extrabold text-on-surface">
             Profil Pengguna
@@ -84,7 +84,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
       </div>
 
       {/* Main Workspace scroll container */}
-      <div className="flex-1 overflow-y-auto p-6 sm:p-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-5xl mx-auto space-y-8 text-left">
           
           {/* Main profile layout bento grid */}
