@@ -1,12 +1,14 @@
 import React from 'react';
 import type { Procurement } from '@/types/domain/procurement';
-import { formatCurrency } from '@/utils/formatters';
+import { formatCurrency, formatDate } from '@/utils/formatters';
 
 interface Props {
   procurement: Procurement;
 }
 
 export default function OverviewTab({ procurement }: Props) {
+  const hasPO = procurement.poNumber || procurement.poDate || procurement.poValue || procurement.poNotes;
+
   return (
     <div className="space-y-6">
       {/* Info Cards */}
@@ -91,6 +93,42 @@ export default function OverviewTab({ procurement }: Props) {
           </p>
           {procurement.vendorPic && (
             <p className="text-xs text-secondary mt-1">PIC: {procurement.vendorPic}</p>
+          )}
+        </div>
+      )}
+
+      {/* PO Info */}
+      {hasPO && (
+        <div className="bg-surface-container-lowest rounded-xl border border-border shadow-sm p-6 space-y-4">
+          <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[18px]">receipt_long</span>
+            Purchase Order
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            {procurement.poNumber && (
+              <div>
+                <p className="text-secondary font-medium">Nomor PO</p>
+                <p className="text-on-surface font-semibold mt-0.5">{procurement.poNumber}</p>
+              </div>
+            )}
+            {procurement.poDate && (
+              <div>
+                <p className="text-secondary font-medium">Tanggal PO</p>
+                <p className="text-on-surface font-semibold mt-0.5">{formatDate(procurement.poDate)}</p>
+              </div>
+            )}
+            {procurement.poValue && (
+              <div>
+                <p className="text-secondary font-medium">Nilai PO</p>
+                <p className="text-on-surface font-semibold mt-0.5">{formatCurrency(procurement.poValue)}</p>
+              </div>
+            )}
+          </div>
+          {procurement.poNotes && (
+            <div className="text-xs">
+              <p className="text-secondary font-medium">Catatan PO</p>
+              <p className="text-on-surface mt-0.5">{procurement.poNotes}</p>
+            </div>
           )}
         </div>
       )}

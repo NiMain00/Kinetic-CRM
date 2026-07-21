@@ -26,6 +26,10 @@ export default function ProcurementFormPage() {
   const [sourceProjectId, setSourceProjectId] = useState('');
   const [prNumber, setPrNumber] = useState('');
   const [prNotes, setPrNotes] = useState('');
+  const [poNumber, setPoNumber] = useState('');
+  const [poDate, setPoDate] = useState('');
+  const [poValue, setPoValue] = useState(0);
+  const [poNotes, setPoNotes] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +52,10 @@ export default function ProcurementFormPage() {
         location,
         prNumber: prNumber || undefined,
         prNotes: prNotes || undefined,
+        poNumber: poNumber || undefined,
+        poDate: poDate || undefined,
+        poValue: poValue || undefined,
+        poNotes: poNotes || undefined,
         createdBy: 'Admin',
         status: 'Draft',
         phase: 'Draft',
@@ -216,6 +224,68 @@ export default function ProcurementFormPage() {
                 className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none bg-surface text-on-surface"
                 placeholder="Deskripsi kebutuhan pengadaan..."
                 aria-label="Catatan PR"
+              />
+            </div>
+          </section>
+
+          {/* PO Info */}
+          <section className="bg-surface rounded-xl border border-border shadow-card p-4 sm:p-6 space-y-4">
+            <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-[18px]">
+                receipt_long
+              </span>
+              Purchase Order (Opsional)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
+                  Nomor PO
+                </label>
+                <input
+                  value={poNumber}
+                  onChange={(e) => setPoNumber(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
+                  placeholder="PO-2026-001"
+                  aria-label="Nomor PO"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
+                  Tanggal PO
+                </label>
+                <input
+                  type="date"
+                  value={poDate}
+                  onChange={(e) => setPoDate(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
+                  aria-label="Tanggal PO"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
+                  Nilai PO
+                </label>
+                <input
+                  type="number"
+                  value={poValue || ''}
+                  onChange={(e) => setPoValue(Number(e.target.value))}
+                  className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs bg-surface text-on-surface"
+                  placeholder="0"
+                  aria-label="Nilai PO"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary mb-1.5 block">
+                Catatan PO
+              </label>
+              <textarea
+                value={poNotes}
+                onChange={(e) => setPoNotes(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-2.5 rounded-lg border border-border focus:ring-2 focus:ring-primary focus:outline-none text-xs resize-none bg-surface text-on-surface"
+                placeholder="Catatan purchase order..."
+                aria-label="Catatan PO"
               />
             </div>
           </section>
