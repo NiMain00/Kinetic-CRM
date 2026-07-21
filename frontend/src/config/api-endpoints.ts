@@ -91,6 +91,16 @@ export const API = {
       `/projects/${projectId}/rks/files/${encodeURIComponent(fileName)}`,
   },
 
+  ANALYTICS: {
+    DASHBOARD: '/analytics/dashboard',
+    LEAD_TIME: '/analytics/lead-time',
+    STAGE_DURATION: '/analytics/stage-duration',
+    BOTTLENECKS: '/analytics/bottlenecks',
+    THROUGHPUT: '/analytics/throughput',
+    HEATMAP: '/analytics/heatmap',
+    PROJECT_TIMELINE: (id: string) => `/projects/${id}/timeline-analytics`,
+  },
+
   LPHS_SIOS: {
     LIST: (projectId: string) => `/projects/${projectId}/lphs`,
     CREATE: (projectId: string) => `/projects/${projectId}/lphs`,

@@ -19,6 +19,7 @@ import { ApprovalsModule } from './approvals/approvals.module';
 import { VisitsModule } from './visits/visits.module';
 import { FollowUpModule } from './follow-up/follow-up.module';
 import { GformModule } from './gform/gform.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { GformModule } from './gform/gform.module';
     VisitsModule,
     FollowUpModule,
     GformModule,
+    AnalyticsModule,
   ],
   providers: [
     {

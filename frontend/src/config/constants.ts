@@ -140,6 +140,7 @@ export const PERMISSIONS = {
   REPORT_VIEW_DEPARTMENT: 'report:view:department',
   REPORT_VIEW_CROSSDEPT: 'report:view:crossdept',
   CONFIG_ACCESS: 'config:access',
+  ANALYTICS_VIEW: 'analytics:view',
 } as const;
 
 export const GLOBAL_PERMISSIONS: readonly string[] = [

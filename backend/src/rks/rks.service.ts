@@ -38,23 +38,57 @@ export class RksService {
     return this.prisma.rks.create({ data: { ...clean, projectId } });
   }
 
-  async submit(projectId: string) {
-    const rks = await this.prisma.rks.findUnique({ where: { projectId } });
+  async submit(projectId: string, actorInfo?: { userId?: string; fullName?: string }) {
+    const rks = await this.prisma.rks.findUnique({ where: { projectId }, include: { project: { select: { name: true } } } });
     if (!rks) throw new NotFoundException('RKS not found');
-    return this.prisma.rks.update({
+    const result = await this.prisma.rks.update({
       where: { projectId },
       data: { status: 'waiting_pm_approval', submittedAt: new Date(), revisionNumber: rks.revisionNumber + 1 },
     });
+
+    await this.prisma.projectTimelineEvent.create({
+      data: {
+        projectId,
+        title: 'RKS Diajukan untuk Approval',
+        actor: actorInfo?.fullName || 'System',
+        type: 'submit',
+        eventKey: 'RKS_REVIEW',
+        eventLabel: 'Review RKS',
+        nextStatus: 'Review RKS',
+        actorUserId: actorInfo?.userId || null,
+        occurredAt: new Date(),
+      },
+    });
+
+    return result;
   }
 
-  async review(projectId: string, action: { action: 'approve' | 'revision'; notes?: string }) {
-    const rks = await this.prisma.rks.findUnique({ where: { projectId } });
+  async review(projectId: string, action: { action: 'approve' | 'revision'; notes?: string }, actorInfo?: { userId?: string; fullName?: string }) {
+    const rks = await this.prisma.rks.findUnique({ where: { projectId }, include: { project: { select: { name: true, status: true } } } });
     if (!rks) throw new NotFoundException('RKS not found');
     const status = action.action === 'approve' ? 'approved' : 'revision';
-    return this.prisma.rks.update({
+    const result = await this.prisma.rks.update({
       where: { projectId },
       data: { status, approvedAt: action.action === 'approve' ? new Date() : null },
     });
+
+    if (action.action === 'approve') {
+      await this.prisma.projectTimelineEvent.create({
+        data: {
+          projectId,
+          title: 'RKS Disetujui',
+          actor: actorInfo?.fullName || 'System',
+          type: 'approve',
+          eventKey: 'RKS_APPROVED',
+          eventLabel: 'RKS Approved',
+          nextStatus: 'Approved',
+          actorUserId: actorInfo?.userId || null,
+          occurredAt: new Date(),
+        },
+      });
+    }
+
+    return result;
   }
 
   async reviewDepartment(projectId: string, body: { departmentId: string; action: 'approve' | 'revision'; notes?: string; reviewerName?: string }) {

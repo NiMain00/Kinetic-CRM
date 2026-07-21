@@ -12,6 +12,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', permissions: [PERMISSIONS.DASHBOARD_VIEW] },
+  { label: 'Analytics', path: '/analytics', icon: 'analytics', permissions: [PERMISSIONS.ANALYTICS_VIEW] },
   {
     label: 'Prospek',
     path: '/prospects',

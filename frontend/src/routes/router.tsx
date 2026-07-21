@@ -46,6 +46,9 @@ const ResetPasswordPage = LazyLoad(lazy(() => import('@/features/auth/ResetPassw
 // Dashboard
 const DashboardPage = LazyLoadPermission(lazy(() => import('@/features/dashboard/DashboardPage')), ['dashboard:view']);
 
+// Analytics
+const AnalyticsDashboardPage = LazyLoadPermission(lazy(() => import('@/features/analytics/AnalyticsDashboardPage')), ['analytics:view']);
+
 // Prospects
 const ProspectsPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectsPage')), ['prospect:read']);
 const ProspectFormPage = LazyLoadPermission(lazy(() => import('@/features/prospects/ProspectFormPage')), ['prospect:read']);
@@ -141,6 +144,7 @@ export default function AppRouter() {
       <Route path="/" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="analytics" element={<AnalyticsDashboardPage />} />
 
         {/* Prospects */}
         <Route path="prospects" element={<ProspectsPage />} />

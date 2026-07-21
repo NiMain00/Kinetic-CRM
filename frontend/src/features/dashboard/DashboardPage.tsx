@@ -190,6 +190,13 @@ export default function DashboardPage() {
             <span className="material-symbols-outlined text-[16px]">calendar_month</span>
             Kalender
           </Link>
+          <Link
+            to="/analytics"
+            className="inline-flex items-center gap-1.5 bg-surface text-primary border border-primary/30 hover:bg-primary/5 px-3.5 py-1.5 text-xs rounded-lg transition-all"
+          >
+            <span className="material-symbols-outlined text-[16px]">analytics</span>
+            Analytics
+          </Link>
         </div>
       </div>
 

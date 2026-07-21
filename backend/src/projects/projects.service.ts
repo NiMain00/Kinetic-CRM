@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { STATUS_TO_EVENT_KEY, EVENT_KEY_LABEL } from '../analytics/analytics.constants';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -75,9 +76,14 @@ export class ProjectsService {
     }
   }
 
-  async update(id: string, data: any) {
-    const existing = await this.prisma.project.findFirst({ where: { id, deletedAt: null }, select: { id: true, sourceProspectId: true } });
+  async update(id: string, data: any, actorInfo?: { userId?: string; fullName?: string }) {
+    const existing = await this.prisma.project.findFirst({
+      where: { id, deletedAt: null },
+      select: { id: true, sourceProspectId: true, status: true },
+    });
     if (!existing) throw new NotFoundException('Project not found');
+
+    const oldStatus = existing.status;
 
     // Handle timelineEvents terpisah agar bisa validasi actor UUID
     const timelinePayload = data.timelineEvents;
@@ -129,7 +135,49 @@ export class ProjectsService {
       }
     }
 
-    return this.prisma.project.update({ where: { id }, data: { ...data, ...nested } });
+    const updated = await this.prisma.project.update({ where: { id }, data: { ...data, ...nested } });
+
+    // ── Auto-log status changes ──
+    const newStatus = updated.status;
+    if (oldStatus && newStatus && oldStatus !== newStatus) {
+      const eventKey = STATUS_TO_EVENT_KEY[newStatus];
+      const prevEventKey = STATUS_TO_EVENT_KEY[oldStatus];
+      if (eventKey) {
+        // Calculate duration from previous event if available
+        let durationMinutes: number | null = null;
+        if (prevEventKey) {
+          const prevEvent = await this.prisma.projectTimelineEvent.findFirst({
+            where: { projectId: id, eventKey: prevEventKey },
+            orderBy: { occurredAt: 'desc' },
+          });
+          if (prevEvent?.occurredAt) {
+            durationMinutes = Math.round(
+              (new Date().getTime() - new Date(prevEvent.occurredAt).getTime()) / 60000,
+            );
+          }
+        }
+
+        await this.prisma.projectTimelineEvent.create({
+          data: {
+            projectId: id,
+            title: `Status berubah: ${oldStatus} → ${newStatus}`,
+            actor: actorInfo?.fullName || 'System',
+            type: 'status_change',
+            eventKey,
+            eventLabel: EVENT_KEY_LABEL[eventKey] || newStatus,
+            previousStatus: oldStatus,
+            nextStatus: newStatus,
+            actorUserId: actorInfo?.userId || null,
+            occurredAt: new Date(),
+            durationMinutes,
+            prevVal: oldStatus,
+            newVal: newStatus,
+          },
+        });
+      }
+    }
+
+    return updated;
   }
 
   async delete(id: string) {

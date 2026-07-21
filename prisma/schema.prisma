@@ -1026,9 +1026,11 @@ model Project {
   currentStageId   String?  @map("current_stage_id")
   createdByUserId  String?  @map("created_by_user_id")
   ownerUserId      String?  @map("owner_user_id")
-  scopeDepartments String?  @map("scope_departments")
-  author           String? 
-  date             DateTime @default(now()) @map("date")
+  scopeDepartments    String?  @map("scope_departments")
+  author              String?
+  date                DateTime @default(now()) @map("date")
+  slaThresholdDays    Int      @default(7) @map("sla_threshold_days")
+  bottleneckThresholdDays Int @default(7) @map("bottleneck_threshold_days")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
   deletedAt        DateTime? @map("deleted_at")
@@ -1070,21 +1072,35 @@ model Project {
 model ProjectTimelineEvent {
   id          String   @id @default(uuid()) @map("id")
   projectId   String   @map("project_id")
-  title       String  
-  actor       String  
-  role        String? 
+  title       String
+  actor       String
+  role        String?
   time        DateTime @default(now()) @map("time")
-  type        String  
-  description String? 
+  type        String
+  description String?
   prevVal     String?  @map("prev_val")
   newVal      String?  @map("new_val")
   fileName    String?  @map("file_name")
   fileSize    String?  @map("file_size")
+
+  // ── Analytics fields ──
+  eventKey         String?  @map("event_key")
+  eventLabel       String?  @map("event_label")
+  previousStatus   String?  @map("previous_status")
+  nextStatus       String?  @map("next_status")
+  actorUserId      String?  @map("actor_user_id")
+  occurredAt       DateTime @default(now()) @map("occurred_at")
+  metadata         Json?    @map("metadata")
+  durationMinutes  Int?     @map("duration_minutes")
+
   createdAt   DateTime @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   actorUser User? @relation(fields: [actor], references: [id])
 
+  @@index([projectId, eventKey, occurredAt])
+  @@index([eventKey, occurredAt])
+  @@index([occurredAt])
   @@map("project_timeline_events")
 }
 

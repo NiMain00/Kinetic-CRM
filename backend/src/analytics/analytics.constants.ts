@@ -1,0 +1,70 @@
+export const PROJECT_STATUS_FLOW = [
+  { key: 'CREATED', label: 'Prospek Dibuat', order: 0 },
+  { key: 'KUALIFIKASI', label: 'Kualifikasi', order: 1 },
+  { key: 'RKS_DITERIMA', label: 'RKS Diterima', order: 2 },
+  { key: 'RKS_REVIEW', label: 'Review RKS', order: 3 },
+  { key: 'RKS_APPROVED', label: 'RKS Approved', order: 4 },
+  { key: 'PENAWARAN_DIKIRIM', label: 'Penawaran Dikirim', order: 5 },
+  { key: 'NEGOSIASI', label: 'Negosiasi', order: 6 },
+  { key: 'MENUNGGU_PO', label: 'Menunggu PO', order: 7 },
+  { key: 'PO_DITERIMA', label: 'PO Diterima', order: 8 },
+  { key: 'PELAKSANAAN', label: 'Pelaksanaan', order: 9 },
+  { key: 'PROGRESS', label: 'Progress Update', order: 10 },
+  { key: 'BAST', label: 'BAST / Serah Terima', order: 11 },
+  { key: 'SELESAI', label: 'Selesai', order: 12 },
+  { key: 'DITUNDA', label: 'Ditunda', order: 13 },
+  { key: 'DIBATALKAN', label: 'Dibatalkan', order: 14 },
+];
+
+export const STATUS_TO_EVENT_KEY: Record<string, string> = {
+  Dibuat: 'CREATED',
+  Lead: 'CREATED',
+  Potensial: 'KUALIFIKASI',
+  'Non Potensial': 'KUALIFIKASI',
+  RKS: 'RKS_DITERIMA',
+  'Review RKS': 'RKS_REVIEW',
+  Approved: 'RKS_APPROVED',
+  'Penawaran Dikirim': 'PENAWARAN_DIKIRIM',
+  Negosiasi: 'NEGOSIASI',
+  'Menunggu PO': 'MENUNGGU_PO',
+  'PO Diterima': 'PO_DITERIMA',
+  Pelaksanaan: 'PELAKSANAAN',
+  'Progress Update': 'PROGRESS',
+  BAST: 'BAST',
+  Selesai: 'SELESAI',
+  Ditunda: 'DITUNDA',
+  Dibatalkan: 'DIBATALKAN',
+  Kalah: 'DIBATALKAN',
+};
+
+export const EVENT_KEY_LABEL: Record<string, string> = {
+  CREATED: 'Prospek Dibuat',
+  KUALIFIKASI: 'Kualifikasi',
+  RKS_DITERIMA: 'RKS Diterima',
+  RKS_REVIEW: 'Review RKS',
+  RKS_APPROVED: 'RKS Approved',
+  PENAWARAN_DIKIRIM: 'Penawaran Dikirim',
+  NEGOSIASI: 'Negosiasi',
+  MENUNGGU_PO: 'Menunggu PO',
+  PO_DITERIMA: 'PO Diterima',
+  PELAKSANAAN: 'Pelaksanaan',
+  PROGRESS: 'Progress Update',
+  BAST: 'BAST / Serah Terima',
+  SELESAI: 'Selesai',
+  DITUNDA: 'Ditunda',
+  DIBATALKAN: 'Dibatalkan',
+};
+
+export const DEFAULT_BOTTLENECK_THRESHOLD_DAYS = 7;
+
+export const DEFAULT_SLA_DAYS: Record<string, number> = {
+  RKS_DITERIMA: 5,
+  RKS_REVIEW: 3,
+  RKS_APPROVED: 3,
+  PENAWARAN_DIKIRIM: 5,
+  NEGOSIASI: 7,
+  MENUNGGU_PO: 14,
+  PO_DITERIMA: 3,
+  PELAKSANAAN: 30,
+  BAST: 7,
+};

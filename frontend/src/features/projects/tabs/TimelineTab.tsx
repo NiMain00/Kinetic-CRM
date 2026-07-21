@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Project, TimelineEvent, DocGroup, DocumentEntry } from '@/types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { formatDate } from '@/utils/formatters';
 import { Card, Button, Badge } from '@/components/ui';
+import { useProjectTimelineAnalytics } from '@/hooks/queries/useAnalytics';
 
 interface TabProps {
   project?: Project;
@@ -46,6 +47,14 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
   const [showAddStatus, setShowAddStatus] = useState(false);
   const [newStatusTitle, setNewStatusTitle] = useState('');
   const [newStatusDesc, setNewStatusDesc] = useState('');
+
+  const { data: timelineAnalytics, isLoading: tlLoading } = useProjectTimelineAnalytics(project?.id);
+
+  const maxBarDays = useMemo(() => {
+    if (!timelineAnalytics?.transitions?.length) return 1;
+    const days = timelineAnalytics.transitions.map((t) => t.durationDays ?? 0);
+    return Math.max(Math.max(...days), 1);
+  }, [timelineAnalytics?.transitions]);
 
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFileName, setUploadFileName] = useState('');
@@ -147,6 +156,104 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
           ))}
         </div>
       </Card>
+
+      {/* Timeline Analytics - Gantt Chart */}
+      {project?.id && (timelineAnalytics || tlLoading) && (
+        <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-heading-section text-sm font-bold text-on-surface flex items-center">
+                <span className="material-symbols-outlined mr-2 text-primary">timeline</span>
+                Timeline Analytics
+              </h3>
+              {timelineAnalytics?.totalDurationDays != null && (
+                <p className="text-[10px] text-secondary mt-0.5">
+                  Total durasi: {timelineAnalytics.totalDurationDays} hari &bull; Status:{' '}
+                  <span className="font-semibold">{timelineAnalytics.currentStatus}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {tlLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="h-3 w-28 bg-surface-container-high rounded animate-pulse" />
+                  <div className="flex-1 h-7 bg-surface-container-high rounded animate-pulse" />
+                  <div className="h-3 w-12 bg-surface-container-high rounded animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : !timelineAnalytics?.transitions?.length ? (
+            <div className="text-center py-8 text-outline">
+              <span className="material-symbols-outlined text-3xl">timeline</span>
+              <p className="text-xs mt-2">Belum ada data timeline analytics.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Gantt header */}
+              <div className="flex items-center text-[10px] text-secondary font-semibold mb-2 px-1">
+                <span className="w-32 shrink-0">Tahap</span>
+                <span className="flex-1 text-center">Gantt Timeline</span>
+                <span className="w-16 text-right">Durasi</span>
+              </div>
+              {timelineAnalytics.transitions.map((t) => {
+                const isActive = t.eventKey === timelineAnalytics.activeStage;
+                const isNotStarted = !t.endedAt && !isActive;
+                const isComplete = !!t.endedAt;
+
+                let barColor: string;
+                if (isNotStarted) barColor = 'bg-surface-container-high';
+                else if (isActive) barColor = 'bg-primary';
+                else if (t.isOverSla) barColor = 'bg-danger';
+                else barColor = 'bg-success';
+
+                const widthPct = ((t.durationDays ?? 0) / maxBarDays) * 100;
+
+                return (
+                  <div key={t.eventKey} className="group relative">
+                    <div className="flex items-center gap-3 px-1 py-1.5 rounded-lg hover:bg-surface-container-low transition-colors">
+                      <span className="text-xs text-on-surface w-32 shrink-0 font-medium truncate">
+                        {t.eventLabel}
+                      </span>
+                      <div className="flex-1 bg-surface-container-high rounded-full h-6 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${barColor} transition-all duration-700 relative`}
+                          style={{ width: `${Math.max(widthPct, isActive || isComplete ? 4 : 0)}%` }}
+                        >
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-border/60 shadow-lg rounded-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                            <p className="font-semibold text-on-surface">{t.eventLabel}</p>
+                            {t.startedAt && <p className="text-secondary">Mulai: {formatDate(t.startedAt)}</p>}
+                            {t.endedAt && <p className="text-secondary">Selesai: {formatDate(t.endedAt)}</p>}
+                            <p className="text-secondary">
+                              Durasi: {t.durationDays != null ? `${t.durationDays} hari` : '-'}
+                            </p>
+                            <p className="text-secondary">Oleh: {t.actorName || '-'}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-xs text-secondary w-16 text-right font-mono-data shrink-0">
+                        {isNotStarted ? '-' : isActive ? 'Aktif' : `${t.durationDays}h`}
+                      </span>
+                    </div>
+                    {/* SLA badge */}
+                    {t.isOverSla && (
+                      <div className="ml-36 flex items-center gap-1 mt-0.5 mb-1">
+                        <span className="text-[9px] text-danger font-semibold bg-danger-container px-1.5 py-0.5 rounded inline-flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[12px]">warning</span>
+                          Melewati SLA +{t.slaExcessDays} hari
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Sub-tab: Update Status - Action Bar */}
       {activeSubTab === 'update-status' && (
