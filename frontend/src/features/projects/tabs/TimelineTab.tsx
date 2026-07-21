@@ -55,6 +55,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
     return timelineAnalytics.totalDurationDays;
   }, [timelineAnalytics?.totalDurationDays]);
 
+  const [selectedEventKey, setSelectedEventKey] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFileName, setUploadFileName] = useState('');
 
@@ -199,6 +200,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                     const isActive = t.eventKey === timelineAnalytics.activeStage;
                     const isNotStarted = !t.endedAt && !isActive;
                     const isComplete = !!t.endedAt;
+                    const isSelected = t.eventKey === selectedEventKey;
 
                     let barColor: string;
                     if (isNotStarted) barColor = 'bg-surface-container-high';
@@ -211,7 +213,8 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                     return (
                       <div
                         key={t.eventKey}
-                        className={`group relative h-full ${barColor} first:rounded-l-full last:rounded-r-full transition-all duration-700 cursor-default`}
+                        onClick={() => setSelectedEventKey(isSelected ? null : t.eventKey)}
+                        className={`group relative h-full ${barColor} first:rounded-l-full last:rounded-r-full transition-all duration-700 ${isSelected ? 'ring-2 ring-offset-1 ring-primary z-10' : ''} cursor-pointer hover:brightness-110`}
                         style={{ width: `${Math.max(widthPct, 0.5)}%`, minWidth: isActive || isComplete ? '4px' : '0px' }}
                       >
                         {/* Tooltip */}
@@ -241,6 +244,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                 {timelineAnalytics.transitions.map((t) => {
                   const isActive = t.eventKey === timelineAnalytics.activeStage;
                   const isNotStarted = !t.endedAt && !isActive;
+                  const isSelected = t.eventKey === selectedEventKey;
                   let dotColor: string;
                   if (isNotStarted) dotColor = 'bg-surface-container-high';
                   else if (isActive) dotColor = 'bg-primary';
@@ -248,13 +252,89 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                   else dotColor = 'bg-success';
 
                   return (
-                    <span key={t.eventKey} className="flex items-center gap-1.5 text-[10px] text-secondary">
-                      <span className={`w-2 h-2 rounded-full ${dotColor} inline-block shrink-0`} />
+                    <button
+                      key={t.eventKey}
+                      onClick={() => setSelectedEventKey(isSelected ? null : t.eventKey)}
+                      className={`flex items-center gap-1.5 text-[10px] transition-all cursor-pointer ${
+                        isSelected ? 'text-on-surface font-semibold' : 'text-secondary hover:text-on-surface'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${dotColor} inline-block shrink-0 ${isSelected ? 'ring-1 ring-offset-[1px] ring-primary' : ''}`} />
                       {t.eventLabel}
-                    </span>
+                    </button>
                   );
                 })}
               </div>
+
+              {/* Selected transition detail panel */}
+              {selectedEventKey && (() => {
+                const t = timelineAnalytics.transitions.find((x) => x.eventKey === selectedEventKey);
+                if (!t) return null;
+                return (
+                  <div className="mt-4 p-4 bg-surface-container-low rounded-xl border border-border/60 animate-fade-in">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-bold text-on-surface flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">info</span>
+                        Detail Tahap: {t.eventLabel}
+                      </h4>
+                      <button
+                        onClick={() => setSelectedEventKey(null)}
+                        className="w-6 h-6 rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">close</span>
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                      <div className="bg-surface rounded-lg p-3 border border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-outline font-semibold">Event Key</p>
+                        <p className="text-xs font-bold text-on-surface mt-0.5 font-mono">{t.eventKey}</p>
+                      </div>
+                      <div className="bg-surface rounded-lg p-3 border border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-outline font-semibold">Status</p>
+                        <p className="text-xs font-bold text-on-surface mt-0.5">
+                          {(() => {
+                            if (t.eventKey === timelineAnalytics.activeStage) return <span className="text-primary">Sedang Berjalan</span>;
+                            if (t.endedAt) return t.isOverSla ? <span className="text-danger">Melewati SLA +{t.slaExcessDays} hari</span> : <span className="text-success">Selesai Tepat Waktu</span>;
+                            return <span className="text-outline">Belum Dimulai</span>;
+                          })()}
+                        </p>
+                      </div>
+                      <div className="bg-surface rounded-lg p-3 border border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-outline font-semibold">Durasi</p>
+                        <p className="text-xs font-bold text-on-surface mt-0.5">
+                          {t.durationDays != null ? `${t.durationDays} hari` : '-'}
+                        </p>
+                      </div>
+                      <div className="bg-surface rounded-lg p-3 border border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-outline font-semibold">Mulai</p>
+                        <p className="text-xs font-bold text-on-surface mt-0.5">{t.startedAt ? formatDate(t.startedAt) : '-'}</p>
+                      </div>
+                      <div className="bg-surface rounded-lg p-3 border border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-outline font-semibold">Selesai</p>
+                        <p className="text-xs font-bold text-on-surface mt-0.5">{t.endedAt ? formatDate(t.endedAt) : '-'}</p>
+                      </div>
+                      <div className="bg-surface rounded-lg p-3 border border-border/40">
+                        <p className="text-[10px] uppercase tracking-wider text-outline font-semibold">Oleh</p>
+                        <p className="text-xs font-bold text-on-surface mt-0.5">{t.actorName || '-'}</p>
+                      </div>
+                    </div>
+                    {t.isOverSla && t.slaExcessDays != null && (
+                      <div className="mt-3 flex items-center gap-2 bg-danger-container/30 rounded-lg p-3 border border-danger/20">
+                        <span className="material-symbols-outlined text-danger text-[18px]">warning</span>
+                        <p className="text-xs text-danger font-semibold">
+                          Tahap ini melewati SLA selama {t.slaExcessDays} hari. Perlu evaluasi proses.</p>
+                      </div>
+                    )}
+                    {t.eventKey === timelineAnalytics.activeStage && (
+                      <div className="mt-3 flex items-center gap-2 bg-primary-container/30 rounded-lg p-3 border border-primary/20">
+                        <span className="material-symbols-outlined text-primary text-[18px]">timeline</span>
+                        <p className="text-xs text-primary font-semibold">
+                          Tahap ini sedang berjalan. Durasi saat ini: {t.durationDays ?? 0} hari.</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
