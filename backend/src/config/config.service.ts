@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { configCache } from '../common/cache.util';
 
@@ -308,16 +309,17 @@ export class ConfigService {
 
   async upsertIntegration(key: string, data: { value: string; isSecret?: boolean }, userId: string) {
     configCache.invalidate('integrations');
+    const hashed = await bcrypt.hash(data.value, 10);
     return this.prisma.integrationConfiguration.upsert({
       where: { key },
       create: {
         key,
-        valueEncrypted: data.value,
+        valueEncrypted: hashed,
         isSecret: data.isSecret ?? true,
         updatedBy: userId,
       },
       update: {
-        valueEncrypted: data.value,
+        valueEncrypted: hashed,
         isSecret: data.isSecret ?? true,
         updatedBy: userId,
       },
@@ -329,7 +331,7 @@ export class ConfigService {
       where: { key },
     });
     if (!config) return false;
-    return config.valueEncrypted === value;
+    return bcrypt.compare(value, config.valueEncrypted);
   }
 
   async deleteIntegration(key: string) {

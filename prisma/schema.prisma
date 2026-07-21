@@ -611,6 +611,7 @@ model Customer {
   visits         Visit[]
   followUpTasks  FollowUpTask[]
 
+  @@index([picPhone])
   @@map("customers")
 }
 
@@ -723,6 +724,7 @@ model Question {
   questionOptions      QuestionOption[]
   prospectAnswers      ProspectAnswer[]
 
+  @@index([questionText])
   @@map("questions")
 }
 

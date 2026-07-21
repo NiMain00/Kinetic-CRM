@@ -1,13 +1,8 @@
 import { Injectable, UnauthorizedException, BadRequestException, Logger } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-
-interface GformPayload {
-  form_id: string;
-  branch_code?: string;
-  submission_id?: string;
-  submitted_at?: string;
-  answers: Record<string, string>;
-}
+import { GformWebhookDto } from './dto/gform-webhook.dto';
+import { configCache } from '../common/cache.util';
 
 @Injectable()
 export class GformService {
@@ -21,7 +16,7 @@ export class GformService {
     const config = await this.prisma.integrationConfiguration.findUnique({
       where: { key: 'gform_api_key' },
     });
-    if (!config || config.valueEncrypted !== key) {
+    if (!config || !(await bcrypt.compare(key, config.valueEncrypted))) {
       throw new UnauthorizedException('API Key tidak valid');
     }
   }
@@ -36,9 +31,12 @@ export class GformService {
   }
 
   /** Cari branch/org unit berdasarkan kode */
-  private async resolveBranch(branchCode?: string): Promise<{ id: string; name: string } | null> {
+  private async resolveBranch(
+    tx: any,
+    branchCode?: string,
+  ): Promise<{ id: string; name: string } | null> {
     if (!branchCode) return null;
-    const unit = await this.prisma.orgUnit.findFirst({
+    const unit = await tx.orgUnit.findFirst({
       where: {
         OR: [
           { code: { equals: branchCode, mode: 'insensitive' } },
@@ -108,15 +106,15 @@ export class GformService {
   }
 
   /** Cari atau buat industry dari nama */
-  private async resolveIndustry(industryName: string): Promise<string | undefined> {
+  private async resolveIndustry(tx: any, industryName: string): Promise<string | undefined> {
     if (!industryName) return undefined;
     const normalized = industryName.trim();
-    const existing = await this.prisma.industry.findFirst({
+    const existing = await tx.industry.findFirst({
       where: { name: { contains: normalized, mode: 'insensitive' } },
     });
     if (existing) return existing.id;
 
-    const created = await this.prisma.industry.create({
+    const created = await tx.industry.create({
       data: {
         name: normalized,
         code: normalized.substring(0, 10).toUpperCase().replace(/\s/g, '_'),
@@ -126,23 +124,23 @@ export class GformService {
   }
 
   /** Cari customer berdasarkan multiple field untuk deduplikasi lebih baik */
-  private async findExistingCustomer(data: Record<string, any>): Promise<{ id: string } | null> {
+  private async findExistingCustomer(tx: any, data: Record<string, any>): Promise<{ id: string } | null> {
     if (data.picPhone) {
-      const byPhone = await this.prisma.customer.findFirst({
+      const byPhone = await tx.customer.findFirst({
         where: { picPhone: data.picPhone, deletedAt: null },
       });
       if (byPhone) return byPhone;
     }
 
     if (data.name) {
-      const byName = await this.prisma.customer.findFirst({
+      const byName = await tx.customer.findFirst({
         where: { name: { equals: data.name, mode: 'insensitive' }, deletedAt: null },
       });
       if (byName) return byName;
     }
 
     if (data.picEmail) {
-      const byEmail = await this.prisma.customer.findFirst({
+      const byEmail = await tx.customer.findFirst({
         where: { picEmail: data.picEmail, deletedAt: null },
       });
       if (byEmail) return byEmail;
@@ -152,9 +150,9 @@ export class GformService {
   }
 
   /** Proses webhook: terima data dari Google Forms, buat/update Customer + Prospect */
-  async processWebhook(payload: GformPayload, apiKey?: string) {
+  async processWebhook(payload: GformWebhookDto, apiKey?: string) {
     await this.validateApiKey(apiKey);
-    const { answers, branch_code } = payload;
+    const { answers } = payload;
 
     if (!answers || Object.keys(answers).length === 0) {
       throw new BadRequestException('Tidak ada data jawaban dari form');
@@ -167,128 +165,153 @@ export class GformService {
     }
 
     try {
-      // Cari industry
-      const industryKey = answers.industri || answers.industry || answers.bidang_usaha;
-      if (industryKey) {
-        customerData.industryId = await this.resolveIndustry(industryKey);
-      }
+      // Pre-fetch all questions dari cache (master data, jarang berubah)
+      const allQuestions = await configCache.getOrFetch('gform_questions', () =>
+        this.prisma.question.findMany({ select: { id: true, questionText: true } }),
+        300_000, // TTL 5 menit
+      );
 
-      // Resolve branch
-      const branch = await this.resolveBranch(branch_code);
-      const branchName = branch?.name || answers.cabang || null;
+      return await this.prisma.$transaction(async (tx) => {
+        // Cari industry
+        const industryKey = answers.industri || answers.industry || answers.bidang_usaha;
+        if (industryKey) {
+          customerData.industryId = await this.resolveIndustry(tx, industryKey);
+        }
 
-      // Cek duplikat lebih baik
-      const existing = await this.findExistingCustomer(customerData);
-      let customer: any;
-      let isNew = false;
+        // Resolve branch
+        const branch = await this.resolveBranch(tx, payload.branch_code);
+        const branchName = branch?.name || answers.cabang || null;
 
-      if (existing) {
-        // Update customer yang sudah ada dengan data baru
-        const updateData: any = { ...customerData };
-        delete updateData.source;
-        delete updateData.needsVerification;
-        delete updateData.name;
+        // Cek duplikat
+        const existing = await this.findExistingCustomer(tx, customerData);
+        let customer: any;
+        let isNew = false;
 
-        customer = await this.prisma.customer.update({
-          where: { id: existing.id },
-          data: {
-            ...updateData,
-            code: customerData.code || this.generateCode(customerData.name),
-            city: customerData.city ? customerData.city : undefined,
-            picName: customerData.picName ? customerData.picName : undefined,
-            picPhone: customerData.picPhone ? customerData.picPhone : undefined,
-          } as any,
-        });
-      } else {
-        isNew = true;
-        customer = await this.prisma.customer.create({
+        if (existing) {
+          const updateData: any = { ...customerData };
+          delete updateData.source;
+          delete updateData.needsVerification;
+          delete updateData.name;
+
+          customer = await tx.customer.update({
+            where: { id: existing.id },
+            data: {
+              ...updateData,
+              code: customerData.code || this.generateCode(customerData.name),
+              city: customerData.city ? customerData.city : undefined,
+              picName: customerData.picName ? customerData.picName : undefined,
+              picPhone: customerData.picPhone ? customerData.picPhone : undefined,
+            } as any,
+          });
+        } else {
+          isNew = true;
+          customer = await tx.customer.create({
+            data: {
+              name: customerData.name,
+              code: this.generateCode(customerData.name),
+              type: 'swasta',
+              city: customerData.city || '',
+              picName: customerData.picName || '',
+              picPosition: customerData.picPosition || '',
+              picPhone: customerData.picPhone || '',
+              picEmail: customerData.picEmail,
+              npwp: customerData.npwp,
+              address: customerData.address,
+              level: customerData.level,
+              industryId: customerData.industryId,
+              requirements: customerData.requirements,
+              source: customerData.source,
+              needsVerification: customerData.needsVerification,
+            } as any,
+          });
+        }
+
+        // Buat prospect baru
+        const prospect = await tx.prospect.create({
           data: {
             name: customerData.name,
-            code: this.generateCode(customerData.name),
-            type: 'swasta',
-            city: customerData.city || '',
-            picName: customerData.picName || '',
-            picPosition: customerData.picPosition || '',
-            picPhone: customerData.picPhone || '',
-            picEmail: customerData.picEmail,
-            npwp: customerData.npwp,
-            address: customerData.address,
-            level: customerData.level,
-            industryId: customerData.industryId,
-            requirements: customerData.requirements,
-            source: customerData.source,
-            needsVerification: customerData.needsVerification,
-          } as any,
-        });
-      }
-
-      // Buat prospect baru
-      const prospect = await this.prisma.prospect.create({
-        data: {
-          name: customerData.name,
-          client: customerData.name,
-          customerId: customer.id,
-          customerType: 'new',
-          status: 'Lead',
-          source: 'Google Form',
-          branch: branchName,
-          description: answers.kebutuhan || answers.deskripsi || null,
-        },
-      });
-
-      // Simpan jawaban sebagai ProspectAnswer
-      const skipFields = [
-        'nama_customer', 'nama_perusahaan', 'pic_name', 'nama_pic',
-        'pic_position', 'jabatan_pic', 'pic_phone', 'no_hp_pic', 'telp_pic',
-        'pic_email', 'email_pic', 'kota', 'kebutuhan', 'deskripsi',
-        'level', 'npwp', 'alamat', 'industri', 'industry', 'bidang_usaha', 'cabang',
-      ];
-
-      for (const [questionKey, answerValue] of Object.entries(answers)) {
-        if (skipFields.includes(questionKey) || !answerValue) continue;
-
-        const question = await this.prisma.question.findFirst({
-          where: {
-            OR: [
-              { questionText: { contains: questionKey.replace(/_/g, ' '), mode: 'insensitive' } },
-              { questionText: { contains: questionKey, mode: 'insensitive' } },
-            ],
+            client: customerData.name,
+            customerId: customer.id,
+            customerType: 'new',
+            status: 'Lead',
+            source: 'Google Form',
+            branch: branchName,
+            description: answers.kebutuhan || answers.deskripsi || null,
           },
         });
 
-        if (question) {
-          await this.prisma.prospectAnswer.upsert({
-            where: {
-              prospectId_questionId: {
-                prospectId: prospect.id,
-                questionId: question.id,
-              },
-            },
-            create: {
-              prospectId: prospect.id,
-              questionId: question.id,
-              answerText: String(answerValue),
-            },
-            update: {
-              answerText: String(answerValue),
-            },
-          });
-        }
-      }
+        // Simpan jawaban sebagai ProspectAnswer (pakai cached questions, batch upsert)
+        await this.saveProspectAnswers(tx, prospect.id, answers, allQuestions);
 
-      this.logger.log(`Google Form → Customer:${customer.id} (${isNew ? 'baru' : 'update'}), Prospect:${prospect.id}`);
+        this.logger.log(`Google Form → Customer:${customer.id} (${isNew ? 'baru' : 'update'}), Prospect:${prospect.id}`);
 
-      return {
-        success: true,
-        customerId: customer.id,
-        prospectId: prospect.id,
-        customerLevel: customer.level,
-        isNew,
-        branch: branchName,
-      };
+        return {
+          success: true,
+          customerId: customer.id,
+          prospectId: prospect.id,
+          customerLevel: customer.level,
+          isNew,
+          branch: branchName,
+        };
+      });
     } catch (error: any) {
       this.logger.error(`GForm webhook gagal: ${error.message}`, error.stack);
       throw error;
     }
+  }
+
+  /** Simpan jawaban form sebagai ProspectAnswer — batch upsert pakai cached questions */
+  private async saveProspectAnswers(
+    tx: any,
+    prospectId: string,
+    answers: Record<string, string>,
+    questions: { id: string; questionText: string }[],
+  ) {
+    const skipFields = [
+      'nama_customer', 'nama_perusahaan', 'pic_name', 'nama_pic',
+      'pic_position', 'jabatan_pic', 'pic_phone', 'no_hp_pic', 'telp_pic',
+      'pic_email', 'email_pic', 'kota', 'kebutuhan', 'deskripsi',
+      'level', 'npwp', 'alamat', 'industri', 'industry', 'bidang_usaha', 'cabang',
+    ];
+
+    // Filter field yang perlu dicari question-nya
+    const answerEntries = Object.entries(answers).filter(
+      ([key, val]) => !skipFields.includes(key) && val,
+    );
+    if (answerEntries.length === 0) return;
+
+    // Build lookup dari cached questions: cari questionId berdasarkan key
+    const questionMap = new Map<string, string>();
+    for (const [key] of answerEntries) {
+      const searchKey = key.replace(/_/g, ' ').toLowerCase();
+      const match = questions.find(q =>
+        q.questionText.toLowerCase().includes(searchKey),
+      );
+      if (match) questionMap.set(key, match.id);
+    }
+
+    // Batch upsert semua jawaban (tidak sequential)
+    await Promise.all(
+      answerEntries.map(async ([key, value]) => {
+        const questionId = questionMap.get(key);
+        if (!questionId) return;
+        return tx.prospectAnswer.upsert({
+          where: {
+            prospectId_questionId: {
+              prospectId,
+              questionId,
+            },
+          },
+          create: {
+            prospectId,
+            questionId,
+            answerText: String(value),
+          },
+          update: {
+            answerText: String(value),
+          },
+        });
+      }),
+    );
   }
 }

@@ -63,6 +63,7 @@ export default function ProjectListPage() {
   });
 
   const projects = useProjectStore((s) => s.projects);
+  const loading = useProjectStore((s) => s.loading);
   const authUser = useAuthStore((s) => s.user);
   const { isStaffOnly, userId } = useOwnerFilter();
   const projectPhases = useConfigStore((s) => s.projectPhases);
@@ -390,38 +391,67 @@ export default function ProjectListPage() {
         />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button onClick={() => handleTabClick('all')} className="text-left">
-          <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
-            <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Proyek</p>
-            <p className="text-2xl font-bold text-on-surface mt-1">{filtered.length}</p>
+      {loading ? (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} padding="sm">
+                <div className="h-3 w-20 bg-surface-container-high rounded animate-pulse" />
+                <div className="h-7 w-16 bg-surface-container-high rounded animate-pulse mt-3" />
+              </Card>
+            ))}
+          </div>
+          <Card padding="none">
+            <div className="p-4 sm:p-6 space-y-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-4 animate-pulse">
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 bg-surface-container-high rounded" />
+                    <div className="h-3 w-1/2 bg-surface-container-high rounded" />
+                  </div>
+                  <div className="h-4 w-16 bg-surface-container-high rounded shrink-0" />
+                  <div className="h-4 w-20 bg-surface-container-high rounded shrink-0" />
+                  <div className="h-3 w-24 bg-surface-container-high rounded shrink-0" />
+                  <div className="h-8 w-16 bg-surface-container-high rounded shrink-0" />
+                </div>
+              ))}
+            </div>
           </Card>
-        </button>
-        <Card padding="sm">
-          <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Nilai</p>
-          <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrencyShort(filtered.reduce((s, p) => s + p.estimatedValue, 0))}</p>
-        </Card>
-        <button onClick={() => handleTabClick('tender')} className="text-left">
-          <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
-            <p className="text-outline text-xs font-semibold uppercase tracking-wider">Active</p>
-            <p className="text-2xl font-bold text-success mt-1">
-              {filtered.filter((p) => {
-                return !terminalStatuses.includes(p.status) && !terminalStatuses.includes(p.phase)
-                  && p.winnerDetails?.outcome !== 'menang' && p.winnerDetails?.outcome !== 'kalah';
-              }).length}
-            </p>
-          </Card>
-        </button>
-        <button onClick={() => handleTabClick('won')} className="text-left">
-          <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
-            <p className="text-outline text-xs font-semibold uppercase tracking-wider">Won</p>
-            <p className="text-2xl font-bold text-status-purple mt-1">{filtered.filter((p) => p.winnerDetails?.outcome === 'menang').length}</p>
-          </Card>
-        </button>
-      </div>
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button onClick={() => handleTabClick('all')} className="text-left">
+              <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
+                <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Proyek</p>
+                <p className="text-2xl font-bold text-on-surface mt-1">{filtered.length}</p>
+              </Card>
+            </button>
+            <Card padding="sm">
+              <p className="text-outline text-xs font-semibold uppercase tracking-wider">Total Nilai</p>
+              <p className="text-lg font-bold text-primary mt-1 truncate">{formatCurrencyShort(filtered.reduce((s, p) => s + p.estimatedValue, 0))}</p>
+            </Card>
+            <button onClick={() => handleTabClick('tender')} className="text-left">
+              <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
+                <p className="text-outline text-xs font-semibold uppercase tracking-wider">Active</p>
+                <p className="text-2xl font-bold text-success mt-1">
+                  {filtered.filter((p) => {
+                    return !terminalStatuses.includes(p.status) && !terminalStatuses.includes(p.phase)
+                      && p.winnerDetails?.outcome !== 'menang' && p.winnerDetails?.outcome !== 'kalah';
+                  }).length}
+                </p>
+              </Card>
+            </button>
+            <button onClick={() => handleTabClick('won')} className="text-left">
+              <Card padding="sm" className="hover:shadow-card-hover transition-all hover:-translate-y-0.5 cursor-pointer">
+                <p className="text-outline text-xs font-semibold uppercase tracking-wider">Won</p>
+                <p className="text-2xl font-bold text-status-purple mt-1">{filtered.filter((p) => p.winnerDetails?.outcome === 'menang').length}</p>
+              </Card>
+            </button>
+          </div>
 
-      <Card padding="none">
-        {selectionMode && selectedRows.size > 0 && (
+          <Card padding="none">
+            {selectionMode && selectedRows.size > 0 && (
           <div className="px-4 sm:px-6 pt-4">
             <BulkActions
               selectedCount={selectedRows.size}
@@ -618,6 +648,8 @@ export default function ProjectListPage() {
           Apakah Anda yakin ingin menghapus proyek <strong>{deleteTarget?.name}</strong>? Tindakan ini tidak dapat dibatalkan.
         </p>
       </Modal>
-    </PageContainer>
+      </>
+    )}
+  </PageContainer>
   );
 }

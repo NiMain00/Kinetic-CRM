@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { json } from 'express';
 import type { Express } from 'express';
 import { AppModule } from './app.module';
 import {
@@ -9,6 +10,9 @@ import {
 
 async function configureApp(app: INestApplication) {
   app.setGlobalPrefix('api/v1', { exclude: ['health'] });
+
+  // Limit payload size untuk mencegah serangan
+  app.use(json({ limit: '500kb' }));
 
   const corsOrigins = (process.env.CORS_ORIGIN || process.env.FRONTEND_URL || 'http://localhost:3000')
     .split(',')
