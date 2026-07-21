@@ -122,7 +122,7 @@ export default function ProjectFormPage() {
     const currentTime = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const newProject: Project = {
       id: projectId,
-      code: `PRJ-${crypto.randomUUID?.()?.split('-')[0]?.toUpperCase() || String(++projectCount).padStart(4, '0')}-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      code: `PRJ-${crypto.randomUUID?.()?.split('-')[0]?.toUpperCase() || String(Date.now()).slice(-4)}-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
       name: data.name.trim(),
       client: data.client,
       status: 'RKS',
