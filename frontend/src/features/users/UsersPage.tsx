@@ -84,7 +84,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
       await updateUser(editingUser.id, { fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'] });
       onShowNotification(`Pengguna ${formFullName} berhasil diperbarui.`, 'success');
     } else {
-      const newUser: User = { id: `USR-${String(Date.now()).slice(-4)}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'], createdAt: new Date().toISOString().split('T')[0] };
+      const newUser: User = { id: crypto.randomUUID?.() || `USR-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, fullName: formFullName, email: formEmail, username: formUsername, role: formRole, branch: formBranch, department: formDepartment, phone: formPhone, status: formStatus as User['status'], createdAt: new Date().toISOString().split('T')[0] };
       await addUser(newUser);
       onShowNotification(`Pengguna ${formFullName} berhasil ditambahkan.`, 'success');
     }
@@ -113,7 +113,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
   }), [users, debouncedSearch, roleFilter, statusFilter]);
 
   const roleBadgeClass = (role: UserRole) => {
-    const map: Record<string, string> = { 'Super Admin': 'bg-danger/10 text-danger', 'Admin': 'bg-status-purple/10 text-status-purple', 'PM': 'bg-primary/10 text-primary', 'Branch Manager': 'bg-status-teal/10 text-status-teal', 'Dept Head': 'bg-status-indigo/10 text-status-indigo', 'Management': 'bg-amber-100 text-amber-700 dark:text-amber-400', 'Reviewer': 'bg-warning/10 text-warning', 'Staff': 'bg-secondary-container/50 text-on-secondary-container' };
+    const map: Record<string, string> = { 'Super Admin': 'bg-danger/10 text-danger', 'Admin': 'bg-status-purple/10 text-status-purple', 'PM': 'bg-primary/10 text-primary', 'Branch Manager': 'bg-status-teal/10 text-status-teal', 'Dept Head': 'bg-status-indigo/10 text-status-indigo', 'Management': 'bg-warning/10 text-warning', 'Reviewer': 'bg-warning/10 text-warning', 'Staff': 'bg-secondary-container/50 text-on-secondary-container' };
     return map[role] || 'bg-secondary-container/50 text-on-secondary-container';
   };
 
@@ -194,7 +194,7 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
                             <button onClick={() => handleOpenEdit(u)} className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer btn-compact" title="Edit"><span className="material-symbols-outlined text-[18px] icon-compact">edit</span></button>
-                            <button onClick={() => handleDelete(u.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:bg-red-950/30 text-outline hover:text-danger transition-colors cursor-pointer btn-compact" title="Hapus"><span className="material-symbols-outlined text-[18px] icon-compact">delete</span></button>
+                            <button onClick={() => handleDelete(u.id)} className="p-1.5 rounded-lg hover:bg-danger/10 text-outline hover:text-danger transition-colors cursor-pointer btn-compact" title="Hapus"><span className="material-symbols-outlined text-[18px] icon-compact">delete</span></button>
                           </div>
                         </td>
                       </tr>
@@ -222,49 +222,49 @@ export default function UsersView({ onShowNotification, onNavigatePage }: UsersV
             </div>
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Nama Lengkap *</label>
-                <input type="text" value={formFullName} onChange={e => setFormFullName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Contoh: Ahmad Sulistyo" required />
+                <label htmlFor="users-fullname" className="font-semibold text-on-surface block">Nama Lengkap *</label>
+                <input type="text" id="users-fullname" value={formFullName} onChange={e => setFormFullName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Contoh: Ahmad Sulistyo" required />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Email *</label>
-                  <input type="email" value={formEmail} onChange={e => setFormEmail(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="email@kinetic.co.id" required />
+                  <label htmlFor="users-email" className="font-semibold text-on-surface block">Email *</label>
+                  <input type="email" id="users-email" value={formEmail} onChange={e => setFormEmail(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="email@kinetic.co.id" required />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Username *</label>
-                  <input type="text" value={formUsername} onChange={e => setFormUsername(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="username" required />
+                  <label htmlFor="users-username" className="font-semibold text-on-surface block">Username *</label>
+                  <input type="text" id="users-username" value={formUsername} onChange={e => setFormUsername(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="username" required />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Role *</label>
-                <select value={formRole} onChange={e => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs bg-surface-container-lowest">
+                <label htmlFor="users-role" className="font-semibold text-on-surface block">Role *</label>
+                <select id="users-role" value={formRole} onChange={e => setFormRole(e.target.value as UserRole)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs bg-surface-container-lowest">
                   {roleOptions.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Cabang</label>
-                  <select value={formBranch} onChange={e => setFormBranch(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="users-branch" className="font-semibold text-on-surface block">Cabang</label>
+                  <select id="users-branch" value={formBranch} onChange={e => setFormBranch(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {branchOptions.map(b => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Departemen</label>
-                  <select value={formDepartment} onChange={e => setFormDepartment(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="users-department" className="font-semibold text-on-surface block">Departemen</label>
+                  <select id="users-department" value={formDepartment} onChange={e => setFormDepartment(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {deptOptions.map(d => <option key={d} value={d}>{d}</option>)}
                   </select>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">No. Telepon</label>
-                <input type="text" value={formPhone} onChange={e => setFormPhone(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="0812-xxxx-xxxx" />
+                <label htmlFor="users-phone" className="font-semibold text-on-surface block">No. Telepon</label>
+                <input type="text" id="users-phone" value={formPhone} onChange={e => setFormPhone(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="0812-xxxx-xxxx" />
               </div>
               <div className="space-y-2">
                 <label className="font-semibold text-on-surface block">Status Akun</label>
                 <div className="flex gap-4">
                   {accountStatusOptions.map(o => (
-                    <label key={o.value} className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="userStatus" checked={formStatus === o.value} onChange={() => setFormStatus(o.value)} className="text-primary" />
+                    <label key={o.value} htmlFor={`users-status-${o.value}`} className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" id={`users-status-${o.value}`} name="userStatus" checked={formStatus === o.value} onChange={() => setFormStatus(o.value)} className="text-primary" />
                       <span className="text-xs font-medium">{o.label}</span>
                     </label>
                   ))}

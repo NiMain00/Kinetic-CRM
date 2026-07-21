@@ -45,7 +45,7 @@ export default function MasterCompetitorPage() {
       updateData<MasterCompetitor>('competitors', editing.id, form);
       toast.success('Kompetitor berhasil diperbarui');
     } else {
-      const id = `CP-${String(competitors.length + 1).padStart(3, '0')}`;
+      const id = crypto.randomUUID?.() || `CP-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       addData<MasterCompetitor>('competitors', { code: form.name?.slice(0, 5).toUpperCase() || '', industry_id: null, bidang_usaha: '', website: '', description: form.notes || '', is_active: true, ...form, id } as MasterCompetitor);
       toast.success('Kompetitor berhasil ditambahkan');
     }
@@ -84,7 +84,7 @@ export default function MasterCompetitorPage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Kompetitor">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama</th>
                     <th className="px-6 py-3.5">Estimasi Harga</th>
                     <th className="px-6 py-3.5">Keunggulan</th>
@@ -130,8 +130,8 @@ export default function MasterCompetitorPage() {
             </div>
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Nama Kompetitor *</label>
-                <input type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama perusahaan" required />
+                <label htmlFor="comp-name" className="font-semibold text-on-surface block">Nama Kompetitor *</label>
+                <input id="comp-name" type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama perusahaan" required />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -142,18 +142,18 @@ export default function MasterCompetitorPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Keunggulan</label>
-                <textarea value={form.advantages || ''} onChange={e => setForm({ ...form, advantages: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Keunggulan kompetitor" />
+                <label htmlFor="comp-advantages" className="font-semibold text-on-surface block">Keunggulan</label>
+                <textarea id="comp-advantages" value={form.advantages || ''} onChange={e => setForm({ ...form, advantages: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Keunggulan kompetitor" />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Catatan</label>
-                <textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Catatan tambahan" />
+                <label htmlFor="comp-notes" className="font-semibold text-on-surface block">Catatan</label>
+                <textarea id="comp-notes" value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Catatan tambahan" />
               </div>
-            </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
+              <button type="submit" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
             </div>
+            </form>
           </div>
         </div>
       )}

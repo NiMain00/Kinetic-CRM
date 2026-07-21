@@ -131,8 +131,9 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-outline uppercase tracking-wider block">Nama Lengkap</label>
+                        <label htmlFor="profile-fullname" className="text-[11px] font-bold text-outline uppercase tracking-wider block">Nama Lengkap</label>
                         <input
+                          id="profile-fullname"
                           type="text"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
@@ -141,8 +142,9 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-outline uppercase tracking-wider block">Alamat Email</label>
+                        <label htmlFor="profile-email" className="text-[11px] font-bold text-outline uppercase tracking-wider block">Alamat Email</label>
                         <input
+                          id="profile-email"
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
@@ -179,7 +181,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                       <label className="text-[10px] font-bold text-secondary uppercase tracking-wider block mb-1">Peran yang Ditugaskan</label>
                       <div className="flex items-center justify-between font-medium text-[11px] text-secondary">
                         <span>{currentUser?.roleName || 'Branch Operations Manager'}</span>
-                        <span className="material-symbols-outlined text-[14px] text-emerald-600 dark:text-emerald-400">verified_user</span>
+                        <span className="material-symbols-outlined text-[14px] text-success">verified_user</span>
                       </div>
                     </div>
 
@@ -241,9 +243,9 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                   <span className="material-symbols-outlined text-sm font-bold">arrow_forward</span>
                 </button>
 
-                <div className="mt-4 p-3 bg-amber-50/50 dark:bg-amber-950/30 border border-amber-300/30 rounded-lg flex gap-2.5">
+                <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg flex gap-2.5">
                   <span className="material-symbols-outlined text-warning text-sm mt-0.5">info</span>
-                  <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-normal">
+                  <p className="text-[10px] text-warning leading-normal">
                     Pembaruan kata sandi: <strong>42 hari lalu</strong>. Operasi perusahaan memerlukan rotasi setiap 90 hari.
                   </p>
                 </div>
@@ -275,7 +277,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
                   <button
                     type="button"
                     onClick={handleLogoutAll}
-                    className="w-full mt-2 border border-red-200 dark:border-red-800 hover:bg-red-50 dark:bg-red-950/30 text-red-650 font-bold text-xs py-2 rounded-lg transition-colors cursor-pointer"
+                    className="w-full mt-2 border border-danger/30 hover:bg-danger/10 text-danger font-bold text-xs py-2 rounded-lg transition-colors cursor-pointer"
                   >
                     Keluar dari Semua Sesi
                   </button>
@@ -357,8 +359,9 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
 
             <form onSubmit={handleUpdatePassword} className="space-y-4 text-xs">
               <div className="space-y-1">
-                <label className="text-outline font-semibold uppercase text-[10px] tracking-wider block">Kata Sandi Baru</label>
+                <label htmlFor="modal-new-password" className="text-outline font-semibold uppercase text-[10px] tracking-wider block">Kata Sandi Baru</label>
                 <input
+                  id="modal-new-password"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
@@ -368,8 +371,9 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
               </div>
 
               <div className="space-y-1">
-                <label className="text-outline font-semibold uppercase text-[10px] tracking-wider block">Konfirmasi Kata Sandi</label>
+                <label htmlFor="modal-confirm-password" className="text-outline font-semibold uppercase text-[10px] tracking-wider block">Konfirmasi Kata Sandi</label>
                 <input
+                  id="modal-confirm-password"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

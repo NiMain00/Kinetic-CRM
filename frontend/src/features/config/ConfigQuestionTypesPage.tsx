@@ -48,7 +48,7 @@ export default function ConfigQuestionTypesPage() {
       toast.success(`Tipe pertanyaan ${formName} berhasil diperbarui.`);
     } else {
       const newType: MasterQuestionType = {
-        id: `QT-${String(types.length + 1).padStart(2, '0')}`,
+        id: crypto.randomUUID?.() || `QT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         name: formName,
         code: formName.toLowerCase().replace(/\s+/g, '_'),
         description: formDescription,
@@ -104,7 +104,7 @@ export default function ConfigQuestionTypesPage() {
           <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Tipe</th>
                     <th className="px-6 py-3.5">Deskripsi</th>
                     <th className="px-6 py-3.5 text-center">Status</th>
@@ -143,12 +143,12 @@ export default function ConfigQuestionTypesPage() {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editingType ? 'Edit Tipe Pertanyaan' : 'Tambah Tipe Pertanyaan'} size="md">
         <form onSubmit={handleSave} className="space-y-5 text-xs">
           <div className="space-y-2">
-            <label className="font-semibold text-on-surface block">Nama Tipe *</label>
-            <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Pilihan Ganda" required />
+            <label htmlFor="qt-name" className="font-semibold text-on-surface block">Nama Tipe *</label>
+            <input id="qt-name" type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Pilihan Ganda" required />
           </div>
           <div className="space-y-2">
-            <label className="font-semibold text-on-surface block">Deskripsi</label>
-            <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi tipe pertanyaan" />
+            <label htmlFor="qt-description" className="font-semibold text-on-surface block">Deskripsi</label>
+            <textarea id="qt-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi tipe pertanyaan" />
           </div>
           <div className="space-y-2">
             <label className="font-semibold text-on-surface block">Memiliki Pilihan Jawaban</label>
@@ -179,7 +179,7 @@ export default function ConfigQuestionTypesPage() {
         </form>
         <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
           <Button variant="secondary" size="sm" onClick={() => setModalOpen(false)}>Batal</Button>
-          <Button variant="primary" size="sm" onClick={handleSave}>{editingType ? 'Simpan' : 'Buat'}</Button>
+          <Button variant="primary" size="sm" type="submit">{editingType ? 'Simpan' : 'Buat'}</Button>
         </div>
       </Modal>
     </div>

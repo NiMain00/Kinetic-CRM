@@ -52,7 +52,7 @@ export default function UserFormPage() {
       toast.success(`Pengguna ${data.fullName} berhasil diperbarui.`);
     } else {
       const newUser: User = {
-        id: `USR-${String(users.length + 1).padStart(3, '0')}`,
+        id: crypto.randomUUID?.() || `USR-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         username: data.username,
         fullName: data.fullName,
         email: data.email,
@@ -82,9 +82,10 @@ export default function UserFormPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="bg-surface border border-border/60 rounded-2xl p-6 shadow-card space-y-5">
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm text-on-surface-variant">Nama Lengkap *</label>
+            <label htmlFor="userform-fullname" className="font-semibold text-sm text-on-surface-variant">Nama Lengkap *</label>
             <input
               {...register('fullName')}
+              id="userform-fullname"
               className={fieldClass('fullName')}
               placeholder="Contoh: Ahmad Sulistyo"
               type="text"
@@ -95,9 +96,10 @@ export default function UserFormPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Email *</label>
+              <label htmlFor="userform-email" className="font-semibold text-sm text-on-surface-variant">Email *</label>
               <input
                 {...register('email')}
+                id="userform-email"
                 className={fieldClass('email')}
                 placeholder="email@kinetic.co.id"
                 type="email"
@@ -106,9 +108,10 @@ export default function UserFormPage() {
               {errors.email && <p className="text-xs text-danger">{errors.email.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Username *</label>
+              <label htmlFor="userform-username" className="font-semibold text-sm text-on-surface-variant">Username *</label>
               <input
                 {...register('username')}
+                id="userform-username"
                 className={fieldClass('username')}
                 placeholder="username"
                 type="text"
@@ -120,9 +123,10 @@ export default function UserFormPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Role *</label>
+              <label htmlFor="userform-role" className="font-semibold text-sm text-on-surface-variant">Role *</label>
               <select
                 {...register('role')}
+                id="userform-role"
                 className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-surface"
                 aria-label="Role"
               >
@@ -131,9 +135,10 @@ export default function UserFormPage() {
               {errors.role && <p className="text-xs text-danger">{errors.role.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Cabang *</label>
+              <label htmlFor="userform-branch" className="font-semibold text-sm text-on-surface-variant">Cabang *</label>
               <select
                 {...register('branch')}
+                id="userform-branch"
                 className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-surface"
                 aria-label="Cabang"
               >
@@ -146,9 +151,10 @@ export default function UserFormPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Departemen *</label>
+              <label htmlFor="userform-department" className="font-semibold text-sm text-on-surface-variant">Departemen *</label>
               <select
                 {...register('department')}
+                id="userform-department"
                 className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-surface"
                 aria-label="Departemen"
               >
@@ -158,9 +164,10 @@ export default function UserFormPage() {
               {errors.department && <p className="text-xs text-danger">{errors.department.message}</p>}
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">No. Telepon *</label>
+              <label htmlFor="userform-phone" className="font-semibold text-sm text-on-surface-variant">No. Telepon *</label>
               <input
                 {...register('phone')}
+                id="userform-phone"
                 className={fieldClass('phone')}
                 placeholder="0812-xxxx-xxxx"
                 type="text"
@@ -174,9 +181,10 @@ export default function UserFormPage() {
             <label className="font-semibold text-sm text-on-surface-variant">Status Akun</label>
             <div className="flex gap-4">
               {accountStatusOptions.map(o => (
-                <label key={o.value} className="flex items-center gap-2 cursor-pointer text-sm">
+                <label key={o.value} htmlFor={`userform-status-${o.value}`} className="flex items-center gap-2 cursor-pointer text-sm">
                   <input
                     type="radio"
+                    id={`userform-status-${o.value}`}
                     value={o.value}
                     {...register('status')}
                     className="text-primary focus:ring-primary"

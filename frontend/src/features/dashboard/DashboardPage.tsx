@@ -209,8 +209,8 @@ export default function DashboardPage() {
           <p className="text-success text-[11px] mt-1">dari bulan lalu</p>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="#16A34A" />
-              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#4CAF50" opacity="0.5" />
+              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="var(--color-success)" />
+              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="var(--color-success)" opacity="0.5" />
             </svg>
           </div>
         </Link>
@@ -226,8 +226,8 @@ export default function DashboardPage() {
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.pendingApprovals} Item</h3>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="#D97706" />
-              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#F59E0B" opacity="0.5" />
+              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="var(--color-warning)" />
+              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="var(--color-warning)" opacity="0.5" />
             </svg>
           </div>
         </Link>
@@ -243,8 +243,8 @@ export default function DashboardPage() {
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.criticalDeadlines} Proyek</h3>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="#DC2626" />
-              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#EF4444" opacity="0.5" />
+              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="var(--color-danger)" />
+              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="var(--color-danger)" opacity="0.5" />
             </svg>
           </div>
         </Link>
@@ -260,8 +260,8 @@ export default function DashboardPage() {
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.winRate}%</h3>
           <div className="absolute right-0 bottom-0 w-28 h-20 opacity-40 group-hover:opacity-60 transition-opacity">
             <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="#16A34A" />
-              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="#4CAF50" opacity="0.5" />
+              <path d="M0 80 Q20 50 45 55 Q70 60 90 35 Q110 10 120 0 L120 80 Z" fill="var(--color-success)" />
+              <path d="M0 80 Q30 60 60 65 Q90 70 120 40 L120 80 Z" fill="var(--color-success)" opacity="0.5" />
             </svg>
           </div>
         </Link>

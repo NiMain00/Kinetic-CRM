@@ -25,7 +25,7 @@ export default function ConfigPeriodPage() {
       return;
     }
     const newPeriod: MasterPeriod = {
-      id: `PER-${String(periods.length + 1).padStart(2, '0')}`,
+      id: crypto.randomUUID?.() || `PER-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: formName,
       code: formName.replace(/\s+/g, '-').toUpperCase(),
       type: 'annual',
@@ -103,7 +103,7 @@ export default function ConfigPeriodPage() {
           <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Periode</th>
                     <th className="px-6 py-3.5">Tanggal Mulai</th>
                     <th className="px-6 py-3.5">Tanggal Akhir</th>
@@ -147,22 +147,22 @@ export default function ConfigPeriodPage() {
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Tambah Periode Baru" size="md">
         <form onSubmit={handleCreate} className="space-y-5 text-xs">
           <div className="space-y-2">
-            <label className="font-semibold text-on-surface block">Nama Periode *</label>
-            <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Q1 2026" required />
+            <label htmlFor="period-name" className="font-semibold text-on-surface block">Nama Periode *</label>
+            <input id="period-name" type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Q1 2026" required />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="font-semibold text-on-surface block">Tanggal Mulai *</label>
-              <input type="date" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required />
+              <label htmlFor="period-start-date" className="font-semibold text-on-surface block">Tanggal Mulai *</label>
+              <input id="period-start-date" type="date" value={formStartDate} onChange={e => setFormStartDate(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required />
             </div>
             <div className="space-y-2">
-              <label className="font-semibold text-on-surface block">Tanggal Akhir *</label>
-              <input type="date" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required />
+              <label htmlFor="period-end-date" className="font-semibold text-on-surface block">Tanggal Akhir *</label>
+              <input id="period-end-date" type="date" value={formEndDate} onChange={e => setFormEndDate(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="font-semibold text-on-surface block">Tahun</label>
-            <input type="number" value={formYear} onChange={e => setFormYear(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={2020} max={2050} />
+            <label htmlFor="period-year" className="font-semibold text-on-surface block">Tahun</label>
+            <input id="period-year" type="number" value={formYear} onChange={e => setFormYear(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={2020} max={2050} />
           </div>
         </form>
         <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">

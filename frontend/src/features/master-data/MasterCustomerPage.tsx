@@ -159,17 +159,17 @@ export default function MasterCustomerPage() {
         <form onSubmit={handleSave} className="space-y-5 text-left text-xs" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="font-semibold text-secondary block">Nama Customer *</label>
-              <input type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama perusahaan" required />
+              <label htmlFor="cust-name" className="font-semibold text-secondary block">Nama Customer *</label>
+              <input id="cust-name" type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama perusahaan" required />
             </div>
             <div className="space-y-2">
-              <label className="font-semibold text-secondary block">Kode Customer *</label>
-              <input type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Kode unik" required />
+              <label htmlFor="cust-code" className="font-semibold text-secondary block">Kode Customer *</label>
+              <input id="cust-code" type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Kode unik" required />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="font-semibold text-secondary block">Level Customer</label>
-            <select value={form.level || ''} onChange={e => setForm({ ...form, level: e.target.value as Customer['level'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+            <label htmlFor="cust-level" className="font-semibold text-secondary block">Level Customer</label>
+            <select id="cust-level" value={form.level || ''} onChange={e => setForm({ ...form, level: e.target.value as Customer['level'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
               <option value="">Pilih Level</option>
               <option value="hot">Hot</option>
               <option value="medium">Medium</option>
@@ -178,22 +178,22 @@ export default function MasterCustomerPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="font-semibold text-secondary block">Nama PIC *</label>
-              <input type="text" value={form.picName || ''} onChange={e => setForm({ ...form, picName: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama kontak person" required />
+              <label htmlFor="cust-pic-name" className="font-semibold text-secondary block">Nama PIC *</label>
+              <input id="cust-pic-name" type="text" value={form.picName || ''} onChange={e => setForm({ ...form, picName: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama kontak person" required />
             </div>
             <div className="space-y-2">
-              <label className="font-semibold text-secondary block">Email PIC</label>
-              <input type="email" value={form.picEmail || ''} onChange={e => setForm({ ...form, picEmail: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="email@perusahaan.com" />
+              <label htmlFor="cust-pic-email" className="font-semibold text-secondary block">Email PIC</label>
+              <input id="cust-pic-email" type="email" value={form.picEmail || ''} onChange={e => setForm({ ...form, picEmail: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="email@perusahaan.com" />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="font-semibold text-secondary block">Telepon PIC</label>
-              <input type="text" value={form.picPhone || ''} onChange={e => setForm({ ...form, picPhone: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="021-xxxxxxx" />
+              <label htmlFor="cust-pic-phone" className="font-semibold text-secondary block">Telepon PIC</label>
+              <input id="cust-pic-phone" type="text" value={form.picPhone || ''} onChange={e => setForm({ ...form, picPhone: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="021-xxxxxxx" />
             </div>
             <div className="space-y-2">
-              <label className="font-semibold text-secondary block">Kota</label>
-              <input type="text" value={form.city || ''} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Kota" />
+              <label htmlFor="cust-city" className="font-semibold text-secondary block">Kota</label>
+              <input id="cust-city" type="text" value={form.city || ''} onChange={e => setForm({ ...form, city: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Kota" />
             </div>
           </div>
           <div className="space-y-2">

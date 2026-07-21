@@ -246,7 +246,7 @@ export default function ProcurementListPage() {
                     {new Date(p.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                   {can('pengadaan:write') && (
-                    <button onClick={(e) => handleDeleteClick(e, p)} className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all shrink-0 ml-2" title="Hapus pengadaan">
+                    <button onClick={(e) => handleDeleteClick(e, p)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); e.preventDefault(); setDeleteTarget(p); setShowDeleteModal(true); } }} className="flex items-center justify-center w-7 h-7 rounded-lg text-outline hover:text-danger hover:bg-danger/10 transition-all shrink-0 ml-2" title="Hapus pengadaan" role="button" tabIndex={0}>
                       <span className="material-symbols-outlined text-[16px]">delete</span>
                     </button>
                   )}

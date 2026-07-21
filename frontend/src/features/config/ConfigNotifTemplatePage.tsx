@@ -120,7 +120,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
   };
 
   const handleCreateNew = () => {
-    const newId = `NT-${String(templates.length + 1).padStart(2, '0')}`;
+    const newId = crypto.randomUUID?.() || `NT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     addData('notifTemplates', {
       id: newId,
       event_code: `custom.${newId.toLowerCase()}`,
@@ -206,7 +206,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               <h3 className="font-extrabold text-primary text-2xl mt-1">{totalActive} <span className="text-xs text-outline font-normal">/ {displayTemplates.length}</span></h3>
               <p className="text-[10px] text-success mt-1 italic font-semibold">Ready to route in-app & mailing</p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-success-container text-success flex items-center justify-center">
               <span className="material-symbols-outlined text-2xl">check_circle</span>
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               <h3 className="font-extrabold text-on-surface text-2xl mt-1">08</h3>
               <p className="text-[10px] text-outline mt-1 italic">Pending review target role delivery</p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-warning-container text-warning flex items-center justify-center">
               <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>pending_actions</span>
             </div>
           </div>
@@ -225,10 +225,10 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           <div className="bg-surface-container-lowest border border-border p-5 rounded-xl shadow-xs flex items-center justify-between">
             <div>
               <p className="text-outline text-[10px] uppercase font-mono tracking-wider font-semibold">Delivery Rate Health</p>
-              <h3 className="font-extrabold text-indigo-650 text-2xl mt-1">{deliveryRate}</h3>
-              <p className="text-[10px] text-emerald-650 mt-1 italic font-semibold">System infrastructure active & healthy</p>
+              <h3 className="font-extrabold text-primary text-2xl mt-1">{deliveryRate}</h3>
+              <p className="text-[10px] text-success mt-1 italic font-semibold">System infrastructure active & healthy</p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-indigo-50 text-primary flex items-center justify-center">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
               <span className="material-symbols-outlined text-2xl">bolt</span>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
           <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
               <thead>
-                <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                   <th className="px-6 py-3.5">Event Name</th>
                   <th className="px-6 py-3.5">Message Template</th>
                   <th className="px-6 py-3.5">Recipients</th>
@@ -324,7 +324,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                     <tr key={t.id} className="hover:bg-surface-container-low/65 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-on-surface">{t.eventName}</div>
-                        <div className="text-[10px] text-slate-450 font-mono mt-0.5">ID: {t.id} • {t.description}</div>
+                        <div className="text-[10px] text-outline font-mono mt-0.5">ID: {t.id} • {t.description}</div>
                       </td>
                       <td className="px-6 py-4 max-w-sm">
                         <p className="text-secondary line-clamp-2 leading-relaxed">
@@ -340,7 +340,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                                 rec === 'ADMIN'
                                   ? 'bg-danger/10 text-danger'
                                   : rec === 'ALL'
-                                  ? 'bg-emerald-50 text-emerald-700'
+                                  ? 'bg-success-container text-success'
                                   : 'bg-primary/10 text-primary'
                               }`}
                             >
@@ -362,7 +362,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                           type="button"
                           onClick={() => handleToggleStatus(t.id)}
                           className={`inline-flex items-center justify-center p-0.5 rounded-full w-9 h-5 transition-colors outline-none cursor-pointer btn-compact ${
-                            t.status ? 'bg-success' : 'bg-slate-350'
+                            t.status ? 'bg-success' : 'bg-outline'
                           }`}
                         >
                           <span
@@ -382,7 +382,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                         </button>
                         <button
                           onClick={() => handleDelete(t.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
+                          className="p-1.5 rounded-lg hover:bg-danger-container text-outline hover:text-danger transition-colors cursor-pointer inline-flex items-center justify-center btn-compact"
                           title="Hapus Template"
                         >
                           <span className="material-symbols-outlined text-[18px] icon-compact">delete</span>
@@ -442,10 +442,11 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
               {/* Message Template TextArea */}
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <label className="font-semibold text-on-surface">Message Template text</label>
+                  <label htmlFor="template-message-text" className="font-semibold text-on-surface">Message Template text</label>
                   <span className="text-[10px] text-primary hover:underline font-mono">Available Tags</span>
                 </div>
                 <textarea
+                  id="template-message-text"
                   className="w-full rounded-lg border border-border p-3 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono-data text-[12px] bg-surface-container-low"
                   rows={4}
                   value={editingTemplateText}
@@ -499,7 +500,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                       <span className={`material-symbols-outlined ${editingChannels.includes('In-App') ? 'text-primary' : 'text-outline'}`}>
                         notifications_active
                       </span>
-                      <span className={`material-symbols-outlined text-sm ${editingChannels.includes('In-App') ? 'text-primary' : 'text-slate-350'}`}>
+                      <span className={`material-symbols-outlined text-sm ${editingChannels.includes('In-App') ? 'text-primary' : 'text-outline'}`}>
                         {editingChannels.includes('In-App') ? 'radio_button_checked' : 'radio_button_unchecked'}
                       </span>
                     </div>
@@ -519,7 +520,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                       <span className={`material-symbols-outlined ${editingChannels.includes('Email') ? 'text-primary' : 'text-outline'}`}>
                         alternate_email
                       </span>
-                      <span className={`material-symbols-outlined text-sm ${editingChannels.includes('Email') ? 'text-primary' : 'text-slate-350'}`}>
+                      <span className={`material-symbols-outlined text-sm ${editingChannels.includes('Email') ? 'text-primary' : 'text-outline'}`}>
                         {editingChannels.includes('Email') ? 'radio_button_checked' : 'radio_button_unchecked'}
                       </span>
                     </div>
@@ -531,7 +532,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
 
               {/* Live Preview Section */}
               <div className="p-4 bg-surface-container-low rounded-xl border border-dashed border-border">
-                <span className="text-[9px] font-extrabold text-slate-450 uppercase tracking-widest block mb-2.5">
+                <span className="text-[9px] font-extrabold text-outline uppercase tracking-widest block mb-2.5">
                   Live Preview Rendering (In-App)
                 </span>
                 <div className="bg-surface-container-lowest p-3.5 rounded-lg shadow-xs border border-border flex gap-3">
@@ -541,9 +542,9 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
                   <div className="flex-grow text-xs">
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-on-surface">{selectedTemplate.event_name}</span>
-                      <span className="text-[9px] text-slate-450 font-mono-data">Just now</span>
+                      <span className="text-[9px] text-outline font-mono-data">Just now</span>
                     </div>
-                    <p className="text-slate-650 leading-relaxed mt-1">
+                    <p className="text-secondary leading-relaxed mt-1">
                       {getPreviewText(editingTemplateText)}
                     </p>
                   </div>

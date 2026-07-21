@@ -99,7 +99,7 @@ export default function UserListPage() {
                   </tr>
                 ) : (
                   paginated.map((u) => (
-                    <tr key={u.id} onClick={() => navigate(`/users/${u.id}`)} className="hover:bg-blue-50/30 dark:hover:bg-blue-950/30 transition-colors cursor-pointer">
+                    <tr key={u.id} onClick={() => navigate(`/users/${u.id}`)} className="hover:bg-primary/5 transition-colors cursor-pointer">
                       <td className="px-6 py-4">
                         <Link to={`/users/${u.id}`} className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">

@@ -53,14 +53,9 @@ export default function ProcurementDetailView() {
 
   const activeTab =
     tabs.find((t) => t.path === (urlTab || 'overview'))?.label || 'Overview';
-  const activeTabIndex = tabs.findIndex(
-    (t) => t.path === (urlTab || 'overview'),
-  );
   const isOverview = activeTab === 'Overview';
   const isTerminal =
     procurement?.status === 'Closed' || procurement?.status === 'Cancelled';
-
-  const isTabLocked = (_tabIndex?: number) => false;
 
   if (!procurement) {
     return (
@@ -192,31 +187,19 @@ export default function ProcurementDetailView() {
         {/* Tab Nav */}
         <nav className="bg-surface border-b border-border/60 px-3 sm:px-8 py-3 overflow-x-auto select-none scrollbar-none">
           <div className="flex items-center gap-2 min-w-max">
-            {tabs.map((tab, index) => {
-              const locked = isTabLocked(index);
-              return (
-                <button
-                  key={tab.label}
-                  onClick={() => {
-                    if (!locked) handleTabChange(tab.path);
-                  }}
-                  className={`px-4 py-2 font-label-sm text-xs sm:text-sm rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                    activeTab === tab.label
-                      ? 'bg-primary text-white shadow-sm font-bold'
-                      : locked
-                        ? 'text-outline cursor-not-allowed opacity-40'
-                        : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'
-                  }`}
-                >
-                  {locked && (
-                    <span className="material-symbols-outlined text-[14px]">
-                      lock
-                    </span>
-                  )}
-                  {tab.label}
-                </button>
-              );
-            })}
+            {tabs.map((tab) => (
+              <button
+                key={tab.label}
+                onClick={() => handleTabChange(tab.path)}
+                className={`px-4 py-2 font-label-sm text-xs sm:text-sm rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTab === tab.label
+                    ? 'bg-primary text-white shadow-sm font-bold'
+                    : 'text-on-surface-variant hover:bg-surface-container hover:text-primary'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </nav>
 
@@ -225,39 +208,20 @@ export default function ProcurementDetailView() {
           <div className="max-w-6xl mx-auto space-y-5">
             {activeTab === 'Overview' && <OverviewTab procurement={procurement} />}
 
-            {activeTab !== 'Overview' && isTabLocked(activeTabIndex) && (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <span className="material-symbols-outlined text-5xl text-outline">
-                  lock
-                </span>
-                <h3 className="font-heading-section text-base text-on-surface mt-4">
-                  Tahap Terkunci
-                </h3>
-                <p className="text-sm text-outline mt-2 max-w-md">
-                  Selesaikan tahap sebelumnya terlebih dahulu untuk membuka
-                  tahap ini.
-                </p>
-              </div>
+            {activeTab === 'Vendor Selection' && (
+              <VendorSelectionTab procurement={procurement} />
             )}
-
-            {(!isTabLocked(activeTabIndex) || isOverview) && (
-              <>
-                {activeTab === 'Vendor Selection' && (
-                  <VendorSelectionTab procurement={procurement} />
-                )}
-                {activeTab === 'Delivery' && (
-                  <DeliveryTab procurement={procurement} />
-                )}
-                {activeTab === 'Closing' && (
-                  <ClosingTab procurement={procurement} />
-                )}
-                {activeTab === 'Timeline' && (
-                  <TimelineTab procurement={procurement} />
-                )}
-                {activeTab === 'Dokumen' && (
-                  <DokumenTab procurement={procurement} />
-                )}
-              </>
+            {activeTab === 'Delivery' && (
+              <DeliveryTab procurement={procurement} />
+            )}
+            {activeTab === 'Closing' && (
+              <ClosingTab procurement={procurement} />
+            )}
+            {activeTab === 'Timeline' && (
+              <TimelineTab procurement={procurement} />
+            )}
+            {activeTab === 'Dokumen' && (
+              <DokumenTab procurement={procurement} />
             )}
           </div>
         </div>

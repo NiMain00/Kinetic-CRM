@@ -47,7 +47,7 @@ export default function MasterCategoryPage() {
       updateData<MasterCategory>('categories', editing.id, form);
       toast.success('Kategori berhasil diperbarui');
     } else {
-      const id = `CAT-${String(categories.length + 1).padStart(2, '0')}`;
+      const id = crypto.randomUUID?.() || `CAT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       addData<MasterCategory>('categories', { ...form, id } as MasterCategory);
       toast.success('Kategori berhasil ditambahkan');
     }
@@ -99,7 +99,7 @@ export default function MasterCategoryPage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Kategori Proyek">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama</th>
                     <th className="px-6 py-3.5">Kode</th>
                     <th className="px-6 py-3.5">Deskripsi</th>
@@ -158,29 +158,29 @@ export default function MasterCategoryPage() {
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Nama Kategori *</label>
-                  <input type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama kategori" required />
+                  <label htmlFor="cat-name" className="font-semibold text-on-surface block">Nama Kategori *</label>
+                  <input id="cat-name" type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama kategori" required />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Kode *</label>
-                  <input type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="KODE_UNIK" required />
+                  <label htmlFor="cat-code" className="font-semibold text-on-surface block">Kode *</label>
+                  <input id="cat-code" type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="KODE_UNIK" required />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Deskripsi</label>
-                <textarea value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Deskripsi kategori" />
+                <label htmlFor="cat-desc" className="font-semibold text-on-surface block">Deskripsi</label>
+                <textarea id="cat-desc" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Deskripsi kategori" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Tipe Workflow</label>
-                  <select value={form.default_workflow_type || 'tender'} onChange={e => setForm({ ...form, default_workflow_type: e.target.value as 'tender' | 'prospecting' })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="cat-workflow" className="font-semibold text-on-surface block">Tipe Workflow</label>
+                  <select id="cat-workflow" value={form.default_workflow_type || 'tender'} onChange={e => setForm({ ...form, default_workflow_type: e.target.value as 'tender' | 'prospecting' })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     <option value="tender">Tender</option>
                     <option value="prospecting">Prospecting</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Urutan</label>
-                  <input type="number" value={form.sort_order || 0} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" />
+                  <label htmlFor="cat-sort" className="font-semibold text-on-surface block">Urutan</label>
+                  <input id="cat-sort" type="number" value={form.sort_order || 0} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -214,11 +214,11 @@ export default function MasterCategoryPage() {
                   <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="catStatus" checked={form.is_active === false} onChange={() => setForm({ ...form, is_active: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
                 </div>
               </div>
-            </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
+              <button type="submit" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
             </div>
+            </form>
           </div>
         </div>
       )}

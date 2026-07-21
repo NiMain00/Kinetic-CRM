@@ -214,8 +214,9 @@ export default function ConfigStageRulesPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Kode Stage *</label>
+            <label htmlFor="stage-code" className="font-semibold text-sm">Kode Stage *</label>
             <input
+              id="stage-code"
               value={form.code}
               onChange={(e) => setForm({ ...form, code: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -224,8 +225,9 @@ export default function ConfigStageRulesPage() {
             <p className="text-[10px] text-secondary">Kode unik, gunakan snake_case.</p>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Nama Stage *</label>
+            <label htmlFor="stage-name" className="font-semibold text-sm">Nama Stage *</label>
             <input
+              id="stage-name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -233,8 +235,9 @@ export default function ConfigStageRulesPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Modul</label>
+            <label htmlFor="stage-module" className="font-semibold text-sm">Modul</label>
             <select
+              id="stage-module"
               value={form.module}
               onChange={(e) => setForm({ ...form, module: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -245,8 +248,9 @@ export default function ConfigStageRulesPage() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm">Urutan</label>
+              <label htmlFor="stage-sequence" className="font-semibold text-sm">Urutan</label>
               <input
+                id="stage-sequence"
                 type="number"
                 value={form.sequence}
                 onChange={(e) => setForm({ ...form, sequence: Number(e.target.value) })}
@@ -255,8 +259,9 @@ export default function ConfigStageRulesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm">Owner Department Code</label>
+              <label htmlFor="stage-owner-dept" className="font-semibold text-sm">Owner Department Code</label>
               <input
+                id="stage-owner-dept"
                 value={form.ownerDepartmentCode}
                 onChange={(e) => setForm({ ...form, ownerDepartmentCode: e.target.value })}
                 className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -265,8 +270,9 @@ export default function ConfigStageRulesPage() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Previous Department Code (opsional)</label>
+            <label htmlFor="stage-prev-dept" className="font-semibold text-sm">Previous Department Code (opsional)</label>
             <input
+              id="stage-prev-dept"
               value={form.prevDepartmentCode}
               onChange={(e) => setForm({ ...form, prevDepartmentCode: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"

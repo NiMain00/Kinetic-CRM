@@ -17,9 +17,9 @@ export const prospectSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi'),
   client: z.string().min(1, 'Klien wajib diisi'),
   author: z.string().min(1, 'Pembuat wajib diisi'),
-  estimatedValue: z.number().optional(),
+  estimatedValue: z.number().positive('Estimasi nilai harus lebih dari 0').optional(),
   description: z.string().optional(),
-  potensiUnit: z.number().default(0),
+  potensiUnit: z.number().min(0, 'Potensi unit tidak boleh negatif').default(0),
   branch: z.string().optional(),
 });
 

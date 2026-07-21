@@ -97,18 +97,18 @@ export default function ConfigUploadPage() {
             <div className="space-y-6 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Maksimum Ukuran File (MB) *</label>
-                  <input type="number" value={formMaxSize} onChange={e => setFormMaxSize(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={1} max={100} />
+                  <label htmlFor="upload-max-size" className="font-semibold text-on-surface block">Maksimum Ukuran File (MB) *</label>
+                  <input id="upload-max-size" type="number" value={formMaxSize} onChange={e => setFormMaxSize(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={1} max={100} />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Maksimum File per Upload *</label>
-                  <input type="number" value={formMaxFiles} onChange={e => setFormMaxFiles(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={1} max={50} />
+                  <label htmlFor="upload-max-files" className="font-semibold text-on-surface block">Maksimum File per Upload *</label>
+                  <input id="upload-max-files" type="number" value={formMaxFiles} onChange={e => setFormMaxFiles(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" min={1} max={50} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Path Penyimpanan</label>
-                <input type="text" value={formStoragePath} onChange={e => setFormStoragePath(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono" placeholder="/uploads/documents/" />
+                <label htmlFor="upload-storage-path" className="font-semibold text-on-surface block">Path Penyimpanan</label>
+                <input id="upload-storage-path" type="text" value={formStoragePath} onChange={e => setFormStoragePath(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary font-mono" placeholder="/uploads/documents/" />
               </div>
 
               <div className="space-y-3">

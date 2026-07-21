@@ -118,11 +118,11 @@ export default function ProjectFormPage() {
     setDeptError('');
       const ts = Date.now();
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const projectId = `PR-${ts}`;
+    const projectId = crypto.randomUUID?.() || `PR-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const currentTime = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const newProject: Project = {
       id: projectId,
-      code: `PRJ-${String(projectCount + 1).padStart(4, '0')}-${ts}-${rand}`,
+      code: `PRJ-${crypto.randomUUID?.()?.split('-')[0]?.toUpperCase() || String(++projectCount).padStart(4, '0')}-${Date.now()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
       name: data.name.trim(),
       client: data.client,
       status: 'RKS',
@@ -206,8 +206,9 @@ export default function ProjectFormPage() {
             <h2 className="font-heading-section text-base font-bold text-on-surface">Informasi Dasar</h2>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Nama Proyek *</label>
+              <label htmlFor="name" className="font-semibold text-sm text-on-surface-variant">Nama Proyek *</label>
               <input
+                id="name"
                 {...register('name')}
                 className={fieldClass('name')}
                 placeholder="Contoh: Pembangunan Infrastruktur Data Center - Tahap II"
@@ -219,8 +220,9 @@ export default function ProjectFormPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Client *</label>
+                <label htmlFor="client" className="font-semibold text-sm text-on-surface-variant">Client *</label>
                 <select
+                  id="client"
                   {...register('client')}
                   className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-surface"
                   aria-label="Client"
@@ -231,8 +233,9 @@ export default function ProjectFormPage() {
                 {errors.client && <p className="text-xs text-danger">{errors.client.message}</p>}
               </div>
               <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>
+                <label htmlFor="type" className="font-semibold text-sm text-on-surface-variant">Tipe Proyek</label>
                 <select
+                  id="type"
                   {...register('type')}
                   className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none text-sm bg-surface"
                   aria-label="Tipe Proyek"
@@ -243,8 +246,9 @@ export default function ProjectFormPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-semibold text-sm text-on-surface-variant">Lokasi Proyek *</label>
+              <label htmlFor="location" className="font-semibold text-sm text-on-surface-variant">Lokasi Proyek *</label>
               <input
+                id="location"
                 {...register('location')}
                 className={fieldClass('location')}
                 placeholder="Contoh: Gatot Subroto, Jakarta"
@@ -272,8 +276,9 @@ export default function ProjectFormPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">Batas Akhir Tender</label>
+                <label htmlFor="deadlineTender" className="font-semibold text-sm text-on-surface-variant">Batas Akhir Tender</label>
                 <input
+                  id="deadlineTender"
                   {...register('deadlineTender')}
                   className="w-full rounded-xl border border-border/60 p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
                   type="date"

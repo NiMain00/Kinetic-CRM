@@ -68,9 +68,10 @@ function OptionsInput({ options, onChange }: { options: string[]; onChange: (opt
 
   return (
     <div className="space-y-3">
-      <label className="font-semibold text-on-surface block">Pilihan Jawaban</label>
+      <label htmlFor="q-options-input" className="font-semibold text-on-surface block">Pilihan Jawaban</label>
       <div className="flex gap-2">
         <input
+          id="q-options-input"
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -159,7 +160,8 @@ export default function MasterQuestionPage() {
       } else {
         const res = await masterDataService.create('questions', toApiQuestion(form) as any);
         const created = (res.data?.data || res.data) as any;
-        addData<MasterQuestion>('questions', created?.id ? fromApiQuestion(created) : { ...form, id: `Q-${String(questions.length + 1).padStart(3, '0')}` } as MasterQuestion);
+        const fallbackId = crypto.randomUUID?.() || `Q-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        addData<MasterQuestion>('questions', created?.id ? fromApiQuestion(created) : { ...form, id: fallbackId } as MasterQuestion);
         toast.success('Pertanyaan berhasil ditambahkan');
       }
       setDrawerOpen(false);
@@ -246,7 +248,7 @@ export default function MasterQuestionPage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Pertanyaan">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-secondary uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Pertanyaan</th>
                     <th className="px-6 py-3.5">Tipe</th>
                     <th className="px-6 py-3.5">Konteks</th>
@@ -300,21 +302,21 @@ export default function MasterQuestionPage() {
               </div>
               <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer"><span className="material-symbols-outlined">close</span></button>
             </div>
-            <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
+            <form id="question-form" onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Teks Pertanyaan *</label>
-                <textarea value={form.question_text || ''} onChange={e => setForm({ ...form, question_text: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Masukkan teks pertanyaan" required />
+                <label htmlFor="q-text" className="font-semibold text-on-surface block">Teks Pertanyaan *</label>
+                <textarea id="q-text" value={form.question_text || ''} onChange={e => setForm({ ...form, question_text: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Masukkan teks pertanyaan" required />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Tipe Jawaban</label>
-                  <select value={form.question_type_id || 'QT-01'} onChange={e => setForm({ ...form, question_type_id: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="q-type" className="font-semibold text-on-surface block">Tipe Jawaban</label>
+                  <select id="q-type" value={form.question_type_id || 'QT-01'} onChange={e => setForm({ ...form, question_type_id: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {questionTypes.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Konteks</label>
-                  <select value={form.context || 'prospect'} onChange={e => setForm({ ...form, context: e.target.value as MasterQuestion['context'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="q-context" className="font-semibold text-on-surface block">Konteks</label>
+                  <select id="q-context" value={form.context || 'prospect'} onChange={e => setForm({ ...form, context: e.target.value as MasterQuestion['context'] })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {QUESTION_CONTEXTS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                   </select>
                 </div>
@@ -335,24 +337,24 @@ export default function MasterQuestionPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Kategori</label>
-                  <select value={form.category || 'Data Pribadi'} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="q-category" className="font-semibold text-on-surface block">Kategori</label>
+                  <select id="q-category" value={form.category || 'Data Pribadi'} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {QUESTION_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Urutan</label>
-                  <input type="number" value={form.sort_order || 0} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" />
+                  <label htmlFor="q-order" className="font-semibold text-on-surface block">Urutan</label>
+                  <input id="q-order" type="number" value={form.sort_order || 0} onChange={e => setForm({ ...form, sort_order: Number(e.target.value) })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Teks Petunjuk</label>
-                  <input type="text" value={form.placeholder_text || ''} onChange={e => setForm({ ...form, placeholder_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks petunjuk input" />
+                  <label htmlFor="q-placeholder" className="font-semibold text-on-surface block">Teks Petunjuk</label>
+                  <input id="q-placeholder" type="text" value={form.placeholder_text || ''} onChange={e => setForm({ ...form, placeholder_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks petunjuk input" />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Teks Bantuan</label>
-                  <input type="text" value={form.help_text || ''} onChange={e => setForm({ ...form, help_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks bantuan" />
+                  <label htmlFor="q-help" className="font-semibold text-on-surface block">Teks Bantuan</label>
+                  <input id="q-help" type="text" value={form.help_text || ''} onChange={e => setForm({ ...form, help_text: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs" placeholder="Teks bantuan" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -372,7 +374,7 @@ export default function MasterQuestionPage() {
             </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
+              <button type="submit" form="question-form" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
             </div>
           </div>
         </div>

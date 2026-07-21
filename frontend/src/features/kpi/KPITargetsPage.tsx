@@ -85,7 +85,7 @@ export default function KPITargetsPage() {
     if (!validate()) return;
     const numValue = Number(form.targetValue.replace(/[^0-9.]/g, ''));
     const newTarget: KpiTarget & { createdAt: string } & Record<string, unknown> = {
-      id: `KPI-${String(targets.length + 1).padStart(3, '0')}`,
+      id: crypto.randomUUID?.() || `KPI-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: form.name.trim(),
       category: form.category,
       targetValue: numValue,
@@ -167,7 +167,7 @@ export default function KPITargetsPage() {
         can('kpi:manage') ? (
           <button
             onClick={() => handleDelete(row.id)}
-            className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-outline hover:text-danger transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg hover:bg-danger/10 text-outline hover:text-danger transition-colors cursor-pointer"
             title="Hapus target"
             aria-label={`Hapus target ${row.name}`}
           >

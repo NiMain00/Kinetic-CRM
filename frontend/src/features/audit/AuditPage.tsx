@@ -9,8 +9,8 @@ const ACTION_COLORS: Record<string, string> = {
   CREATE: 'bg-success/10 text-success',
   UPDATE: 'bg-status-indigo/10 text-status-indigo',
   DELETE: 'bg-danger/10 text-danger',
-  APPROVE: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400',
-  REJECT: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400',
+  APPROVE: 'bg-success/10 text-success',
+  REJECT: 'bg-danger/10 text-danger',
   REVISE: 'bg-gold/10 text-gold',
   UPLOAD: 'bg-status-teal/10 text-status-teal',
   LOGIN: 'bg-primary/10 text-primary',
@@ -201,11 +201,11 @@ export default function AuditPage() {
 
               <div className="space-y-2">
                 <p className="font-bold text-on-surface">Data Sebelumnya (Before)</p>
-                <pre className="bg-slate-900 text-green-400 p-3 rounded-lg text-[10px] font-mono overflow-x-auto scrollbar-none whitespace-pre-wrap">{selectedLog.before || 'null'}</pre>
+                <pre className="bg-surface-container-high text-success p-3 rounded-lg text-[10px] font-mono overflow-x-auto scrollbar-none whitespace-pre-wrap">{selectedLog.before || 'null'}</pre>
               </div>
               <div className="space-y-2">
                 <p className="font-bold text-on-surface">Data Sesudah (After)</p>
-                <pre className="bg-slate-900 text-green-400 p-3 rounded-lg text-[10px] font-mono overflow-x-auto scrollbar-none whitespace-pre-wrap">{selectedLog.after || 'null'}</pre>
+                <pre className="bg-surface-container-high text-success p-3 rounded-lg text-[10px] font-mono overflow-x-auto scrollbar-none whitespace-pre-wrap">{selectedLog.after || 'null'}</pre>
               </div>
 
               <div className="flex items-center gap-2">

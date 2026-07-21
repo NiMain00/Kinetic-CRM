@@ -414,8 +414,9 @@ export default function FollowUpPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Judul *</label>
+            <label htmlFor="followup-create-title" className="font-semibold text-sm">Judul *</label>
             <input
+              id="followup-create-title"
               value={createForm.title}
               onChange={(e) => setCreateForm({ ...createForm, title: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -423,8 +424,9 @@ export default function FollowUpPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">PIC Tujuan *</label>
+            <label htmlFor="followup-create-pic" className="font-semibold text-sm">PIC Tujuan *</label>
             <select
+              id="followup-create-pic"
               value={createForm.toUserId}
               onChange={(e) => setCreateForm({ ...createForm, toUserId: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -436,8 +438,9 @@ export default function FollowUpPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Prioritas</label>
+            <label htmlFor="followup-create-priority" className="font-semibold text-sm">Prioritas</label>
             <select
+              id="followup-create-priority"
               value={createForm.priority}
               onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -448,17 +451,19 @@ export default function FollowUpPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Deadline</label>
+            <label htmlFor="followup-create-deadline" className="font-semibold text-sm">Deadline</label>
             <input
               type="date"
+              id="followup-create-deadline"
               value={createForm.deadline}
               onChange={(e) => setCreateForm({ ...createForm, deadline: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Catatan</label>
+            <label htmlFor="followup-create-notes" className="font-semibold text-sm">Catatan</label>
             <textarea
+              id="followup-create-notes"
               value={createForm.notes}
               onChange={(e) => setCreateForm({ ...createForm, notes: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
@@ -482,16 +487,18 @@ export default function FollowUpPage() {
       >
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Judul</label>
+            <label htmlFor="followup-edit-title" className="font-semibold text-sm">Judul</label>
             <input
+              id="followup-edit-title"
               value={editForm.title}
               onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Status</label>
+            <label htmlFor="followup-edit-status" className="font-semibold text-sm">Status</label>
             <select
+              id="followup-edit-status"
               value={editForm.status}
               onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
@@ -502,9 +509,10 @@ export default function FollowUpPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Progress ({editForm.progress}%)</label>
+            <label htmlFor="followup-edit-progress" className="font-semibold text-sm">Progress ({editForm.progress}%)</label>
             <input
               type="range"
+              id="followup-edit-progress"
               min={0}
               max={100}
               step={5}
@@ -514,17 +522,19 @@ export default function FollowUpPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Deadline</label>
+            <label htmlFor="followup-edit-deadline" className="font-semibold text-sm">Deadline</label>
             <input
               type="date"
+              id="followup-edit-deadline"
               value={editForm.deadline}
               onChange={(e) => setEditForm({ ...editForm, deadline: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-sm">Catatan</label>
+            <label htmlFor="followup-edit-notes" className="font-semibold text-sm">Catatan</label>
             <textarea
+              id="followup-edit-notes"
               value={editForm.notes}
               onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary min-h-[80px]"

@@ -61,7 +61,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
         await updateConfigData('slaConfigs', editingConfig.id, { name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive });
         onShowNotification(`SLA ${formName} berhasil diperbarui.`, 'success');
       } else {
-        const newConfig: SlaConfig = { id: `SLA-${String(configs.length + 1).padStart(3, '0')}`, name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive };
+        const newConfig: SlaConfig = { id: crypto.randomUUID?.() || `SLA-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, name: formName, entityType: formEntityType, warningThreshold: Number(formWarning), criticalThreshold: Number(formCritical), unit: formUnit, escalationRole: formEscalation, active: formActive };
         await addConfigData('slaConfigs', newConfig);
         onShowNotification(`SLA ${formName} berhasil ditambahkan.`, 'success');
       }
@@ -104,7 +104,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
           <div className="overflow-x-auto scrollbar-none table-mobile-compact">
             <table className="w-full text-xs text-left table-auto">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama SLA</th>
                     <th className="px-6 py-3.5">Tipe Entitas</th>
                     <th className="px-6 py-3.5 text-right">Peringatan</th>
@@ -151,50 +151,50 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
             </div>
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Nama SLA *</label>
-                <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Prospek Review SLA" required />
+                <label htmlFor="slaName" className="font-semibold text-on-surface block">Nama SLA *</label>
+                <input id="slaName" type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Prospek Review SLA" required />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Tipe Entitas</label>
-                <select value={formEntityType} onChange={e => setFormEntityType(e.target.value as SlaConfig['entityType'])} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                <label htmlFor="slaEntityType" className="font-semibold text-on-surface block">Tipe Entitas</label>
+                <select id="slaEntityType" value={formEntityType} onChange={e => setFormEntityType(e.target.value as SlaConfig['entityType'])} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                   {entityTypeOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Ambang Peringatan *</label>
-                  <input type="number" value={formWarning} onChange={e => setFormWarning(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required min={1} />
+                  <label htmlFor="slaWarning" className="font-semibold text-on-surface block">Ambang Peringatan *</label>
+                  <input id="slaWarning" type="number" value={formWarning} onChange={e => setFormWarning(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required min={1} />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Ambang Kritis *</label>
-                  <input type="number" value={formCritical} onChange={e => setFormCritical(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required min={1} />
+                  <label htmlFor="slaCritical" className="font-semibold text-on-surface block">Ambang Kritis *</label>
+                  <input id="slaCritical" type="number" value={formCritical} onChange={e => setFormCritical(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" required min={1} />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Unit Waktu</label>
-                  <select value={formUnit} onChange={e => setFormUnit(e.target.value as 'hours' | 'days')} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="slaUnit" className="font-semibold text-on-surface block">Unit Waktu</label>
+                  <select id="slaUnit" value={formUnit} onChange={e => setFormUnit(e.target.value as 'hours' | 'days')} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {slaUnitOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Role Eskalasi</label>
-                  <select value={formEscalation} onChange={e => setFormEscalation(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="slaEscalation" className="font-semibold text-on-surface block">Role Eskalasi</label>
+                  <select id="slaEscalation" value={formEscalation} onChange={e => setFormEscalation(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     {escalationRoleOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Status</label>
+                <label htmlFor="slaStatusActive" className="font-semibold text-on-surface block">Status</label>
                 <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="slaStatus" checked={formActive} onChange={() => setFormActive(true)} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="slaStatus" checked={!formActive} onChange={() => setFormActive(false)} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
+                  <label className="flex items-center gap-2 cursor-pointer"><input id="slaStatusActive" type="radio" name="slaStatus" checked={formActive} onChange={() => setFormActive(true)} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
+                  <label className="flex items-center gap-2 cursor-pointer"><input id="slaStatusInactive" type="radio" name="slaStatus" checked={!formActive} onChange={() => setFormActive(false)} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
                 </div>
               </div>
             </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingConfig ? 'Simpan Perubahan' : 'Buat SLA'}</button>
+              <button type="submit" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingConfig ? 'Simpan Perubahan' : 'Buat SLA'}</button>
             </div>
           </div>
         </div>

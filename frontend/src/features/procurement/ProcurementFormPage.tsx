@@ -34,30 +34,34 @@ export default function ProcurementFormPage() {
       return;
     }
 
-    const selectedProject = sourceProjectId
-      ? projects.find((p) => p.id === sourceProjectId)
-      : undefined;
+    try {
+      const selectedProject = sourceProjectId
+        ? projects.find((p) => p.id === sourceProjectId)
+        : undefined;
 
-    const procurement = await addProcurement({
-      sourceProjectId: sourceProjectId || undefined,
-      sourceProjectCode: selectedProject?.code,
-      sourceProjectName: selectedProject?.name,
-      client,
-      contractValue,
-      location,
-      prNumber: prNumber || undefined,
-      prNotes: prNotes || undefined,
-      createdBy: 'Admin',
-      status: 'Draft',
-      phase: 'Draft',
-    });
+      const procurement = await addProcurement({
+        sourceProjectId: sourceProjectId || undefined,
+        sourceProjectCode: selectedProject?.code,
+        sourceProjectName: selectedProject?.name,
+        client,
+        contractValue,
+        location,
+        prNumber: prNumber || undefined,
+        prNotes: prNotes || undefined,
+        createdBy: 'Admin',
+        status: 'Draft',
+        phase: 'Draft',
+      });
 
-    // Simpan relasi di relationStore biar PROJECT_WON dll tahu sudah ada procurement
-    if (sourceProjectId) {
-      useRelationStore.getState().linkProjectToProcurement(sourceProjectId, procurement.id);
+      // Simpan relasi di relationStore biar PROJECT_WON dll tahu sudah ada procurement
+      if (sourceProjectId) {
+        useRelationStore.getState().linkProjectToProcurement(sourceProjectId, procurement.id);
+      }
+      toast.success(`Pengadaan ${procurement.code} berhasil dibuat`);
+      navigate(`/procurement/${procurement.id}`);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal menyimpan pengadaan. Silakan coba lagi.');
     }
-    toast.success(`Pengadaan ${procurement.code} berhasil dibuat`);
-    navigate(`/procurement/${procurement.id}`);
   };
 
   return (

@@ -44,7 +44,7 @@ export default function MasterPeriodPage() {
       updateData<MasterPeriod>('periods', editing.id, form);
       toast.success('Periode berhasil diperbarui');
     } else {
-      const id = `PER-${String(periods.length + 1).padStart(2, '0')}`;
+      const id = crypto.randomUUID?.() || `PER-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       const year = form.start_date ? new Date(form.start_date).getFullYear() : new Date().getFullYear();
       addData<MasterPeriod>('periods', { code: form.name?.replace(/\s+/g, '-').toUpperCase() || '', type: 'quarterly', year, is_locked: false, notes: '', ...form, id } as MasterPeriod);
       toast.success('Periode berhasil ditambahkan');
@@ -94,7 +94,7 @@ export default function MasterPeriodPage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Periode">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-secondary uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Periode</th>
                     <th className="px-6 py-3.5">Tanggal Mulai</th>
                     <th className="px-6 py-3.5">Tanggal Selesai</th>
@@ -119,7 +119,7 @@ export default function MasterPeriodPage() {
                         <td className="px-6 py-4 text-right">
                           <div className="flex gap-1 justify-end">
                             <button onClick={() => openEdit(p)} className="p-1.5 rounded-lg hover:bg-surface-container text-outline hover:text-primary transition-colors cursor-pointer" title="Edit"><span className="material-symbols-outlined icon-compact text-[18px]">edit</span></button>
-                            <button onClick={() => handleDelete(p.id)} className="p-1.5 rounded-lg hover:bg-red-50 dark:bg-red-950/30 text-outline hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
+                            <button onClick={() => handleDelete(p.id)} className="p-1.5 rounded-lg hover:bg-danger-container dark:bg-danger-container/30 text-outline hover:text-danger transition-colors cursor-pointer" title="Hapus"><span className="material-symbols-outlined icon-compact text-[18px]">delete</span></button>
                           </div>
                         </td>
                       </tr>
@@ -142,33 +142,35 @@ export default function MasterPeriodPage() {
               </div>
               <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer"><span className="material-symbols-outlined">close</span></button>
             </div>
-            <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
-              <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Nama Periode *</label>
-                <input type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Contoh: 2026 Q1" required />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="flex flex-col h-full">
+              <div className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Tanggal Mulai *</label>
-                  <input type="date" value={form.start_date || ''} onChange={e => setForm({ ...form, start_date: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" required />
+                  <label htmlFor="period-name" className="font-semibold text-on-surface block">Nama Periode *</label>
+                  <input id="period-name" type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Contoh: 2026 Q1" required />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="period-start" className="font-semibold text-on-surface block">Tanggal Mulai *</label>
+                    <input id="period-start" type="date" value={form.start_date || ''} onChange={e => setForm({ ...form, start_date: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="period-end" className="font-semibold text-on-surface block">Tanggal Selesai *</label>
+                    <input id="period-end" type="date" value={form.end_date || ''} onChange={e => setForm({ ...form, end_date: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" required />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Tanggal Selesai *</label>
-                  <input type="date" value={form.end_date || ''} onChange={e => setForm({ ...form, end_date: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" required />
+                  <label className="font-semibold text-on-surface block">Status</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="periodStatus" checked={form.is_active !== false} onChange={() => setForm({ ...form, is_active: true })} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
+                    <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="periodStatus" checked={form.is_active === false} onChange={() => setForm({ ...form, is_active: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Status</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="periodStatus" checked={form.is_active !== false} onChange={() => setForm({ ...form, is_active: true })} className="text-primary" /><span className="text-xs font-medium">Aktif</span></label>
-                  <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="periodStatus" checked={form.is_active === false} onChange={() => setForm({ ...form, is_active: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
-                </div>
+              <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
+                <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
+                <button type="submit" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
               </div>
             </form>
-            <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
-              <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
-            </div>
           </div>
         </div>
       )}

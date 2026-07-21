@@ -371,6 +371,7 @@ export default function ApprovalInboxView({
               type="checkbox"
               checked={selectedIds.has(row.id)}
               onChange={() => toggleSelect(row.id)}
+              aria-label={`Pilih ${row.name}`}
               className="rounded border-border accent-primary w-4 h-4 mt-0.5 shrink-0"
             />
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm shrink-0 ${

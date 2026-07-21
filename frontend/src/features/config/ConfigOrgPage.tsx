@@ -132,7 +132,7 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
       .filter((u) => u.parentId === addParentId)
       .reduce((max, u) => Math.max(max, u.sortOrder), 0);
     const newUnit: OrgUnit = {
-      id: `unit-${Date.now()}`,
+      id: crypto.randomUUID?.() || `unit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       name: addName,
       code: addCode.toUpperCase().replace(/\s+/g, '_'),
       parentId: addParentId,
@@ -290,8 +290,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
           <div className="flex-grow overflow-y-auto p-6 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Nama Unit</label>
+                <label htmlFor="org-name" className="font-semibold text-on-surface-variant block">Nama Unit</label>
                 <input
+                  id="org-name"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -300,8 +301,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Kode Unit</label>
+                <label htmlFor="org-code" className="font-semibold text-on-surface-variant block">Kode Unit</label>
                 <input
+                  id="org-code"
                   value={formCode}
                   onChange={(e) => setFormCode(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono"
@@ -310,8 +312,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Kota</label>
+                <label htmlFor="org-city" className="font-semibold text-on-surface-variant block">Kota</label>
                 <input
+                  id="org-city"
                   value={formCity}
                   onChange={(e) => setFormCity(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -320,8 +323,9 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Provinsi</label>
+                <label htmlFor="org-province" className="font-semibold text-on-surface-variant block">Provinsi</label>
                 <input
+                  id="org-province"
                   value={formProvince}
                   onChange={(e) => setFormProvince(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary"
@@ -401,33 +405,33 @@ export default function ConfigOrgView({ onShowNotification }: ConfigOrgViewProps
       >
         <div className="space-y-4 text-sm">
           <div className="space-y-1.5">
-            <label className="font-semibold text-on-surface-variant block">Nama Unit *</label>
-            <input value={addName} onChange={e => setAddName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" placeholder="Nama unit" />
+            <label htmlFor="add-unit-name" className="font-semibold text-on-surface-variant block">Nama Unit *</label>
+            <input id="add-unit-name" value={addName} onChange={e => setAddName(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" placeholder="Nama unit" />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold text-on-surface-variant block">Kode Unit *</label>
-            <input value={addCode} onChange={e => setAddCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="CONTOH_001" />
+            <label htmlFor="add-unit-code" className="font-semibold text-on-surface-variant block">Kode Unit *</label>
+            <input id="add-unit-code" value={addCode} onChange={e => setAddCode(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="CONTOH_001" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-on-surface-variant block">Tipe Unit</label>
-              <select value={addType} onChange={e => setAddType(e.target.value as OrgUnit['unitType'])} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+              <label htmlFor="add-unit-type" className="font-semibold text-on-surface-variant block">Tipe Unit</label>
+              <select id="add-unit-type" value={addType} onChange={e => setAddType(e.target.value as OrgUnit['unitType'])} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
                 {TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold text-on-surface-variant block">Induk Unit</label>
-              <input className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-secondary" value={addParentId ? (orgUnits.find(u => u.id === addParentId)?.name || addParentId) : '(Root)'} disabled />
+              <label htmlFor="add-unit-parent" className="font-semibold text-on-surface-variant block">Induk Unit</label>
+              <input id="add-unit-parent" className="w-full px-4 py-2 border border-border rounded-lg bg-surface-container-low text-secondary" value={addParentId ? (orgUnits.find(u => u.id === addParentId)?.name || addParentId) : '(Root)'} disabled />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold text-on-surface-variant block">Kota</label>
-              <input value={addCity} onChange={e => setAddCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />
+              <label htmlFor="add-unit-city" className="font-semibold text-on-surface-variant block">Kota</label>
+              <input id="add-unit-city" value={addCity} onChange={e => setAddCity(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold text-on-surface-variant block">Provinsi</label>
-              <input value={addProvince} onChange={e => setAddProvince(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />
+              <label htmlFor="add-unit-province" className="font-semibold text-on-surface-variant block">Provinsi</label>
+              <input id="add-unit-province" value={addProvince} onChange={e => setAddProvince(e.target.value)} className="w-full px-4 py-2 border border-border rounded-lg outline-none focus:ring-1 focus:ring-primary" />
             </div>
           </div>
         </div>

@@ -75,10 +75,10 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
   const typeBorderColor = (type: string) => {
     const map: Record<string, string> = {
-      approval: 'border-l-teal-600',
-      revision: 'border-l-amber-500',
-      status_change: 'border-l-blue-500',
-      assignment: 'border-l-indigo-600',
+      approval: 'border-l-primary',
+      revision: 'border-l-warning',
+      status_change: 'border-l-info',
+      assignment: 'border-l-primary',
       system: 'border-l-outline',
     };
     return map[type] || 'border-l-outline';
@@ -86,10 +86,10 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
   const typeIconColor = (type: string) => {
     const map: Record<string, string> = {
-      approval: 'bg-teal-50 text-teal-600',
-      revision: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400',
-      status_change: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400',
-      assignment: 'bg-indigo-50 text-indigo-600',
+      approval: 'bg-primary/10 text-primary',
+      revision: 'bg-warning/10 text-warning',
+      status_change: 'bg-info/10 text-info',
+      assignment: 'bg-primary/10 text-primary',
       system: 'bg-surface-container-high text-outline',
     };
     return map[type] || 'bg-surface-container-high text-outline';
@@ -97,10 +97,10 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
 
   const typeTextColor = (type: string) => {
     const map: Record<string, string> = {
-      approval: 'text-teal-600',
-      revision: 'text-amber-600 dark:text-amber-400',
-      status_change: 'text-blue-600 dark:text-blue-400',
-      assignment: 'text-indigo-600',
+      approval: 'text-primary',
+      revision: 'text-warning',
+      status_change: 'text-info',
+      assignment: 'text-primary',
       system: 'text-outline',
     };
     return map[type] || 'text-outline';
@@ -114,7 +114,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
           <h2 className="font-display-title text-base font-extrabold text-on-surface flex items-center gap-2">
             Pusat Notifikasi
             {unreadCount > 0 && (
-              <span className="text-xs bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-xs bg-danger/10 text-danger px-2 py-0.5 rounded-full font-bold">
                 {unreadCount} Belum Dibaca
               </span>
             )}
@@ -186,7 +186,7 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                   <span className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-[18px]">mark_as_unread</span> Belum Dibaca
                   </span>
-                  <span className="text-[10px] bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">{unreadCount}</span>
+                  <span className="text-[10px] bg-danger/10 text-danger px-2 py-0.5 rounded-full font-bold">{unreadCount}</span>
                 </button>
 
                 <button
@@ -259,6 +259,19 @@ export default function NotificationsView({ onShowNotification, onNavigateToProj
                       navigate(n.entityType === 'project' ? `/projects/${n.entityId}` : `/prospects/${n.entityId}`);
                     }
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (!n.read) {
+                        markAsRead(n.id);
+                      }
+                      if (n.entityId && n.entityType) {
+                        navigate(n.entityType === 'project' ? `/projects/${n.entityId}` : `/prospects/${n.entityId}`);
+                      }
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
                   className={`border-l-4 rounded-xl shadow-xs border border-border transition-all hover:shadow-md cursor-pointer relative overflow-hidden ${
                     n.read                   ? 'bg-surface-container-low/50 opacity-80' : 'bg-surface'
                   } ${typeBorderColor(n.type)}`}

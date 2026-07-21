@@ -167,7 +167,7 @@ export default function PipelineReportPage() {
             </div>
           </div>
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center text-teal-600 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-status-teal/10 flex items-center justify-center text-status-teal shrink-0">
               <span className="material-symbols-outlined text-2xl">assignment</span>
             </div>
             <div>
@@ -176,16 +176,16 @@ export default function PipelineReportPage() {
             </div>
           </div>
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center text-indigo-500 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
               <span className="material-symbols-outlined text-2xl">trending_up</span>
             </div>
             <div>
               <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Growth Forecast</p>
-              <p className="font-extrabold text-indigo-600 text-base">{growthForecast}</p>
+              <p className="font-extrabold text-primary text-base">{growthForecast}</p>
             </div>
           </div>
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center text-amber-600 shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center text-warning shrink-0">
               <span className="material-symbols-outlined text-2xl">event_available</span>
             </div>
             <div>

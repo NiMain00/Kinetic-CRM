@@ -173,8 +173,8 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
     });
   }, []);
 
-  const handleBatchDelete = useCallback(() => {
-    selectedRows.forEach(id => deleteProspect(id));
+  const handleBatchDelete = useCallback(async () => {
+    await Promise.all(Array.from(selectedRows).map(id => deleteProspect(id)));
     onShowNotification(`${selectedRows.size} prospek berhasil dihapus.`, 'success');
     setSelectedRows(new Set());
   }, [selectedRows, deleteProspect, onShowNotification]);

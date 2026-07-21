@@ -62,7 +62,7 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
       onShowNotification(`Status ${newCode} berhasil diperbarui!`, 'success');
     } else {
       const newItem: MasterProjectStatus = {
-        id: `PS-${String(statuses.length + 1).padStart(2, '0')}`,
+        id: crypto.randomUUID?.() || `PS-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         code: newCode.toUpperCase().replace(/\s+/g, '_'),
         label: newLabel,
         description: newLabel,
@@ -242,8 +242,9 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
 
           <form onSubmit={handleSubmit} className="p-8 flex flex-col gap-4 sm:gap-6 flex-grow overflow-y-auto">
             <div className="space-y-1.5 text-sm">
-              <label className="font-semibold text-on-surface-variant block">Kode Status *</label>
+              <label htmlFor="statusCode" className="font-semibold text-on-surface-variant block">Kode Status *</label>
               <input
+                id="statusCode"
                 value={newCode}
                 onChange={(e) => setNewCode(e.target.value)}
                 required
@@ -255,8 +256,9 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             </div>
 
             <div className="space-y-1.5 text-sm">
-              <label className="font-semibold text-on-surface-variant block">Label Tampilan *</label>
+              <label htmlFor="statusLabel" className="font-semibold text-on-surface-variant block">Label Tampilan *</label>
               <input
+                id="statusLabel"
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 required
@@ -268,8 +270,9 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div className="space-y-1.5">
-                <label className="font-semibold text-on-surface-variant block">Urutan</label>
+                <label htmlFor="statusOrder" className="font-semibold text-on-surface-variant block">Urutan</label>
                 <input
+                  id="statusOrder"
                   value={newOrder}
                   onChange={(e) => setNewOrder(e.target.value)}
                   className="w-full px-4 py-2 border border-border rounded-lg font-mono outline-none"
@@ -287,11 +290,12 @@ export default function ConfigStatusView({ onShowNotification }: ConfigStatusVie
             </div>
 
             <div className="space-y-3">
-              <label className="font-semibold text-on-surface-variant text-sm block">Warna Badge (Pemetaan Visual)</label>
+              <label htmlFor="statusColor" className="font-semibold text-on-surface-variant text-sm block">Warna Badge (Pemetaan Visual)</label>
               <div className="p-4 border border-border rounded-xl bg-surface-bright flex flex-col gap-4 text-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <input
+                      id="statusColor"
                       value={newColor}
                       onChange={(e) => setNewColor(e.target.value)}
                       className="w-10 h-10 border-0 bg-transparent cursor-pointer rounded-lg overflow-hidden"

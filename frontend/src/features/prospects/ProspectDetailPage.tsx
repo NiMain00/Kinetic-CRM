@@ -19,6 +19,7 @@ import { useRelationStore } from '@/stores/relationStore';
 import { useVisitStore } from '@/stores/visitStore';
 import { useFollowUpStore } from '@/stores/followUpStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
+import apiClient, { unwrap } from '@/services/api-client';
 
 const legacyLabels: Record<string, string> = {
   tipePengadaanUnit: 'Tipe Pengadaan Unit',
@@ -195,12 +196,10 @@ export default function ProspectDetailPage() {
       fetchVisits(id);
       fetchTasks(id);
       // Fetch users for task assignment
-      import('@/services/api-client').then(({ default: api, unwrap }) =>
-        api.get('/master/users').then((res: any) => {
-          const data = unwrap<any[]>(res) || res.data?.data || [];
-          setUsers(Array.isArray(data) ? data.map((u: any) => ({ id: u.id, fullName: u.fullName || u.username || '' })) : []);
-        }).catch(() => {})
-      );
+      apiClient.get('/master/users').then((res: any) => {
+        const data = unwrap<any[]>(res) || res.data?.data || [];
+        setUsers(Array.isArray(data) ? data.map((u: any) => ({ id: u.id, fullName: u.fullName || u.username || '' })) : []);
+      }).catch(() => {});
     }
   }, [id, fetchVisits, fetchTasks]);
 
@@ -646,19 +645,20 @@ export default function ProspectDetailPage() {
 
   const renderActivityFeed = () => (
     <>
-      <div className="flex gap-2 mb-4">
+      <form onSubmit={(e) => { e.preventDefault(); handleSendComment(); }} className="flex gap-2 mb-4">
+        <label htmlFor="comment-input" className="sr-only">Tulis komentar</label>
         <input
+          id="comment-input"
           type="text"
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSendComment(); }}
           placeholder="Tulis komentar..."
           className="flex-1 border border-border rounded-lg text-sm p-2.5 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-surface-container-low transition-all"
         />
-        <Button variant="primary" size="sm" onClick={handleSendComment} disabled={!commentText.trim()}>
+        <Button variant="primary" size="sm" type="submit" disabled={!commentText.trim()}>
           <span className="material-symbols-outlined text-[18px]">send</span>
         </Button>
-      </div>
+      </form>
 
       <div className="space-y-2 max-h-80 overflow-y-auto">
         {allActivities.length === 0 ? (
@@ -1328,32 +1328,34 @@ export default function ProspectDetailPage() {
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setShowVisitModal(false)}>Batal</Button>
-            <Button variant="primary" size="md" onClick={async () => {
-              if (!id) return;
-              if (!visitForm.date) { toast.error('Tanggal kunjungan wajib diisi.'); return; }
-              try {
-                await createVisit({
-                  prospectId: id,
-                  date: visitForm.date,
-                  notes: visitForm.notes || undefined,
-                  picName: visitForm.picName || undefined,
-                });
-                setVisitForm({ date: '', notes: '', picName: '' });
-                setShowVisitModal(false);
-                toast.success('Kunjungan berhasil ditambahkan.');
-              } catch (err: any) {
-                toast.error(err?.response?.data?.message || 'Gagal menambahkan kunjungan.');
-              }
-            }}>
+            <Button variant="primary" size="md" form="visit-form" type="submit">
               Simpan
             </Button>
           </>
         }
       >
-        <div className="space-y-4">
+        <form id="visit-form" onSubmit={async (e) => {
+          e.preventDefault();
+          if (!id) return;
+          if (!visitForm.date) { toast.error('Tanggal kunjungan wajib diisi.'); return; }
+          try {
+            await createVisit({
+              prospectId: id,
+              date: visitForm.date,
+              notes: visitForm.notes || undefined,
+              picName: visitForm.picName || undefined,
+            });
+            setVisitForm({ date: '', notes: '', picName: '' });
+            setShowVisitModal(false);
+            toast.success('Kunjungan berhasil ditambahkan.');
+          } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Gagal menambahkan kunjungan.');
+          }
+        }} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tanggal Kunjungan *</label>
+            <label htmlFor="visit-date" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Tanggal Kunjungan *</label>
             <input
+              id="visit-date"
               type="date"
               value={visitForm.date}
               onChange={(e) => setVisitForm({ ...visitForm, date: e.target.value })}
@@ -1361,8 +1363,9 @@ export default function ProspectDetailPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama PIC</label>
+            <label htmlFor="visit-pic-name" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Nama PIC</label>
             <input
+              id="visit-pic-name"
               value={visitForm.picName}
               onChange={(e) => setVisitForm({ ...visitForm, picName: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -1370,15 +1373,16 @@ export default function ProspectDetailPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Catatan</label>
+            <label htmlFor="visit-notes" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Catatan</label>
             <textarea
+              id="visit-notes"
               value={visitForm.notes}
               onChange={(e) => setVisitForm({ ...visitForm, notes: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[80px]"
               placeholder="Hasil kunjungan..."
             />
           </div>
-        </div>
+        </form>
       </Modal>
 
       {/* ─── TASK MODAL ─── */}
@@ -1389,36 +1393,38 @@ export default function ProspectDetailPage() {
         footer={
           <>
             <Button variant="secondary" size="md" onClick={() => setShowTaskModal(false)}>Batal</Button>
-            <Button variant="primary" size="md" onClick={async () => {
-              if (!id) return;
-              if (!taskForm.title) { toast.error('Judul tugas wajib diisi.'); return; }
-              if (!taskForm.toUserId) { toast.error('Pilih PIC tujuan.'); return; }
-              try {
-                await createTask({
-                  title: taskForm.title,
-                  prospectId: id,
-                  fromUserId: authUser?.id || '',
-                  toUserId: taskForm.toUserId,
-                  priority: taskForm.priority,
-                  notes: taskForm.notes || undefined,
-                  deadline: taskForm.deadline || undefined,
-                });
-                setTaskForm({ title: '', toUserId: '', priority: 'medium', notes: '', deadline: '' });
-                setShowTaskModal(false);
-                toast.success('Tugas berhasil dibuat.');
-              } catch (err: any) {
-                toast.error(err?.response?.data?.message || 'Gagal membuat tugas.');
-              }
-            }}>
+            <Button variant="primary" size="md" form="task-form" type="submit">
               Simpan
             </Button>
           </>
         }
       >
-        <div className="space-y-4">
+        <form id="task-form" onSubmit={async (e) => {
+          e.preventDefault();
+          if (!id) return;
+          if (!taskForm.title) { toast.error('Judul tugas wajib diisi.'); return; }
+          if (!taskForm.toUserId) { toast.error('Pilih PIC tujuan.'); return; }
+          try {
+            await createTask({
+              title: taskForm.title,
+              prospectId: id,
+              fromUserId: authUser?.id || '',
+              toUserId: taskForm.toUserId,
+              priority: taskForm.priority,
+              notes: taskForm.notes || undefined,
+              deadline: taskForm.deadline || undefined,
+            });
+            setTaskForm({ title: '', toUserId: '', priority: 'medium', notes: '', deadline: '' });
+            setShowTaskModal(false);
+            toast.success('Tugas berhasil dibuat.');
+          } catch (err: any) {
+            toast.error(err?.response?.data?.message || 'Gagal membuat tugas.');
+          }
+        }} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Judul *</label>
+            <label htmlFor="task-title" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Judul *</label>
             <input
+              id="task-title"
               value={taskForm.title}
               onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -1426,8 +1432,9 @@ export default function ProspectDetailPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">PIC Tujuan *</label>
+            <label htmlFor="task-pic" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">PIC Tujuan *</label>
             <select
+              id="task-pic"
               value={taskForm.toUserId}
               onChange={(e) => setTaskForm({ ...taskForm, toUserId: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -1439,8 +1446,9 @@ export default function ProspectDetailPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Prioritas</label>
+            <label htmlFor="task-priority" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Prioritas</label>
             <select
+              id="task-priority"
               value={taskForm.priority}
               onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value as any })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -1451,8 +1459,9 @@ export default function ProspectDetailPage() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Deadline</label>
+            <label htmlFor="task-deadline" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Deadline</label>
             <input
+              id="task-deadline"
               type="date"
               value={taskForm.deadline}
               onChange={(e) => setTaskForm({ ...taskForm, deadline: e.target.value })}
@@ -1460,15 +1469,16 @@ export default function ProspectDetailPage() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Catatan</label>
+            <label htmlFor="task-notes" className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Catatan</label>
             <textarea
+              id="task-notes"
               value={taskForm.notes}
               onChange={(e) => setTaskForm({ ...taskForm, notes: e.target.value })}
               className="w-full px-4 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all min-h-[80px]"
               placeholder="Deskripsi tugas..."
             />
           </div>
-        </div>
+        </form>
       </Modal>
 
       {/* Delete Confirmation Modal */}

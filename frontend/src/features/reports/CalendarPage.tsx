@@ -122,7 +122,7 @@ export default function CalendarPage() {
           evs.push({
             date: normalizeDate(t.time),
             title: t.title,
-            type: t.type === 'approve' || t.type === 'submit' ? 'milestone' : 'milestone',
+            type: 'milestone',
             subtitle: `${p.name} — ${t.actor}`,
           });
         }

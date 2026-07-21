@@ -263,8 +263,9 @@ export default function ConfigInputPage() {
             </div>
             <form onSubmit={handleSaveOption} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Value *</label>
+                <label htmlFor="input-value" className="font-semibold text-on-surface block">Value *</label>
                 <input
+                  id="input-value"
                   type="text"
                   value={drawer.formValue}
                   onChange={(e) => setDrawer({ ...drawer, formValue: e.target.value })}
@@ -276,8 +277,9 @@ export default function ConfigInputPage() {
                 <p className="text-[10px] text-outline italic">Identifier unik. Tidak bisa diubah setelah dibuat.</p>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Label *</label>
+                <label htmlFor="input-label" className="font-semibold text-on-surface block">Label *</label>
                 <input
+                  id="input-label"
                   type="text"
                   value={drawer.formLabel}
                   onChange={(e) => setDrawer({ ...drawer, formLabel: e.target.value })}
@@ -288,8 +290,9 @@ export default function ConfigInputPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Urutan</label>
+                  <label htmlFor="input-order" className="font-semibold text-on-surface block">Urutan</label>
                   <input
+                    id="input-order"
                     type="number"
                     value={drawer.formOrder}
                     onChange={(e) => setDrawer({ ...drawer, formOrder: e.target.value })}
@@ -298,8 +301,9 @@ export default function ConfigInputPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Warna (opsional)</label>
+                  <label htmlFor="input-color" className="font-semibold text-on-surface block">Warna (opsional)</label>
                   <input
+                    id="input-color"
                     type="color"
                     value={drawer.formColor || '#000000'}
                     onChange={(e) => setDrawer({ ...drawer, formColor: e.target.value })}

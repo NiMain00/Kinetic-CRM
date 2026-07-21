@@ -230,7 +230,7 @@ export default function ProjectListPage() {
         return (
           <div className="flex items-center gap-2">
             <div className="w-20 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-              <div className={`h-full rounded-full ${color}`} style={{ width: `${p.progress}%` }} />
+              <div className={`h-full rounded-full ${color}`} style={{ width: `${p.progress}%` }} role="progressbar" aria-valuenow={p.progress} aria-valuemin={0} aria-valuemax={100} />
             </div>
             <span className="text-xs text-outline font-medium w-8 text-right tabular-nums">{p.progress}%</span>
           </div>
@@ -467,7 +467,7 @@ export default function ProjectListPage() {
               </div>
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-1.5 bg-surface-container-high rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${p.progress >= 71 ? 'bg-success' : p.progress >= 31 ? 'bg-gold' : 'bg-danger'}`} style={{ width: `${p.progress}%` }} />
+                  <div className={`h-full rounded-full ${p.progress >= 71 ? 'bg-success' : p.progress >= 31 ? 'bg-gold' : 'bg-danger'}`} style={{ width: `${p.progress}%` }} role="progressbar" aria-valuenow={p.progress} aria-valuemin={0} aria-valuemax={100} />
                 </div>
                 <span className="text-[10px] text-outline tabular-nums">{p.progress}%</span>
               </div>
@@ -557,6 +557,10 @@ export default function ProjectListPage() {
                   <div
                     className={`h-full rounded-full ${drawerProject.progress >= 71 ? 'bg-success' : drawerProject.progress >= 31 ? 'bg-gold' : 'bg-danger'}`}
                     style={{ width: `${drawerProject.progress}%` }}
+                    role="progressbar"
+                    aria-valuenow={drawerProject.progress}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
                   />
                 </div>
                 <span className="text-xs font-bold text-on-surface">{drawerProject.progress}%</span>

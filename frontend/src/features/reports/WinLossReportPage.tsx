@@ -137,25 +137,25 @@ export default function WinLossReportPage() {
           </div>
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center text-emerald-600">
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center text-success">
                 <span className="material-symbols-outlined text-xl">check_circle</span>
               </div>
             </div>
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Won</p>
-            <h3 className="font-extrabold text-emerald-600 text-xl mt-1">{totalWon}</h3>
+            <h3 className="font-extrabold text-success text-xl mt-1">{totalWon}</h3>
           </div>
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/30 flex items-center justify-center text-red-500">
+              <div className="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center text-danger">
                 <span className="material-symbols-outlined text-xl">cancel</span>
               </div>
             </div>
             <p className="text-outline text-[10px] uppercase font-semibold tracking-wider">Total Lost</p>
-            <h3 className="font-extrabold text-red-600 dark:text-red-400 text-xl mt-1">{totalLost}</h3>
+            <h3 className="font-extrabold text-danger text-xl mt-1">{totalLost}</h3>
           </div>
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-card">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center text-primary">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-xl">payments</span>
               </div>
             </div>
@@ -170,7 +170,7 @@ export default function WinLossReportPage() {
             <h3 className="font-bold text-sm text-on-surface">Monthly Win vs Loss Trends</h3>
             <div className="flex gap-4 text-xs text-secondary">
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-primary rounded-xs" />Win</span>
-              <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-red-50 dark:bg-red-950/300 rounded-xs" />Loss</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 bg-danger/10 rounded-xs" />Loss</span>
             </div>
           </div>
           <div className="h-64 flex items-end justify-between gap-2.5 px-2 border-b border-border">
@@ -178,7 +178,7 @@ export default function WinLossReportPage() {
               <div key={i} className="flex-1 flex flex-col items-center h-full justify-end group">
                 <div className="w-full flex items-end justify-center gap-1 h-[80%]">
                   <div className="w-1/2 bg-primary rounded-t-xs transition-all group-hover:bg-primary-light" style={{ height: `${d.win}%` }} title={`Win: ${d.win}`} />
-                  <div className="w-1/2 bg-red-50 dark:bg-red-950/300 rounded-t-xs transition-all group-hover:bg-primary-light" style={{ height: `${d.loss}%` }} title={`Loss: ${d.loss}`} />
+                  <div className="w-1/2 bg-danger/10 rounded-t-xs transition-all group-hover:bg-primary-light" style={{ height: `${d.loss}%` }} title={`Loss: ${d.loss}`} />
                 </div>
                 <span className="mt-2 text-[10px] font-bold text-outline">{d.label}</span>
               </div>
@@ -220,7 +220,7 @@ export default function WinLossReportPage() {
                       <td className="px-6 py-4 text-secondary">{r.client}</td>
                       <td className="px-6 py-4 font-mono font-bold text-on-surface">{r.valueFormatted}</td>
                       <td className="px-6 py-4 text-center">
-                        <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold badge-compact ${r.result === 'WIN' ? 'bg-success/10 text-success' : 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400'}`}>{r.result}</span>
+                        <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold badge-compact ${r.result === 'WIN' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>{r.result}</span>
                       </td>
                       <td className="px-6 py-4 text-secondary">{r.competitor}</td>
                       <td className="px-6 py-4 text-outline">{formatDate(r.date)}</td>

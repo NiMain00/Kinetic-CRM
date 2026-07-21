@@ -93,8 +93,8 @@ function TrendSparkline({ data }: { data: number[] }) {
   return (
     <div className="flex items-center gap-1.5" aria-label={`Tren: ${isUp ? 'meningkat' : 'menurun'}`}>
       <svg width={width} height={height} className="overflow-visible" role="img" aria-hidden="true">
-        <polyline points={points} fill="none" stroke={isUp ? '#16a34a' : '#dc2626'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx={width} cy={height - ((data[data.length - 1] - min) / range) * height} r="2" fill={isUp ? '#16a34a' : '#dc2626'} />
+        <polyline points={points} fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={isUp ? 'stroke-success' : 'stroke-danger'} />
+        <circle cx={width} cy={height - ((data[data.length - 1] - min) / range) * height} r="2" className={isUp ? 'fill-success' : 'fill-danger'} />
       </svg>
       <span className={`text-[10px] font-bold ${isUp ? 'text-success' : 'text-danger'}`}>
         <span className="material-symbols-outlined text-[12px]" aria-hidden="true">{isUp ? 'trending_up' : 'trending_down'}</span>

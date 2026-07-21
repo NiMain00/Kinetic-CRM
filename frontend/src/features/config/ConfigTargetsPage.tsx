@@ -58,7 +58,7 @@ export default function ConfigTargetsPage() {
         toast.success(`Target ${formName} berhasil diperbarui.`);
       } else {
         const newTarget: KpiTarget = {
-          id: `TGT-${String(targets.length + 1).padStart(3, '0')}`,
+          id: crypto.randomUUID?.() || `TGT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           name: formName,
           category: formCategory as KpiTarget['category'],
           targetValue: Number(formTargetValue),
@@ -138,7 +138,7 @@ export default function ConfigTargetsPage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Target</th>
                     <th className="px-6 py-3.5">Kategori</th>
                     <th className="px-6 py-3.5 text-right">Nilai Target</th>
@@ -202,24 +202,24 @@ export default function ConfigTargetsPage() {
             </div>
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Nama Target *</label>
-                <input type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Win Rate" required />
+                <label htmlFor="target-name" className="font-semibold text-on-surface block">Nama Target *</label>
+                <input id="target-name" type="text" value={formName} onChange={e => setFormName(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" placeholder="Contoh: Win Rate" required />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Kategori</label>
-                <select value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                <label htmlFor="target-category" className="font-semibold text-on-surface block">Kategori</label>
+                <select id="target-category" value={formCategory} onChange={e => setFormCategory(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                   <option value="KPI">KPI</option>
                   <option value="Approval">Approval</option>
                 </select>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Nilai Target *</label>
-                  <input type="number" value={formTargetValue} onChange={e => setFormTargetValue(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" step="any" required />
+                  <label htmlFor="target-value" className="font-semibold text-on-surface block">Nilai Target *</label>
+                  <input id="target-value" type="number" value={formTargetValue} onChange={e => setFormTargetValue(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" step="any" required />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Satuan</label>
-                  <select value={formUnit} onChange={e => setFormUnit(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                  <label htmlFor="target-unit" className="font-semibold text-on-surface block">Satuan</label>
+                  <select id="target-unit" value={formUnit} onChange={e => setFormUnit(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                     <option value="%">%</option>
                     <option value="Rp">Rupiah</option>
                     <option value="unit">Unit</option>
@@ -230,13 +230,13 @@ export default function ConfigTargetsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Deskripsi</label>
-                <textarea value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi target" />
+                <label htmlFor="target-description" className="font-semibold text-on-surface block">Deskripsi</label>
+                <textarea id="target-description" value={formDescription} onChange={e => setFormDescription(e.target.value)} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" rows={3} placeholder="Deskripsi target" />
               </div>
             </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Cancel</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingTarget ? 'Simpan Perubahan' : 'Buat Target'}</button>
+              <button type="submit" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editingTarget ? 'Simpan Perubahan' : 'Buat Target'}</button>
             </div>
           </div>
         </div>

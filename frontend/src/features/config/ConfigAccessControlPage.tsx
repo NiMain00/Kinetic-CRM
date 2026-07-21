@@ -58,8 +58,8 @@ const TABS: { id: TabId; label: string; icon: string }[] = [
 const DEPT_COLORS: Record<string, string> = {
   IT: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300',
   HC: 'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-950/30 dark:text-pink-300',
-  FINANCE: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300',
-  PROCUREMENT: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300',
+  FINANCE: 'bg-success-container text-success border-emerald-200 dark:bg-success-container dark:text-success',
+  PROCUREMENT: 'bg-warning-container text-warning border-amber-200 dark:bg-warning-container dark:text-warning',
   MARKETING: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-950/30 dark:text-purple-300',
   PM: 'bg-cyan-100 text-cyan-700 border-cyan-200 dark:bg-cyan-950/30 dark:text-cyan-300',
 };
@@ -73,7 +73,7 @@ const ROLE_BADGES: Record<string, string> = {
   director: 'bg-status-maroon/10 text-status-maroon',
   project_viewer: 'bg-blue-50 text-blue-700',
   project_contributor: 'bg-teal-50 text-teal-700',
-  project_manager: 'bg-amber-50 text-amber-700',
+  project_manager: 'bg-warning-container text-warning',
 };
 
 // ── Component ──
@@ -238,7 +238,7 @@ function DepartmentsTab() {
                     <button onClick={() => openEdit(d)} className="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-primary transition-colors cursor-pointer" title="Edit">
                       <span className="material-symbols-outlined text-[16px]">edit</span>
                     </button>
-                    <button onClick={() => { if (confirm(`Hapus ${d.name}?`)) handleDelete(d.id); }} className="p-1.5 rounded-lg hover:bg-red-50 text-secondary hover:text-danger transition-colors cursor-pointer" title="Hapus">
+                    <button onClick={() => { if (confirm(`Hapus ${d.name}?`)) handleDelete(d.id); }} className="p-1.5 rounded-lg hover:bg-danger-container text-secondary hover:text-danger transition-colors cursor-pointer" title="Hapus">
                       <span className="material-symbols-outlined text-[16px]">delete</span>
                     </button>
                   </div>
@@ -255,16 +255,16 @@ function DepartmentsTab() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Departemen' : 'Tambah Departemen'} size="sm">
         <div className="space-y-4 text-xs">
           <div className="space-y-1.5">
-            <label className="font-semibold">Kode *</label>
-            <input value={formCode} onChange={e => setFormCode(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono uppercase" placeholder="CONTOH" />
+            <label htmlFor="dept-code" className="font-semibold">Kode *</label>
+            <input id="dept-code" value={formCode} onChange={e => setFormCode(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono uppercase" placeholder="CONTOH" />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Nama *</label>
-            <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nama departemen" />
+            <label htmlFor="dept-name" className="font-semibold">Nama *</label>
+            <input id="dept-name" value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nama departemen" />
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Deskripsi</label>
-            <textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs" rows={2} />
+            <label htmlFor="dept-desc" className="font-semibold">Deskripsi</label>
+            <textarea id="dept-desc" value={formDesc} onChange={e => setFormDesc(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs" rows={2} />
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" checked={formActive} onChange={e => setFormActive(e.target.checked)} className="w-4 h-4 text-primary border-border rounded focus:ring-primary" id="dept-active" />
@@ -279,10 +279,6 @@ function DepartmentsTab() {
     </div>
   );
 }
-
-// ════════════════════════════════════════════════════════════════
-//  TAB: Roles
-// ════════════════════════════════════════════════════════════════
 
 function RolesTab() {
   const roles = useRbacStore((s) => s.roles);
@@ -376,7 +372,7 @@ function RolesTab() {
                     </button>
                   )}
                   {!isSystem && (
-                    <button onClick={() => handleDelete(r.id)} className="p-1 rounded hover:bg-red-50 text-secondary hover:text-danger cursor-pointer" title="Hapus">
+                    <button onClick={() => handleDelete(r.id)} className="p-1 rounded hover:bg-danger-container text-secondary hover:text-danger cursor-pointer" title="Hapus">
                       <span className="material-symbols-outlined text-[14px]">delete</span>
                     </button>
                   )}
@@ -401,13 +397,13 @@ function RolesTab() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Role' : 'Tambah Role'} size="sm">
         <div className="space-y-4 text-xs">
           <div className="space-y-1.5">
-            <label className="font-semibold">Nama *</label>
-            <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="contoh: manager" />
+            <label htmlFor="role-name" className="font-semibold">Nama *</label>
+            <input id="role-name" value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="contoh: manager" />
             <p className="text-[9px] text-outline">Akan disimpan sebagai slug: {formName.toLowerCase().replace(/\s+/g, '_')}</p>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Deskripsi</label>
-            <textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs" rows={2} />
+            <label htmlFor="role-desc" className="font-semibold">Deskripsi</label>
+            <textarea id="role-desc" value={formDesc} onChange={e => setFormDesc(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary text-xs" rows={2} />
           </div>
         </div>
         <div className="flex justify-end gap-3 flex-wrap mt-6 pt-4 border-t border-border">
@@ -525,7 +521,7 @@ function UserAssignmentsTab() {
                         </span>
                       </>
                     )}
-                    <button onClick={() => handleRemove(ur.id)} className="ml-1 p-0.5 rounded hover:bg-red-50 text-secondary hover:text-danger cursor-pointer" title="Remove">
+                    <button onClick={() => handleRemove(ur.id)} className="ml-1 p-0.5 rounded hover:bg-danger-container text-secondary hover:text-danger cursor-pointer" title="Remove">
                       <span className="material-symbols-outlined text-[12px]">close</span>
                     </button>
                   </div>
@@ -542,8 +538,8 @@ function UserAssignmentsTab() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Assign Role ke User" size="sm">
         <div className="space-y-4 text-xs">
           <div className="space-y-1.5">
-            <label className="font-semibold">User *</label>
-            <select value={selUserId} onChange={e => setSelUserId(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+            <label htmlFor="assign-user" className="font-semibold">User *</label>
+            <select id="assign-user" value={selUserId} onChange={e => setSelUserId(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
               <option value="">Pilih user...</option>
               {masterUsers.map(u => (
                 <option key={u.id} value={u.id}>{u.name} (@{u.username})</option>
@@ -551,8 +547,8 @@ function UserAssignmentsTab() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Role *</label>
-            <select value={selRoleId} onChange={e => setSelRoleId(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+            <label htmlFor="assign-role" className="font-semibold">Role *</label>
+            <select id="assign-role" value={selRoleId} onChange={e => setSelRoleId(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
               <option value="">Pilih role...</option>
               {nonProjectRoles.map(r => (
                 <option key={r.id} value={r.id}>{r.name.replace(/_/g, ' ')} {r.is_system ? '(System)' : ''}</option>
@@ -560,16 +556,16 @@ function UserAssignmentsTab() {
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Scope Type *</label>
-            <select value={selScopeType} onChange={e => setSelScopeType(e.target.value as RbacUserRole['scopeType'])} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+            <label htmlFor="assign-scope-type" className="font-semibold">Scope Type *</label>
+            <select id="assign-scope-type" value={selScopeType} onChange={e => setSelScopeType(e.target.value as RbacUserRole['scopeType'])} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
               <option value="global">Global</option>
               <option value="department">Department</option>
             </select>
           </div>
           {selScopeType === 'department' && (
             <div className="space-y-1.5">
-              <label className="font-semibold">Department *</label>
-              <select value={selScopeId} onChange={e => setSelScopeId(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+              <label htmlFor="assign-dept" className="font-semibold">Department *</label>
+              <select id="assign-dept" value={selScopeId} onChange={e => setSelScopeId(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
                 <option value="">Pilih department...</option>
                 {departments.filter(d => d.is_active).map(d => (
                   <option key={d.id} value={d.id}>{d.code} — {d.name}</option>
@@ -737,7 +733,7 @@ function RolePermissionsTab() {
     if (rp.scopeType === 'global') return { label: 'G', color: 'bg-status-purple/10 text-status-purple border-status-purple/20' };
     if (rp.scopeId) {
       const dept = departments.find(d => d.id === rp.scopeId);
-      if (dept) return { label: dept.code.slice(0, 2), color: 'bg-amber-100 text-amber-700 border-amber-200' };
+      if (dept) return { label: dept.code.slice(0, 2), color: 'bg-warning-container text-warning border-amber-200' };
     }
     return { label: 'D', color: 'bg-primary/10 text-primary border-primary/20' };
   };
@@ -830,9 +826,9 @@ function RolePermissionsTab() {
 
       {/* ── Draft Summary Bar ── */}
       {hasDraft && (
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs">
-          <span className="material-symbols-outlined text-[16px] text-amber-600 dark:text-amber-400">edit_note</span>
-          <span className="text-amber-800 dark:text-amber-300 font-semibold">Perubahan Tertunda:</span>
+        <div className="bg-warning-container dark:bg-warning-container border border-amber-200 dark:border-amber-900 rounded-xl px-4 py-2.5 flex items-center gap-3 text-xs">
+          <span className="material-symbols-outlined text-[16px] text-warning dark:text-warning">edit_note</span>
+          <span className="text-warning dark:text-warning font-semibold">Perubahan Tertunda:</span>
           {draftSummary.adds > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-success/10 text-success text-[10px] font-bold">
               +{draftSummary.adds} tambah
@@ -1037,7 +1033,7 @@ function RolePermissionsTab() {
                                 onChange={() => handleToggle(r.id, pDef.code)}
                                 className={`w-4 h-4 rounded focus:ring-primary cursor-pointer ${
                                   isAdd
-                                    ? 'border-amber-400 text-amber-500 accent-amber-500'
+                                    ? 'border-amber-400 text-warning accent-amber-500'
                                     : isRemove
                                     ? 'border-red-400 text-red-500 accent-red-500'
                                     : 'text-primary border-border accent-primary'
@@ -1046,7 +1042,7 @@ function RolePermissionsTab() {
                               />
                               {/* Draft indicator dot */}
                               {isDrafted && (
-                                <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-amber-400 border border-white dark:border-surface" />
+                                <span className="absolute -top-1.5 -right-1.5 w-2 h-2 rounded-full bg-warning-container border border-white dark:border-surface" />
                               )}
                             </div>
                             {/* Scope badge */}
@@ -1081,7 +1077,7 @@ function RolePermissionsTab() {
               Dept (all)
             </span>
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-2.5 rounded bg-amber-300 border border-amber-500" />
+              <span className="w-2.5 h-2.5 rounded bg-warning-container border border-amber-500" />
               Dept specific
             </span>
           </div>
@@ -1147,7 +1143,7 @@ function StageRulesTab() {
   const openCreate = () => {
     setEditingId(null);
     setFormCode(''); setFormName(''); setFormModule('project');
-    setFormSeq(stagesSorted.length + 1);
+    setFormSeq(Math.max(...stagesSorted.map(s => s.sequence), 0) + 1);
     setFormOwner(''); setFormPrev('');
     setFormExtraDepts([]);
     setShowModal(true);
@@ -1284,7 +1280,7 @@ function StageRulesTab() {
                     <button onClick={() => openEdit(s)} className="p-1 rounded hover:bg-surface-container text-secondary hover:text-primary cursor-pointer" title="Edit">
                       <span className="material-symbols-outlined text-[14px]">edit</span>
                     </button>
-                    <button onClick={() => { if (confirm('Hapus stage ini?')) handleDelete(s.id); }} className="p-1 rounded hover:bg-red-50 text-secondary hover:text-danger cursor-pointer" title="Hapus">
+                    <button onClick={() => { if (confirm('Hapus stage ini?')) handleDelete(s.id); }} className="p-1 rounded hover:bg-danger-container text-secondary hover:text-danger cursor-pointer" title="Hapus">
                       <span className="material-symbols-outlined text-[14px]">delete</span>
                     </button>
                   </div>
@@ -1356,7 +1352,7 @@ function StageRulesTab() {
                     <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg hover:bg-surface-container text-secondary hover:text-primary transition-colors cursor-pointer" title="Edit">
                       <span className="material-symbols-outlined text-[16px]">edit</span>
                     </button>
-                    <button onClick={() => { if (confirm(`Hapus stage ${s.name}?`)) handleDelete(s.id); }} className="p-1.5 rounded-lg hover:bg-red-50 text-secondary hover:text-danger transition-colors cursor-pointer" title="Hapus">
+                    <button onClick={() => { if (confirm(`Hapus stage ${s.name}?`)) handleDelete(s.id); }} className="p-1.5 rounded-lg hover:bg-danger-container text-secondary hover:text-danger transition-colors cursor-pointer" title="Hapus">
                       <span className="material-symbols-outlined text-[16px]">delete</span>
                     </button>
                   </div>
@@ -1371,30 +1367,30 @@ function StageRulesTab() {
         <div className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold">Kode *</label>
-              <input value={formCode} onChange={e => setFormCode(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="example_stage" />
+              <label htmlFor="stage-code" className="font-semibold">Kode *</label>
+              <input id="stage-code" value={formCode} onChange={e => setFormCode(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary font-mono" placeholder="example_stage" />
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold">Sequence *</label>
-              <input type="number" value={formSeq} onChange={e => setFormSeq(Number(e.target.value))} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" min={1} step={0.5} />
+              <label htmlFor="stage-seq" className="font-semibold">Sequence *</label>
+              <input id="stage-seq" type="number" value={formSeq} onChange={e => setFormSeq(Number(e.target.value))} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" min={1} step={0.5} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Nama *</label>
-            <input value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nama stage" />
+            <label htmlFor="stage-name" className="font-semibold">Nama *</label>
+            <input id="stage-name" value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Nama stage" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="font-semibold">Module</label>
-              <select value={formModule} onChange={e => setFormModule(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+              <label htmlFor="stage-module" className="font-semibold">Module</label>
+              <select id="stage-module" value={formModule} onChange={e => setFormModule(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
                 <option value="prospect">Prospect</option>
                 <option value="project">Project</option>
                 <option value="pengadaan">Pengadaan</option>
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="font-semibold">Owner Department *</label>
-              <select value={formOwner} onChange={e => setFormOwner(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+              <label htmlFor="stage-owner" className="font-semibold">Owner Department *</label>
+              <select id="stage-owner" value={formOwner} onChange={e => setFormOwner(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
                 <option value="">Pilih...</option>
                 {activeDepts.map(d => (
                   <option key={d.id} value={d.code}>{d.code} — {d.name}</option>
@@ -1403,8 +1399,8 @@ function StageRulesTab() {
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="font-semibold">Previous Department (Read Only)</label>
-            <select value={formPrev} onChange={e => setFormPrev(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
+            <label htmlFor="stage-prev" className="font-semibold">Previous Department (Read Only)</label>
+            <select id="stage-prev" value={formPrev} onChange={e => setFormPrev(e.target.value)} className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary bg-surface-container-lowest">
               <option value="">— Tidak ada —</option>
               {activeDepts.map(d => (
                 <option key={d.id} value={d.code}>{d.code} — {d.name}</option>
@@ -1439,7 +1435,7 @@ function StageRulesTab() {
                       <option value="read">Read</option>
                       <option value="write">Write</option>
                     </select>
-                    <button onClick={() => removeExtraDept(idx)} className="p-1 rounded hover:bg-red-50 text-secondary hover:text-danger cursor-pointer" title="Hapus">
+                    <button onClick={() => removeExtraDept(idx)} className="p-1 rounded hover:bg-danger-container text-secondary hover:text-danger cursor-pointer" title="Hapus">
                       <span className="material-symbols-outlined text-[14px]">close</span>
                     </button>
                   </div>

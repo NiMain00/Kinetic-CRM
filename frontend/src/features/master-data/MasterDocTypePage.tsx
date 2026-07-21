@@ -46,7 +46,7 @@ export default function MasterDocTypePage() {
       updateData<MasterDocType>('docTypes', editing.id, form);
       toast.success('Tipe dokumen berhasil diperbarui');
     } else {
-      const id = `DT-${String(docTypes.length + 1).padStart(2, '0')}`;
+      const id = crypto.randomUUID?.() || `DT-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       addData<MasterDocType>('docTypes', { ...form, id } as MasterDocType);
       toast.success('Tipe dokumen berhasil ditambahkan');
     }
@@ -93,7 +93,7 @@ export default function MasterDocTypePage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Tipe Dokumen">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-outline uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama</th>
                     <th className="px-6 py-3.5">Kode</th>
                     <th className="px-6 py-3.5">Deskripsi</th>
@@ -146,21 +146,21 @@ export default function MasterDocTypePage() {
             <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Nama Tipe Dokumen *</label>
-                  <input type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama dokumen" required />
+                  <label htmlFor="dt-name" className="font-semibold text-on-surface block">Nama Tipe Dokumen *</label>
+                  <input id="dt-name" type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama dokumen" required />
                 </div>
                 <div className="space-y-2">
-                  <label className="font-semibold text-on-surface block">Kode *</label>
-                  <input type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="KODE_DOKUMEN" required />
+                  <label htmlFor="dt-code" className="font-semibold text-on-surface block">Kode *</label>
+                  <input id="dt-code" type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="KODE_DOKUMEN" required />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Deskripsi</label>
-                <textarea value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Deskripsi tipe dokumen" />
+                <label htmlFor="dt-desc" className="font-semibold text-on-surface block">Deskripsi</label>
+                <textarea id="dt-desc" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Deskripsi tipe dokumen" />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Kategori</label>
-                <select value={form.category || 'Both'} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
+                <label htmlFor="dt-category" className="font-semibold text-on-surface block">Kategori</label>
+                <select id="dt-category" value={form.category || 'Both'} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none text-xs bg-surface-container-lowest">
                   {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
               </div>
@@ -171,11 +171,11 @@ export default function MasterDocTypePage() {
                   <label className="flex items-center gap-2 cursor-pointer"><input type="radio" name="dtStatus" checked={form.is_active === false} onChange={() => setForm({ ...form, is_active: false })} className="text-primary" /><span className="text-xs font-medium">Non-Aktif</span></label>
                 </div>
               </div>
-            </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
+              <button type="submit" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
             </div>
+            </form>
           </div>
         </div>
       )}

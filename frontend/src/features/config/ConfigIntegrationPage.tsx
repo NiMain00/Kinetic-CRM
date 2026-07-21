@@ -118,8 +118,8 @@ export default function ConfigIntegrationPage() {
           <div className="bg-surface-container-lowest border border-border rounded-xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-green-600 dark:text-green-400">description</span>
+                <div className="w-10 h-10 rounded-xl bg-success-container flex items-center justify-center">
+                  <span className="material-symbols-outlined text-success">description</span>
                 </div>
                 <div>
                   <h3 className="font-bold text-sm text-on-surface">Google Forms Integration</h3>
@@ -138,10 +138,11 @@ export default function ConfigIntegrationPage() {
             <div className="p-6 space-y-4">
               {/* API Key Input */}
               <div className="space-y-1.5">
-                <label className="font-semibold text-sm text-on-surface-variant">API Key</label>
+                <label htmlFor="api-key" className="font-semibold text-sm text-on-surface-variant">API Key</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input
+                      id="api-key"
                       type={showKey ? 'text' : 'password'}
                       value={apiKeyValue}
                       onChange={(e) => setApiKeyValue(e.target.value)}
@@ -256,7 +257,7 @@ export default function ConfigIntegrationPage() {
                           {cfg.key}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${cfg.isSecret ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300' : 'bg-surface-container text-on-surface-variant'}`}>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${cfg.isSecret ? 'bg-warning-container text-warning' : 'bg-surface-container text-on-surface-variant'}`}>
                             {cfg.isSecret ? 'Tersembunyi' : 'Publik'}
                           </span>
                         </td>

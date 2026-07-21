@@ -311,6 +311,7 @@ export default function ProjectDetailView({
             <button
               onClick={() => isOverview ? onNavigatePage('projects') : navigate(`/projects/${projectId}/overview`)}
               className="p-1 hover:bg-surface-container rounded-full transition-colors flex items-center justify-center border border-border/60 bg-surface shrink-0 touch-min"
+              aria-label="Kembali"
             >
               <span className="material-symbols-outlined text-primary text-[18px] sm:text-[20px]">arrow_back</span>
             </button>

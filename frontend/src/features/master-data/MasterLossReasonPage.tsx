@@ -44,7 +44,7 @@ export default function MasterLossReasonPage() {
       updateData<MasterLossReason>('lossReasons', editing.id, form);
       toast.success('Alasan kekalahan berhasil diperbarui');
     } else {
-      const id = `LR-${String(lossReasons.length + 1).padStart(2, '0')}`;
+      const id = crypto.randomUUID?.() || `LR-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
       const maxSort = Math.max(...lossReasons.map(r => r.sort_order), 0);
       addData<MasterLossReason>('lossReasons', { category: 'lainnya', sort_order: maxSort + 1, ...form, id } as MasterLossReason);
       toast.success('Alasan kekalahan berhasil ditambahkan');
@@ -92,7 +92,7 @@ export default function MasterLossReasonPage() {
             <div className="overflow-x-auto scrollbar-none table-mobile-compact">
               <table className="w-full text-xs text-left table-auto" role="table" aria-label="Daftar Alasan Kekalahan">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-border text-slate-450 uppercase font-mono tracking-wider">
+                  <tr className="bg-surface-container-low border-b border-border text-secondary uppercase font-mono tracking-wider">
                     <th className="px-6 py-3.5">Nama Alasan</th>
                     <th className="px-6 py-3.5">Kode</th>
                     <th className="px-6 py-3.5">Deskripsi</th>
@@ -140,18 +140,18 @@ export default function MasterLossReasonPage() {
               </div>
               <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:bg-surface-container-high transition-colors cursor-pointer"><span className="material-symbols-outlined">close</span></button>
             </div>
-            <form onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
+            <form id="loss-reason-form" onSubmit={handleSave} className="p-6 flex-1 overflow-y-auto space-y-5 text-left text-xs">
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Nama Alasan *</label>
-                <input type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama alasan" required />
+                <label htmlFor="lr-name" className="font-semibold text-on-surface block">Nama Alasan *</label>
+                <input id="lr-name" type="text" value={form.name || ''} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="Nama alasan" required />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Kode *</label>
-                <input type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="KODE_ALASAN" required />
+                <label htmlFor="lr-code" className="font-semibold text-on-surface block">Kode *</label>
+                <input id="lr-code" type="text" value={form.code || ''} onChange={e => setForm({ ...form, code: e.target.value })} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs" placeholder="KODE_ALASAN" required />
               </div>
               <div className="space-y-2">
-                <label className="font-semibold text-on-surface block">Deskripsi</label>
-                <textarea value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Deskripsi alasan" />
+                <label htmlFor="lr-description" className="font-semibold text-on-surface block">Deskripsi</label>
+                <textarea id="lr-description" value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} className="w-full rounded-lg border border-border p-2.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs resize-none" placeholder="Deskripsi alasan" />
               </div>
               <div className="space-y-2">
                 <label className="font-semibold text-on-surface block">Status</label>
@@ -163,7 +163,7 @@ export default function MasterLossReasonPage() {
             </form>
             <div className="p-6 border-t border-border bg-surface-container-low flex items-center justify-end gap-3">
               <button type="button" onClick={() => setDrawerOpen(false)} className="px-4 py-2 rounded-lg border border-border bg-surface-container-lowest text-on-surface text-xs font-semibold hover:bg-surface-container transition-colors cursor-pointer">Batal</button>
-              <button type="button" onClick={handleSave} className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
+              <button type="submit" form="loss-reason-form" className="px-5 py-2 bg-primary text-white text-xs font-bold rounded-lg shadow-sm hover:brightness-110 transition-colors cursor-pointer">{editing ? 'Simpan' : 'Tambah'}</button>
             </div>
           </div>
         </div>
