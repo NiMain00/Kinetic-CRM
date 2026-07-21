@@ -153,8 +153,14 @@ export class ProspectsService {
       conditions.push({ OR: accessOr });
     }
 
+    if (params?.status) {
+      conditions.push({ status: params.status });
+    }
+    if (params?.isConverted !== undefined) {
+      conditions.push({ isConverted: params.isConverted === 'true' });
+    }
+
     const where = conditions.length === 1 ? conditions[0] : { AND: conditions };
-    const page = params?.page || 1;
     const perPage = Math.min(Number(params?.perPage) || 100, 100);
 
     const [data, total] = await Promise.all([
@@ -170,6 +176,8 @@ export class ProspectsService {
           customerId: true,
           source: true,
           potensiUnit: true,
+          isConverted: true,
+          estimatedValue: true,
           createdAt: true,
           ownerUser: {
             select: { id: true, fullName: true },

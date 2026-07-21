@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
 import { StatusBadge } from '@/components/shared';
 import PhaseStepper from '@/components/shared/PhaseStepper';
-import type { Project } from '../../types/domain';
+import type { Project, Prospect } from '../../types/domain';
 import { useProjectStore } from '@/stores/projectStore';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useApprovalStore } from '@/stores/approvalStore';
@@ -147,21 +147,62 @@ export default function ProjectDetailView({
     }));
   }, [projectPhases, tabs]);
 
-  // Auto-sync prospect data ke project jika ada sourceProspect — also before early return
-  useEffect(() => {
-    if (projectId && sourceProspect && project) {
-      const updates: Partial<Project> = {};
-      if (sourceProspect.estimatedValue && sourceProspect.estimatedValue !== project.estimatedValue) {
-        updates.estimatedValue = sourceProspect.estimatedValue;
-      }
-      if (sourceProspect.client && sourceProspect.client !== project.client) {
-        updates.client = sourceProspect.client;
-      }
-      if (Object.keys(updates).length > 0) {
-        updateProject(projectId, updates);
-      }
+  // ── Link / Unlink Prospect ──────────────────────────────────────────────
+  const [showLinkProspectModal, setShowLinkProspectModal] = useState(false);
+  const [prospectList, setProspectList] = useState<Prospect[]>([]);
+  const [loadingProspects, setLoadingProspects] = useState(false);
+
+  const handleOpenLinkModal = async () => {
+    setShowLinkProspectModal(true);
+    setLoadingProspects(true);
+    try {
+      const res = await prospectService.listLight({ status: 'Approved', isConverted: false });
+      const data = (res as any).data?.data || (res as any).data || [];
+      const list: Prospect[] = Array.isArray(data) ? data.map((p: any) => ({
+        ...p,
+        estimatedValue: p.estimatedValue != null ? Number(p.estimatedValue) : undefined,
+      })) : [];
+      setProspectList(list);
+    } catch (e) {
+      toast.error('Gagal memuat daftar prospek');
+    } finally {
+      setLoadingProspects(false);
     }
-  }, [sourceProspect?.estimatedValue, sourceProspect?.client]);
+  };
+
+  const handleLinkProspect = async (prospectId: string) => {
+    if (!projectId || !project) return;
+    try {
+      await updateProject(projectId, { sourceProspectId: prospectId });
+      await prospectService.update(prospectId, { projectId });
+
+      const syncData: Record<string, any> = {};
+      if (project.client) syncData.client = project.client;
+      if (project.estimatedValue) syncData.estimatedValue = project.estimatedValue;
+      if (Object.keys(syncData).length > 0) {
+        await prospectService.update(prospectId, syncData);
+      }
+
+      toast.success('Prospek berhasil di-link');
+      setShowLinkProspectModal(false);
+      fetchProject(projectId);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal link prospek');
+    }
+  };
+
+  const handleUnlinkProspect = async () => {
+    if (!projectId || !project?.sourceProspectId) return;
+    try {
+      const oldId = project.sourceProspectId;
+      await prospectService.update(oldId, { projectId: null });
+      await updateProject(projectId, { sourceProspectId: undefined as any });
+      toast.success('Prospek berhasil di-unlink');
+      fetchProject(projectId);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal unlink prospek');
+    }
+  };
 
   if (!project) {
     if (loadingDetail) {
@@ -432,7 +473,13 @@ export default function ProjectDetailView({
 
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'Overview' && (
-            <OverviewTab project={displayProject} onShowNotification={handleShowNotification} />
+            <OverviewTab
+              project={displayProject}
+              onShowNotification={handleShowNotification}
+              sourceProspect={sourceProspect}
+              onLinkProspect={handleOpenLinkModal}
+              onUnlinkProspect={handleUnlinkProspect}
+            />
           )}
 
           {/* Locked tab restriction */}
@@ -518,6 +565,60 @@ export default function ProjectDetailView({
         }
       >
         <p className="text-sm text-secondary">Apakah Anda yakin ingin menghapus proyek ini? Tindakan ini tidak dapat dibatalkan.</p>
+      </Modal>
+
+      {/* Link Prospect Modal */}
+      <Modal
+        isOpen={showLinkProspectModal}
+        onClose={() => setShowLinkProspectModal(false)}
+        title="Link ke Prospek"
+        size="lg"
+        footer={
+          <Button variant="secondary" size="md" onClick={() => setShowLinkProspectModal(false)}>
+            Tutup
+          </Button>
+        }
+      >
+        {loadingProspects ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <span className="material-symbols-outlined text-3xl text-outline animate-spin">progress_activity</span>
+              <p className="text-sm text-secondary">Memuat daftar prospek...</p>
+            </div>
+          </div>
+        ) : prospectList.length === 0 ? (
+          <div className="flex flex-col items-center py-12 text-center">
+            <span className="material-symbols-outlined text-4xl text-outline mb-3">search_off</span>
+            <p className="text-sm text-secondary">Tidak ada prospek tersedia</p>
+            <p className="text-xs text-outline mt-1">Semua prospek yang sudah Approved dan belum dikonversi akan muncul di sini.</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {prospectList.map((prospect) => (
+              <div
+                key={prospect.id}
+                className="flex items-center justify-between p-4 rounded-xl border border-border/60 hover:bg-surface-container-low transition-colors"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-sm text-on-surface truncate">{prospect.name}</p>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-secondary">
+                    <span>Client: {prospect.client || '-'}</span>
+                    {prospect.estimatedValue != null && (
+                      <span>Nilai: Rp {Number(prospect.estimatedValue).toLocaleString('id-ID')}</span>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => handleLinkProspect(prospect.id!)}
+                >
+                  Link
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </Modal>
     </div>
   );

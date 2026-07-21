@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { Modal, Button, Stepper, Tabs } from '@/components/ui';
 import type { StepperStep, Tab } from '@/components/ui';
 import StatusBadge from '@/components/shared/StatusBadge';
-import type { TimelineEvent, Visit, FollowUpTask } from '@/types/domain';
+import type { TimelineEvent, Visit, FollowUpTask, Project } from '@/types/domain';
 import { useProspectStore } from '@/stores/prospectStore';
 import { useCustomerStore } from '@/stores/customerStore';
 import { useProjectStore } from '@/stores/projectStore';
@@ -20,6 +20,7 @@ import { useVisitStore } from '@/stores/visitStore';
 import { useFollowUpStore } from '@/stores/followUpStore';
 import { formatCurrency, formatCurrencyShort, formatDate } from '@/utils/formatters';
 import apiClient, { unwrap } from '@/services/api-client';
+import { projectService } from '@/services/projects';
 
 const legacyLabels: Record<string, string> = {
   tipePengadaanUnit: 'Tipe Pengadaan Unit',
@@ -162,7 +163,17 @@ export default function ProspectDetailPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [resubmitting, setResubmitting] = useState(false);
 
-  // Visit state
+  // ── Link to Existing Project ─────────────────────────────────────────────
+  const [showLinkProjectModal, setShowLinkProjectModal] = useState(false);
+  const [linkStep, setLinkStep] = useState<'select' | 'confirm'>('select');
+  const [projectList, setProjectList] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [conflicts, setConflicts] = useState<Record<string, { prospectVal: any; projectVal: any }>>({});
+  const [syncChoices, setSyncChoices] = useState<Record<string, 'prospect' | 'project'>>({});
+  const [loadingProjects, setLoadingProjects] = useState(false);
+  const [linking, setLinking] = useState(false);
+
+  // ── /Link to Existing Project ─────────────────────────────────────────────
   const [showVisitModal, setShowVisitModal] = useState(false);
   const [visitForm, setVisitForm] = useState({ date: '', notes: '', picName: '' });
   const visits = useVisitStore((s) => id ? s.visits[id] || [] : []);
@@ -475,6 +486,97 @@ export default function ProspectDetailPage() {
     navigate('/projects/new', { state: { fromProspect: prospect } });
   };
 
+  // ── Link ke Project Existing ────────────────────────────────────────────
+  const conflictingFields = ['name', 'client', 'estimatedValue'];
+
+  const handleOpenLinkProjectModal = async () => {
+    setShowLinkProjectModal(true);
+    setLinkStep('select');
+    setLoadingProjects(true);
+    setSelectedProject(null);
+    setConflicts({});
+    setSyncChoices({});
+    try {
+      const res = await projectService.list({
+        perPage: 100,
+        excludeResult: 'Selesai,Kalah',
+      });
+      const data = (res as any).data?.data || (res as any).data || [];
+      const list: Project[] = Array.isArray(data) ? data : [];
+      // Filter out projects that already have a prospect linked
+      const unlinked = list.filter((p: any) => !p.sourceProspectId);
+      setProjectList(unlinked);
+    } catch (e) {
+      toast.error('Gagal memuat daftar project');
+    } finally {
+      setLoadingProjects(false);
+    }
+  };
+
+  const handleSelectProject = async (projectId: string) => {
+    const project = projectList.find((p) => p.id === projectId);
+    if (!project) return;
+    setSelectedProject(project);
+
+    // Compare conflicting fields
+    const diffs: Record<string, { prospectVal: any; projectVal: any }> = {};
+    for (const field of conflictingFields) {
+      const pVal = (prospect as any)[field];
+      const prjVal = (project as any)[field];
+      if (pVal !== undefined && prjVal !== undefined && pVal !== prjVal) {
+        diffs[field] = { prospectVal: pVal, projectVal: prjVal };
+      }
+    }
+    setConflicts(diffs);
+
+    // Default: pilih data project (lebih akurat)
+    const defaults: Record<string, 'prospect' | 'project'> = {};
+    for (const field of Object.keys(diffs)) {
+      defaults[field] = 'project';
+    }
+    setSyncChoices(defaults);
+    setLinkStep('confirm');
+  };
+
+  const handleChoiceChange = (field: string, choice: 'prospect' | 'project') => {
+    setSyncChoices((prev) => ({ ...prev, [field]: choice }));
+  };
+
+  const handleConfirmLink = async () => {
+    if (!selectedProject || !prospect?.id) return;
+    setLinking(true);
+    try {
+      // 1. Link both directions
+      await projectService.update(selectedProject.id, { sourceProspectId: prospect.id });
+      await updateProspect(prospect.id, { projectId: selectedProject.id });
+
+      // 2. Sync data sesuai pilihan user
+      const prospectSync: Record<string, any> = {};
+      const projectSync: Record<string, any> = {};
+      for (const [field, choice] of Object.entries(syncChoices)) {
+        if (choice === 'project') {
+          prospectSync[field] = (selectedProject as any)[field];
+        } else {
+          projectSync[field] = (prospect as any)[field];
+        }
+      }
+      if (Object.keys(prospectSync).length > 0) {
+        await updateProspect(prospect.id, prospectSync);
+      }
+      if (Object.keys(projectSync).length > 0) {
+        await projectService.update(selectedProject.id, projectSync);
+      }
+
+      toast.success('Prospek berhasil di-link ke project');
+      setShowLinkProjectModal(false);
+      if (prospect?.id) fetchProspect(prospect.id);
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || err?.message || 'Gagal link ke project');
+    } finally {
+      setLinking(false);
+    }
+  };
+  // ── /Link ke Project Existing ────────────────────────────────────────────
   const handleVerifikasi = async () => {
     if (!customer?.id) {
       toast.error('Data customer tidak ditemukan.');
@@ -577,6 +679,12 @@ export default function ProspectDetailPage() {
         {prospect.status === 'Approved' && !isConverted && isPotensial && can('project:create') && (
           <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">add_business</span>} onClick={handleBuatProyek}>
             Buat Proyek
+          </Button>
+        )}
+
+        {prospect.status === 'Approved' && !isConverted && (
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">link</span>} onClick={handleOpenLinkProjectModal}>
+            Link ke Project Existing
           </Button>
         )}
 
@@ -1521,6 +1629,133 @@ export default function ProspectDetailPage() {
             />
           </div>
         </form>
+      </Modal>
+
+      {/* Link to Existing Project Modal */}
+      <Modal
+        isOpen={showLinkProjectModal}
+        onClose={() => setShowLinkProjectModal(false)}
+        title={linkStep === 'select' ? 'Link ke Project Existing' : 'Konfirmasi Data'}
+        size="lg"
+        footer={
+          linkStep === 'select' ? (
+            <Button variant="secondary" size="md" onClick={() => setShowLinkProjectModal(false)}>
+              Tutup
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="secondary" size="md" onClick={() => setLinkStep('select')} disabled={linking}>
+                Kembali
+              </Button>
+              <Button variant="primary" size="md" onClick={handleConfirmLink} isLoading={linking} leftIcon={<span className="material-symbols-outlined text-[18px]">link</span>}>
+                {linking ? 'Me-link...' : 'Konfirmasi Link'}
+              </Button>
+            </div>
+          )
+        }
+      >
+        {linkStep === 'select' ? (
+          loadingProjects ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-3">
+                <span className="material-symbols-outlined text-3xl text-outline animate-spin">progress_activity</span>
+                <p className="text-sm text-secondary">Memuat daftar project...</p>
+              </div>
+            </div>
+          ) : projectList.length === 0 ? (
+            <div className="flex flex-col items-center py-12 text-center">
+              <span className="material-symbols-outlined text-4xl text-outline mb-3">search_off</span>
+              <p className="text-sm text-secondary">Tidak ada project tersedia</p>
+              <p className="text-xs text-outline mt-1">Semua project yang sudah ada dan belum memiliki prospek akan muncul di sini.</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {projectList.map((project) => (
+                <div
+                  key={project.id}
+                  className="flex items-center justify-between p-4 rounded-xl border border-border/60 hover:bg-surface-container-low transition-colors cursor-pointer"
+                  onClick={() => handleSelectProject(project.id)}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-sm text-on-surface truncate">{project.name}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-secondary">
+                      <span>Kode: {project.code || '-'}</span>
+                      <span>Client: {project.client || '-'}</span>
+                      {project.estimatedValue != null && (
+                        <span>Nilai: Rp {Number(project.estimatedValue).toLocaleString('id-ID')}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-outline">chevron_right</span>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          /* Confirm step — show field comparison */
+          <div className="space-y-4">
+            <p className="text-sm text-secondary">
+              Terdapat perbedaan data antara prospek dan project. Pilih sumber data yang ingin digunakan untuk setiap field.
+            </p>
+
+            {conflictingFields.map((field) => {
+              const conflict = conflicts[field];
+              if (!conflict) return null;
+              const isProjectSelected = syncChoices[field] === 'project';
+              const prospectVal = conflict.prospectVal;
+              const projectVal = conflict.projectVal;
+
+              return (
+                <div key={field} className="border border-border/60 rounded-xl p-4 space-y-3">
+                  <p className="text-sm font-semibold text-on-surface capitalize">{field.replace(/([A-Z])/g, ' $1')}</p>
+                  <div className="space-y-2">
+                    <label className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${!isProjectSelected ? 'bg-primary/5 border border-primary/30' : 'bg-surface-container-low border border-transparent'}`}>
+                      <input
+                        type="radio"
+                        name={`field-${field}`}
+                        checked={!isProjectSelected}
+                        onChange={() => handleChoiceChange(field, 'prospect')}
+                        className="accent-primary"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-secondary">Data Prospek</p>
+                        <p className="text-sm font-semibold text-on-surface truncate">
+                          {field === 'estimatedValue'
+                            ? `Rp ${Number(prospectVal).toLocaleString('id-ID')}`
+                            : String(prospectVal ?? '-')}
+                        </p>
+                      </div>
+                    </label>
+                    <label className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${isProjectSelected ? 'bg-primary/5 border border-primary/30' : 'bg-surface-container-low border border-transparent'}`}>
+                      <input
+                        type="radio"
+                        name={`field-${field}`}
+                        checked={isProjectSelected}
+                        onChange={() => handleChoiceChange(field, 'project')}
+                        className="accent-primary"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-secondary">Data Project <span className="text-primary font-semibold">(default)</span></p>
+                        <p className="text-sm font-semibold text-on-surface truncate">
+                          {field === 'estimatedValue'
+                            ? `Rp ${Number(projectVal).toLocaleString('id-ID')}`
+                            : String(projectVal ?? '-')}
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              );
+            })}
+
+            {Object.keys(conflicts).length === 0 && (
+              <div className="flex flex-col items-center py-8 text-center">
+                <span className="material-symbols-outlined text-3xl text-success mb-2">check_circle</span>
+                <p className="text-sm text-secondary">Tidak ada perbedaan data. Langsung link tanpa konflik.</p>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
 
       {/* Delete Confirmation Modal */}

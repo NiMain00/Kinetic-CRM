@@ -1,13 +1,16 @@
-import type { Project } from '@/types/domain';
+import type { Project, Prospect } from '@/types/domain';
 import { formatCurrency, formatDate } from '@/utils/formatters';
-import { Card, Badge } from '@/components/ui';
+import { Card, Badge, Button } from '@/components/ui';
 
 interface TabProps {
   project?: Project;
   onShowNotification?: (message: string, type: 'success' | 'warning' | 'error') => void;
+  sourceProspect?: Prospect | null;
+  onLinkProspect?: () => void;
+  onUnlinkProspect?: () => void;
 }
 
-export default function OverviewTab({ project }: TabProps) {
+export default function OverviewTab({ project, sourceProspect, onLinkProspect, onUnlinkProspect }: TabProps) {
   const statusBadgeVariant = (status: string): 'success' | 'warning' | 'info' | 'purple' | 'danger' => {
     if (status === 'Selesai') return 'success';
     if (status === 'LPHS/SIOS' || status === 'Input Harga') return 'warning';
@@ -140,6 +143,45 @@ export default function OverviewTab({ project }: TabProps) {
               </div>
             )}
           </div>
+        </Card>
+
+        {/* Info Sales */}
+        <Card padding="lg">
+          <h3 className="font-heading-section text-heading-section mb-4">Info Sales</h3>
+          {sourceProspect ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">person</span>
+                <span className="font-semibold text-sm">{sourceProspect.name}</span>
+              </div>
+              <p className="text-xs text-secondary">Client: {sourceProspect.client || '-'}</p>
+              {sourceProspect.estimatedValue != null && (
+                <p className="text-xs text-secondary">
+                  Estimasi: Rp {Number(sourceProspect.estimatedValue).toLocaleString('id-ID')}
+                </p>
+              )}
+              <div className="flex gap-2 pt-1">
+                <Button variant="outline" size="sm"
+                  onClick={() => window.open(`/prospects/${sourceProspect.id}`, '_blank')}
+                >
+                  Lihat Prospek
+                </Button>
+                <Button variant="danger" size="sm" onClick={onUnlinkProspect}>
+                  Unlink
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-outline">
+                <span className="material-symbols-outlined text-[18px]">info</span>
+                <span>Belum ada prospek</span>
+              </div>
+              <Button variant="primary" size="sm" onClick={onLinkProspect}>
+                Link ke Prospek
+              </Button>
+            </div>
+          )}
         </Card>
 
         <Card padding="lg">

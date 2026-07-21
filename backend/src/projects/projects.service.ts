@@ -76,8 +76,8 @@ export class ProjectsService {
   }
 
   async update(id: string, data: any) {
-    const exists = await this.prisma.project.findFirst({ where: { id, deletedAt: null }, select: { id: true } });
-    if (!exists) throw new NotFoundException('Project not found');
+    const existing = await this.prisma.project.findFirst({ where: { id, deletedAt: null }, select: { id: true, sourceProspectId: true } });
+    if (!existing) throw new NotFoundException('Project not found');
 
     // Handle timelineEvents terpisah agar bisa validasi actor UUID
     const timelinePayload = data.timelineEvents;
@@ -108,6 +108,27 @@ export class ProjectsService {
         delete data[key];
       }
     }
+    // Handle prospect linking/unlinking
+    if ('sourceProspectId' in data) {
+      const newProspectId = data.sourceProspectId;
+      const oldProspectId = existing.sourceProspectId;
+
+      if (newProspectId !== oldProspectId) {
+        if (oldProspectId) {
+          await this.prisma.prospect.update({
+            where: { id: oldProspectId },
+            data: { convertedToProjectId: null, isConverted: false },
+          });
+        }
+        if (newProspectId) {
+          await this.prisma.prospect.update({
+            where: { id: newProspectId },
+            data: { convertedToProjectId: id, isConverted: true },
+          });
+        }
+      }
+    }
+
     return this.prisma.project.update({ where: { id }, data: { ...data, ...nested } });
   }
 
