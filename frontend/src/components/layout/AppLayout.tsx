@@ -194,7 +194,7 @@ export default function AppLayout() {
       </div>
 
       {/* Main content area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white rounded-2xl shadow-[0_1px_3px_0_rgb(0,0,0/0.04),0_1px_2px_-1px_rgb(0,0,0/0.04)] border border-gray-100 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 bg-surface rounded-2xl shadow-[0_1px_3px_0_rgb(0,0,0/0.04),0_1px_2px_-1px_rgb(0,0,0/0.04)] border border-border/60 overflow-hidden">
         <Topbar
           userName={userName}
           roleName={userRole}

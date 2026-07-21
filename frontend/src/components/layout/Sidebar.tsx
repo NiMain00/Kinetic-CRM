@@ -183,18 +183,18 @@ const Sidebar = React.memo(function Sidebar({
         title={collapsed && !mobile ? item.label : undefined}
         className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-left font-medium touch-min-h ${
           isActive
-            ? 'bg-[#F3F4F6] text-gray-900 font-semibold'
-            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+            ? 'bg-primary-container/40 text-primary font-semibold'
+            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
         } ${collapsed && !mobile ? 'justify-center px-0' : ''}`}
         aria-label={item.label}
         aria-current={isActive ? 'page' : undefined}
       >
-        <span className={`material-symbols-outlined text-[18px] shrink-0 ${isActive ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
+        <span className={`material-symbols-outlined text-[16px] shrink-0 ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
           {item.icon}
         </span>
         {!collapsed && <span className="truncate text-[12px]">{item.label}</span>}
         {!collapsed && badge !== undefined && badge > 0 && (
-          <span className="ml-auto bg-gray-100 text-gray-600 text-[9px] font-semibold px-1.5 py-0.5 rounded-full" aria-label={`${badge} notifikasi`}>
+          <span className="ml-auto bg-surface-container text-on-surface-variant text-[9px] font-semibold px-1.5 py-0.5 rounded-full" aria-label={`${badge} notifikasi`}>
             {badge}
           </span>
         )}
@@ -214,19 +214,19 @@ const Sidebar = React.memo(function Sidebar({
           title={collapsed && !mobile ? item.label : undefined}
           className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-left font-medium touch-min-h ${
             hasActiveChild
-              ? 'bg-[#F3F4F6] text-gray-900 font-semibold'
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+              ? 'bg-primary-container/40 text-primary font-semibold'
+              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
           } ${collapsed && !mobile ? 'justify-center px-0' : ''}`}
           aria-label={item.label}
           aria-expanded={isExpanded}
         >
-          <span className={`material-symbols-outlined text-[18px] shrink-0 ${hasActiveChild ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
+          <span className={`material-symbols-outlined text-[16px] shrink-0 ${hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
             {item.icon}
           </span>
           {!collapsed && (
             <>
               <span className="truncate flex-1 text-left text-[12px]">{item.label}</span>
-              <span className={`material-symbols-outlined text-[14px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} text-gray-400`}>
+              <span className={`material-symbols-outlined text-[12px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} text-on-surface-variant`}>
                 chevron_right
               </span>
             </>
@@ -235,7 +235,7 @@ const Sidebar = React.memo(function Sidebar({
 
         {/* Children (only when expanded and not collapsed) */}
         {!collapsed && isExpanded && item.children && (
-          <div className="ml-3 space-y-0.5 border-l-2 border-gray-100 pl-2">
+          <div className="ml-3 space-y-0.5 border-l-2 border-border/60 pl-2">
             {item.children.map((child) => {
               const isChildActive = isPathActive(child.path);
               return (
@@ -245,13 +245,13 @@ const Sidebar = React.memo(function Sidebar({
                   onClick={() => { if (mobile && onClose) onClose(); }}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-left text-[12px] font-medium touch-min-h ${
                     isChildActive
-                      ? 'bg-[#F3F4F6] text-gray-900 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                      ? 'bg-primary-container/30 text-primary font-semibold'
+                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                   }`}
                   aria-label={child.label}
                   aria-current={isChildActive ? 'page' : undefined}
                 >
-                  <span className={`material-symbols-outlined text-[16px] ${isChildActive ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
+                  <span className={`material-symbols-outlined text-[14px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
                     {child.icon}
                   </span>
                   <span className="truncate">{child.label}</span>
@@ -269,7 +269,7 @@ const Sidebar = React.memo(function Sidebar({
     return (
       <div key={title} className="mb-4">
         {!collapsed && (
-          <p className="px-3 mb-1.5 text-[9px] font-semibold uppercase tracking-wider text-gray-400 select-none">
+          <p className="px-3 mb-1.5 text-[9px] font-semibold uppercase tracking-wider text-outline select-none">
             {title}
           </p>
         )}
@@ -284,7 +284,7 @@ const Sidebar = React.memo(function Sidebar({
 
   return (
     <aside
-      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-full flex-col shrink-0 rounded-2xl bg-white shadow-[0_1px_3px_0_rgb(0,0,0/0.04),0_1px_2px_-1px_rgb(0,0,0/0.04)] border border-gray-100 overflow-hidden antialiased ${sidebarWidth} ${
+      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-full flex-col shrink-0 rounded-2xl bg-surface shadow-[0_1px_3px_0_rgb(0,0,0/0.04),0_1px_2px_-1px_rgb(0,0,0/0.04)] border border-border/60 overflow-hidden antialiased ${sidebarWidth} ${
         mobile ? 'slide-in-left w-64 rounded-none' : 'transition-all duration-300'
       }`}
     >
@@ -308,10 +308,10 @@ const Sidebar = React.memo(function Sidebar({
             </div>
             {(!collapsed || mobile) && (
               <div className="flex-1 min-w-0">
-                <h1 className="text-[13px] font-bold text-gray-900 tracking-tight truncate leading-tight">
+                <h1 className="text-[13px] font-bold text-on-surface tracking-tight truncate leading-tight">
                   Kinetic CRM
                 </h1>
-                <p className="text-[8px] text-gray-400 uppercase tracking-widest font-medium">
+                <p className="text-[8px] text-outline uppercase tracking-widest font-medium">
                   Operasi Perusahaan
                 </p>
               </div>
@@ -320,7 +320,7 @@ const Sidebar = React.memo(function Sidebar({
             {!mobile && (
               <button
                 onClick={() => setCollapsed(!collapsed)}
-                className="flex items-center justify-center w-6 h-6 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-200 shrink-0"
+                className="flex items-center justify-center w-6 h-6 rounded-lg text-outline hover:bg-surface-container hover:text-on-surface transition-all duration-200 shrink-0"
                 aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
                 title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
               >
@@ -335,13 +335,13 @@ const Sidebar = React.memo(function Sidebar({
         {/* Active Department Badge */}
         {(!collapsed || mobile) && deptName && (
           <div className="mb-3">
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl border border-green-100">
-              <div className="w-5 h-5 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-green-600 text-[12px]">business</span>
+            <div className="flex items-center gap-2 px-3 py-2 bg-primary-container/30 rounded-xl border border-primary/10">
+              <div className="w-5 h-5 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-primary text-[12px]">business</span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold text-green-700 truncate">{deptName}</p>
-                <p className="text-[8px] text-green-500 uppercase tracking-wider font-medium">{deptCode}</p>
+                <p className="text-[10px] font-semibold text-primary truncate">{deptName}</p>
+                <p className="text-[8px] text-outline uppercase tracking-wider font-medium">{deptCode}</p>
               </div>
             </div>
           </div>
@@ -359,7 +359,7 @@ const Sidebar = React.memo(function Sidebar({
             <div className="mb-3">
               <button
                 onClick={() => setShowDeptSwitch(!showDeptSwitch)}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[9px] text-gray-400 hover:text-gray-600 transition-colors font-medium"
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[9px] text-outline hover:text-on-surface transition-colors font-medium"
               >
                 <span>Ganti Department</span>
                 <span className="material-symbols-outlined text-[14px]">
@@ -375,10 +375,10 @@ const Sidebar = React.memo(function Sidebar({
                         useAuthStore.getState().setActiveDepartment(dept.id);
                         setShowDeptSwitch(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[12px] text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-[12px] text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
                     >
-                      <div className="w-4 h-4 rounded-lg bg-gray-100 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[10px] text-gray-400">business</span>
+                      <div className="w-4 h-4 rounded-lg bg-surface-container-low flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[10px] text-on-surface-variant">business</span>
                       </div>
                       <span className="truncate">{dept.name}</span>
                     </button>
@@ -390,7 +390,7 @@ const Sidebar = React.memo(function Sidebar({
         })()}
 
         {/* Navigation list - sections */}
-        <nav ref={navListRef} className="flex-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
+        <nav ref={navListRef} className="flex-1 overflow-y-auto scrollbar-none" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
           {/* Render sections */}
           {Object.entries(SECTION_MAP).map(([key, section]) =>
             renderSection(section.title, sectionedItems[key] || [])
@@ -398,7 +398,7 @@ const Sidebar = React.memo(function Sidebar({
         </nav>
 
         {/* Bottom menu */}
-        <div className="mt-auto pt-2 border-t border-gray-100 space-y-0.5">
+        <div className="mt-auto pt-2 border-t border-border/60 space-y-0.5">
           {/* Bottom nav items (e.g. Konfigurasi) */}
           {bottomItems.map(renderNavItem)}
 
@@ -407,12 +407,12 @@ const Sidebar = React.memo(function Sidebar({
             <button
               onClick={onLogout}
               title={collapsed && !mobile ? 'Keluar' : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 text-left text-[12px] font-medium cursor-pointer touch-min-h ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-danger hover:bg-danger-container/20 transition-all duration-200 text-left text-[12px] font-medium cursor-pointer touch-min-h ${
                 collapsed && !mobile ? 'justify-center px-0' : ''
               }`}
               aria-label="Keluar"
             >
-              <span className="material-symbols-outlined text-[18px] shrink-0">logout</span>
+              <span className="material-symbols-outlined text-[16px] shrink-0">logout</span>
               {(!collapsed || mobile) && <span>Keluar</span>}
             </button>
           )}
