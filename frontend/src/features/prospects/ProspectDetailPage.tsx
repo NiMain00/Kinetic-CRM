@@ -153,6 +153,8 @@ export default function ProspectDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [resubmitting, setResubmitting] = useState(false);
 
   // Visit state
   const [showVisitModal, setShowVisitModal] = useState(false);
@@ -328,8 +330,6 @@ export default function ProspectDetailPage() {
     }
   };
 
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-
   const handlePromoteToProspek = async () => {
     if (actionLoading) return;
     const potensi = prospect?.potensiUnit || 0;
@@ -374,8 +374,6 @@ export default function ProspectDetailPage() {
     });
     setActionLoading(null);
   };
-
-  const [resubmitting, setResubmitting] = useState(false);
 
   const handleResubmit = async () => {
     if (resubmitting) return;
