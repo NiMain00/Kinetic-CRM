@@ -235,27 +235,31 @@ const Sidebar = React.memo(function Sidebar({
 
         {/* Children (only when expanded and not collapsed) */}
         {!collapsed && isExpanded && item.children && (
-          <div className="ml-3 space-y-0.5 border-l-2 border-border/60 pl-2">
-            {item.children.map((child) => {
+          <div className="ml-3 pl-3 border-l-2 border-border/60">
+            {item.children.map((child, idx) => {
               const isChildActive = isPathActive(child.path);
+              const isLast = idx === (item.children?.length ?? 0) - 1;
               return (
-                <Link
-                  key={child.path}
-                  to={child.path}
-                  onClick={() => { if (mobile && onClose) onClose(); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-left text-[12px] font-medium touch-min-h ${
-                    isChildActive
-                      ? 'bg-primary-container/30 text-primary font-semibold'
-                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                  }`}
-                  aria-label={child.label}
-                  aria-current={isChildActive ? 'page' : undefined}
-                >
-                  <span className={`material-symbols-outlined text-[14px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
-                    {child.icon}
-                  </span>
-                  <span className="truncate">{child.label}</span>
-                </Link>
+                <div key={child.path} className="relative">
+                  {/* Horizontal connector line */}
+                  <div className="absolute left-[-13px] top-[14px] w-3 border-t-2 border-border/60" />
+                  <Link
+                    to={child.path}
+                    onClick={() => { if (mobile && onClose) onClose(); }}
+                    className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-left text-[12px] font-medium ${
+                      isChildActive
+                        ? 'bg-primary-container/30 text-primary font-semibold'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                    }`}
+                    aria-label={child.label}
+                    aria-current={isChildActive ? 'page' : undefined}
+                  >
+                    <span className={`material-symbols-outlined text-[14px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+                      {child.icon}
+                    </span>
+                    <span className="truncate">{child.label}</span>
+                  </Link>
+                </div>
               );
             })}
           </div>
