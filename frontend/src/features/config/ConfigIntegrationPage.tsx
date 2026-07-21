@@ -23,7 +23,7 @@ function AppsScriptSnippet() {
     '    if (key) answers[key] = item.getResponse();',
     '  });',
     '',
-    "  UrlFetchApp.fetch('" + origin + "/api/gform/webhook', {",
+    "  UrlFetchApp.fetch('" + origin + "/api/v1/gform/webhook', {",
     "    method: 'post',",
     "    contentType: 'application/json',",
     "    headers: { 'x-api-key': 'ISI_API_KEY_DISINI' },",
@@ -186,7 +186,7 @@ export default function ConfigIntegrationPage() {
               <div className="p-3 bg-surface-container-low rounded-lg border border-border/60 space-y-1.5">
                 <p className="text-[11px] font-semibold text-on-surface-variant">Webhook Endpoint</p>
                 <code className="block text-[11px] bg-surface-container px-3 py-2 rounded border border-border font-mono text-primary break-all">
-                  {window.location.origin}/api/gform/webhook
+                  {window.location.origin}/api/v1/gform/webhook
                 </code>
                 <p className="text-[10px] text-secondary">
                   Gunakan URL ini di Google Apps Script untuk mengirim data form. Sertakan API Key di header <code className="text-primary bg-surface-container px-1 rounded">x-api-key</code>.
