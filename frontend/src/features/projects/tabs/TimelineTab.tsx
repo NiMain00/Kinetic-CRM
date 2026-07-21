@@ -197,14 +197,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
               <div className="flex items-center gap-3 px-1">
                 <span className="text-xs text-secondary w-24 shrink-0 font-semibold">Timeline</span>
                 <div className="flex-1 flex h-8 rounded-full overflow-hidden bg-surface-container-high" title={timelineAnalytics.totalDurationDays != null ? `Total ${timelineAnalytics.totalDurationDays} hari` : ''}>
-                  {timelineAnalytics.transitions.map((t) => {
-                    const isActive = t.eventKey === timelineAnalytics.activeStage;
-                    const isNotStarted = !t.endedAt && !isActive;
-                    const isComplete = !!t.endedAt;
-                    const isSelected = t.eventKey === selectedEventKey;
-                    const isHovered = t.eventKey === hoveredEventKey;
-                    const showRing = isSelected || (isHovered && !selectedEventKey);
-
+                  {(() => {
                     const palettes = [
                       'bg-emerald-500', 'bg-teal-500', 'bg-cyan-600', 'bg-sky-500',
                       'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500',
@@ -212,54 +205,60 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                       'bg-lime-600', 'bg-green-600',
                     ];
                     let palIdx = 0;
-                    const preColor = new Map<string, string>();
-                    timelineAnalytics.transitions.forEach((tx) => {
-                      if (tx.endedAt && !tx.isOverSla) {
-                        preColor.set(tx.eventKey, palettes[palIdx % palettes.length]);
+                    return timelineAnalytics.transitions.map((t) => {
+                      const isActive = t.eventKey === timelineAnalytics.activeStage;
+                      const isNotStarted = !t.endedAt && !isActive;
+                      const isSelected = t.eventKey === selectedEventKey;
+                      const isHovered = t.eventKey === hoveredEventKey;
+                      const showRing = isSelected || (isHovered && !selectedEventKey);
+
+                      // Palette untuk SEMUA tahap yang sudah selesai
+                      let baseColor: string;
+                      if (isNotStarted) baseColor = 'bg-surface-container-high';
+                      else if (isActive) baseColor = 'bg-primary';
+                      else {
+                        baseColor = palettes[palIdx % palettes.length];
                         palIdx++;
                       }
-                    });
 
-                    let barColor: string;
-                    if (isNotStarted) barColor = 'bg-surface-container-high';
-                    else if (isActive) barColor = 'bg-primary';
-                    else if (t.isOverSla) barColor = 'bg-danger';
-                    else barColor = preColor.get(t.eventKey) ?? 'bg-success';
+                      const widthPct = ((t.durationDays ?? 0) / totalDurationDays) * 100;
 
-                    const widthPct = ((t.durationDays ?? 0) / totalDurationDays) * 100;
-
-                    return (
-                      <div
-                        key={t.eventKey}
-                        onClick={() => setSelectedEventKey(isSelected ? null : t.eventKey)}
-                        onMouseEnter={() => setHoveredEventKey(t.eventKey)}
-                        onMouseLeave={() => setHoveredEventKey(null)}
-                        className={`group relative h-full ${barColor} first:rounded-l-full last:rounded-r-full transition-all duration-700 ${showRing ? 'ring-2 ring-offset-1 ring-primary z-10' : ''} cursor-pointer hover:brightness-110`}
-                        style={{ width: `${Math.max(widthPct, 0.5)}%`, minWidth: isActive || isComplete ? '4px' : '0px' }}
-                      >
-                        {/* Warning icon */}
-                        {t.isOverSla && (
-                          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 material-symbols-outlined text-[14px] text-white drop-shadow-md">
-                            warning
-                          </span>
-                        )}
-
-                        {/* Tooltip */}
-                        <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-border/60 shadow-lg rounded-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                          <p className="font-semibold text-on-surface">{t.eventLabel}</p>
-                          {t.startedAt && <p className="text-secondary">Mulai: {formatDate(t.startedAt)}</p>}
-                          {t.endedAt && <p className="text-secondary">Selesai: {formatDate(t.endedAt)}</p>}
-                          <p className="text-secondary">
-                            Durasi: {t.durationDays != null ? `${t.durationDays} hari` : '-'}
-                          </p>
-                          {t.actorName && <p className="text-secondary">Oleh: {t.actorName}</p>}
-                          {t.isOverSla && (
-                            <p className="text-danger font-semibold mt-0.5">⚠ Melewati SLA +{t.slaExcessDays} hari</p>
-                          )}
+                      return (
+                        <div
+                          key={t.eventKey}
+                          onClick={() => setSelectedEventKey(isSelected ? null : t.eventKey)}
+                          onMouseEnter={() => setHoveredEventKey(t.eventKey)}
+                          onMouseLeave={() => setHoveredEventKey(null)}
+                          className={`group relative h-full first:rounded-l-full last:rounded-r-full overflow-hidden transition-all duration-700 ${showRing ? 'ring-2 ring-offset-1 ring-primary z-10' : ''} cursor-pointer hover:brightness-110`}
+                          style={{ width: `${Math.max(widthPct, 0.5)}%`, minWidth: isActive || !isNotStarted ? '4px' : '0px' }}
+                        >
+                          {/* Base color layer */}
+                          <div className={`absolute inset-0 ${baseColor}`} />
+                          {/* Red overlay untuk over-SLA */}
+                          {t.isOverSla && <div className="absolute inset-0 bg-gradient-to-t from-danger/40 via-danger/20 to-transparent" />}
+                          {/* Content layer */}
+                          <div className="relative z-[1] w-full h-full flex items-center justify-center">
+                            {t.isOverSla && (
+                              <span className="material-symbols-outlined text-[14px] text-white drop-shadow-md">warning</span>
+                            )}
+                          </div>
+                          {/* Tooltip */}
+                          <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-border/60 shadow-lg rounded-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                            <p className="font-semibold text-on-surface">{t.eventLabel}</p>
+                            {t.startedAt && <p className="text-secondary">Mulai: {formatDate(t.startedAt)}</p>}
+                            {t.endedAt && <p className="text-secondary">Selesai: {formatDate(t.endedAt)}</p>}
+                            <p className="text-secondary">
+                              Durasi: {t.durationDays != null ? `${t.durationDays} hari` : '-'}
+                            </p>
+                            {t.actorName && <p className="text-secondary">Oleh: {t.actorName}</p>}
+                            {t.isOverSla && (
+                              <p className="text-danger font-semibold mt-0.5">⚠ Melewati SLA +{t.slaExcessDays} hari</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </div>
                 <span className="text-xs text-secondary w-16 text-right font-mono-data shrink-0">
                   {timelineAnalytics.totalDurationDays ?? '-'} hari
@@ -285,7 +284,6 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                   let dotColor: string;
                   if (isNotStarted) dotColor = 'bg-surface-container-high';
                   else if (isActive) dotColor = 'bg-primary';
-                  else if (t.isOverSla) dotColor = 'bg-danger';
                   else {
                     dotColor = palettes[palIdx % palettes.length];
                     palIdx++;
@@ -301,7 +299,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                         isSelected ? 'text-on-surface font-semibold' : isHovered ? 'text-on-surface' : 'text-secondary hover:text-on-surface'
                       }`}
                     >
-                      <span className={`w-2 h-2 rounded-full ${dotColor} inline-block shrink-0 ${showRing ? 'ring-1 ring-offset-[1px] ring-primary' : ''}`} />
+                      <span className={`w-2.5 h-2.5 rounded-full ${dotColor} inline-block shrink-0 ${showRing ? 'ring-1 ring-offset-[1px] ring-primary' : ''} ${t.isOverSla ? 'ring-1 ring-danger/60 ring-offset-[1px]' : ''}`} />
                       {t.eventLabel}
                       {t.isOverSla && <span className="material-symbols-outlined text-danger text-[12px]">warning</span>}
                     </button>
