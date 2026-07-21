@@ -144,7 +144,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F5F5F5] p-2 gap-2">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
         <>
@@ -170,7 +170,7 @@ export default function AppLayout() {
       )}
 
       {/* Desktop sidebar - floating panel */}
-      <div className={`hidden lg:flex ${sidebarOpen ? 'w-64' : 'w-[68px]'} transition-all duration-300 shrink-0 h-full`}>
+      <div className={`hidden lg:flex ${sidebarOpen ? 'w-60' : 'w-[56px]'} transition-all duration-300 shrink-0 h-full`}>
         <Sidebar
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
