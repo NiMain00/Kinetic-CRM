@@ -43,6 +43,7 @@ export default function ConfigIntegrationPage() {
   const [apiKeyValue, setApiKeyValue] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchConfigs();
@@ -100,6 +101,21 @@ export default function ConfigIntegrationPage() {
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Gagal verifikasi koneksi';
       toast.error(msg);
+    }
+  };
+
+  const handleDeleteConfig = async (key: string) => {
+    if (!confirm(`Hapus konfigurasi "${key}"?`)) return;
+    setDeleting(key);
+    try {
+      await configService.deleteIntegration(key);
+      toast.success(`Konfigurasi "${key}" berhasil dihapus`);
+      await fetchConfigs();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Gagal menghapus konfigurasi';
+      toast.error(msg);
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -235,18 +251,19 @@ export default function ConfigIntegrationPage() {
                     <th className="px-6 py-3.5">Key</th>
                     <th className="px-6 py-3.5">Secret</th>
                     <th className="px-6 py-3.5">Terakhir Update</th>
+                    <th className="px-6 py-3.5">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {loading ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-8 text-center text-secondary">
+                      <td colSpan={4} className="px-6 py-8 text-center text-secondary">
                         <div className="animate-spin border-2 border-primary border-t-transparent rounded-full w-5 h-5 mx-auto" />
                       </td>
                     </tr>
                   ) : configs.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-8 text-center text-secondary text-[11px]">
+                      <td colSpan={4} className="px-6 py-8 text-center text-secondary text-[11px]">
                         Belum ada konfigurasi integrasi.
                       </td>
                     </tr>
@@ -263,6 +280,18 @@ export default function ConfigIntegrationPage() {
                         </td>
                         <td className="px-6 py-4 text-outline text-[10px] font-mono">
                           {cfg.updatedAt ? new Date(cfg.updatedAt).toLocaleString('id-ID') : '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleDeleteConfig(cfg.key)}
+                            disabled={deleting === cfg.key}
+                            className="text-error hover:text-error/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            title={`Hapus ${cfg.key}`}
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {deleting === cfg.key ? 'hourglass_empty' : 'delete'}
+                            </span>
+                          </button>
                         </td>
                       </tr>
                     ))
