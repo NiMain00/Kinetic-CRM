@@ -17,6 +17,25 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
+/** Section grouping keys for visual organization */
+const SECTION_MAP: Record<string, { title: string; paths: string[] }> = {
+  main: {
+    title: 'Menu Utama',
+    paths: ['/dashboard', '/prospects', '/projects', '/procurement'],
+  },
+  operations: {
+    title: 'Operasional',
+    paths: ['/approvals', '/reports', '/reports/calendar'],
+  },
+  system: {
+    title: 'Sistem',
+    paths: ['/analytics', '/master-data', '/notifications', '/config'],
+  },
+};
+
+/** Bottom menu items that always appear at the bottom */
+const BOTTOM_MENU_PATHS = new Set(['/config']);
+
 function useSwipe(onClose?: () => void) {
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -120,6 +139,31 @@ const Sidebar = React.memo(function Sidebar({
     });
   }, []);
 
+  /** Split allowed nav items into sections and bottom items */
+  const { sectionedItems, bottomItems } = useMemo(() => {
+    const bottom: NavItem[] = [];
+    const sectionBuckets: Record<string, NavItem[]> = { main: [], operations: [], system: [] };
+    const ungrouped: NavItem[] = [];
+
+    for (const item of allowedNavItems) {
+      if (BOTTOM_MENU_PATHS.has(item.path)) {
+        bottom.push(item);
+        continue;
+      }
+      let placed = false;
+      for (const [key, section] of Object.entries(SECTION_MAP)) {
+        if (section.paths.includes(item.path)) {
+          sectionBuckets[key].push(item);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) ungrouped.push(item);
+    }
+
+    return { sectionedItems: sectionBuckets, bottomItems: bottom };
+  }, [allowedNavItems]);
+
   const renderNavItem = (item: NavItem) => {
     if (item.children && item.children.length > 0) {
       return renderExpandableItem(item);
@@ -136,20 +180,21 @@ const Sidebar = React.memo(function Sidebar({
         key={item.path}
         to={item.path}
         onClick={() => { if (mobile && onClose) onClose(); }}
-        className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
+        title={collapsed && !mobile ? item.label : undefined}
+        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left text-sm font-medium touch-min-h ${
           isActive
-            ? 'bg-primary-container/40 text-primary font-semibold border-primary'
-            : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
-        }`}
+            ? 'bg-[#F3F4F6] text-gray-900 font-semibold'
+            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+        } ${collapsed && !mobile ? 'justify-center px-0' : ''}`}
         aria-label={item.label}
         aria-current={isActive ? 'page' : undefined}
       >
-        <span className={`material-symbols-outlined text-[22px] ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+        <span className={`material-symbols-outlined text-[20px] shrink-0 ${isActive ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
           {item.icon}
         </span>
         {!collapsed && <span className="truncate">{item.label}</span>}
         {!collapsed && badge !== undefined && badge > 0 && (
-          <span className="ml-auto bg-orange-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full" aria-label={`${badge} notifikasi`}>
+          <span className="ml-auto bg-gray-100 text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full" aria-label={`${badge} notifikasi`}>
             {badge}
           </span>
         )}
@@ -165,24 +210,23 @@ const Sidebar = React.memo(function Sidebar({
       <div key={item.path} className="space-y-0.5">
         {/* Parent toggle button */}
         <button
-          onClick={() => {
-            toggleParent(item.path);
-          }}
-          className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h border-l-[3px] ${
+          onClick={() => toggleParent(item.path)}
+          title={collapsed && !mobile ? item.label : undefined}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left text-sm font-medium touch-min-h ${
             hasActiveChild
-              ? 'bg-primary-container/40 text-primary font-semibold border-primary'
-              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface border-transparent'
-          }`}
+              ? 'bg-[#F3F4F6] text-gray-900 font-semibold'
+              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+          } ${collapsed && !mobile ? 'justify-center px-0' : ''}`}
           aria-label={item.label}
           aria-expanded={isExpanded}
         >
-          <span className={`material-symbols-outlined text-[22px] ${hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+          <span className={`material-symbols-outlined text-[20px] shrink-0 ${hasActiveChild ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
             {item.icon}
           </span>
           {!collapsed && (
             <>
               <span className="truncate flex-1 text-left">{item.label}</span>
-              <span className={`material-symbols-outlined text-[18px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}>
+              <span className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} text-gray-400`}>
                 chevron_right
               </span>
             </>
@@ -191,7 +235,7 @@ const Sidebar = React.memo(function Sidebar({
 
         {/* Children (only when expanded and not collapsed) */}
         {!collapsed && isExpanded && item.children && (
-          <div className="ml-3 space-y-0.5 border-l-2 border-border/60 pl-2">
+          <div className="ml-3 space-y-0.5 border-l-2 border-gray-100 pl-2">
             {item.children.map((child) => {
               const isChildActive = isPathActive(child.path);
               return (
@@ -199,15 +243,15 @@ const Sidebar = React.memo(function Sidebar({
                   key={child.path}
                   to={child.path}
                   onClick={() => { if (mobile && onClose) onClose(); }}
-                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-left font-label-sm text-label-sm touch-min-h ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-left text-sm font-medium touch-min-h ${
                     isChildActive
-                      ? 'bg-primary-container/30 text-primary font-semibold'
-                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                      ? 'bg-[#F3F4F6] text-gray-900 font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                   }`}
                   aria-label={child.label}
                   aria-current={isChildActive ? 'page' : undefined}
                 >
-                  <span className={`material-symbols-outlined text-[18px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+                  <span className={`material-symbols-outlined text-[18px] ${isChildActive ? 'text-green-600' : 'text-gray-400'}`} aria-hidden="true">
                     {child.icon}
                   </span>
                   <span className="truncate">{child.label}</span>
@@ -220,11 +264,29 @@ const Sidebar = React.memo(function Sidebar({
     );
   };
 
+  const renderSection = (title: string, items: NavItem[]) => {
+    if (items.length === 0) return null;
+    return (
+      <div key={title} className="mb-4">
+        {!collapsed && (
+          <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400 select-none">
+            {title}
+          </p>
+        )}
+        <div className="space-y-0.5">
+          {items.map(renderNavItem)}
+        </div>
+      </div>
+    );
+  };
+
+  const sidebarWidth = collapsed && !mobile ? 'w-[68px]' : 'w-64';
+
   return (
     <aside
-      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-screen flex-col bg-surface border-r border-border/60 shrink-0 ${
-        collapsed ? (mobile ? 'w-64' : 'w-18') : 'w-64'
-      } ${mobile ? 'slide-in-left' : 'transition-all duration-300'}`}
+      className={`${mobile ? 'fixed inset-0 z-50 flex' : 'hidden md:flex'} h-full flex-col shrink-0 rounded-2xl bg-white shadow-[0_1px_3px_0_rgb(0,0,0/0.04),0_1px_2px_-1px_rgb(0,0,0/0.04)] border border-gray-100 overflow-hidden ${sidebarWidth} ${
+        mobile ? 'slide-in-left w-64 rounded-none' : 'transition-all duration-300'
+      }`}
     >
       {mobile && (
         <div
@@ -235,38 +297,51 @@ const Sidebar = React.memo(function Sidebar({
       )}
 
       <div
-        className={`relative z-10 flex flex-col h-full py-5 ${mobile ? 'w-64 shadow-2xl' : ''}`}
+        className={`relative z-10 flex flex-col h-full ${mobile ? 'w-64 shadow-2xl' : ''} ${collapsed && !mobile ? 'py-3 px-1.5' : 'py-4 px-3'}`}
         {...(mobile ? swipeHandlers : {})}
       >
-        {/* Brand Header */}
-        <div className={`px-5 mb-6 transition-opacity duration-200 ${collapsed && !mobile ? 'text-center' : ''}`}>
+        {/* Brand Header + Collapse Toggle */}
+        <div className={`mb-4 ${collapsed && !mobile ? 'flex flex-col items-center' : ''}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-xl">K</span>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-sm shrink-0">
+              <span className="text-white font-bold text-base">K</span>
             </div>
             {(!collapsed || mobile) && (
-              <div>
-                <h1 className="font-display-title text-on-surface text-lg tracking-tight truncate">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-[15px] font-bold text-gray-900 tracking-tight truncate leading-tight">
                   Kinetic CRM
                 </h1>
-                <p className="font-caption-xs text-outline uppercase tracking-widest text-[10px]">
-                  OPERASI PERUSAHAAN
+                <p className="text-[9px] text-gray-400 uppercase tracking-widest font-medium">
+                  Operasi Perusahaan
                 </p>
               </div>
+            )}
+            {/* Collapse toggle - right side of header */}
+            {!mobile && (
+              <button
+                onClick={() => setCollapsed(!collapsed)}
+                className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all duration-200 shrink-0"
+                aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+                title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+              >
+                <span className="material-symbols-outlined text-[18px] transition-transform duration-300">
+                  {collapsed ? 'keyboard_double_arrow_right' : 'chevron_left'}
+                </span>
+              </button>
             )}
           </div>
         </div>
 
         {/* Active Department Badge */}
         {(!collapsed || mobile) && deptName && (
-          <div className="px-3 mb-3">
-            <div className="flex items-center gap-2 px-3 py-2 bg-primary-container/30 rounded-lg border border-primary/10">
-              <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-primary text-[16px]">business</span>
+          <div className="mb-3">
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl border border-green-100">
+              <div className="w-6 h-6 rounded-lg bg-green-100 flex items-center justify-center shrink-0">
+                <span className="material-symbols-outlined text-green-600 text-[14px]">business</span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-bold text-primary truncate">{deptName}</p>
-                <p className="text-[9px] text-outline uppercase tracking-wider">{deptCode}</p>
+                <p className="text-[11px] font-semibold text-green-700 truncate">{deptName}</p>
+                <p className="text-[9px] text-green-500 uppercase tracking-wider font-medium">{deptCode}</p>
               </div>
             </div>
           </div>
@@ -281,10 +356,10 @@ const Sidebar = React.memo(function Sidebar({
           const otherDepts = allDepts.filter((d) => d.id !== activeDeptId);
           if (otherDepts.length === 0) return null;
           return (
-            <div className="px-3 mb-3">
+            <div className="mb-3">
               <button
                 onClick={() => setShowDeptSwitch(!showDeptSwitch)}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] text-outline hover:text-on-surface transition-colors"
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] text-gray-400 hover:text-gray-600 transition-colors font-medium"
               >
                 <span>Ganti Department</span>
                 <span className="material-symbols-outlined text-[14px]">
@@ -292,7 +367,7 @@ const Sidebar = React.memo(function Sidebar({
                 </span>
               </button>
               {showDeptSwitch && (
-                <div className="mt-1 space-y-1">
+                <div className="mt-1 space-y-0.5">
                   {otherDepts.map((dept) => (
                     <button
                       key={dept.id}
@@ -300,10 +375,10 @@ const Sidebar = React.memo(function Sidebar({
                         useAuthStore.getState().setActiveDepartment(dept.id);
                         setShowDeptSwitch(false);
                       }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs text-on-surface-variant hover:bg-surface-container transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-left text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
                     >
-                      <div className="w-5 h-5 rounded bg-surface-container-low flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[12px]">business</span>
+                      <div className="w-5 h-5 rounded-lg bg-gray-100 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[12px] text-gray-400">business</span>
                       </div>
                       <span className="truncate">{dept.name}</span>
                     </button>
@@ -314,42 +389,34 @@ const Sidebar = React.memo(function Sidebar({
           );
         })()}
 
-        {/* Navigation list */}
-        <nav ref={navListRef} className="flex-1 px-3 space-y-0.5 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
-          {allowedNavItems.map(renderNavItem)}
+        {/* Navigation list - sections */}
+        <nav ref={navListRef} className="flex-1 overflow-y-auto" aria-label="Navigasi sidebar" role="list" onKeyDown={onNavKeyDown}>
+          {/* Render sections */}
+          {Object.entries(SECTION_MAP).map(([key, section]) =>
+            renderSection(section.title, sectionedItems[key] || [])
+          )}
         </nav>
 
-        {/* Logout button */}
-        {onLogout && (
-          <div className="px-3 mb-2">
+        {/* Bottom menu */}
+        <div className="mt-auto pt-2 border-t border-gray-100 space-y-0.5">
+          {/* Bottom nav items (e.g. Konfigurasi) */}
+          {bottomItems.map(renderNavItem)}
+
+          {/* Logout button */}
+          {onLogout && (
             <button
               onClick={onLogout}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-danger hover:bg-danger-container/20 transition-all text-left font-label-sm text-label-sm cursor-pointer touch-min-h border-l-[3px] border-transparent ${
-                collapsed && !mobile ? 'justify-center' : ''
+              title={collapsed && !mobile ? 'Keluar' : undefined}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200 text-left text-sm font-medium cursor-pointer touch-min-h ${
+                collapsed && !mobile ? 'justify-center px-0' : ''
               }`}
-              title="Keluar"
               aria-label="Keluar"
             >
-              <span className="material-symbols-outlined text-[22px]">logout</span>
-              {(!collapsed || mobile) && <span className="font-semibold">Keluar</span>}
+              <span className="material-symbols-outlined text-[20px] shrink-0">logout</span>
+              {(!collapsed || mobile) && <span>Keluar</span>}
             </button>
-          </div>
-        )}
-
-        {/* Collapse button (desktop only) */}
-        {!mobile && (
-          <div className="px-3 mt-auto">
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="w-full flex items-center justify-center gap-2 py-2 text-outline font-label-sm text-label-sm rounded-lg hover:bg-surface-container hover:text-on-surface-variant transition-all touch-min-h"
-              aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-            >
-              <span className="material-symbols-outlined text-lg transition-transform duration-300">
-                {collapsed ? 'keyboard_double_arrow_right' : 'chevron_left'}
-              </span>
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </aside>
   );

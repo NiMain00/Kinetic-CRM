@@ -144,7 +144,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-[#F5F5F5] p-2 gap-2">
       {/* Mobile sidebar overlay */}
       {mobileSidebarOpen && (
         <>
@@ -169,8 +169,8 @@ export default function AppLayout() {
         </>
       )}
 
-      {/* Desktop sidebar */}
-      <div className={`hidden lg:flex ${sidebarOpen ? 'w-64' : 'w-18'} transition-all duration-300 shrink-0`}>
+      {/* Desktop sidebar - floating panel */}
+      <div className={`hidden lg:flex ${sidebarOpen ? 'w-64' : 'w-[68px]'} transition-all duration-300 shrink-0 h-full`}>
         <Sidebar
           collapsed={!sidebarOpen}
           setCollapsed={(val) => { if (val === sidebarOpen) toggleSidebar(); }}
@@ -186,14 +186,15 @@ export default function AppLayout() {
       <div className="hidden md:flex lg:hidden fixed left-0 top-0 z-30 h-screen w-0">
         <button
           onClick={() => setMobileSidebarOpen(true)}
-          className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-14 bg-surface border border-border/60 rounded-r-xl flex items-center justify-center shadow-md hover:bg-surface-container transition-all cursor-pointer active:scale-95 touch-min"
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-14 bg-white border border-gray-200 rounded-r-xl flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all cursor-pointer active:scale-95 touch-min"
           aria-label="Buka sidebar"
         >
-          <span className="material-symbols-outlined text-on-surface-variant text-lg">chevron_right</span>
+          <span className="material-symbols-outlined text-gray-400 text-base">chevron_right</span>
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white rounded-2xl shadow-[0_1px_3px_0_rgb(0,0,0/0.04),0_1px_2px_-1px_rgb(0,0,0/0.04)] border border-gray-100 overflow-hidden">
         <Topbar
           userName={userName}
           roleName={userRole}
@@ -206,7 +207,7 @@ export default function AppLayout() {
         />
         <Breadcrumb />
         <ShortcutHelpModal isOpen={shortcutHelpOpen} onClose={() => setShortcutHelpOpen(false)} />
-        <main className="flex-1 flex flex-col min-h-0 bg-background">
+        <main className="flex-1 flex flex-col min-h-0 bg-gray-50/50">
           <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-3 sm:px-5 lg:px-8 py-3 sm:py-4 responsive-pad">
             <Outlet />
           </div>
