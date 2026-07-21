@@ -124,10 +124,12 @@ export default function AppLayout() {
   const rbacRolePermissions = useRbacStore((s) => s.rolePermissions);
   const newRbacPerms = useMemo(() => {
     if (!userId) return [];
-    const permList = ['dashboard:view', 'notification:read', 'profile:manage', 'prospect:read', 'prospect:write:prospecting',
-       'prospect:approve:transition', 'project:read', 'project:create', 'project:write', 'project:manage:members',
-       'project:manage:scope', 'pengadaan:read', 'pengadaan:create', 'pengadaan:write',
-       'report:view:department', 'report:view:crossdept', 'config:access'];
+    const permList = ['dashboard:view', 'notification:read', 'profile:manage',
+      'prospect:read', 'prospect:write:prospecting', 'prospect:approve:transition',
+      'project:read', 'project:create', 'project:write', 'project:manage:members', 'project:manage:scope',
+      'pengadaan:read', 'pengadaan:create', 'pengadaan:write',
+      'report:view:department', 'report:view:crossdept', 'config:access',
+      'analytics:view'];
     return permList.filter((p) => authz.hasPermission(userId, p, { departmentId: activeDeptId }));
   }, [userId, activeDeptId, rbacUserRoles, rbacRoles, rbacPermissions, rbacRolePermissions]);
   const userPermissions = useMemo(() => [...new Set([...oldPermissions, ...newRbacPerms])], [oldPermissions, newRbacPerms]);

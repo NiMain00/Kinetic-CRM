@@ -175,6 +175,8 @@ async function main() {
     { id: 'perm-lphs-read', code: 'lphs:read', name: 'Read LPHS', module: 'lphs' },
     { id: 'perm-lphs-write', code: 'lphs:write', name: 'Manage LPHS', module: 'lphs' },
 
+    { id: 'perm-analytics-view', code: 'analytics:view', name: 'View Analytics', module: 'analytics' },
+
     { id: 'perm-settings-read', code: 'settings:read', name: 'Read Settings', module: 'settings' },
     { id: 'perm-settings-write', code: 'settings:write', name: 'Manage Settings', module: 'settings' },
   ];

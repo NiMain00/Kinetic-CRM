@@ -22,7 +22,7 @@ const ACCESS_LABELS: Record<string, string> = {
 
 const MODULE_ORDER = [
   'dashboard', 'notification', 'profile', 'user', 'prospect', 'project',
-  'customer', 'pengadaan', 'report', 'config', 'master', 'rbac', 'rks', 'lphs', 'settings',
+  'customer', 'pengadaan', 'report', 'config', 'master', 'rbac', 'rks', 'lphs', 'analytics', 'settings',
 ];
 
 const MODULE_LABELS: Record<string, string> = {
@@ -40,6 +40,7 @@ const MODULE_LABELS: Record<string, string> = {
   rbac: 'RBAC',
   rks: 'RKS',
   lphs: 'LPHS',
+  analytics: 'Analytics',
   settings: 'Settings',
 };
 

@@ -50,11 +50,10 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
 
   const { data: timelineAnalytics, isLoading: tlLoading } = useProjectTimelineAnalytics(project?.id);
 
-  const maxBarDays = useMemo(() => {
-    if (!timelineAnalytics?.transitions?.length) return 1;
-    const days = timelineAnalytics.transitions.map((t) => t.durationDays ?? 0);
-    return Math.max(Math.max(...days), 1);
-  }, [timelineAnalytics?.transitions]);
+  const totalDurationDays = useMemo(() => {
+    if (!timelineAnalytics?.totalDurationDays) return 1;
+    return timelineAnalytics.totalDurationDays;
+  }, [timelineAnalytics?.totalDurationDays]);
 
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFileName, setUploadFileName] = useState('');
@@ -191,65 +190,71 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
               <p className="text-xs mt-2">Belum ada data timeline analytics.</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {/* Gantt header */}
-              <div className="flex items-center text-[10px] text-secondary font-semibold mb-2 px-1">
-                <span className="w-32 shrink-0">Tahap</span>
-                <span className="flex-1 text-center">Gantt Timeline</span>
-                <span className="w-16 text-right">Durasi</span>
-              </div>
-              {timelineAnalytics.transitions.map((t) => {
-                const isActive = t.eventKey === timelineAnalytics.activeStage;
-                const isNotStarted = !t.endedAt && !isActive;
-                const isComplete = !!t.endedAt;
+            <div className="space-y-3">
+              {/* Gantt bar - single stacked bar */}
+              <div className="flex items-center gap-3 px-1">
+                <span className="text-xs text-secondary w-24 shrink-0 font-semibold">Timeline</span>
+                <div className="flex-1 flex h-8 rounded-full overflow-hidden bg-surface-container-high" title={timelineAnalytics.totalDurationDays != null ? `Total ${timelineAnalytics.totalDurationDays} hari` : ''}>
+                  {timelineAnalytics.transitions.map((t) => {
+                    const isActive = t.eventKey === timelineAnalytics.activeStage;
+                    const isNotStarted = !t.endedAt && !isActive;
+                    const isComplete = !!t.endedAt;
 
-                let barColor: string;
-                if (isNotStarted) barColor = 'bg-surface-container-high';
-                else if (isActive) barColor = 'bg-primary';
-                else if (t.isOverSla) barColor = 'bg-danger';
-                else barColor = 'bg-success';
+                    let barColor: string;
+                    if (isNotStarted) barColor = 'bg-surface-container-high';
+                    else if (isActive) barColor = 'bg-primary';
+                    else if (t.isOverSla) barColor = 'bg-danger';
+                    else barColor = 'bg-success';
 
-                const widthPct = ((t.durationDays ?? 0) / maxBarDays) * 100;
+                    const widthPct = ((t.durationDays ?? 0) / totalDurationDays) * 100;
 
-                return (
-                  <div key={t.eventKey} className="group relative">
-                    <div className="flex items-center gap-3 px-1 py-1.5 rounded-lg hover:bg-surface-container-low transition-colors">
-                      <span className="text-xs text-on-surface w-32 shrink-0 font-medium truncate">
-                        {t.eventLabel}
-                      </span>
-                      <div className="flex-1 bg-surface-container-high rounded-full h-6 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${barColor} transition-all duration-700 relative`}
-                          style={{ width: `${Math.max(widthPct, isActive || isComplete ? 4 : 0)}%` }}
-                        >
-                          {/* Tooltip */}
-                          <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-border/60 shadow-lg rounded-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
-                            <p className="font-semibold text-on-surface">{t.eventLabel}</p>
-                            {t.startedAt && <p className="text-secondary">Mulai: {formatDate(t.startedAt)}</p>}
-                            {t.endedAt && <p className="text-secondary">Selesai: {formatDate(t.endedAt)}</p>}
-                            <p className="text-secondary">
-                              Durasi: {t.durationDays != null ? `${t.durationDays} hari` : '-'}
-                            </p>
-                            <p className="text-secondary">Oleh: {t.actorName || '-'}</p>
-                          </div>
+                    return (
+                      <div
+                        key={t.eventKey}
+                        className={`group relative h-full ${barColor} first:rounded-l-full last:rounded-r-full transition-all duration-700 cursor-default`}
+                        style={{ width: `${Math.max(widthPct, 0.5)}%`, minWidth: isActive || isComplete ? '4px' : '0px' }}
+                      >
+                        {/* Tooltip */}
+                        <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-border/60 shadow-lg rounded-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
+                          <p className="font-semibold text-on-surface">{t.eventLabel}</p>
+                          {t.startedAt && <p className="text-secondary">Mulai: {formatDate(t.startedAt)}</p>}
+                          {t.endedAt && <p className="text-secondary">Selesai: {formatDate(t.endedAt)}</p>}
+                          <p className="text-secondary">
+                            Durasi: {t.durationDays != null ? `${t.durationDays} hari` : '-'}
+                          </p>
+                          {t.actorName && <p className="text-secondary">Oleh: {t.actorName}</p>}
+                          {t.isOverSla && (
+                            <p className="text-danger font-semibold mt-0.5">Melewati SLA +{t.slaExcessDays} hari</p>
+                          )}
                         </div>
                       </div>
-                      <span className="text-xs text-secondary w-16 text-right font-mono-data shrink-0">
-                        {isNotStarted ? '-' : isActive ? 'Aktif' : `${t.durationDays}h`}
-                      </span>
-                    </div>
-                    {/* SLA badge */}
-                    {t.isOverSla && (
-                      <div className="ml-36 flex items-center gap-1 mt-0.5 mb-1">
-                        <span className="text-[9px] text-danger font-semibold bg-danger-container px-1.5 py-0.5 rounded inline-flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[12px]">warning</span>
-                          Melewati SLA +{t.slaExcessDays} hari
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+                <span className="text-xs text-secondary w-16 text-right font-mono-data shrink-0">
+                  {timelineAnalytics.totalDurationDays ?? '-'} hari
+                </span>
+              </div>
+
+              {/* Legend label */}
+              <div className="flex flex-wrap gap-x-4 gap-y-1 px-1">
+                {timelineAnalytics.transitions.map((t) => {
+                  const isActive = t.eventKey === timelineAnalytics.activeStage;
+                  const isNotStarted = !t.endedAt && !isActive;
+                  let dotColor: string;
+                  if (isNotStarted) dotColor = 'bg-surface-container-high';
+                  else if (isActive) dotColor = 'bg-primary';
+                  else if (t.isOverSla) dotColor = 'bg-danger';
+                  else dotColor = 'bg-success';
+
+                  return (
+                    <span key={t.eventKey} className="flex items-center gap-1.5 text-[10px] text-secondary">
+                      <span className={`w-2 h-2 rounded-full ${dotColor} inline-block shrink-0`} />
+                      {t.eventLabel}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
