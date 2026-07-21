@@ -58,7 +58,7 @@ export default function ProspectQualificationPage() {
   const updateCustomer = useCustomerStore((s) => s.updateCustomer);
   const queryClient = useQueryClient();
 
-  const { data: raw, isLoading } = useProspectLight({ perPage: 100, page: 1 });
+  const { data: raw, isLoading, isRefetching } = useProspectLight({ perPage: 100, page: 1 });
   const promoteMutation = usePromoteProspect();
 
   const prospects: Prospect[] = useMemo(() => {
@@ -238,10 +238,15 @@ export default function ProspectQualificationPage() {
             )}
             <button
               onClick={() => queryClient.invalidateQueries({ queryKey: ['prospects', 'light'] })}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-surface-variant bg-surface border border-border/60 rounded-lg hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+              disabled={isRefetching}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-on-surface-variant bg-surface border border-border/60 rounded-lg hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="material-symbols-outlined text-[16px]">refresh</span>
-              Refresh
+              {isRefetching ? (
+                <span className="inline-block w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-[16px]">refresh</span>
+              )}
+              {isRefetching ? 'Memuat...' : 'Refresh'}
             </button>
           </div>
         }
