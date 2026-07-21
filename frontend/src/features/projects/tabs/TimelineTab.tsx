@@ -55,6 +55,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
     return timelineAnalytics.totalDurationDays;
   }, [timelineAnalytics?.totalDurationDays]);
 
+  const [hoveredEventKey, setHoveredEventKey] = useState<string | null>(null);
   const [selectedEventKey, setSelectedEventKey] = useState<string | null>(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFileName, setUploadFileName] = useState('');
@@ -201,12 +202,29 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                     const isNotStarted = !t.endedAt && !isActive;
                     const isComplete = !!t.endedAt;
                     const isSelected = t.eventKey === selectedEventKey;
+                    const isHovered = t.eventKey === hoveredEventKey;
+                    const showRing = isSelected || (isHovered && !selectedEventKey);
+
+                    const palettes = [
+                      'bg-emerald-500', 'bg-teal-500', 'bg-cyan-600', 'bg-sky-500',
+                      'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500',
+                      'bg-pink-500', 'bg-rose-500', 'bg-orange-500', 'bg-amber-500',
+                      'bg-lime-600', 'bg-green-600',
+                    ];
+                    let palIdx = 0;
+                    const preColor = new Map<string, string>();
+                    timelineAnalytics.transitions.forEach((tx) => {
+                      if (tx.endedAt && !tx.isOverSla) {
+                        preColor.set(tx.eventKey, palettes[palIdx % palettes.length]);
+                        palIdx++;
+                      }
+                    });
 
                     let barColor: string;
                     if (isNotStarted) barColor = 'bg-surface-container-high';
                     else if (isActive) barColor = 'bg-primary';
                     else if (t.isOverSla) barColor = 'bg-danger';
-                    else barColor = 'bg-success';
+                    else barColor = preColor.get(t.eventKey) ?? 'bg-success';
 
                     const widthPct = ((t.durationDays ?? 0) / totalDurationDays) * 100;
 
@@ -214,9 +232,18 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                       <div
                         key={t.eventKey}
                         onClick={() => setSelectedEventKey(isSelected ? null : t.eventKey)}
-                        className={`group relative h-full ${barColor} first:rounded-l-full last:rounded-r-full transition-all duration-700 ${isSelected ? 'ring-2 ring-offset-1 ring-primary z-10' : ''} cursor-pointer hover:brightness-110`}
+                        onMouseEnter={() => setHoveredEventKey(t.eventKey)}
+                        onMouseLeave={() => setHoveredEventKey(null)}
+                        className={`group relative h-full ${barColor} first:rounded-l-full last:rounded-r-full transition-all duration-700 ${showRing ? 'ring-2 ring-offset-1 ring-primary z-10' : ''} cursor-pointer hover:brightness-110`}
                         style={{ width: `${Math.max(widthPct, 0.5)}%`, minWidth: isActive || isComplete ? '4px' : '0px' }}
                       >
+                        {/* Warning icon */}
+                        {t.isOverSla && (
+                          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 material-symbols-outlined text-[14px] text-white drop-shadow-md">
+                            warning
+                          </span>
+                        )}
+
                         {/* Tooltip */}
                         <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-surface-container-lowest border border-border/60 shadow-lg rounded-lg px-2.5 py-1.5 text-[10px] whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none">
                           <p className="font-semibold text-on-surface">{t.eventLabel}</p>
@@ -227,7 +254,7 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                           </p>
                           {t.actorName && <p className="text-secondary">Oleh: {t.actorName}</p>}
                           {t.isOverSla && (
-                            <p className="text-danger font-semibold mt-0.5">Melewati SLA +{t.slaExcessDays} hari</p>
+                            <p className="text-danger font-semibold mt-0.5">⚠ Melewati SLA +{t.slaExcessDays} hari</p>
                           )}
                         </div>
                       </div>
@@ -241,48 +268,77 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
 
               {/* Legend label */}
               <div className="flex flex-wrap gap-x-4 gap-y-1 px-1">
-                {timelineAnalytics.transitions.map((t) => {
+                {(() => {
+                  const palettes = [
+                    'bg-emerald-500', 'bg-teal-500', 'bg-cyan-600', 'bg-sky-500',
+                    'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-purple-500',
+                    'bg-pink-500', 'bg-rose-500', 'bg-orange-500', 'bg-amber-500',
+                    'bg-lime-600', 'bg-green-600',
+                  ];
+                  let palIdx = 0;
+                  return timelineAnalytics.transitions.map((t) => {
                   const isActive = t.eventKey === timelineAnalytics.activeStage;
                   const isNotStarted = !t.endedAt && !isActive;
                   const isSelected = t.eventKey === selectedEventKey;
+                  const isHovered = t.eventKey === hoveredEventKey;
+                  const showRing = isSelected || (isHovered && !selectedEventKey);
                   let dotColor: string;
                   if (isNotStarted) dotColor = 'bg-surface-container-high';
                   else if (isActive) dotColor = 'bg-primary';
                   else if (t.isOverSla) dotColor = 'bg-danger';
-                  else dotColor = 'bg-success';
+                  else {
+                    dotColor = palettes[palIdx % palettes.length];
+                    palIdx++;
+                  }
 
                   return (
                     <button
                       key={t.eventKey}
                       onClick={() => setSelectedEventKey(isSelected ? null : t.eventKey)}
+                      onMouseEnter={() => setHoveredEventKey(t.eventKey)}
+                      onMouseLeave={() => setHoveredEventKey(null)}
                       className={`flex items-center gap-1.5 text-[10px] transition-all cursor-pointer ${
-                        isSelected ? 'text-on-surface font-semibold' : 'text-secondary hover:text-on-surface'
+                        isSelected ? 'text-on-surface font-semibold' : isHovered ? 'text-on-surface' : 'text-secondary hover:text-on-surface'
                       }`}
                     >
-                      <span className={`w-2 h-2 rounded-full ${dotColor} inline-block shrink-0 ${isSelected ? 'ring-1 ring-offset-[1px] ring-primary' : ''}`} />
+                      <span className={`w-2 h-2 rounded-full ${dotColor} inline-block shrink-0 ${showRing ? 'ring-1 ring-offset-[1px] ring-primary' : ''}`} />
                       {t.eventLabel}
+                      {t.isOverSla && <span className="material-symbols-outlined text-danger text-[12px]">warning</span>}
                     </button>
                   );
-                })}
+                })})()}
               </div>
 
-              {/* Selected transition detail panel */}
-              {selectedEventKey && (() => {
-                const t = timelineAnalytics.transitions.find((x) => x.eventKey === selectedEventKey);
+              {/* Detail panel — muncul saat hover atau klik */}
+              {(hoveredEventKey || selectedEventKey) && (() => {
+                const activeKey = selectedEventKey ?? hoveredEventKey;
+                const t = timelineAnalytics.transitions.find((x) => x.eventKey === activeKey);
                 if (!t) return null;
+                const isPinned = selectedEventKey === t.eventKey;
                 return (
-                  <div className="mt-4 p-4 bg-surface-container-low rounded-xl border border-border/60 animate-fade-in">
+                  <div className={`mt-4 p-4 rounded-xl border animate-fade-in ${
+                    t.isOverSla
+                      ? 'bg-danger-container/10 border-danger/30'
+                      : t.eventKey === timelineAnalytics.activeStage
+                        ? 'bg-primary-container/20 border-primary/30'
+                        : 'bg-surface-container-low border-border/60'
+                  }`}>
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-bold text-on-surface flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary text-[18px]">info</span>
                         Detail Tahap: {t.eventLabel}
+                        {isPinned && (
+                          <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">Disematkan</span>
+                        )}
                       </h4>
-                      <button
-                        onClick={() => setSelectedEventKey(null)}
-                        className="w-6 h-6 rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">close</span>
-                      </button>
+                      {isPinned && (
+                        <button
+                          onClick={() => setSelectedEventKey(null)}
+                          className="w-6 h-6 rounded-full flex items-center justify-center text-outline hover:bg-surface-container transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">close</span>
+                        </button>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                       <div className="bg-surface rounded-lg p-3 border border-border/40">
@@ -319,10 +375,16 @@ export default function TimelineTab({ project, onShowNotification }: TabProps) {
                       </div>
                     </div>
                     {t.isOverSla && t.slaExcessDays != null && (
-                      <div className="mt-3 flex items-center gap-2 bg-danger-container/30 rounded-lg p-3 border border-danger/20">
+                      <div className="mt-3 flex items-center gap-2 bg-danger-container/40 rounded-lg p-3 border border-danger/30">
                         <span className="material-symbols-outlined text-danger text-[18px]">warning</span>
-                        <p className="text-xs text-danger font-semibold">
-                          Tahap ini melewati SLA selama {t.slaExcessDays} hari. Perlu evaluasi proses.</p>
+                        <div>
+                          <p className="text-xs text-danger font-semibold">
+                            Tahap ini melewati SLA selama {t.slaExcessDays} hari.
+                          </p>
+                          <p className="text-[10px] text-danger/70 mt-0.5">
+                            Evaluasi penyebab keterlambatan dan tindak lanjut yang diperlukan.
+                          </p>
+                        </div>
                       </div>
                     )}
                     {t.eventKey === timelineAnalytics.activeStage && (
