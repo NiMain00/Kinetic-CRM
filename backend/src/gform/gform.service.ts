@@ -70,6 +70,9 @@ export class GformService {
       'level': 'level',
       'npwp': 'npwp',
       'alamat': 'address',
+      'tipe_perusahaan': 'type',
+      'jenis_perusahaan': 'type',
+      'provider_existing': 'providerExisting',
     };
 
     const customer: Record<string, any> = {
@@ -90,6 +93,15 @@ export class GformService {
       customer.level = validLevels.includes(normalized) ? normalized : 'low';
     } else {
       customer.level = 'low';
+    }
+
+    // Valid & default tipe perusahaan
+    if (customer.type) {
+      const normalized = (customer.type as string).toLowerCase().trim();
+      const validTypes = ['swasta', 'bumn', 'pemerintah', 'asing'];
+      customer.type = validTypes.includes(normalized) ? normalized : 'swasta';
+    } else {
+      customer.type = 'swasta';
     }
 
     return customer;

@@ -16,7 +16,7 @@ function AppsScriptSnippet() {
     'function onSubmit(e) {',
     '  const itemResponses = e.response.getItemResponses();',
     '  const answers = {};',
-    "  const keyMap = { 'Nama Customer': 'nama_customer', 'Nama PIC': 'pic_name', 'Jabatan PIC': 'pic_position', 'No HP PIC': 'pic_phone', 'Email PIC': 'pic_email', 'Kota': 'kota', 'NPWP': 'npwp', 'Alamat': 'alamat', 'Cabang': 'cabang', 'Industri': 'industri', 'Bidang Usaha': 'bidang_usaha', 'Kebutuhan': 'kebutuhan', 'Level': 'level' };",
+    "  const keyMap = { 'Nama Customer': 'nama_customer', 'Nama PIC': 'pic_name', 'Jabatan PIC': 'pic_position', 'No HP PIC': 'pic_phone', 'Email PIC': 'pic_email', 'Kota': 'kota', 'NPWP': 'npwp', 'Alamat': 'alamat', 'Cabang': 'cabang', 'Tipe Perusahaan': 'tipe_perusahaan', 'Industri': 'industri', 'Bidang Usaha': 'bidang_usaha', 'Provider Existing': 'provider_existing', 'Kebutuhan': 'kebutuhan', 'Level': 'level' };",
     '',
     '  itemResponses.forEach(item => {',
     "    const key = keyMap[item.getItem().getTitle()];",
