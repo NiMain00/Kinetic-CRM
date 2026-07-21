@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { Modal, Button } from '@/components/ui';
@@ -28,6 +28,14 @@ export default function ProcurementDetailView() {
     : undefined;
   const { can } = useAuthz();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(!procurement);
+
+  useEffect(() => {
+    if (procurementId && !store.entities[procurementId]) {
+      setLoadingDetail(true);
+      store.fetchProcurements().finally(() => setLoadingDetail(false));
+    }
+  }, [procurementId]);
 
   const activePhases = useMemo(
     () => [...PROCUREMENT_PHASES].filter((p) => p.isActive).sort((a, b) => a.order - b.order),
@@ -58,6 +66,26 @@ export default function ProcurementDetailView() {
     procurement?.status === 'Closed' || procurement?.status === 'Cancelled';
 
   if (!procurement) {
+    if (loadingDetail) {
+      return (
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+          <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-3 shadow-sm">
+            <div className="h-4 w-48 bg-surface-container-high rounded animate-pulse mb-2" />
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-surface-container-high rounded-full animate-pulse" />
+              <div className="h-6 w-32 bg-surface-container-high rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="flex-1 p-6">
+            <div className="max-w-6xl mx-auto space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-16 bg-surface-container-high rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="py-20 text-center space-y-4">

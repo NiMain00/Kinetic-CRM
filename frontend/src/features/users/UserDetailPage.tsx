@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useUserStore } from '@/stores/userStore';
@@ -21,9 +21,44 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const getUserById = useUserStore((s) => s.getUserById);
   const user = getUserById(id || '');
+  const fetchUsers = useUserStore((s) => s.fetchUsers);
+  const storeLoading = useUserStore((s) => s.loading);
+  const [localLoading, setLocalLoading] = useState(false);
   const auditLogs: any[] = [];
 
+  useEffect(() => {
+    if (id && !user && !storeLoading) {
+      setLocalLoading(true);
+      fetchUsers().finally(() => setLocalLoading(false));
+    }
+  }, [id]);
+
   if (!user) {
+    if (storeLoading || localLoading) {
+      return (
+        <div className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
+          <div className="max-w-5xl mx-auto space-y-6 animate-pulse">
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                <div className="w-20 h-20 rounded-full bg-surface-container-high shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-6 w-48 bg-surface-container-high rounded" />
+                  <div className="h-4 w-32 bg-surface-container-high rounded" />
+                </div>
+              </div>
+            </div>
+            <div className="bg-surface rounded-2xl border border-border/60 shadow-card p-6">
+              <div className="h-5 w-32 bg-surface-container-high rounded mb-4" />
+              <div className="space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-12 bg-surface-container-high rounded" />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center space-y-3">

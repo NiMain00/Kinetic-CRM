@@ -131,13 +131,18 @@ export default function ProspectDetailPage() {
   const getProjectById = useProjectStore((s) => s.getProjectById);
 
   useEffect(() => {
-    if (id) { fetchProspect(id); fetchCustomers(); }
+    if (id) {
+      setLoadingDetail(true);
+      fetchProspect(id).finally(() => setLoadingDetail(false));
+      fetchCustomers();
+    }
   }, [id, fetchProspect, fetchCustomers]);
   const { approvals, approveItem, addApproval } = useApprovalStore();
 
   const authUser = useAuthStore((s) => s.user);
   const { can, stageAccess } = useAuthz();
   const questions = useMasterDataStore((s) => s.questions);
+  const questionsLoading = useMasterDataStore((s) => s.loading?.['questions']);
   const questionsMap = useMemo(() => new Map(questions.map(q => [q.id, q])), [questions]);
   const industries = useMasterDataStore((s) => s.industries);
   const industryMap = useMemo(
@@ -150,6 +155,7 @@ export default function ProspectDetailPage() {
   const isSuperAdmin = userRole === 'Super Admin';
 
   const prospect = useProspectStore((s) => id ? s.entities[id] : undefined);
+  const [loadingDetail, setLoadingDetail] = useState(!prospect);
   const [activeTab, setActiveTab] = useState('overview');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -252,6 +258,36 @@ export default function ProspectDetailPage() {
   }, [getProjectById, prospect, relatedProjectId]);
 
   if (!prospect) {
+    if (loadingDetail) {
+      return (
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+          <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-3 shadow-sm">
+            <div className="h-4 w-48 bg-surface-container-high rounded animate-pulse mb-2" />
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-surface-container-high rounded-full animate-pulse" />
+              <div className="h-6 w-40 bg-surface-container-high rounded animate-pulse" />
+              <div className="h-5 w-16 bg-surface-container-high rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="flex-1 p-6">
+            <div className="max-w-6xl mx-auto space-y-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="h-24 bg-surface-container-high rounded-xl animate-pulse" />
+                  ))}
+                </div>
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="h-20 bg-surface-container-high rounded-xl animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex-1 flex items-center justify-center bg-background">
         <div className="text-center space-y-3">
@@ -856,12 +892,22 @@ export default function ProspectDetailPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
                   {/* Left: Jawaban Pertanyaan Standar */}
-                  {prospect.answers && Object.keys(prospect.answers).length > 0 ? (
-                    <div>
-                      <h4 className="font-bold text-xs text-status-indigo uppercase tracking-wider flex items-center gap-1.5 mb-3">
-                        <span className="material-symbols-outlined text-[16px] text-status-indigo">quiz</span>
-                        Jawaban Pertanyaan Standar
-                      </h4>
+                  <div>
+                    <h4 className="font-bold text-xs text-status-indigo uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                      <span className="material-symbols-outlined text-[16px] text-status-indigo">quiz</span>
+                      Jawaban Pertanyaan Standar
+                    </h4>
+
+                    {questionsLoading ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="p-4 bg-surface border border-border/60 rounded-lg animate-pulse">
+                            <div className="h-3 w-3/4 bg-surface-container-high rounded mb-2" />
+                            <div className="h-4 w-1/2 bg-surface-container-high rounded" />
+                          </div>
+                        ))}
+                      </div>
+                    ) : prospect.answers && Object.keys(prospect.answers).length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {Object.entries(prospect.answers).map(([key, value]) => {
                           const masterQ = questionsMap.get(key);
@@ -874,15 +920,13 @@ export default function ProspectDetailPage() {
                           );
                         })}
                       </div>
-                    </div>
-                  ) : (
-                    !prospect.description && (
+                    ) : (
                       <div className="text-center py-8 text-outline bg-surface border border-border/60 border-l-4 border-l-outline rounded-xl shadow-card">
-                        <span className="material-symbols-outlined text-4xl text-outline/50">overview</span>
-                        <p className="text-sm font-medium mt-2">Tidak ada deskripsi atau pertanyaan tambahan</p>
+                        <span className="material-symbols-outlined text-4xl text-outline/50">quiz</span>
+                        <p className="text-sm font-medium mt-2">Tidak ada pertanyaan standar</p>
                       </div>
-                    )
-                  )}
+                    )}
+                  </div>
 
                   {/* Right: Activity Feed + Timeline */}
                   <div className="bg-surface border border-border/60 border-l-4 border-l-status-orange rounded-xl p-5 shadow-card">

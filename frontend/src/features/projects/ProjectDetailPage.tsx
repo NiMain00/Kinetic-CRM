@@ -50,7 +50,12 @@ export default function ProjectDetailView({
   const getProspectById = useProspectStore((s) => s.getProspectById);
 
   useEffect(() => {
-    if (projectId) fetchProject(projectId);
+    if (projectId) {
+      setLoadingDetail(true);
+      fetchProject(projectId).finally(() => setLoadingDetail(false));
+    } else {
+      setLoadingDetail(false);
+    }
   }, [projectId, fetchProject]);
   const updateProspect = useProspectStore((s) => s.updateProspect);
   const { approvals, approveItem } = useApprovalStore();
@@ -96,6 +101,7 @@ export default function ProjectDetailView({
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(!project);
 
   // Single source of truth for tabs & stepper — MUST be before early return to keep hook count stable
   const tabs = React.useMemo(() => {
@@ -158,6 +164,26 @@ export default function ProjectDetailView({
   }, [sourceProspect?.estimatedValue, sourceProspect?.client]);
 
   if (!project) {
+    if (loadingDetail) {
+      return (
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+          <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-3 shadow-sm">
+            <div className="h-4 w-48 bg-surface-container-high rounded animate-pulse mb-2" />
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 bg-surface-container-high rounded-full animate-pulse" />
+              <div className="h-6 w-32 bg-surface-container-high rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="flex-1 p-6">
+            <div className="max-w-6xl mx-auto space-y-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="h-16 bg-surface-container-high rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="py-20 text-center space-y-4">
         <span className="material-symbols-outlined text-5xl text-outline">search_off</span>
