@@ -264,14 +264,14 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
         />
 
       {/* Filter Bar */}
-      <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="flex gap-1 p-1 bg-surface-container rounded-xl border border-border/60 flex-wrap shrink-0">
+      <div className="bg-surface p-3 sm:p-5 rounded-2xl border border-border/60 shadow-card">
+        <div className="filter-bar-responsive">
+          <div className="tabs-responsive gap-1 p-1 bg-surface-container rounded-xl border border-border/60 shrink-0 w-full sm:w-auto">
             {prospectFilterTabOptions.map((opt, idx) => (
               <button
                 key={opt.value}
                 onClick={() => handleTabChange(opt.value)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h flex items-center gap-1.5 shrink-0 ${
                   activeFilter === opt.value
                     ? 'bg-surface text-primary shadow-sm border border-border/60 font-bold'
                     : 'text-secondary hover:bg-surface-container-high'
@@ -289,11 +289,11 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             ))}
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
             {can('prospect:write:prospecting') && (
               <button
                 onClick={() => setShowDuplicatePanel(true)}
-                className="touch-min flex items-center justify-center p-2 rounded-xl border border-border/60 text-secondary hover:bg-surface-container hover:text-warning transition-all"
+                className="touch-min flex items-center justify-center p-2 rounded-xl border border-border/60 text-secondary hover:bg-surface-container hover:text-warning transition-all active:scale-95"
                 title="Cek Duplikat"
               >
                 <span className="material-symbols-outlined text-[18px]">copy_all</span>
@@ -302,7 +302,7 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
             {can('prospect:write:prospecting') && (
               <button
                 onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
-                className={`touch-min flex items-center justify-center p-2 rounded-xl border transition-all ${
+                className={`touch-min flex items-center justify-center p-2 rounded-xl border transition-all active:scale-95 ${
                   selectionMode
                     ? 'bg-primary/10 border-primary/30 text-primary'
                     : 'bg-surface border-border/60 text-secondary hover:bg-surface-container'
@@ -313,15 +313,15 @@ export default function ProspectsView({ onShowNotification, onNavigatePage }: Pr
                 <span className="material-symbols-outlined text-[18px]">checklist</span>
               </button>
             )}
-            <div className="relative">
+            <div className="relative flex-1 sm:flex-none">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">
                 search
               </span>
               <input
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full sm:w-[260px] transition-all"
-                placeholder="Cari prospek atau klien..."
+                className="pl-10 pr-4 py-2 border border-border rounded-xl text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-full sm:w-[220px] transition-all"
+                placeholder="Cari prospek..."
                 aria-label="Cari prospek"
                 type="text"
               />

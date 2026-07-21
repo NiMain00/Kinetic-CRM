@@ -344,9 +344,9 @@ export default function ApprovalInboxView({
 
   const slaBorderClass = (status: string) => {
     switch (status) {
-      case 'Overdue': return 'border-l-danger';
-      case 'Near Deadline': return 'border-l-gold';
-      default: return 'border-l-success';
+      case 'Overdue': return 'bg-danger-container/10 ring-1 ring-danger/20';
+      case 'Near Deadline': return 'bg-warning-container/10 ring-1 ring-warning/20';
+      default: return 'bg-success-container/5 ring-1 ring-success/10';
     }
   };
 
@@ -363,7 +363,7 @@ export default function ApprovalInboxView({
     return (
       <div
         key={row.id}
-        className={`bg-surface border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-all border-l-4 ${slaBorderClass(slaStatus)} ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
+        className={`bg-surface border border-border/60 rounded-2xl p-4 space-y-3 active:scale-[0.99] transition-all ${slaBorderClass(slaStatus)} ${selectedIds.has(row.id) ? 'ring-2 ring-primary/30' : ''}`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -467,7 +467,7 @@ export default function ApprovalInboxView({
           </div>
         </Card>
 
-        <Card padding="sm" className="border-l-4 border-l-danger">
+        <Card padding="sm" className="bg-danger-container/10 ring-1 ring-danger/20">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Overdue SLA</p>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-bold text-danger">{validApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Overdue').length}</span>
@@ -475,7 +475,7 @@ export default function ApprovalInboxView({
           </div>
         </Card>
 
-        <Card padding="sm" className="border-l-4 border-l-gold">
+        <Card padding="sm" className="bg-warning-container/10 ring-1 ring-warning/20">
           <p className="text-outline font-caption-xs text-xs uppercase tracking-wider">Near Deadline</p>
           <div className="flex items-baseline gap-2 mt-2">
             <span className="text-2xl sm:text-3xl font-bold text-warning">{validApprovals.filter(a => computeSlaStatus(a.waitingSince, a.type) === 'Near Deadline').length}</span>
@@ -526,18 +526,20 @@ export default function ApprovalInboxView({
 
       {/* Bulk Action Bar */}
       {someSelected && (
-        <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border border-primary/20 rounded-lg">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-primary/5 border border-primary/20 rounded-lg">
           <span className="text-sm font-semibold text-on-surface">{selectedIds.size} item dipilih</span>
-          <div className="flex-1" />
-          <Button variant="primary" size="sm" onClick={handleBulkApprove}>
-            Setujui Semua
-          </Button>
-          <Button variant="danger" size="sm" onClick={handleBulkReject}>
-            Tolak Semua
-          </Button>
-          <button onClick={() => setSelectedIds(new Set())} className="text-sm text-outline hover:text-on-surface underline">
-            Batalkan
-          </button>
+          <div className="flex-1 min-w-0" />
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="primary" size="sm" onClick={handleBulkApprove}>
+              Setujui Semua
+            </Button>
+            <Button variant="danger" size="sm" onClick={handleBulkReject}>
+              Tolak Semua
+            </Button>
+            <button onClick={() => setSelectedIds(new Set())} className="text-sm text-outline hover:text-on-surface underline shrink-0">
+              Batalkan
+            </button>
+          </div>
         </div>
       )}
 

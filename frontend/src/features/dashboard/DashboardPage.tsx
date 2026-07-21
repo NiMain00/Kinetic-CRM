@@ -275,7 +275,7 @@ export default function DashboardPage() {
               <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Trend Win/Loss</h4>
               <p className="text-secondary font-caption-xs text-xs">Performa 6 bulan terakhir</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
                 <span className="text-secondary font-caption-xs text-xs">Menang</span>
@@ -292,18 +292,18 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex gap-2 sm:gap-4 px-2 sm:px-4 pb-4">
-            <div className={`flex flex-col justify-between text-[10px] text-secondary font-mono-data ${isMobile ? 'h-40' : 'h-56'}`}>
+          <div className="flex gap-2 sm:gap-4 px-2 sm:px-4 pb-4 min-h-0">
+            <div className={`flex flex-col justify-between text-[10px] text-secondary font-mono-data shrink-0 ${isMobile ? 'h-36' : 'h-56'}`}>
               <span>40</span>
               <span>30</span>
               <span>20</span>
               <span>10</span>
               <span>0</span>
             </div>
-            <div className={`flex-1 flex items-end justify-between gap-2 sm:gap-4 ${isMobile ? 'h-40' : 'h-56'}`}>
+            <div className={`flex-1 flex items-end justify-between gap-1 sm:gap-4 min-w-0 ${isMobile ? 'h-36' : 'h-56'}`}>
               {chartData.map((d, i) => (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                  <div className="w-full flex gap-1 sm:gap-1.5 items-end h-full">
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group min-w-0">
+                  <div className="w-full flex gap-0.5 sm:gap-1.5 items-end h-full">
                     <div
                       className="flex-1 bg-primary rounded-t-lg transition-all duration-1000 group-hover:brightness-110"
                       style={{ height: `${d.win}%` }}
@@ -315,7 +315,7 @@ export default function DashboardPage() {
                       title={`Kalah: ${d.lose}`}
                     ></div>
                   </div>
-                  <span className="font-caption-xs text-secondary text-xs">{d.month}</span>
+                  <span className="font-caption-xs text-secondary text-[10px] sm:text-xs">{d.month}</span>
                 </div>
               ))}
             </div>
@@ -335,9 +335,9 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-4 bg-surface rounded-2xl border border-border/60 shadow-card p-4 sm:p-5 flex flex-col">
           <h4 className="font-heading-section text-heading-section text-sm sm:text-base mb-3">Proyek per Status</h4>
 
-          <div className="flex flex-1 items-center gap-4 py-2">
+          <div className="flex flex-1 items-center gap-3 py-2 flex-col xs:flex-row sm:flex-col xl:flex-row">
             <div className="relative shrink-0">
-              <svg className="w-36 h-36 sm:w-40 sm:h-40 -rotate-90" viewBox="0 0 120 120">
+              <svg className="w-32 h-32 sm:w-36 sm:h-36 -rotate-90" viewBox="0 0 120 120">
                 {donutData.map((seg, i) => (
                   <circle
                     key={i}
@@ -355,15 +355,15 @@ export default function DashboardPage() {
                 ))}
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-2xl sm:text-3xl font-bold text-on-surface leading-none">{statusDistribution.total}</p>
-                <p className="text-secondary text-[10px] uppercase tracking-wider mt-1">TOTAL</p>
+                <p className="text-xl sm:text-2xl font-bold text-on-surface leading-none">{statusDistribution.total}</p>
+                <p className="text-secondary text-[9px] uppercase tracking-wider mt-0.5">TOTAL</p>
               </div>
             </div>
 
-            <div className="space-y-2 flex-1 min-w-0">
+            <div className="space-y-1.5 flex-1 min-w-0 w-full">
               {donutData.map((seg, i) => (
                 <div key={i} className="flex justify-between items-center text-xs">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }}></span>
                     <span className="text-secondary truncate">{seg.label}</span>
                   </div>
@@ -389,13 +389,13 @@ export default function DashboardPage() {
       <div className="grid grid-cols-12 gap-3 sm:gap-4">
         <div className="col-span-12 lg:col-span-7 bg-surface rounded-2xl border border-border/60 shadow-card overflow-hidden">
           <div className="p-4 sm:p-5 border-b border-border/60 flex justify-between items-center bg-surface-container-low">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-xl">folder</span>
-              <h4 className="font-heading-section text-heading-section text-sm sm:text-base">Proyek Terbaru</h4>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="material-symbols-outlined text-primary text-xl shrink-0">folder</span>
+              <h4 className="font-heading-section text-heading-section text-sm sm:text-base truncate">Proyek Terbaru</h4>
             </div>
             <Link
               to="/projects"
-              className="text-primary font-label-sm hover:underline text-xs sm:text-sm font-semibold touch-min-h flex items-center"
+              className="text-primary font-label-sm hover:underline text-xs sm:text-sm font-semibold shrink-0 flex items-center"
             >
               Lihat Semua
             </Link>
@@ -469,7 +469,7 @@ export default function DashboardPage() {
               Lihat Semua
             </Link>
           </div>
-          <div className="flex-1 overflow-y-auto max-h-[360px]">
+          <div className="flex-1 overflow-y-auto max-h-[300px] sm:max-h-[360px]">
             <ActivityFeed maxItems={10} showFilter={false} />
           </div>
         </div>

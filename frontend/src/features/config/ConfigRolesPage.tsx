@@ -373,7 +373,7 @@ export default function ConfigRolesPage() {
 
           <div className="bg-surface-container-low border border-border rounded-xl p-5">
             <h4 className="font-bold text-xs text-on-surface mb-3">Keterangan Modul</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {MODULE_GROUPS.map(mg => (
                 <div key={mg.name} className="space-y-1">
                   <p className="text-[10px] font-bold text-on-surface-variant">{mg.name}</p>

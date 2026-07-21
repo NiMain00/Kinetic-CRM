@@ -329,12 +329,12 @@ export default function ProjectListPage() {
         }
       />
 
-      <nav className="flex flex-wrap gap-1 p-1 bg-surface-container rounded-xl border border-border/60">
+      <nav className="tabs-responsive gap-1 p-1 bg-surface-container rounded-xl border border-border/60">
         {pipelineTabOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => handleTabClick(opt.value)}
-            className={`px-4 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h ${
+            className={`px-3 sm:px-4 py-1.5 rounded-lg text-sm font-label-sm whitespace-nowrap transition-colors touch-min-h shrink-0 ${
               activeTab === opt.value
                 ? 'bg-surface text-primary shadow-sm border border-border/60 font-bold'
                 : 'text-secondary hover:bg-surface-container-high'
@@ -346,8 +346,8 @@ export default function ProjectListPage() {
       </nav>
 
       <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-        <div className="flex gap-3 items-stretch sm:items-center w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-72">
+        <div className="flex gap-2 items-stretch sm:items-center w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-60 lg:w-72">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
             <input
               placeholder="Cari nama, klien, kode..."
@@ -359,7 +359,7 @@ export default function ProjectListPage() {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-xl border transition-colors ${showFilters ? 'bg-primary/10 text-primary border-primary' : 'border-border/60 text-secondary hover:bg-surface-container'}`}
+            className={`p-2 rounded-xl border transition-colors active:scale-95 ${showFilters ? 'bg-primary/10 text-primary border-primary' : 'border-border/60 text-secondary hover:bg-surface-container'}`}
             title="Filter"
           >
             <span className="material-symbols-outlined text-sm">filter_alt</span>
@@ -367,7 +367,7 @@ export default function ProjectListPage() {
           {can('project:write') && (
             <button
               onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
-              className={`p-2 rounded-xl border transition-all ${
+              className={`p-2 rounded-xl border transition-all active:scale-95 ${
                 selectionMode
                   ? 'bg-primary/10 border-primary/30 text-primary'
                   : 'border-border/60 text-secondary hover:bg-surface-container'

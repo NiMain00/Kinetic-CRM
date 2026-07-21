@@ -109,12 +109,12 @@ export default function ConfigAccessControlPage() {
         </div>
 
         {/* Tab Nav */}
-        <nav className="flex gap-1 mt-4 border-b border-border -mb-[1.25rem] px-0">
+        <nav className="flex gap-1 mt-4 border-b border-border -mb-[1.25rem] px-0 overflow-x-auto scrollbar-none">
           {TABS.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap shrink-0 ${
                 activeTab === tab.id
                   ? 'border-primary text-primary'
                   : 'border-transparent text-outline hover:text-on-surface-variant hover:border-border'

@@ -616,6 +616,128 @@ html {
   }
 }
 
+/* Detail page responsive grid: 1 col mobile, 2 col tablet, 3+ col desktop */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .detail-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+  }
+}
+@media (min-width: 1024px) {
+  .detail-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.detail-grid-full {
+  grid-column: 1 / -1;
+}
+
+/* Responsive tabs: horizontal scroll on mobile, full on desktop */
+.tabs-responsive {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 0.25rem;
+}
+.tabs-responsive::-webkit-scrollbar {
+  display: none;
+}
+@media (min-width: 640px) {
+  .tabs-responsive {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+/* Responsive action bar - stacks on mobile, row on desktop */
+.action-bar-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+@media (min-width: 640px) {
+  .action-bar-responsive {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* Modal responsive: fullscreen on mobile */
+@media (max-width: 639px) {
+  .modal-mobile-full {
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Responsive table wrapper */
+.table-wrapper-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 0 calc(-1 * clamp(0.75rem, 4vw, 2rem));
+  padding: 0 clamp(0.75rem, 4vw, 2rem);
+}
+
+/* Responsive inline flex that wraps on mobile */
+.inline-flex-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Data label for mobile card-style table rows */
+@media (max-width: 767px) {
+  .mobile-data-label::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.625rem;
+    color: var(--color-outline);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.125rem;
+  }
+}
+
+/* Filter bar responsive: side by side on tablet+ */
+.filter-bar-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+@media (min-width: 640px) {
+  .filter-bar-responsive {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* Sticky mobile bottom action bar */
+@media (max-width: 767px) {
+  .sticky-mobile-bottom {
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    padding: 0.75rem 1rem;
+    box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.04);
+  }
+}
+
 /* Make entire date input clickable to open picker (not just the icon) */
 input[type="date"]::-webkit-calendar-picker-indicator {
   position: absolute;

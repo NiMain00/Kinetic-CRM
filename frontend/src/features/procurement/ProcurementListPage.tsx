@@ -128,9 +128,9 @@ export default function ProcurementListPage() {
       />
 
       {/* Filters */}
-      <div className="bg-surface p-4 sm:p-5 rounded-2xl border border-border/60 shadow-card">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="relative flex-1 max-w-xs">
+      <div className="bg-surface p-3 sm:p-5 rounded-2xl border border-border/60 shadow-card">
+        <div className="filter-bar-responsive">
+          <div className="relative flex-1 w-full sm:max-w-xs">
             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-outline material-symbols-outlined text-[18px]">
               search
             </span>
@@ -160,7 +160,7 @@ export default function ProcurementListPage() {
           {can('pengadaan:write') && (
             <button
               onClick={() => { setSelectionMode(v => !v); setSelectedRows(new Set()); }}
-              className={`p-2 rounded-xl border transition-all ${
+              className={`p-2 rounded-xl border transition-all active:scale-95 ${
                 selectionMode
                   ? 'bg-primary/10 border-primary/30 text-primary'
                   : 'border-border/60 text-secondary hover:bg-surface-container'
@@ -171,7 +171,7 @@ export default function ProcurementListPage() {
               <span className="material-symbols-outlined text-[18px]">checklist</span>
             </button>
           )}
-          <span className="text-xs text-secondary">
+          <span className="text-xs text-secondary shrink-0">
             {filtered.length} pengadaan
           </span>
         </div>
