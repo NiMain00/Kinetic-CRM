@@ -189,10 +189,10 @@ const Sidebar = React.memo(function Sidebar({
         aria-label={item.label}
         aria-current={isActive ? 'page' : undefined}
       >
-        <span className={`material-symbols-outlined text-[16px] shrink-0 ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+        <span className={`material-symbols-outlined text-[14px] shrink-0 ${isActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
           {item.icon}
         </span>
-        {!collapsed && <span className="truncate text-[12px]">{item.label}</span>}
+        {!collapsed && <span className="truncate text-[11px]">{item.label}</span>}
         {!collapsed && badge !== undefined && badge > 0 && (
           <span className="ml-auto bg-surface-container text-on-surface-variant text-[9px] font-semibold px-1.5 py-0.5 rounded-full" aria-label={`${badge} notifikasi`}>
             {badge}
@@ -220,13 +220,13 @@ const Sidebar = React.memo(function Sidebar({
           aria-label={item.label}
           aria-expanded={isExpanded}
         >
-          <span className={`material-symbols-outlined text-[16px] shrink-0 ${hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+          <span className={`material-symbols-outlined text-[14px] shrink-0 ${hasActiveChild ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
             {item.icon}
           </span>
           {!collapsed && (
             <>
-              <span className="truncate flex-1 text-left text-[12px]">{item.label}</span>
-              <span className={`material-symbols-outlined text-[12px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} text-on-surface-variant`}>
+              <span className="truncate flex-1 text-left text-[11px]">{item.label}</span>
+              <span className={`material-symbols-outlined text-[10px] transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} text-on-surface-variant`}>
                 chevron_right
               </span>
             </>
@@ -235,18 +235,19 @@ const Sidebar = React.memo(function Sidebar({
 
         {/* Children (only when expanded and not collapsed) */}
         {!collapsed && isExpanded && item.children && (
-          <div className="ml-3 pl-3 border-l-2 border-border/60">
-            {item.children.map((child, idx) => {
+          <div className="ml-5 mt-0.5 mb-1 relative">
+            {/* Vertical line running through all children */}
+            <div className="absolute left-0 top-0 bottom-0 w-px bg-border/60" />
+            {item.children.map((child) => {
               const isChildActive = isPathActive(child.path);
-              const isLast = idx === (item.children?.length ?? 0) - 1;
               return (
-                <div key={child.path} className="relative">
-                  {/* Horizontal connector line */}
-                  <div className="absolute left-[-13px] top-[14px] w-3 border-t-2 border-border/60" />
+                <div key={child.path} className="relative pl-4">
+                  {/* Horizontal connector from vertical line to icon */}
+                  <div className="absolute left-0 top-[10px] w-4 h-px bg-border/60" />
                   <Link
                     to={child.path}
                     onClick={() => { if (mobile && onClose) onClose(); }}
-                    className={`w-full flex items-center gap-3 px-3 py-1.5 rounded-lg transition-all duration-200 text-left text-[12px] font-medium ${
+                    className={`w-full flex items-center gap-2 py-1.5 rounded-lg transition-all duration-200 text-left text-[11px] font-medium ${
                       isChildActive
                         ? 'bg-primary-container/30 text-primary font-semibold'
                         : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -254,7 +255,7 @@ const Sidebar = React.memo(function Sidebar({
                     aria-label={child.label}
                     aria-current={isChildActive ? 'page' : undefined}
                   >
-                    <span className={`material-symbols-outlined text-[14px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
+                    <span className={`material-symbols-outlined text-[12px] ${isChildActive ? 'text-primary' : 'text-on-surface-variant'}`} aria-hidden="true">
                       {child.icon}
                     </span>
                     <span className="truncate">{child.label}</span>
@@ -416,7 +417,7 @@ const Sidebar = React.memo(function Sidebar({
               }`}
               aria-label="Keluar"
             >
-              <span className="material-symbols-outlined text-[16px] shrink-0">logout</span>
+              <span className="material-symbols-outlined text-[14px] shrink-0">logout</span>
               {(!collapsed || mobile) && <span>Keluar</span>}
             </button>
           )}
