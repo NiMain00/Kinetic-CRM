@@ -5,6 +5,11 @@ interface KpiCardsProps {
   loading: boolean;
 }
 
+function fmt(val: number): string {
+  if (!Number.isFinite(val)) return '0';
+  return val % 1 === 0 ? val.toString() : val.toFixed(1);
+}
+
 export default function KpiCards({ kpis, loading }: KpiCardsProps) {
   if (loading || !kpis) {
     return (
@@ -20,14 +25,14 @@ export default function KpiCards({ kpis, loading }: KpiCardsProps) {
   }
 
   const items = [
-    { label: 'Rata-rata Lead Time', value: `${kpis.averageLeadTimeDays} hari`, icon: 'timeline', color: 'text-primary' },
-    { label: 'Median Lead Time', value: `${kpis.medianLeadTimeDays} hari`, icon: 'sort', color: 'text-info' },
-    { label: 'Proyek Tercepat', value: `${kpis.fastestProjectDays} hari`, icon: 'speed', color: 'text-success' },
-    { label: 'Proyek Terlama', value: `${kpis.slowestProjectDays} hari`, icon: 'slow_motion_video', color: 'text-danger' },
-    { label: 'Over SLA', value: `${kpis.projectsOverSla} (${kpis.projectsOverSlaPercent}%)`, icon: 'warning', color: 'text-warning' },
-    { label: 'Approval Cycle', value: `${kpis.approvalCycleTimeDays} hari`, icon: 'fact_check', color: 'text-primary' },
-    { label: 'PO Waiting', value: `${kpis.poWaitingTimeDays} hari`, icon: 'hourglass_empty', color: 'text-status-orange' },
-    { label: 'Execution Cycle', value: `${kpis.executionCycleTimeDays} hari`, icon: 'construction', color: 'text-status-teal' },
+    { label: 'Rata-rata Lead Time', value: `${fmt(kpis.averageLeadTimeDays)} hari`, icon: 'timeline', color: 'text-primary' },
+    { label: 'Median Lead Time', value: `${fmt(kpis.medianLeadTimeDays)} hari`, icon: 'sort', color: 'text-info' },
+    { label: 'Proyek Tercepat', value: `${fmt(kpis.fastestProjectDays)} hari`, icon: 'speed', color: 'text-success' },
+    { label: 'Proyek Terlama', value: `${fmt(kpis.slowestProjectDays)} hari`, icon: 'slow_motion_video', color: 'text-danger' },
+    { label: 'Over SLA', value: `${kpis.projectsOverSla} (${fmt(kpis.projectsOverSlaPercent)}%)`, icon: 'warning', color: 'text-warning' },
+    { label: 'Approval Cycle', value: `${fmt(kpis.approvalCycleTimeDays)} hari`, icon: 'fact_check', color: 'text-primary' },
+    { label: 'PO Waiting', value: `${fmt(kpis.poWaitingTimeDays)} hari`, icon: 'hourglass_empty', color: 'text-status-orange' },
+    { label: 'Execution Cycle', value: `${fmt(kpis.executionCycleTimeDays)} hari`, icon: 'construction', color: 'text-status-teal' },
   ];
 
   return (
