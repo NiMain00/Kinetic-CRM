@@ -11,6 +11,30 @@ export class DashboardService {
     const now = new Date();
     const sevenDaysLater = new Date(now.getTime() + 7 * 86400000);
 
+    // Kumpulkan IDs resource yang di-soft-delete agar tidak ikut dihitung
+    const [deletedProspectIds, deletedProjectIds] = await Promise.all([
+      this.prisma.prospect.findMany({
+        where: { deletedAt: { not: null } },
+        select: { id: true },
+      }),
+      this.prisma.project.findMany({
+        where: { deletedAt: { not: null } },
+        select: { id: true },
+      }),
+    ]);
+    const dProjIds = deletedProjectIds.map(p => p.id);
+    const [deletedRksIds, deletedLphsIds] = dProjIds.length > 0
+      ? await Promise.all([
+          this.prisma.rks.findMany({ where: { projectId: { in: dProjIds } }, select: { id: true } }),
+          this.prisma.lphsSios.findMany({ where: { projectId: { in: dProjIds } }, select: { id: true } }),
+        ])
+      : [ [], [] ];
+    const excludedApprovalResourceIds = [
+      ...deletedProspectIds.map(p => p.id),
+      ...deletedRksIds.map(r => r.id),
+      ...deletedLphsIds.map(l => l.id),
+    ];
+
     const [
       totalProjects,
       wonProjectsCount,
@@ -28,7 +52,11 @@ export class DashboardService {
         _sum: { estimatedValue: true },
       }),
       this.prisma.approval.count({
-        where: { status: 'pending', ...(userId ? { assignedToUserId: userId } : {}) },
+        where: {
+          status: 'pending',
+          ...(userId ? { assignedToUserId: userId } : {}),
+          ...(excludedApprovalResourceIds.length > 0 ? { resourceId: { notIn: excludedApprovalResourceIds } } : {}),
+        },
       }),
       this.prisma.project.count({
         where: {
@@ -210,8 +238,35 @@ export class DashboardService {
 
   async getApprovalPending(limit?: number) {
     return configCache.getOrFetch(`approvalPending:${limit || 10}`, async () => {
+    // Kumpulkan IDs resource yang di-soft-delete agar tidak ikut ditampilkan
+    const [deletedProspectIds, deletedProjectIds] = await Promise.all([
+      this.prisma.prospect.findMany({
+        where: { deletedAt: { not: null } },
+        select: { id: true },
+      }),
+      this.prisma.project.findMany({
+        where: { deletedAt: { not: null } },
+        select: { id: true },
+      }),
+    ]);
+    const dProjIds = deletedProjectIds.map(p => p.id);
+    const [deletedRksIds, deletedLphsIds] = dProjIds.length > 0
+      ? await Promise.all([
+          this.prisma.rks.findMany({ where: { projectId: { in: dProjIds } }, select: { id: true } }),
+          this.prisma.lphsSios.findMany({ where: { projectId: { in: dProjIds } }, select: { id: true } }),
+        ])
+      : [ [], [] ];
+    const excludedApprovalResourceIds = [
+      ...deletedProspectIds.map(p => p.id),
+      ...deletedRksIds.map(r => r.id),
+      ...deletedLphsIds.map(l => l.id),
+    ];
+
     const approvals = await this.prisma.approval.findMany({
-      where: { status: 'pending' },
+      where: {
+        status: 'pending',
+        ...(excludedApprovalResourceIds.length > 0 ? { resourceId: { notIn: excludedApprovalResourceIds } } : {}),
+      },
       orderBy: { createdAt: 'asc' },
       take: limit || 10,
       select: {
