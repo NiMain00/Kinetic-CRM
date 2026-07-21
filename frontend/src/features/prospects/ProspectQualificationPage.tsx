@@ -7,6 +7,7 @@ import { Button } from '@/components/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useProspectLight } from '@/hooks/queries/useProspects';
 import { usePromoteProspect } from '@/hooks/mutations/useProspectMutations';
+import TenderDrawer from './TenderDrawer';
 import type { Prospect } from '@/types/domain';
 
 // ── Types ──
@@ -120,9 +121,10 @@ interface CardProps {
   onPromote: (prospect: Prospect, targetLevel: CustomerLevel) => void;
   isPromoting: boolean;
   onNavigate: (id: string) => void;
+  onOpenDrawer: (id: string) => void;
 }
 
-function QualificationCard({ prospect, onPromote, isPromoting, onNavigate }: CardProps) {
+function QualificationCard({ prospect, onPromote, isPromoting, onNavigate, onOpenDrawer }: CardProps) {
   const currentLevel = prospect.customerData?.level as CustomerLevel | undefined;
   const nextLevel: CustomerLevel | null =
     currentLevel === 'low' ? 'medium' : currentLevel === 'medium' ? 'hot' : null;
@@ -185,8 +187,9 @@ function QualificationCard({ prospect, onPromote, isPromoting, onNavigate }: Car
       {/* Action */}
       <div onClick={(e) => e.stopPropagation()}>
         {currentLevel === 'hot' ? (
-          <Button variant="primary" size="sm" fullWidth onClick={() => onNavigate(prospect.id)}>
-            Kelola di CRM
+          <Button variant="primary" size="sm" fullWidth onClick={() => onOpenDrawer(prospect.id)}>
+            <span className="material-symbols-outlined text-[16px]">edit_note</span>
+            Detail Tender
           </Button>
         ) : nextLevel ? (
           <Button
@@ -215,6 +218,7 @@ export default function ProspectQualificationPage() {
   const promoteMutation = usePromoteProspect();
 
   const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [drawerProspectId, setDrawerProspectId] = useState<string | null>(null);
 
   const prospects: Prospect[] = useMemo(() => {
     const arr: any[] = Array.isArray(raw) ? raw : [];
@@ -277,6 +281,14 @@ export default function ProspectQualificationPage() {
     navigate(`/prospects/${id}`);
   }, [navigate]);
 
+  const handleOpenDrawer = useCallback((id: string) => {
+    setDrawerProspectId(id);
+  }, []);
+
+  const handleCloseDrawer = useCallback(() => {
+    setDrawerProspectId(null);
+  }, []);
+
   const renderColumn = (col: LevelColumn) => {
     const items = grouped[col.level];
 
@@ -320,6 +332,7 @@ export default function ProspectQualificationPage() {
                 onPromote={handlePromote}
                 isPromoting={promotingId === prospect.id}
                 onNavigate={handleNavigate}
+                onOpenDrawer={handleOpenDrawer}
               />
             ))
           )}
@@ -423,6 +436,12 @@ export default function ProspectQualificationPage() {
           </div>
         ))}
       </div>
+
+      <TenderDrawer
+        prospectId={drawerProspectId}
+        isOpen={drawerProspectId !== null}
+        onClose={handleCloseDrawer}
+      />
     </PageContainer>
   );
 }
