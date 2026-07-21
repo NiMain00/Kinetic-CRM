@@ -162,6 +162,7 @@ export class ProspectsService {
 
     const where = conditions.length === 1 ? conditions[0] : { AND: conditions };
     const perPage = Math.min(Number(params?.perPage) || 100, 100);
+    const page = params?.page || 1;
 
     const [data, total] = await Promise.all([
       this.prisma.prospect.findMany({
