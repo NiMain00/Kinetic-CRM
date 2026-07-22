@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { authz } from '@/services/authz';
 
 export interface AuthUser {
@@ -25,7 +25,8 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   activeDepartmentId: string | null;
-  login: (token: string, user: AuthUser) => void;
+  rememberMe: boolean;
+  login: (token: string, user: AuthUser, rememberMe?: boolean) => void;
   logout: () => void;
   setActiveDepartment: (deptId: string) => void;
   hasPermission: (permissionCode: string) => boolean;
@@ -39,15 +40,35 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
       activeDepartmentId: null,
+      rememberMe: true,
 
-      login: (token, user) => set({ token, user, isAuthenticated: true }),
+      login: (token, user, rememberMe = true) => {
+        set({ token, user, isAuthenticated: true, rememberMe });
+        // Persist rememberMe preference so rehydration uses correct storage
+        try {
+          const data = JSON.stringify({ state: { ...get(), version: 2 }, version: 2 });
+          const target = rememberMe ? localStorage : sessionStorage;
+          target.setItem('kinetic-auth', data);
+          // Clear the other storage to avoid stale sessions
+          const other = rememberMe ? sessionStorage : localStorage;
+          other.removeItem('kinetic-auth');
+        } catch { /* storage full or unavailable */ }
+      },
 
-      logout: () => set({
-        token: null,
-        user: null,
-        isAuthenticated: false,
-        activeDepartmentId: null,
-      }),
+      logout: () => {
+        set({
+          token: null,
+          user: null,
+          isAuthenticated: false,
+          activeDepartmentId: null,
+          rememberMe: true,
+        });
+        // Clean up both storage locations
+        try {
+          localStorage.removeItem('kinetic-auth');
+          sessionStorage.removeItem('kinetic-auth');
+        } catch { /* ignore */ }
+      },
 
       setActiveDepartment: (deptId) => set({ activeDepartmentId: deptId }),
 
@@ -67,14 +88,31 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'kinetic-auth',
-      version: 2,
+      version: 3,
+      storage: createJSONStorage(() => {
+        // Check both storages for rehydration; prefer whichever has data
+        const ls = localStorage.getItem('kinetic-auth');
+        const ss = sessionStorage.getItem('kinetic-auth');
+        if (!ls && ss) return sessionStorage;
+        // Parse rememberMe flag from localStorage data
+        if (ls) {
+          try {
+            const parsed = JSON.parse(ls);
+            if (parsed?.state?.rememberMe === false) return sessionStorage;
+          } catch { /* corrupted data, default to localStorage */ }
+        }
+        return localStorage;
+      }),
       migrate: (persisted: unknown, version: number) => {
         const current = (persisted || {}) as any;
         if (version === 0) {
-          return { user: null, token: null, isAuthenticated: false, activeDepartmentId: null };
+          return { user: null, token: null, isAuthenticated: false, activeDepartmentId: null, rememberMe: true };
         }
         if (version === 1) {
-          return { ...current, activeDepartmentId: current.activeDepartmentId ?? null };
+          return { ...current, activeDepartmentId: current.activeDepartmentId ?? null, rememberMe: current.rememberMe ?? true };
+        }
+        if (version === 2) {
+          return { ...current, rememberMe: current.rememberMe ?? true };
         }
         return current;
       },

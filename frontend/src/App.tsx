@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import toast from 'react-hot-toast';
 import AppRouter from './routes/router';
 import { ErrorBoundary } from '@/components/shared';
 import { useThemeStore } from '@/stores/themeStore';
@@ -13,6 +14,12 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,
       retry: 1,
       refetchOnWindowFocus: false,
+    },
+    mutations: {
+      onError: (error: any) => {
+        const message = error?.message || 'Terjadi kesalahan. Silakan coba lagi.';
+        toast.error(message);
+      },
     },
   },
 });

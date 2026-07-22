@@ -69,7 +69,7 @@ export default function LoginPage() {
         branchName: user.orgUnit?.name || '',
         roleId: user.userRoles?.[0]?.roleId || '',
         scopeType: user.userRoles?.[0]?.scopeType || 'global',
-      });
+      }, rememberMe);
 
       navigate('/dashboard');
       toast.success(`Selamat datang, ${user.fullName}!`);

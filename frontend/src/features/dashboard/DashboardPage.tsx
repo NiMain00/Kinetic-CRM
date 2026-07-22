@@ -258,10 +258,10 @@ export default function DashboardPage() {
 
         <Link to="/reports/kpi" className="relative bg-surface rounded-2xl border border-border/60 shadow-card p-4 overflow-hidden group hover:shadow-card-hover transition-shadow cursor-pointer block">
           <div className="flex justify-between items-start mb-2">
-            <span className="p-2 rounded-xl bg-primary/10 text-primary">
+            <span className="p-2 rounded-xl bg-success-container text-success">
               <span className="material-symbols-outlined">military_tech</span>
             </span>
-            <span className="text-primary font-label-sm text-xs">Kinerja YTD</span>
+            <span className="text-success font-label-sm text-xs">Kinerja YTD</span>
           </div>
           <p className="text-secondary font-caption-xs mb-0.5">Rasio Kemenangan</p>
           <h3 className="font-display-title text-lg sm:text-xl text-on-surface">{stats.winRate}%</h3>

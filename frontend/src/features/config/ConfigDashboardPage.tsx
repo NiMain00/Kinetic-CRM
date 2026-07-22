@@ -10,13 +10,15 @@ const CATEGORY_DESCRIPTIONS: Record<string, string> = {
   'Status Proyek': 'Kelola status siklus hidup proyek',
   Notifikasi: 'Konfigurasi template notifikasi dan event',
   SLA: 'Atur batas waktu layanan dan eskalasi',
-  Role: 'Kelola peran dan hak akses pengguna',
   Target: 'Konfigurasi target KPI dan approval',
-  Workflow: 'Atur alur kerja untuk setiap entitas',
+  'Alur Kerja': 'Atur alur kerja untuk setiap entitas',
+  'Stage Rules': 'Konfigurasi aturan transisi stage proyek',
   Integrasi: 'Kelola konektor integrasi sistem',
   Upload: 'Atur pengaturan upload file',
   Periode: 'Kelola periode fiskal',
   'Tipe Pertanyaan': 'Atur tipe pertanyaan kuesioner',
+  'Access Control': 'Kelola hak akses berdasarkan peran dan departemen',
+  'Konfigurasi Input': 'Atur opsi input dan validasi formulir',
 };
 
 const ICON_MAP: Record<string, string> = {
@@ -24,13 +26,15 @@ const ICON_MAP: Record<string, string> = {
   'Status Proyek': 'settings',
   Notifikasi: 'notifications_active',
   SLA: 'alarm',
-  Role: 'badge',
   Target: 'track_changes',
-  Workflow: 'alt_route',
+  'Alur Kerja': 'alt_route',
+  'Stage Rules': 'rule',
   Integrasi: 'api',
   Upload: 'cloud_upload',
   Periode: 'calendar_month',
   'Tipe Pertanyaan': 'help_outline',
+  'Access Control': 'security',
+  'Konfigurasi Input': 'checklist',
 };
 
 export default function ConfigDashboardPage() {

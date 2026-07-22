@@ -1,7 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useThemeStore } from '@/stores/themeStore';
 import GlobalSearch from '@/components/shared/GlobalSearch';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
+
+const MOBILE_SEARCH_INDEX = [
+  { label: 'Dashboard', path: '/dashboard', icon: 'dashboard', category: 'Halaman' },
+  { label: 'Analytics', path: '/analytics', icon: 'analytics', category: 'Analitik' },
+  { label: 'Prospek', path: '/prospects', icon: 'person_search', category: 'CRM' },
+  { label: 'Pipeline Prospek', path: '/prospects/pipeline', icon: 'linear_scale', category: 'CRM' },
+  { label: 'Kualifikasi', path: '/prospects/qualification', icon: 'trending_up', category: 'CRM' },
+  { label: 'Proyek', path: '/projects', icon: 'work', category: 'CRM' },
+  { label: 'Pengadaan', path: '/procurement', icon: 'inventory_2', category: 'Operasional' },
+  { label: 'Persetujuan', path: '/approvals', icon: 'how_to_reg', category: 'Alur Kerja' },
+  { label: 'Laporan', path: '/reports', icon: 'pie_chart', category: 'Analitik' },
+  { label: 'Kalender', path: '/reports/calendar', icon: 'calendar_today', category: 'Analitik' },
+  { label: 'KPI', path: '/reports/kpi', icon: 'target', category: 'Analitik' },
+  { label: 'Master Data', path: '/master-data', icon: 'layers', category: 'Admin' },
+  { label: 'Notifikasi', path: '/notifications', icon: 'notifications', category: 'Sistem' },
+  { label: 'Konfigurasi', path: '/config', icon: 'settings', category: 'Admin' },
+  { label: 'Profil', path: '/profile', icon: 'person', category: 'Akun' },
+];
 
 interface TopbarProps {
   userName?: string;
@@ -28,8 +47,18 @@ const Topbar = React.memo(function Topbar({
 }: TopbarProps) {
   const { dark, toggle } = useThemeStore();
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileQuery, setMobileQuery] = useState('');
+  const debouncedMobileQuery = useDebouncedValue(mobileQuery, 200);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const mobileResults = useMemo(() => {
+    if (!debouncedMobileQuery.trim()) return [];
+    const q = debouncedMobileQuery.toLowerCase();
+    return MOBILE_SEARCH_INDEX.filter(
+      (r) => r.label.toLowerCase().includes(q) || r.category?.toLowerCase().includes(q),
+    );
+  }, [debouncedMobileQuery]);
 
   useEffect(() => {
     if (mobileSearchOpen && searchInputRef.current) {
@@ -147,7 +176,7 @@ const Topbar = React.memo(function Topbar({
         >
           <div className="flex items-center gap-3 p-4 border-b border-border">
             <button
-              onClick={() => setMobileSearchOpen(false)}
+              onClick={() => { setMobileSearchOpen(false); setMobileQuery(''); }}
               className="flex items-center justify-center touch-min rounded-xl hover:bg-surface-container transition-all cursor-pointer"
               aria-label="Tutup pencarian"
             >
@@ -159,15 +188,66 @@ const Topbar = React.memo(function Topbar({
               </span>
               <input
                 ref={searchInputRef}
+                value={mobileQuery}
+                onChange={(e) => setMobileQuery(e.target.value)}
                 className="bg-surface-container-low border border-border rounded-xl pl-10 pr-4 py-3 w-full focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-body-main text-sm outline-none"
                 placeholder="Cari proyek, prospek, persetujuan..."
                 type="text"
                 aria-label="Cari"
               />
+              {mobileQuery && (
+                <button
+                  onClick={() => setMobileQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                  aria-label="Hapus"
+                >
+                  <span className="material-symbols-outlined text-[18px]">close</span>
+                </button>
+              )}
             </div>
           </div>
-          <div className="p-4 text-center text-outline text-sm mt-16">
-            Ketik untuk mulai mencari...
+          <div className="overflow-y-auto max-h-[calc(100vh-72px)]">
+            {mobileQuery.trim() ? (
+              mobileResults.length > 0 ? (
+                <div className="p-2">
+                  {mobileResults.map((r, i) => (
+                    <Link
+                      key={i}
+                      to={r.path}
+                      onClick={() => { setMobileSearchOpen(false); setMobileQuery(''); }}
+                      className="w-full px-4 py-3 flex items-center gap-3 rounded-xl text-left hover:bg-surface-container transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-outline text-lg" aria-hidden="true">{r.icon || 'search'}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-on-surface truncate">{r.label}</p>
+                        <p className="text-[10px] text-outline">{r.category}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <span className="material-symbols-outlined text-3xl text-outline mb-2 block">search_off</span>
+                  <p className="text-sm font-medium text-secondary">Tidak ada hasil</p>
+                  <p className="text-xs text-outline mt-0.5">Coba kata kunci lain</p>
+                </div>
+              )
+            ) : (
+              <div className="p-4">
+                <p className="px-4 mb-2 text-[10px] font-semibold uppercase tracking-wider text-outline">Menu</p>
+                {MOBILE_SEARCH_INDEX.slice(0, 8).map((r, i) => (
+                  <Link
+                    key={i}
+                    to={r.path}
+                    onClick={() => { setMobileSearchOpen(false); setMobileQuery(''); }}
+                    className="w-full px-4 py-2.5 flex items-center gap-3 rounded-xl text-left hover:bg-surface-container transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-on-surface-variant text-lg" aria-hidden="true">{r.icon}</span>
+                    <span className="text-sm text-on-surface">{r.label}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
-  fallback?: React.ReactNode;
+  fallback?: React.ReactNode | ((onRetry: () => void) => React.ReactNode);
 }
 
 interface ErrorBoundaryState {
@@ -28,6 +28,9 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
+        if (typeof this.props.fallback === 'function') {
+          return this.props.fallback(this.handleRetry);
+        }
         return this.props.fallback;
       }
 

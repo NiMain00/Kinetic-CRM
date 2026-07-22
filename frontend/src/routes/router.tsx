@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, GuestRoute, RoleRoute, PermissionRoute } from './guards';
 import { PageLoader } from '@/components/layout';
 import SeoHandler from '@/components/seo/SeoHandler';
+import FeatureBoundary from '@/components/shared/FeatureBoundary';
 
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 import { withPageProps } from './page-adapter';
@@ -137,49 +138,49 @@ export default function AppRouter() {
 
       {/* Profile */}
       <Route path="/profile" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
-        <Route index element={<ProfilePage />} />
+        <Route index element={<FeatureBoundary name="Profil"><ProfilePage /></FeatureBoundary>} />
       </Route>
 
       {/* Main app routes */}
       <Route path="/" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><AppLayout /></Suspense></ProtectedRoute>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="analytics" element={<AnalyticsDashboardPage />} />
+        <Route path="dashboard" element={<FeatureBoundary name="Dashboard"><DashboardPage /></FeatureBoundary>} />
+        <Route path="analytics" element={<FeatureBoundary name="Analytics"><AnalyticsDashboardPage /></FeatureBoundary>} />
 
         {/* Prospects */}
-        <Route path="prospects" element={<ProspectsPage />} />
-        <Route path="prospects/pipeline" element={<ProspectPipelinePage />} />
-        <Route path="prospects/qualification" element={<ProspectQualificationPage />} />
-        <Route path="prospects/new" element={<ProspectFormPage />} />
-        <Route path="prospects/:id" element={<ProspectDetailPage />} />
-        <Route path="prospects/:id/edit" element={<ProspectFormPage />} />
+        <Route path="prospects" element={<FeatureBoundary name="Prospek"><ProspectsPage /></FeatureBoundary>} />
+        <Route path="prospects/pipeline" element={<FeatureBoundary name="Prospek"><ProspectPipelinePage /></FeatureBoundary>} />
+        <Route path="prospects/qualification" element={<FeatureBoundary name="Prospek"><ProspectQualificationPage /></FeatureBoundary>} />
+        <Route path="prospects/new" element={<FeatureBoundary name="Prospek"><ProspectFormPage /></FeatureBoundary>} />
+        <Route path="prospects/:id" element={<FeatureBoundary name="Prospek"><ProspectDetailPage /></FeatureBoundary>} />
+        <Route path="prospects/:id/edit" element={<FeatureBoundary name="Prospek"><ProspectFormPage /></FeatureBoundary>} />
 
         {/* Projects */}
-        <Route path="projects" element={<ProjectListPage />} />
-        <Route path="projects/new" element={<ProjectFormPage />} />
-        <Route path="project/:projectId/:tab?" element={<ProjectDetailPage />} />
-        <Route path="projects/:projectId/:tab?" element={<ProjectDetailPage />} />
+        <Route path="projects" element={<FeatureBoundary name="Proyek"><ProjectListPage /></FeatureBoundary>} />
+        <Route path="projects/new" element={<FeatureBoundary name="Proyek"><ProjectFormPage /></FeatureBoundary>} />
+        <Route path="project/:projectId/:tab?" element={<FeatureBoundary name="Proyek"><ProjectDetailPage /></FeatureBoundary>} />
+        <Route path="projects/:projectId/:tab?" element={<FeatureBoundary name="Proyek"><ProjectDetailPage /></FeatureBoundary>} />
 
         {/* Procurement */}
-        <Route path="procurement" element={<ProcurementListPage />} />
-        <Route path="procurement/new" element={<ProcurementFormPage />} />
-        <Route path="procurement/:procurementId" element={<ProcurementDetailPage />} />
-        <Route path="procurement/:procurementId/:tab" element={<ProcurementDetailPage />} />
+        <Route path="procurement" element={<FeatureBoundary name="Pengadaan"><ProcurementListPage /></FeatureBoundary>} />
+        <Route path="procurement/new" element={<FeatureBoundary name="Pengadaan"><ProcurementFormPage /></FeatureBoundary>} />
+        <Route path="procurement/:procurementId" element={<FeatureBoundary name="Pengadaan"><ProcurementDetailPage /></FeatureBoundary>} />
+        <Route path="procurement/:procurementId/:tab" element={<FeatureBoundary name="Pengadaan"><ProcurementDetailPage /></FeatureBoundary>} />
 
         {/* Follow-Up */}
-        <Route path="follow-up" element={<FollowUpPage />} />
+        <Route path="follow-up" element={<FeatureBoundary name="Follow-Up"><FollowUpPage /></FeatureBoundary>} />
 
         {/* Approvals */}
-        <Route path="approvals" element={<ApprovalInboxPage />} />
+        <Route path="approvals" element={<FeatureBoundary name="Persetujuan"><ApprovalInboxPage /></FeatureBoundary>} />
 
         {/* Reports (includes KPI) */}
-        <Route path="reports" element={<ReportsIndexPage />} />
-        <Route path="reports/win-loss" element={<WinLossReportPage />} />
-        <Route path="reports/pipeline" element={<PipelineReportPage />} />
-        <Route path="reports/calendar" element={<CalendarPage />} />
-        <Route path="reports/kpi" element={<KPIDashboardPage />} />
-        <Route path="reports/kpi/progress" element={<KPIProgressPage />} />
-        <Route path="reports/kpi/targets" element={<KPITargetsPage />} />
+        <Route path="reports" element={<FeatureBoundary name="Laporan"><ReportsIndexPage /></FeatureBoundary>} />
+        <Route path="reports/win-loss" element={<FeatureBoundary name="Laporan"><WinLossReportPage /></FeatureBoundary>} />
+        <Route path="reports/pipeline" element={<FeatureBoundary name="Laporan"><PipelineReportPage /></FeatureBoundary>} />
+        <Route path="reports/calendar" element={<FeatureBoundary name="Laporan"><CalendarPage /></FeatureBoundary>} />
+        <Route path="reports/kpi" element={<FeatureBoundary name="KPI"><KPIDashboardPage /></FeatureBoundary>} />
+        <Route path="reports/kpi/progress" element={<FeatureBoundary name="KPI"><KPIProgressPage /></FeatureBoundary>} />
+        <Route path="reports/kpi/targets" element={<FeatureBoundary name="KPI"><KPITargetsPage /></FeatureBoundary>} />
 
         {/* Redirect old KPI routes to Reports */}
         <Route path="kpi" element={<Navigate to="/reports/kpi" replace />} />
@@ -188,16 +189,16 @@ export default function AppRouter() {
         <Route path="kpi/targets" element={<Navigate to="/reports/kpi/targets" replace />} />
 
         {/* Master Data */}
-        <Route path="master-data" element={<MasterDataPage />} />
-        <Route path="master-data/customers" element={<MasterCustomerPage />} />
-        <Route path="master-data/competitors" element={<MasterCompetitorPage />} />
-        <Route path="master-data/categories" element={<MasterCategoryPage />} />
-        <Route path="master-data/document-types" element={<MasterDocTypePage />} />
-        <Route path="master-data/questions" element={<MasterQuestionPage />} />
-        <Route path="master-data/holidays" element={<MasterHolidayPage />} />
-        <Route path="master-data/loss-reasons" element={<MasterLossReasonPage />} />
-        <Route path="master-data/periods" element={<MasterPeriodPage />} />
-        <Route path="master-data/:entity" element={<MasterDataPage />} />
+        <Route path="master-data" element={<FeatureBoundary name="Master Data"><MasterDataPage /></FeatureBoundary>} />
+        <Route path="master-data/customers" element={<FeatureBoundary name="Master Data"><MasterCustomerPage /></FeatureBoundary>} />
+        <Route path="master-data/competitors" element={<FeatureBoundary name="Master Data"><MasterCompetitorPage /></FeatureBoundary>} />
+        <Route path="master-data/categories" element={<FeatureBoundary name="Master Data"><MasterCategoryPage /></FeatureBoundary>} />
+        <Route path="master-data/document-types" element={<FeatureBoundary name="Master Data"><MasterDocTypePage /></FeatureBoundary>} />
+        <Route path="master-data/questions" element={<FeatureBoundary name="Master Data"><MasterQuestionPage /></FeatureBoundary>} />
+        <Route path="master-data/holidays" element={<FeatureBoundary name="Master Data"><MasterHolidayPage /></FeatureBoundary>} />
+        <Route path="master-data/loss-reasons" element={<FeatureBoundary name="Master Data"><MasterLossReasonPage /></FeatureBoundary>} />
+        <Route path="master-data/periods" element={<FeatureBoundary name="Master Data"><MasterPeriodPage /></FeatureBoundary>} />
+        <Route path="master-data/:entity" element={<FeatureBoundary name="Master Data"><MasterDataPage /></FeatureBoundary>} />
 
         {/* Users - pindah ke dalam Master Data sebagai tab */}
         <Route path="users" element={<Navigate to="/master-data" replace />} />
@@ -207,28 +208,28 @@ export default function AppRouter() {
         <Route path="users/:id/edit" element={<Navigate to="/master-data" replace />} />
 
         {/* Audit — hanya Super Admin */}
-        <Route path="audit" element={<AuditPageSuperAdmin />} />
-        <Route path="audit/log" element={<AuditLogPageSuperAdmin />} />
+        <Route path="audit" element={<FeatureBoundary name="Audit"><AuditPageSuperAdmin /></FeatureBoundary>} />
+        <Route path="audit/log" element={<FeatureBoundary name="Audit"><AuditLogPageSuperAdmin /></FeatureBoundary>} />
 
         {/* Notifications */}
-        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="notifications" element={<FeatureBoundary name="Notifikasi"><NotificationsPage /></FeatureBoundary>} />
 
         {/* Configuration — berdasarkan permission config:access */}
-        <Route path="config" element={<ConfigDashboardPage />} />
-        <Route path="config/org" element={<ConfigOrgPage />} />
-        <Route path="config/status" element={<ConfigStatusPage />} />
-        <Route path="config/notifications" element={<ConfigNotifTemplatePage />} />
-        <Route path="config/sla" element={<ConfigSlaPage />} />
+        <Route path="config" element={<FeatureBoundary name="Konfigurasi"><ConfigDashboardPage /></FeatureBoundary>} />
+        <Route path="config/org" element={<FeatureBoundary name="Konfigurasi"><ConfigOrgPage /></FeatureBoundary>} />
+        <Route path="config/status" element={<FeatureBoundary name="Konfigurasi"><ConfigStatusPage /></FeatureBoundary>} />
+        <Route path="config/notifications" element={<FeatureBoundary name="Konfigurasi"><ConfigNotifTemplatePage /></FeatureBoundary>} />
+        <Route path="config/sla" element={<FeatureBoundary name="Konfigurasi"><ConfigSlaPage /></FeatureBoundary>} />
         <Route path="config/roles" element={<Navigate to="/config/access-control" replace />} />
-        <Route path="config/targets" element={<ConfigTargetsPage />} />
-        <Route path="config/workflow" element={<ConfigWorkflowPage />} />
-        <Route path="config/integration" element={<ConfigIntegrationPage />} />
-        <Route path="config/upload" element={<ConfigUploadPage />} />
-        <Route path="config/period" element={<ConfigPeriodPage />} />
-        <Route path="config/question-types" element={<ConfigQuestionTypesPage />} />
-        <Route path="config/access-control" element={<ConfigAccessControlPage />} />
-        <Route path="config/input-options" element={<ConfigInputPage />} />
-        <Route path="config/stage-rules" element={<ConfigStageRulesPage />} />
+        <Route path="config/targets" element={<FeatureBoundary name="Konfigurasi"><ConfigTargetsPage /></FeatureBoundary>} />
+        <Route path="config/workflow" element={<FeatureBoundary name="Konfigurasi"><ConfigWorkflowPage /></FeatureBoundary>} />
+        <Route path="config/integration" element={<FeatureBoundary name="Konfigurasi"><ConfigIntegrationPage /></FeatureBoundary>} />
+        <Route path="config/upload" element={<FeatureBoundary name="Konfigurasi"><ConfigUploadPage /></FeatureBoundary>} />
+        <Route path="config/period" element={<FeatureBoundary name="Konfigurasi"><ConfigPeriodPage /></FeatureBoundary>} />
+        <Route path="config/question-types" element={<FeatureBoundary name="Konfigurasi"><ConfigQuestionTypesPage /></FeatureBoundary>} />
+        <Route path="config/access-control" element={<FeatureBoundary name="Konfigurasi"><ConfigAccessControlPage /></FeatureBoundary>} />
+        <Route path="config/input-options" element={<FeatureBoundary name="Konfigurasi"><ConfigInputPage /></FeatureBoundary>} />
+        <Route path="config/stage-rules" element={<FeatureBoundary name="Konfigurasi"><ConfigStageRulesPage /></FeatureBoundary>} />
 
         {/* Error pages */}
         <Route path="403" element={<ForbiddenPage />} />
