@@ -4,8 +4,8 @@ dist/
 coverage/
 .DS_Store
 *.log
-*.png
-*.xls*
+/*.png
+/*.xls*
 .env*
 !.env.example
 /storage/
@@ -25,6 +25,23 @@ docs/audit-report-*.md
 *.audit-report.md
 prospect-new-form.md
 loss-reasons-page.md
+
+# Generated SQL dumps (root level only)
+/schema.sql
+/seed_data.sql
+/seed_filtered.sql
+/supabase_*.sql
+/tmp_*.sql
+/prisma/seed_all.sql
+
+# Generated reports
+/seo-audit-report.html
+
+# Docs screenshots
+docs/*.png
+
+# Uploads
+backend/uploads/
 
 # IDE
 .vscode/
