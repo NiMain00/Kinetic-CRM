@@ -849,7 +849,7 @@ export default function ProspectDetailPage() {
             {/* Left: Identity + Pills */}
             <div className="flex-1 min-w-0 space-y-3">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="font-display-title text-display-title text-on-surface truncate">{prospect.name}</h1>
+                <h1 className="font-display-title text-display-title text-on-surface break-words">{prospect.name}</h1>
                 <StatusBadge status={needsVerification ? 'Perlu Verifikasi' : (STATUS_LABELS[prospect.status] || prospect.status)} />
               </div>
               <p className="text-sm text-secondary">{prospect.client}</p>
