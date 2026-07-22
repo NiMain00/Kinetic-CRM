@@ -838,7 +838,7 @@ export default function ProspectDetailPage() {
   );
 
   return (
-    <div className="flex-1 min-h-0 bg-background p-4 sm:p-6 lg:p-8">
+    <div className="flex-1 min-h-0 overflow-hidden bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
 
         {/* ═══════════════════════════════════════════
