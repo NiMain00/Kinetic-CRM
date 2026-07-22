@@ -131,7 +131,7 @@ export default function KPIReportPage() {
   }, [projects, period]);
 
   return (
-    <div className="flex-1 min-h-0 overflow-hidden bg-background p-4 sm:p-6 lg:p-8">
+    <div className="flex-1 min-h-0 overflow-hidden relative bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

@@ -68,7 +68,7 @@ export default function ProcurementDetailView() {
   if (!procurement) {
     if (loadingDetail) {
       return (
-        <div className="flex-1 flex flex-col overflow-hidden bg-background">
+        <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
           <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-3 shadow-sm">
             <div className="h-4 w-48 bg-surface-container-high rounded animate-pulse mb-2" />
             <div className="flex items-center gap-3">
@@ -123,7 +123,7 @@ export default function ProcurementDetailView() {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-background">
+    <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
       {/* Sticky Header */}
       <section className="bg-surface border-b border-border/60 px-4 sm:px-8 py-2 sm:py-3 shadow-sm z-30">
         <nav className="flex items-center gap-1 text-xs text-secondary mb-2 flex-wrap">
