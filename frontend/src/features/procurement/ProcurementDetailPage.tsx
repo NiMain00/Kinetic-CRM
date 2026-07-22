@@ -199,7 +199,7 @@ export default function ProcurementDetailView() {
       </section>
 
       {/* Content */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         {isOverview && (
           <PhaseStepper
             steps={tabs.slice(0, 4)}
