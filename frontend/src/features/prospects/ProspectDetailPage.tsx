@@ -788,7 +788,6 @@ export default function ProspectDetailPage() {
   const renderActivityFeed = () => (
     <>
       <form onSubmit={(e) => { e.preventDefault(); handleSendComment(); }} className="flex gap-2 mb-4">
-        <label htmlFor="comment-input" className="sr-only">Tulis komentar</label>
         <input
           id="comment-input"
           type="text"
@@ -838,7 +837,7 @@ export default function ProspectDetailPage() {
   );
 
   return (
-    <div className="flex-1 min-h-0 overflow-hidden relative bg-background p-4 sm:p-6 lg:p-8">
+    <div className="flex-1 min-h-0 bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
 
         {/* ═══════════════════════════════════════════

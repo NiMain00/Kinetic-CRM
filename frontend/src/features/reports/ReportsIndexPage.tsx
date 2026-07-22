@@ -68,7 +68,7 @@ export default function ReportsIndexPage() {
   ];
 
   return (
-    <div className="flex-1 min-h-0 overflow-hidden relative bg-background p-4 sm:p-6 lg:p-8">
+    <div className="flex-1 min-h-0 bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-xl font-extrabold text-on-surface">Laporan & Analisis</h1>

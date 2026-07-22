@@ -89,7 +89,7 @@ export default function WinLossReportPage() {
   }, [records, debouncedSearch]);
 
   return (
-    <div className="flex-1 min-h-0 overflow-hidden relative bg-background p-4 sm:p-6 lg:p-8">
+    <div className="flex-1 min-h-0 bg-background p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>

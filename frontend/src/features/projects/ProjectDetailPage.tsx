@@ -207,7 +207,7 @@ export default function ProjectDetailView({
   if (!project) {
     if (loadingDetail) {
       return (
-        <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
+        <div className="flex-1 flex flex-col overflow-hidden bg-background">
           <div className="bg-surface border-b border-border/60 px-4 sm:px-8 py-3 shadow-sm">
             <div className="h-4 w-48 bg-surface-container-high rounded animate-pulse mb-2" />
             <div className="flex items-center gap-3">
@@ -370,7 +370,7 @@ export default function ProjectDetailView({
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative bg-background">
+    <div className="flex-1 flex flex-col overflow-hidden bg-background">
       {/* Sticky Project Header with Dynamic Breadcrumbs */}
       <section className="bg-surface border-b border-border/60 px-4 sm:px-8 py-2 sm:py-3 shadow-sm z-30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 sm:gap-3">
