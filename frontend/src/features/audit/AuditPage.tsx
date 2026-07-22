@@ -92,7 +92,7 @@ export default function AuditPage() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <div className="bg-surface border border-border/60 rounded-2xl p-5 shadow-xs">
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">

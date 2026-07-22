@@ -195,7 +195,7 @@ export default function ConfigNotificationsView({ onShowNotification }: ConfigNo
       </div>
 
       {/* Bento Grid Analytics Row & Main Content */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar space-y-8 text-left">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar space-y-8 text-left">
 
         {/* Statistics Widgets */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">

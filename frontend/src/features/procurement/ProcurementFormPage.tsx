@@ -91,7 +91,7 @@ export default function ProcurementFormPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto px-4 sm:px-6 py-6">
+      <div className="flex-1 px-4 sm:px-6 py-6">
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6" noValidate>
           {/* Link to Project */}
           <section className="bg-surface rounded-xl border border-border shadow-card p-4 sm:p-6 space-y-4">

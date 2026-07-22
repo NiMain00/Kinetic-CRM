@@ -423,7 +423,7 @@ export default function ProjectDetailView({
       </section>
 
       {/* Main scrollable area — stepper, tab nav, and tab content all scroll together */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1">
           {/* Dynamic Stepper — visible on ALL tabs for navigation */}
           {!(project.type === 'prospecting' && isFromNonPotensial) && (
             <PhaseStepper

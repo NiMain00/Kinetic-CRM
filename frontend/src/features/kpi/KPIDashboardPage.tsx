@@ -66,7 +66,7 @@ export default function KPIDashboardPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <div className="flex items-center gap-3" role="toolbar" aria-label="Filter periode">
             <span className="text-xs font-semibold text-secondary">Periode:</span>

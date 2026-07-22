@@ -91,7 +91,7 @@ export default function ConfigSlaView({ onShowNotification }: ConfigSlaViewProps
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-5xl mx-auto space-y-6 text-left">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-surface-container-lowest border border-border p-4 rounded-xl shadow-xs"><p className="text-[10px] text-outline uppercase font-mono tracking-wider">Total Aturan SLA</p><p className="text-xl font-extrabold text-on-surface mt-1">{configs.length}</p></div>

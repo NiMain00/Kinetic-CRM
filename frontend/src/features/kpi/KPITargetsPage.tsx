@@ -197,7 +197,7 @@ export default function KPITargetsPage() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="none" header={
             <div className="flex items-center justify-between">

@@ -84,7 +84,7 @@ export default function ProfileView({ onShowNotification, currentUser, onUpdateU
       </div>
 
       {/* Main Workspace scroll container */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-5xl mx-auto space-y-8 text-left">
           
           {/* Main profile layout bento grid */}

@@ -80,7 +80,7 @@ export default function MasterDocTypePage() {
         <Button onClick={openCreate} size="sm" leftIcon={<span className="material-symbols-outlined text-[16px]">add</span>}>Tambah Tipe Dokumen</Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 custom-scrollbar">
         <div className="max-w-7xl mx-auto space-y-6 text-left">
           <Card padding="md">
             <div className="relative">
