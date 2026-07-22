@@ -254,8 +254,8 @@ export default function ProjectDetailView({
     // Terminal states (Selesai, Kalah): all tabs unlocked
     if (project.status === 'Selesai' || project.status === 'Kalah') return false;
 
-    // Timeline, Dokumen, Tasks & RKS: always unlocked
-    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Tasks' || tab.label === 'RKS') return false;
+    // Timeline, Dokumen, Tasks, RKS & Review RKS: always unlocked
+    if (tab.label === 'Timeline' || tab.label === 'Dokumen' || tab.label === 'Tasks' || tab.label === 'RKS' || tab.label === 'Review RKS') return false;
 
     // Harga, Kompetitor, Pemenang: terkunci sampai project mencapai atau melewati fase LPHS/SIOS
     if (['Harga', 'Kompetitor', 'Pemenang'].includes(tab.label)) {
@@ -422,10 +422,10 @@ export default function ProjectDetailView({
         </div>
       </section>
 
-      {/* Main scrollable area — stepper, tab nav, and tab content all scroll together */}
-      <div className="flex-1">
-          {/* Dynamic Stepper — visible on ALL tabs for navigation */}
-          {!(project.type === 'prospecting' && isFromNonPotensial) && (
+      {/* Main scrollable area — tab nav and tab content scroll together */}
+      <div className="flex-1 overflow-y-auto">
+          {/* Dynamic Stepper — visible only on Overview tab */}
+          {isOverview && !(project.type === 'prospecting' && isFromNonPotensial) && (
             <PhaseStepper
               steps={stepperSteps}
               currentStepIndex={stepperIndex >= 0 ? stepperIndex : 0}
