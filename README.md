@@ -155,28 +155,28 @@ Konfigurasi struktur organisasi, status proyek, template notifikasi, kebijakan S
 ```mermaid
 graph TB
     subgraph Frontend
-        REACT[React + Vite<br/>Port 3000]
+        REACT["React + Vite (Port 3000)"]
     end
     
     subgraph Backend
-        NEST[NestJS API<br/>Port 4000]
+        NEST["NestJS API (Port 4000)"]
     end
     
     subgraph Storage
-        PG[(PostgreSQL<br/>Supabase)]
-        REDIS[(Redis<br/>Upstash)]
+        PG[("PostgreSQL (Supabase)")]
+        REDIS[("Redis (Upstash)")]
     end
     
     subgraph AI
-        GEMINI[Google Gemini API]
+        GEMINI["Google Gemini API"]
     end
     
     subgraph External
-        GF[Google Form<br/>→ Apps Script]
+        GF["Google Form → Apps Script"]
     end
     
-    GF -->|POST /gform/webhook| NEST
-    REACT -->|REST API| NEST
+    GF -->|"POST /gform/webhook"| NEST
+    REACT -->|"REST API"| NEST
     NEST --> PG
     NEST --> REDIS
     NEST --> GEMINI
@@ -186,11 +186,11 @@ graph TB
 
 ```mermaid
 graph LR
-    FORM[Google Form] --> SCRIPT[Apps Script<br/>onSubmit Trigger]
-    SCRIPT -->|POST x-api-key| WEBHOOK[/api/v1/gform/webhook]
-    WEBHOOK --> CUSTOMER[Create/Update Customer]
-    CUSTOMER --> PROSPECT[Create Prospect<br/>+ ProspectAnswer]
-    PROSPECT --> KANBAN[Muncul di<br/>Kualifikasi Prospek]
+    FORM["Google Form"] --> SCRIPT["Apps Script (onSubmit)"]
+    SCRIPT -->|"POST x-api-key"| WEBHOOK["/api/v1/gform/webhook"]
+    WEBHOOK --> CUSTOMER["Create/Update Customer"]
+    CUSTOMER --> PROSPECT["Create Prospect + Answers"]
+    PROSPECT --> KANBAN["Kualifikasi Prospek"]
 ```
 
 ### Arsitektur Frontend
