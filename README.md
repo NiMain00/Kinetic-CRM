@@ -1,111 +1,384 @@
 <div align="center">
-  <h1>Kinetic CRM</h1>
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white" alt="NestJS" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white" alt="Prisma" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
 </div>
-Daftar Isi
 
-- [Fitur Utama](#fitur-utama)
-- [Input Prospek via Google Form](#input-prospek-via-google-form)
-- [Tech Stack](#tech-stack)
+<br />
+
+<h1 align="center">Kinetic CRM</h1>
+
+<p align="center">
+  <em>Approval governance platform untuk enterprise Indonesia — kelola prospecting, project delivery, procurement, dan approval dari satu tempat.</em>
+</p>
+
+<p align="center">
+  <a href="#fitur">Fitur</a> ·
+  <a href="#technology-stack">Tech Stack</a> ·
+  <a href="#arsitektur-sistem">Arsitektur</a> ·
+  <a href="#instalasi">Instalasi</a> ·
+  <a href="#struktur-proyek">Struktur</a> ·
+  <a href="#input-prospek-via-google-form">Google Form</a>
+</p>
+
+---
+
+## Daftar Isi
+
+- [Overview](#overview)
+- [Fitur](#fitur)
+- [Technology Stack](#technology-stack)
 - [Arsitektur Sistem](#arsitektur-sistem)
-- [Prasyarat](#prasyarat)
-- [Panduan Instalasi (Docker)](#panduan-instalasi-docker)
-- [Konfigurasi Lingkungan](#konfigurasi-lingkungan)
-- [Akun Default](#akun-default)
 - [Struktur Proyek](#struktur-proyek)
+- [Instalasi](#instalasi)
+- [Konfigurasi](#konfigurasi)
+- [Akun Default](#akun-default)
+- [Input Prospek via Google Form](#input-prospek-via-google-form)
 - [Perintah Berguna](#perintah-berguna)
-- [Dokumentasi](#dokumentasi)
+- [Development Notes](#development-notes)
+- [Known Limitations](#known-limitations)
+- [Future Improvements](#future-improvements)
 - [Lisensi](#lisensi)
 
 ---
 
-## Fitur Utama
+## Overview
+
+**Kinetic CRM** adalah platform manajemen CRM enterprise yang dirancang khusus untuk kebutuhan operasional perusahaan di Indonesia. Sistem ini mengelola siklus hidup penuh dari kualifikasi prospek hingga pengelolaan proyek dengan **approval governance** sebagai intinya.
+
+### Masalah yang Diselesaikan
+
+- Proses approval multi-level yang lambat dan tidak teraudit
+- Data prospek dan proyek tersebar di banyak tempat (Excel, email, chat)
+- Tidak ada SLA tracking untuk review dan persetujuan
+- Laporan KPI yang harus dihitung manual
+- Alur pengadaan yang tidak terstruktur dari purchase request hingga PO
+
+### Target Pengguna
+
+- **Sales & Marketing** — input prospek, tracking pipeline
+- **Project Manager** — manage proyek, RKS, LPHS, tender
+- **Procurement** — pengadaan barang/jasa, vendor selection
+- **Finance** — pricing, budget tracking
+- **Management** — approval, dashboard KPI
+
+### Manfaat
+
+- Approval workflow dengan SLA, eskalasi, dan delegasi approver
+- Audit trail lengkap untuk setiap transaksi
+- Integrasi Google Form untuk input prospek tanpa login
+- KPI dashboard dengan traffic-light scoring otomatis
+- Manajemen dokumen dengan versioning
+
+---
+
+## Fitur
 
 ### Manajemen Prospek
-- Pipeline prospek (kanban-style) dengan alur status: Potensial → Waiting Supervisor → Revision → Approved / Non Potensial
-- Kuesioner dinamis per prospek
-- Review questions & notes per round
-- Timeline event tracking
-- Konversi prospek ke proyek
+
+Pipeline prospek kanban-style dengan alur: Potensial → Waiting Supervisor → Revision → Approved / Non Potensial. Fitur kuesioner dinamis, review questions & notes per round, timeline event tracking, dan konversi prospek ke proyek. Prospek juga bisa masuk otomatis melalui Google Form.
 
 ### Manajemen Proyek
-- Siklus hidup proyek: Prospecting → RKS → LPHS/SIOS → Pricing → Tender → Won/Lost/Cancelled
-- Anggota proyek & pembagian department
-- Timeline events dengan file tracking
-- Tasks dengan prioritas, subtasks, dan alur status
 
-### Modul RKS (Rencana Kerja dan Syarat)
-- Pembuatan RKS dengan dynamic answer-based fields
-- Review rounds (questions & notes)
-- Status: draft → waiting PM approval → revision → approved
+Siklus hidup proyek lengkap: Prospecting → RKS → LPHS/SIOS → Pricing → Tender → Won/Lost/Cancelled. Didukung anggota proyek dengan pembagian department, timeline events, dan task management.
 
-### Modul LPHS/SIOS
-- Review multi-department secara paralel
-- PM approval, Management approval, Final approval
-- Targeted revision per department
-- File upload tracking
+### Modul RKS
+
+Pembuatan RKS (Rencana Kerja dan Syarat) dengan dynamic answer-based fields, review rounds (questions & notes), dan alur status: draft → waiting PM approval → revision → approved.
+
+### Modul LPHS / SIOS
+
+Review multi-department secara paralel dengan PM approval, Management approval, dan Final approval. Mendukung targeted revision per department dan file upload tracking.
 
 ### Manajemen Pricing & Kompetitor
-- Price submission dengan margin tracking
-- Perbandingan harga kompetitor per proyek
-- Penyimpanan reference link/URL
+
+Price submission dengan margin tracking, perbandingan harga kompetitor per proyek, dan penyimpanan reference link.
 
 ### Tender Result & Delivery
-- Won/Lost tracking dengan loss reasons
-- Contract value & SPK document upload
-- Delivery target scheduling dengan status
+
+Tracking win/loss dengan loss reasons, contract value & SPK document upload, dan delivery target scheduling.
 
 ### Modul Procurement
-- Siklus pengadaan: Draft → Purchase Request → Vendor Selection → PO Process → Delivery → Progress → Closed/Cancelled
-- Manajemen supplier dengan evaluasi & rating
-- RFQ (Request for Quotation) dengan supplier selection
-- Item/BOM management (Master Items, Project Requirements, Procurement Items)
-- Procurement allocation ke project requirements
+
+Siklus pengadaan dari Draft → Purchase Request → Vendor Selection → PO Process → Delivery → Progress → Closed/Cancelled. Dilengkapi manajemen supplier dengan rating, RFQ dengan supplier selection, item/BOM management, dan procurement allocation.
 
 ### Approval Engine
-- Alur kerja approval generik dengan review paralel
-- SLA-based deadlines dengan eskalasi
-- Approval chains dengan amount-based levels
-- Delegasi backup approver
-- Reassignment support
-- In-app approval inbox
+
+Alur kerja approval generik dengan review paralel, SLA-based deadlines dan eskalasi, approval chains dengan amount-based levels, delegasi backup approver, reassignment support, dan in-app approval inbox.
 
 ### Target & KPI
-- Definisi KPI dengan weighted scoring
-- Target setting per scope (branch, division, company)
-- Period management (monthly, quarterly, semester, annual)
-- Progress snapshots dengan traffic-light scoring (red/yellow/green)
+
+Definisi KPI dengan weighted scoring, target setting per scope (branch, division, company), period management (monthly, quarterly, semester, annual), dan progress snapshots dengan traffic-light scoring (red/yellow/green).
 
 ### Sistem Konfigurasi (14 Modul)
-- Struktur organisasi, Status proyek, Template notifikasi, Kebijakan SLA
-- Target settings, Workflow stages, Integration connectors, Upload policies
-- Periods, Question types, Access control, Input options
-- Dynamic input config groups
 
-### Manajemen Dokumen
-- Upload dokumen dengan versioning
-- Document types dengan kebijakan ekstensi/ukuran
-- Resource-linked documents (prospect, RKS, LPHS, project)
+Konfigurasi struktur organisasi, status proyek, template notifikasi, kebijakan SLA, target settings, workflow stages, integration connectors, upload policies, periods, question types, access control, dan dynamic input config groups.
 
-### Sistem Notifikasi
-- Notifikasi in-app dengan template
-- Template recipients (by role/department)
-- Read receipts
+### Lainnya
 
-### Audit Trail
-- Logging audit lengkap dengan before/after payload
-- Actor tracking, IP, user agent
-- Audit log viewer yang dapat dicari & difilter
+- **Manajemen Dokumen** — upload dengan versioning, document types, resource-linked
+- **Sistem Notifikasi** — in-app notification dengan template dan read receipts
+- **Audit Trail** — logging lengkap dengan before/after payload, actor tracking, IP
+- **AI Integration** — analisis Google Gemini untuk prospek, proyek, strategi, prediksi
+- **Laporan & Dashboard** — win/loss report, pipeline report, KPI dashboard, calendar view
 
-### AI Integration
-- Analisis berbasis Google Gemini (prospek, proyek, strategi, prediksi)
-- AI chat interface
-- Rate limiting, cost tracking, provider abstraction
+---
 
-### Laporan & Dashboard
-- Win/Loss report, Pipeline report
-- KPI dashboard dengan progress tracking
-- Calendar view
-- Dashboard stats (trends, status distribution, critical deadlines)
+## Technology Stack
+
+| Layer | Teknologi | Versi |
+|---|---|---|
+| **Frontend** | React + TypeScript + Vite | 19.0.1 / 5.8 / 6.2 |
+| **Styling** | Tailwind CSS | 4.1 |
+| **State Management** | Zustand + TanStack React Query | 4.x / 5.x |
+| **Routing** | React Router | 7.18 |
+| **Forms** | React Hook Form + Zod | 7.x / 3.x |
+| **Backend** | NestJS | 10.x |
+| **ORM** | Prisma | 5.22 |
+| **Database** | PostgreSQL (Supabase) | 15.x |
+| **Cache** | Redis (Upstash) | 7.x |
+| **Auth** | Passport + JWT + bcrypt | — |
+| **AI** | Google Gemini API (Gemini 2.5 Pro) | — |
+| **Container** | Docker / Docker Compose (6 services) | — |
+| **Testing** | Playwright | 1.61 |
+| **Icons** | Lucide React | 0.546 |
+
+---
+
+## Arsitektur Sistem
+
+```mermaid
+graph TB
+    subgraph Frontend
+        REACT[React + Vite<br/>Port 3000]
+    end
+    
+    subgraph Backend
+        NEST[NestJS API<br/>Port 4000]
+    end
+    
+    subgraph Storage
+        PG[(PostgreSQL<br/>Supabase)]
+        REDIS[(Redis<br/>Upstash)]
+    end
+    
+    subgraph AI
+        GEMINI[Google Gemini API]
+    end
+    
+    subgraph External
+        GF[Google Form<br/>→ Apps Script]
+    end
+    
+    GF -->|POST /gform/webhook| NEST
+    REACT -->|REST API| NEST
+    NEST --> PG
+    NEST --> REDIS
+    NEST --> GEMINI
+```
+
+### Alur Data Google Form ke CRM
+
+```mermaid
+graph LR
+    FORM[Google Form] --> SCRIPT[Apps Script<br/>onSubmit Trigger]
+    SCRIPT -->|POST x-api-key| WEBHOOK[/api/v1/gform/webhook]
+    WEBHOOK --> CUSTOMER[Create/Update Customer]
+    CUSTOMER --> PROSPECT[Create Prospect<br/>+ ProspectAnswer]
+    PROSPECT --> KANBAN[Muncul di<br/>Kualifikasi Prospek]
+```
+
+### Arsitektur Frontend
+
+```
+frontend/
+└── src/
+    ├── bootstrap/          # Init / event handlers
+    ├── components/
+    │   ├── layout/         # AppLayout, Sidebar, Topbar, Breadcrumb
+    │   ├── shared/         # ErrorBoundary, dll.
+    │   └── ui/             # Badge, Button, Card, Modal, Table, Tabs
+    ├── config/             # Routes, permissions, nav items
+    ├── features/           # Feature modules (lazy-loaded)
+    │   ├── approvals/      # Approval inbox
+    │   ├── audit/          # Audit log viewer
+    │   ├── auth/           # Login, forgot/reset password
+    │   ├── config/         # 13+ halaman konfigurasi
+    │   ├── dashboard/      # Dashboard utama
+    │   ├── kpi/            # KPI dashboard, progress, targets
+    │   ├── master-data/    # Customers, competitors, categories
+    │   ├── notifications/  # Notification center
+    │   ├── procurement/    # Modul procurement
+    │   ├── projects/       # Project list, detail, form
+    │   ├── prospects/      # Prospect list, pipeline, detail, form
+    │   └── reports/        # Win/loss, pipeline, calendar, KPI
+    ├── hooks/              # Custom hooks (usePermission, queries)
+    ├── routes/             # Route tree (lazy-loading & guards)
+    ├── services/           # API client & CRUD services
+    ├── stores/             # 23 Zustand stores
+    ├── types/              # TypeScript definitions
+    └── utils/              # Formatters, validators, export
+```
+
+### Arsitektur Backend
+
+```
+backend/
+└── src/
+    ├── approvals/     # Approval engine (SLA, chains, delegation)
+    ├── audit/         # Audit logging
+    ├── auth/          # JWT auth, Passport strategies
+    ├── common/        # Shared utilities, guards, filters
+    ├── config/        # System configuration
+    ├── customers/     # Customer CRUD
+    ├── dashboard/     # Dashboard aggregations
+    ├── gform/         # Google Forms webhook handler
+    ├── lphs/          # LPHS/SIOS module
+    ├── master/        # Master data
+    ├── notification/  # Notification services
+    ├── prisma/        # Prisma module (database client)
+    ├── projects/      # Project management
+    ├── prospects/     # Prospect management
+    ├── rbac/          # Role-based access control
+    └── rks/           # RKS module
+```
+
+---
+
+## Struktur Proyek
+
+```
+root/
+├── backend/                  # NestJS API (port 4000)
+│   ├── prisma/               # Backend prisma schema
+│   ├── src/                  # Source code (modules)
+│   └── uploads/              # File upload storage
+│
+├── frontend/                 # React + Vite (port 3000)
+│   └── src/
+│       ├── components/       # UI & layout
+│       ├── features/         # Feature modules (lazy-loaded)
+│       ├── hooks/            # Custom React hooks
+│       ├── routes/           # Route definitions & guards
+│       ├── services/         # API client & services
+│       ├── stores/           # Zustand state stores
+│       ├── types/            # TypeScript definitions
+│       └── utils/            # Utility functions
+│
+├── prisma/                   # Shared Prisma schema & migrations
+│   ├── schema.prisma         # Database schema (46+ models)
+│   ├── seed.ts               # Database seeder
+│   └── migrations/           # Migration files
+│
+├── database/                 # SQL dumps & backup files
+├── docker/                   # Docker Compose & infrastructure
+│   ├── docker-compose.yml
+│   ├── postgres/             # PostgreSQL init scripts
+│   └── nginx/                # Nginx reverse proxy config
+├── shared/                   # Shared library (Zod schemas, types)
+├── scripts/                  # Utility scripts
+├── storage/                  # Local file storage
+├── md-Kinetic-CRM/           # Dokumentasi sistem (65 file)
+├── gform-create-script.gs    # Google Apps Script untuk form prospek
+└── package.json              # Root scripts (frontend + Prisma)
+```
+
+---
+
+## Instalasi
+
+### Prasyarat
+
+- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/)
+- Node.js >= 18
+- Git
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/NiMain00/Kinetic-CRM.git
+cd kinetic-crm
+```
+
+### 2. Copy Environment File
+
+```bash
+copy .env docker\.env
+```
+
+### 3. Start Docker Containers
+
+```bash
+docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker/.env up -d --build
+```
+
+### 4. Database Migration & Seed
+
+```bash
+$env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/kinetic_crm"
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+### 5. Restart Backend
+
+```bash
+docker restart kinetic_backend
+```
+
+Tunggu ~30 detik hingga NestJS selesai kompilasi.
+
+### 6. Akses Aplikasi
+
+Buka **http://localhost:3000** di browser.
+
+---
+
+## Konfigurasi
+
+### Environment Variables (`.env`)
+
+| Variable | Deskripsi | Default |
+|---|---|---|
+| `DATABASE_URL` | Connection string PostgreSQL | — |
+| `DIRECT_URL` | Direct connection untuk migrations | — |
+| `REDIS_PASSWORD` | Password Redis | `redispass` |
+| `JWT_SECRET` | Secret key JWT | *(wajib diubah)* |
+| `JWT_EXPIRY_HOURS` | Masa berlaku token JWT | `8` |
+| `AI_PROVIDER` | Provider AI | `gemini` |
+| `GEMINI_API_KEY` | API key Google Gemini | *(opsional)* |
+| `AI_MODEL` | Model AI | `gemini-2.5-pro` |
+| `AI_RATE_LIMIT_RPM` | Rate limit AI per menit | `60` |
+| `AI_COST_LIMIT_USD_PER_DAY` | Batas biaya AI per hari | `10.0` |
+| `STORAGE_MAX_UPLOAD_MB` | Maksimum ukuran upload | `25` |
+| `LOG_LEVEL` | Level logging | `debug` |
+
+### Frontend Environment (`frontend/.env`)
+
+| Variable | Default |
+|---|---|
+| `VITE_API_BASE_URL` | `http://localhost:4000` |
+| `VITE_APP_VERSION` | — |
+
+---
+
+## Akun Default
+
+Setelah menjalankan seed database:
+
+| Username | Password | Role |
+|---|---|---|
+| `superadmin` | `admin123` | Super Admin |
+| `bambang` | `admin123` | Project Manager |
+| `rina` | `admin123` | Branch Manager |
+| `deni` | `staff123` | Staff (Finance) |
+| `siti` | `staff123` | Staff (Procurement) |
+| `ahmad` | `staff123` | Staff (PM) |
 
 ---
 
@@ -142,315 +415,26 @@ Script Google Apps Script tersedia di `gform-create-script.gs`:
 
 ---
 
-## Tech Stack
-
-### Frontend
-
-| Teknologi | Versi | Kegunaan |
-|---|---|---|
-| React | 19.0.1 | UI framework (SPA) |
-| TypeScript | 5.8 | Type-safe JavaScript |
-| Vite | 6.2 | Build tool & dev server |
-| Tailwind CSS | 4.1 | Utility-first CSS framework |
-| React Router | 7.18 | Client-side routing |
-| Zustand | 4.x | Global state management |
-| TanStack React Query | 5.x | Server state & caching |
-| Axios | 1.x | HTTP client |
-| React Hook Form | 7.x | Form handling |
-| Zod | 3.x | Schema validation |
-| react-hot-toast | 2.x | Notifications |
-| lucide-react | 0.546 | Icon library |
-| date-fns | 3.x | Date utilities |
-
-### Backend
-
-| Teknologi | Versi | Kegunaan |
-|---|---|---|
-| NestJS | 10.x | Node.js framework (TypeScript) |
-| Prisma | 5.22 | ORM & database migrations |
-| PostgreSQL | 15.x (Supabase) | Database |
-| Redis | 7.x | Caching |
-| Passport + JWT | 10.x / 4.x | Authentication |
-| bcrypt | 5.x | Password hashing |
-| class-validator / class-transformer | 0.14 / 0.5 | DTO validation |
-
-### AI & Infrastructure
-
-| Teknologi | Kegunaan |
-|---|---|
-| Google Gemini API (Gemini 2.5 Pro) | AI analysis |
-| text-embedding-004 | Semantic search embeddings |
-| Docker / Docker Compose | Container orchestration (6 services) |
-| Nginx | Reverse proxy, SSL termination |
-| Playwright | E2E testing |
-
----
-
-## Arsitektur Sistem
-
-```
-┌───────────────┐       ┌───────────────┐
-│   Frontend    │──────▶│   Backend     │
-│  React + Vite │       │   NestJS      │
-│   (Port 3000) │◀──────│  (Port 4000)  │
-└───────────────┘       └───────┬───────┘
-                                │
-          ┌─────────────────────┼─────────────────────┐
-          │                     │                     │
-          ▼                     ▼                     ▼
-   ┌──────────┐          ┌──────────┐          ┌──────────┐
-   │PostgreSQL│          │  Redis   │          │  Gemini  │
-   │Database  │          │  Cache   │          │  AI API  │
-   └──────────┘          └──────────┘          └──────────┘
-```
-
-### Arsitektur Frontend
-
-```
-frontend/
-├── src/
-│   ├── main.tsx                        # Entry point
-│   ├── App.tsx                         # Root (TanStack Query + Router)
-│   ├── bootstrap/                      # Init / event handlers
-│   ├── components/
-│   │   ├── layout/                     # AppLayout, Sidebar, Topbar, Breadcrumb, PageLoader
-│   │   ├── shared/                     # ErrorBoundary, dll.
-│   │   └── ui/                         # Badge, Button, Card, Modal, Table, Tabs, dll.
-│   ├── config/                         # Routes, permissions, API endpoints, nav items
-│   ├── features/                       # Feature modules (lazy-loaded)
-│   │   ├── approvals/                  # Approval inbox
-│   │   ├── audit/                      # Audit log viewer
-│   │   ├── auth/                       # Login, forgot/reset password
-│   │   ├── config/                     # 13+ halaman konfigurasi
-│   │   ├── dashboard/                  # Dashboard utama
-│   │   ├── kpi/                        # KPI dashboard, progress, targets
-│   │   ├── master-data/                # Customers, competitors, categories, dll.
-│   │   ├── notifications/              # Notification center
-│   │   ├── procurement/                # Modul procurement lengkap
-│   │   ├── projects/                   # Project list, detail, form
-│   │   ├── prospects/                  # Prospect list, pipeline, detail, form
-│   │   └── reports/                    # Win/loss, pipeline, calendar, KPI reports
-│   ├── hooks/                          # Custom hooks (usePermission, queries, mutations)
-│   ├── routes/                         # Route tree dengan lazy-loading & guards
-│   ├── services/                       # API client & CRUD services
-│   ├── stores/                         # 23 Zustand stores
-│   ├── types/                          # TypeScript type definitions
-│   └── utils/                          # Formatters, validators, export utilities
-```
-
-### Arsitektur Backend
-
-```
-backend/
-├── src/
-│   ├── main.ts                         # Entry point
-│   ├── app.module.ts                   # Root module
-│   ├── approvals/                      # Approval engine (SLA, chains, delegation)
-│   ├── audit/                          # Audit logging
-│   ├── auth/                           # JWT auth, Passport strategies
-│   ├── common/                         # Shared utilities, guards, filters, interceptors
-│   ├── config/                         # System configuration
-│   ├── customers/                      # Customer CRUD
-│   ├── dashboard/                      # Dashboard aggregations
-│   ├── lphs/                           # LPHS/SIOS module
-│   ├── master/                         # Master data
-│   ├── notification/                   # Notification services
-│   ├── prisma/                         # Prisma module (database client)
-│   ├── projects/                       # Project management
-│   ├── prospects/                      # Prospect management
-│   ├── rbac/                           # Role-based access control
-│   └── rks/                            # RKS module
-```
-
-### Infrastruktur Docker (6 Services)
-
-| Service | Container Name | Port |
-|---|---|---|
-| Frontend | `kinetic_frontend` | `:3000` |
-| Backend | `kinetic_backend` | `:4000` |
-| PostgreSQL | `kinetic_postgres` | `:5432` |
-| Redis | `kinetic_redis` | `:6379` |
-| Nginx | `kinetic_nginx` | `:80`, `:443` |
-| Scheduler | `kinetic_scheduler` | — |
-
-### Entity Relationship Diagram
-
-Lihat dokumentasi ERD di `prisma/schema.prisma` (46+ model).
-
----
-
-## Prasyarat
-
-- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (wajib untuk PostgreSQL, Redis, dan container aplikasi)
-- Node.js >= 18 (hanya diperlukan untuk menjalankan migrasi/seed Prisma dari host)
-- Git
-
----
-
-## Panduan Instalasi (Docker)
-
-### 1. Clone Repository
-
-```bash
-git clone <repository-url>
-cd kinetic-crm
-```
-
-### 2. Copy Environment File
-
-```bash
-copy .env docker\.env
-```
-
-### 3. Start Semua Container
-
-```bash
-docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker/.env up -d --build
-```
-
-### 4. Jalankan Database Migration & Seed
-
-Jalankan migrasi dan seed:
-
-```bash
-$env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/kinetic_crm"
-npx prisma migrate deploy
-npx prisma db seed
-```
-
-### 5. Restart Backend
-
-```bash
-docker restart kinetic_backend
-```
-
-Tunggu ~30 detik hingga NestJS selesai kompilasi.
-
-### 6. Akses Aplikasi
-
-Buka **http://localhost:3000** di browser Anda.
-
----
-
-## Konfigurasi Lingkungan
-
-### Variabel Environment Utama (`.env`)
-
-| Variable | Deskripsi | Default |
-|---|---|---|
-| `APP_ENV` | Environment aplikasi | `local` |
-| `APP_URL` | Base URL aplikasi | — |
-| `DATABASE_URL` | Connection string Prisma (PostgreSQL) | — |
-| `DIRECT_URL` | Direct connection untuk migrations | — |
-| `REDIS_PASSWORD` | Password Redis | `redispass` |
-| `JWT_SECRET` | Secret key JWT | *(wajib diubah)* |
-| `JWT_EXPIRY_HOURS` | Masa berlaku token JWT | `8` |
-| `AI_PROVIDER` | Provider AI | `gemini` |
-| `GEMINI_API_KEY` | API key Google Gemini | *(opsional)* |
-| `AI_MODEL` | Model AI | `gemini-2.5-pro` |
-| `AI_RATE_LIMIT_RPM` | Rate limit AI per menit | `60` |
-| `AI_COST_LIMIT_USD_PER_DAY` | Batas biaya AI per hari | `10.0` |
-| `STORAGE_MAX_UPLOAD_MB` | Maksimum ukuran upload | `25` |
-| `LOG_LEVEL` | Level logging | `debug` |
-
-### Frontend Environment (`frontend/.env`)
-
-| Variable | Default |
-|---|---|
-| `VITE_API_BASE_URL` | `http://localhost:4000` |
-| `VITE_APP_VERSION` | — |
-
----
-
-## Akun Default
-
-Setelah menjalankan seed database, akun-akun berikut tersedia untuk login:
-
-| Username | Password | Role |
-|---|---|---|
-| `superadmin` | `admin123` | Super Admin |
-| `bambang` | `admin123` | Project Manager |
-| `rina` | `admin123` | Branch Manager |
-| `deni` | `staff123` | Staff (Finance) |
-| `siti` | `staff123` | Staff (Procurement) |
-| `ahmad` | `staff123` | Staff (PM) |
-
----
-
-## Struktur Proyek
-
-```
-root/
-├── backend/                       # NestJS API (port 4000)
-│   ├── prisma/                    # Backend prisma files
-│   ├── src/                       # Source code (modules)
-│   └── uploads/                   # File upload storage
-│
-├── frontend/                      # React + Vite (port 3000)
-│   ├── src/
-│   │   ├── components/            # UI & layout components
-│   │   ├── features/              # Feature modules (lazy-loaded)
-│   │   ├── hooks/                 # Custom React hooks
-│   │   ├── routes/                # Route definitions & guards
-│   │   ├── services/              # API client & services
-│   │   ├── stores/                # Zustand state stores
-│   │   ├── types/                 # TypeScript type definitions
-│   │   └── utils/                 # Utility functions
-│   └── public/                    # Static assets
-│
-├── prisma/                        # Shared Prisma schema & migrations
-│   ├── schema.prisma              # Database schema (46+ models)
-│   ├── seed.ts                    # Database seeder
-│   └── migrations/                # Migration files
-│
-├── shared/                        # Shared library (Zod schemas, types)
-│
-├── database/                      # SQL dumps & backup files
-│
-├── docker/                        # Docker Compose & infrastructure
-│   ├── docker-compose.yml         # Main compose file
-│   ├── docker-compose.override.yml# Dev overrides
-│   ├── postgres/                  # PostgreSQL init scripts
-│   └── nginx/                     # Nginx reverse proxy config
-│
-├── md-Kinetic-CRM/                # Dokumentasi sistem (65 file)
-│
-├── scripts/                       # Utility scripts
-├── storage/                       # Local file storage
-├── dist/                          # Frontend build artifacts
-├── .env                           # Environment variables
-├── .env.example                   # Template environment
-├── gform-create-script.gs         # Google Apps Script untuk form prospek
-├── package.json                   # Root scripts (frontend + Prisma)
-└── vite.config.ts                 # Vite configuration
-```
-
----
-
 ## Perintah Berguna
 
 ### Docker
 
 ```bash
-# Lihat status container
+# Status container
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
-# Log backend
+# Log backend / frontend
 docker logs kinetic_backend --tail 50 -f
-
-# Log frontend
 docker logs kinetic_frontend --tail 50 -f
 
-# Restart service
+# Restart / rebuild service
 docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env restart backend
-
-# Rebuild & restart service
 docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env up -d --build backend
 
-# Stop semua container
+# Stop semua
 docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env down
 
-# Stop & hapus volumes (menghapus database)
+# Stop & hapus volume (hapus database)
 docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env down -v
 
 # Akses PostgreSQL
@@ -463,16 +447,10 @@ docker exec -it kinetic_postgres psql -U postgres kinetic_crm
 ### Prisma
 
 ```bash
-# Jalankan migrasi
+# Migration
 npx prisma migrate deploy
-
-# Buat migrasi baru
 npx prisma migrate dev --name <nama_migrasi>
-
-# Seed database
 npx prisma db seed
-
-# Lihat data di Prisma Studio
 npx prisma studio
 ```
 
@@ -488,41 +466,76 @@ cd backend
 npm run start:dev
 ```
 
-### Build
+### Build Production
 
 ```bash
-# Frontend production build (dari root)
+# Frontend
 npm run build
 
-# Backend production build
+# Backend
 cd backend
 npm run build
 ```
 
 ---
 
-## Dokumentasi
+## Development Notes
 
-Dokumentasi sistem lengkap tersedia di direktori `md-Kinetic-CRM/` (65 file) yang mencakup:
+### Coding Style
 
-| Dokumen | Deskripsi |
+- **Frontend:** TypeScript strict mode, functional components dengan hooks, Zustand untuk global state, TanStack Query untuk server state
+- **Backend:** NestJS modular architecture, class-validator/transformer untuk DTO, Prisma untuk database access
+- **Naming Conventions:** camelCase untuk JavaScript/TypeScript, PascalCase untuk komponen React dan kelas
+
+### Key Dependencies
+
+| Package | Purpose |
 |---|---|
-| `001_SYSTEM_OVERVIEW.md` | Gambaran umum sistem & tujuan bisnis |
-| `005_SYSTEM_ARCHITECTURE_OVERVIEW.md` | Arsitektur sistem |
-| `006_TECH_STACK_SPECIFICATION.md` | Spesifikasi tech stack |
-| `007_DATA_ARCHITECTURE_PRINCIPLES.md` | Prinsip arsitektur data |
-| `008_SECURITY_ARCHITECTURE.md` | Arsitektur keamanan |
-| `010_AI_INTEGRATION_ARCHITECTURE.md` | Arsitektur integrasi AI |
-| `013_GLOBAL_STATE_MACHINE_REFERENCE.md` | State machine reference |
-| `053-055` | ERD, DDL, & Indexing |
-| `056-057` | API Endpoint Specification |
-| `058` | Frontend Architecture & Component Library |
-| `060` | Docker Deployment & Operations |
-| `062` | Master Test Case Catalog |
+| Zustand | Global state management (23 stores) |
+| TanStack React Query | Server state & caching |
+| React Hook Form + Zod | Form handling & validation |
+| Zustand | Global state management |
+| Lucide React | Icon library |
+| Passport + JWT | Authentication |
+| Prisma | ORM & database migrations |
+| class-validator | DTO validation |
 
-Juga tersedia:
-- **Gap Analysis:** `prisma/ANALISIS_GAP.md` (lihat di branch lama)
-- **Entity Relationship Diagram:** `prisma/schema.prisma` (46+ model)
+### API Structure
+
+Semua endpoint REST API berada di bawah prefix `/api/v1/`. Autentikasi menggunakan JWT Bearer token, kecuali webhook `/api/v1/gform/webhook` yang menggunakan API Key via header `x-api-key`.
+
+### Workflow
+
+1. Feature dikembangkan di branch terpisah
+2. Gunakan TypeScript strict mode
+3. Backend validation menggunakan `class-validator`
+4. Frontend form validation menggunakan Zod schema
+5. Database change melalui Prisma migrations
+6. E2E testing menggunakan Playwright
+
+---
+
+## Known Limitations
+
+- Membutuhkan koneksi internet untuk Google Gemini AI features
+- Google Form webhook membutuhkan API Key yang dikonfigurasi manual
+- Fitur tertentu (LPHS/SIOS concurrent review) membutuhkan pemahaman alur bisnis KALLA
+- Report generation masih terbatas pada format yang sudah ditentukan
+- Notifikasi hanya in-app (belum terintegrasi email/WhatsApp)
+
+---
+
+## Future Improvements
+
+- Integrasi email notification (SMTP)
+- Integrasi WhatsApp notification
+- Export report ke PDF & Excel lanjutan
+- Mobile app (React Native)
+- Real-time collaboration pada review module
+- Automated scoring untuk kualifikasi prospek (BANT framework)
+- Integration dengan sistem akuntansi existing
+- Dark mode
+- Multi-language support (English)
 
 ---
 
