@@ -527,8 +527,5 @@ Juga tersedia:
 ---
 
 ## Lisensi
----
 
-<div align="center">
-  <sub>Built with ❤️</sub>
-</div>
+This project is intended for internal use within KALLA Transport &amp; Logistics.
