@@ -4,6 +4,7 @@
 Daftar Isi
 
 - [Fitur Utama](#fitur-utama)
+- [Input Prospek via Google Form](#input-prospek-via-google-form)
 - [Tech Stack](#tech-stack)
 - [Arsitektur Sistem](#arsitektur-sistem)
 - [Prasyarat](#prasyarat)
@@ -108,6 +109,39 @@ Daftar Isi
 
 ---
 
+## Input Prospek via Google Form
+
+Prospek bisa masuk otomatis ke CRM melalui Google Form tanpa harus login. Cocok untuk marketing yang ingin input prospek cepat dari mana saja.
+
+**Form Publik:** [https://docs.google.com/forms/d/e/1FAIpQLSfTNWtkGpfB4O44HXJkocWw0IL4v8qPSXxaTrnzpojvY0MWdg/viewform](https://docs.google.com/forms/d/e/1FAIpQLSfTNWtkGpfB4O44HXJkocWw0IL4v8qPSXxaTrnzpojvY0MWdg/viewform)
+
+### Cara Kerja
+
+```
+Google Form → Google Apps Script → POST /api/v1/gform/webhook → Customer + Prospect terbuat di CRM
+```
+
+1. Marketing isi data prospek di Google Form
+2. Google Apps Script trigger `onSubmit` mengirim data ke webhook backend
+3. Backend otomatis membuat Customer & Prospect baru dengan level (Hot/Medium/Low)
+4. Prospek muncul di halaman **Kualifikasi Prospek** → tinggal dipromote atau dikelola
+
+### Setup Form Baru
+
+Script Google Apps Script tersedia di `gform-create-script.gs`:
+
+1. Buka [Google Apps Script](https://script.google.com/home) → New Project
+2. Paste isi `gform-create-script.gs` → Simpan
+3. Ganti `API_KEY` dengan key dari CRM (Konfigurasi → Integrasi)
+4. Jalankan fungsi `createProspekForm()` → form akan terbuat otomatis
+5. Buka form → ⋮ → Script Editor → paste ulang script yang sama
+6. Jalankan fungsi `setupTrigger()` → trigger `onSubmit` aktif
+7. Selesai! Setiap submission form otomatis masuk ke CRM
+
+**Endpoint Webhook:** `POST /api/v1/gform/webhook` (dilindungi API Key)
+
+---
+
 ## Tech Stack
 
 ### Frontend
@@ -134,7 +168,7 @@ Daftar Isi
 |---|---|---|
 | NestJS | 10.x | Node.js framework (TypeScript) |
 | Prisma | 5.22 | ORM & database migrations |
-| MySQL | 8.0 | Database |
+| PostgreSQL | 15.x (Supabase) | Database |
 | Redis | 7.x | Caching |
 | Passport + JWT | 10.x / 4.x | Authentication |
 | bcrypt | 5.x | Password hashing |
@@ -165,7 +199,7 @@ Daftar Isi
           │                     │                     │
           ▼                     ▼                     ▼
    ┌──────────┐          ┌──────────┐          ┌──────────┐
-   │  MySQL 8 │          │  Redis   │          │  Gemini  │
+   │PostgreSQL│          │  Redis   │          │  Gemini  │
    │Database  │          │  Cache   │          │  AI API  │
    └──────────┘          └──────────┘          └──────────┘
 ```
@@ -234,20 +268,20 @@ backend/
 |---|---|---|
 | Frontend | `kinetic_frontend` | `:3000` |
 | Backend | `kinetic_backend` | `:4000` |
-| MySQL | `kinetic_mysql` | `:3306` |
+| PostgreSQL | `kinetic_postgres` | `:5432` |
 | Redis | `kinetic_redis` | `:6379` |
 | Nginx | `kinetic_nginx` | `:80`, `:443` |
 | Scheduler | `kinetic_scheduler` | — |
 
 ### Entity Relationship Diagram
 
-Lihat dokumentasi lengkap ERD di `prisma/ERD_FINAL.md` (46+ model).
+Lihat dokumentasi ERD di `prisma/schema.prisma` (46+ model).
 
 ---
 
 ## Prasyarat
 
-- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (wajib untuk MySQL, Redis, dan container aplikasi)
+- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (wajib untuk PostgreSQL, Redis, dan container aplikasi)
 - Node.js >= 18 (hanya diperlukan untuk menjalankan migrasi/seed Prisma dari host)
 - Git
 
@@ -276,15 +310,10 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.ym
 
 ### 4. Jalankan Database Migration & Seed
 
-> **Pertama kali?** Buat user database terlebih dahulu:
-> ```bash
-> docker exec kinetic_mysql mysql -uroot -prootpass -e "CREATE USER IF NOT EXISTS 'kinetic_user'@'%' IDENTIFIED BY 'secret'; GRANT ALL PRIVILEGES ON *.* TO 'kinetic_user'@'%'; FLUSH PRIVILEGES;"
-> ```
-
-Kemudian jalankan migrasi dan seed:
+Jalankan migrasi dan seed:
 
 ```bash
-$env:DATABASE_URL="mysql://kinetic_user:secret@localhost:3306/kinetic_crm"
+$env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/kinetic_crm"
 npx prisma migrate deploy
 npx prisma db seed
 ```
@@ -311,10 +340,8 @@ Buka **http://localhost:3000** di browser Anda.
 |---|---|---|
 | `APP_ENV` | Environment aplikasi | `local` |
 | `APP_URL` | Base URL aplikasi | — |
-| `DB_DATABASE` | Nama database | `kinetic_crm` |
-| `DB_USERNAME` | User database | `kinetic_user` |
-| `DB_PASSWORD` | Password database | `secret` |
-| `DATABASE_URL` | Connection string Prisma | — |
+| `DATABASE_URL` | Connection string Prisma (PostgreSQL) | — |
+| `DIRECT_URL` | Direct connection untuk migrations | — |
 | `REDIS_PASSWORD` | Password Redis | `redispass` |
 | `JWT_SECRET` | Secret key JWT | *(wajib diubah)* |
 | `JWT_EXPIRY_HOURS` | Masa berlaku token JWT | `8` |
@@ -378,10 +405,12 @@ root/
 │
 ├── shared/                        # Shared library (Zod schemas, types)
 │
+├── database/                      # SQL dumps & backup files
+│
 ├── docker/                        # Docker Compose & infrastructure
 │   ├── docker-compose.yml         # Main compose file
 │   ├── docker-compose.override.yml# Dev overrides
-│   ├── mysql/                     # MySQL config & init scripts
+│   ├── postgres/                  # PostgreSQL init scripts
 │   └── nginx/                     # Nginx reverse proxy config
 │
 ├── md-Kinetic-CRM/                # Dokumentasi sistem (65 file)
@@ -391,6 +420,7 @@ root/
 ├── dist/                          # Frontend build artifacts
 ├── .env                           # Environment variables
 ├── .env.example                   # Template environment
+├── gform-create-script.gs         # Google Apps Script untuk form prospek
 ├── package.json                   # Root scripts (frontend + Prisma)
 └── vite.config.ts                 # Vite configuration
 ```
@@ -423,8 +453,8 @@ docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.ym
 # Stop & hapus volumes (menghapus database)
 docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml --env-file docker\.env down -v
 
-# Akses MySQL
-docker exec -it kinetic_mysql mysql -ukinetic_user -psecret kinetic_crm
+# Akses PostgreSQL
+docker exec -it kinetic_postgres psql -U postgres kinetic_crm
 
 # Backup database
 ./scripts/backup-db.sh
@@ -491,8 +521,8 @@ Dokumentasi sistem lengkap tersedia di direktori `md-Kinetic-CRM/` (65 file) yan
 | `062` | Master Test Case Catalog |
 
 Juga tersedia:
-- **Gap Analysis:** `prisma/ANALISIS_GAP.md`
-- **Entity Relationship Diagram:** `prisma/ERD_FINAL.md`
+- **Gap Analysis:** `prisma/ANALISIS_GAP.md` (lihat di branch lama)
+- **Entity Relationship Diagram:** `prisma/schema.prisma` (46+ model)
 
 ---
 
