@@ -20,18 +20,22 @@ test-results/
 /bundle-report.html
 .playwright-mcp/
 
-# Generated docs
+# Generated & analysis docs
 docs/audit-report-*.md
 *.audit-report.md
 prospect-new-form.md
 loss-reasons-page.md
+ANALISIS-CATATAN.md
+AUDIT-FUNGSIONALITAS.md
+DESIGN.md
+PRODUCT.md
+docs/**/*.md
+prisma/ANALISIS_GAP.md
+prisma/ERD_FINAL.md
+frontend/.claude/
 
-# Generated SQL dumps (root level only)
-/schema.sql
-/seed_data.sql
-/seed_filtered.sql
-/supabase_*.sql
-/tmp_*.sql
+# Generated SQL dumps
+/database/*.sql
 /prisma/seed_all.sql
 
 # Generated reports
@@ -43,11 +47,13 @@ docs/*.png
 # Uploads
 backend/uploads/
 
-# IDE
+# Agent tooling
 .vscode/
 .idea/
 .claude/
 .opencode/
+.impeccable/
+frontend/.impeccable/
 *.swp
 *.swo
 
